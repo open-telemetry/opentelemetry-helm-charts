@@ -1,0 +1,197 @@
+# Default values for opentelemetry-collector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Basic parameters that used to compose default configmaps
+telemetry:
+  metrics:
+    enabled: true
+    exporter:
+      type: logging
+      config: {}
+        # logLevel: debug
+
+  traces:
+    enabled: true
+    exporter:
+      type: logging
+      config: {}
+      # type: jaeger
+      #   config:
+      #     endpoint: jaeger-all-in-one:14250
+      #   type: zipkin
+      #   config:
+      #     endpoint: zipkin-all-in-one:14250
+
+# Shared params for agentCollector daemonset and standaloneCollector deployment pods.
+# Can be overridden here or for any component independently using the same keys.
+
+image:
+  repository: otel/opentelemetry-collector
+  # repository: otel/opentelemetry-collector-contrib
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+imagePullSecrets: []
+
+# OpenTelemetry Collector executable
+command:
+  name: otelcol
+  # name: otelcontribcol
+  extraArgs: []
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+extraEnvs: []
+extraHostPathMounts: []
+
+# Configuration for ports, shared between agentCollector, standaloneCollector and service.
+# Can be overridden here or for agentCollector and standaloneCollector independently.
+ports:
+  otlp:
+    enabled: true
+    containerPort: 55680
+    servicePort: 55680
+    hostPort: 55680
+    protocol: TCP
+  jaeger-thrift:
+    enabled: true
+    containerPort: 14268
+    servicePort: 14268
+    hostPort: 14268
+    protocol: TCP
+  jaeger-grpc:
+    enabled: true
+    containerPort: 14250
+    servicePort: 14250
+    hostPort: 14250
+    protocol: TCP
+  zipkin:
+    enabled: true
+    containerPort: 9411
+    servicePort: 9411
+    hostPort: 9411
+    protocol: TCP
+
+# Configuration for agent OpenTelemetry Collector daemonset, enabled by default
+agentCollector:
+  enabled: true
+
+  resources:
+    limits:
+      cpu: 256m
+      memory: 512Mi
+
+  # Configuration override that will be merged into the agent's default config
+  configOverride: {}
+  # The following config override can be used to enable host receiver
+  #   receivers:
+  #     hostmetrics:
+  #       scrapers:
+  #         cpu:
+  #         disk:
+  #         filesystem:
+  #   service:
+  #     pipelines:
+  #       metrics: 
+  #         receivers: [prometheus, hostmetrics]
+  
+  # Any of the top level options can be overridden specifically for agent
+  # image: {}
+  # imagePullSecrets: []
+  # command: {}
+  # serviceAccount: {}
+  # podAnnotations: {}
+  # podSecurityContext: {}
+  # securityContext: {}
+  # nodeSelector: {}
+  # tolerations: []
+  # affinity: {}
+
+  # The following option overrides can be used with host receiver
+  # extraEnvs:
+  # - name: HOST_PROC
+  #   value: /hostfs/proc
+  # - name: HOST_SYS
+  #   value: /hostfs/sys
+  # - name: HOST_ETC
+  #   value: /hostfs/etc
+  # - name: HOST_VAR
+  #   value: /hostfs/var
+  # - name: HOST_RUN
+  #   value: /hostfs/run
+  # - name: HOST_DEV
+  #   value: /hostfs/dev
+  # extraHostPathMounts:
+  # - name: hostfs
+  #   hostPath: /
+  #   mountPath: /hostfs
+  #   readOnly: true
+  #   mountPropagation: HostToContainer
+
+  # The following example disables all jaeger ports and zipkin hostPort on the agent
+  # ports: 
+  #   jaeger-thrift:
+  #     enabled: false
+  #   jaeger-grpc:
+  #     enabled: false
+  #   zipkin:
+  #     hostPort: ""
+
+# Configuration for standalone OpenTelemetry Collector deployment, disabled by default
+standaloneCollector:
+  enabled: false
+
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+  # Configuration override that will be merged into the standalone collector default config
+  configOverride: {}
+
+  # Any of the top level options can be overridden specifically for standalone collector
+  # image: {}
+  # imagePullSecrets: []
+  # command: {}
+  # serviceAccount: {}
+  # podAnnotations: {}
+  # podSecurityContext: {}
+  # securityContext: {}
+  # nodeSelector: {}
+  # tolerations: []
+  # affinity: {}
+  # ports: {}
+
+service:
+  type: ClusterIP
+  annotations: {}
+
+# autoscaling is used only if standaloneCollector enabled
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
