@@ -20,10 +20,25 @@ $ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-he
 You can then run `helm search repo open-telemetry` to see the charts.
 
 ### OpenTelemetry Collector
-  
-The chart can be used to install [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) 
+
+The chart can be used to install [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector)
 in a Kubernetes cluster. More detailed documentation can be found in
 [OpenTelemetry Collector chart directory](./charts/opentelemetry-collector).
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+Approvers (@open-telemetry/helm-chart-approvers):
+
+- [Naseem K. Ullah](https://github.com/naseemkullah), Transit
+
+Maintainers (@open-telemetry/helm-chart-maintainers):
+
+- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
+- [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
+
+Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md).
 
 ## License
 
