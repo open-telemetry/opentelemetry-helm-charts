@@ -29,7 +29,7 @@ By default this chart will deploy an OpenTelemetry Collector as daemonset with t
 and logging exporter enabled by default. Besides daemonset (agent), it can be also installed as standalone deployment.
 Both modes can be enabled together, in that case metrics and traces will be flowing from agents to standalone collectors.
 
-*Example*: Install collector as a standalone deployment, and do not run it as an agent.
+**Example** | Install collector as a standalone deployment, and do not run it as an agent:
 ```yaml
 agentCollector:
   enabled: false
@@ -45,7 +45,7 @@ There are two ways to configure collector pipelines, which can be used together 
 
 ### Basic top level configuration with `telemetry` property
 
-*Example*: Disable metrics pipeline and send traces to zipkin exporter:
+**Example** | Disable metrics pipeline and send traces to zipkin exporter:
 ```yaml
 telemetry:
   metrics:
@@ -54,7 +54,7 @@ telemetry:
     exporter:
       type: zipkin
       config:
-        endpoint: zipkin-all-in-one:14250
+        endpoint: zipkin-all-in-one:9411
 ```
 
 ### Configuration with `agentCollector` and `standaloneCollector` properties
@@ -65,7 +65,7 @@ and default parameters applied on the k8s pods.
 `agentCollector(standaloneCollector).configOverride` property allows to provide an extra
 configuration that will be merged into the default configuration.
 
-*Example*: Enable host metrics receiver on the agents:
+**Example** | Enable host metrics receiver on the agents:
 ```yaml
 agentCollector:
   configOverride:
@@ -99,6 +99,40 @@ agentCollector:
     mountPath: /hostfs
     readOnly: true
     mountPropagation: HostToContainer
+```
+
+**Example** | Enable two exporters in standalone collector:
+```yaml
+standaloneCollector:
+  enabled: true
+  configOverride:
+    exporters:
+      jaeger:
+        endpoint: jaeger-all-in-one:14250
+      zipkin:
+        endpoint: zipkin-all-in-one:9411
+    service:
+      pipelines:
+        traces:
+          exporters: [zipkin, jaeger]
+```
+
+**Example** | Enable a component from
+[contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) repo (statsd receiver):
+```yaml
+image:
+  repository: otel/opentelemetry-collector-contrib
+command:
+  name: otelcontribcol
+agentCollector:
+  configOverride:
+    receivers:
+      statsd:
+        endpoint: "localhost:8125"
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp, prometheus, statsd]
 ```
 
 ### Other configuration options
