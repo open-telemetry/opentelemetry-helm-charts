@@ -5,26 +5,62 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# Basic parameters that used to compose default configmaps
-telemetry:
-  metrics:
-    enabled: true
-    exporter:
-      type: logging
-      config: {}
-        # logLevel: debug
-
-  traces:
-    enabled: true
-    exporter:
-      type: logging
-      config: {}
-      # type: jaeger
-      #   config:
-      #     endpoint: jaeger-all-in-one:14250
-      #   type: zipkin
-      #   config:
-      #     endpoint: zipkin-all-in-one:14250
+config:
+  exporters:
+    logging: {}
+  extensions:
+    health_check: {}
+  processors:
+    batch: {}
+    # If set to null, will be overridden with values based on k8s resource limits
+    memory_limiter: null
+    queued_retry: {}
+  receivers:
+    jaeger:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:14250
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+    otlp:
+      protocols:
+        grpc: null
+        http: null
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
+            static_configs:
+              - targets:
+                  - ${MY_POD_IP}:8888
+    zipkin:
+      endpoint: 0.0.0.0:9411
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      metrics:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter
+          - batch
+          - queued_retry
+        receivers:
+          - otlp
+          - prometheus
+      traces:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter
+          - batch
+          - queued_retry
+        receivers:
+          - otlp
+          - jaeger
+          - zipkin
 
 # Shared params for agentCollector daemonset and standaloneCollector deployment pods.
 # Can be overridden here or for any component independently using the same keys.
