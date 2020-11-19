@@ -30,6 +30,7 @@ and logging exporter enabled by default. Besides daemonset (agent), it can be al
 Both modes can be enabled together, in that case metrics and traces will be flowing from agents to standalone collectors.
 
 *Example*: Install collector as a standalone deployment, and do not run it as an agent.
+
 ```yaml
 agentCollector:
   enabled: false
@@ -38,23 +39,27 @@ standaloneCollector:
 ```
 
 By default collector has the following receivers enabled:
+
 - **metrics**: OTLP and prometheus. Prometheus is configured only for scraping collector's own metrics.
 - **traces**: OTLP, zipkin and jaeger (thrift and grpc).
 
 There are two ways to configure collector pipelines, which can be used together as well.
 
-### Basic top level configuration with `telemetry` property
+### Basic top level configuration
 
 *Example*: Disable metrics pipeline and send traces to zipkin exporter:
+
 ```yaml
-telemetry:
-  metrics:
-    enabled: false
-  traces:
-    exporter:
-      type: zipkin
-      config:
-        endpoint: zipkin-all-in-one:14250
+config:
+  exporters:
+    zipkin:
+      endpoint: zipkin-all-in-one:14250
+  service:
+    pipelines:
+      metrics: null
+      traces:
+        exporters:
+          - zipkin
 ```
 
 ### Configuration with `agentCollector` and `standaloneCollector` properties
@@ -66,6 +71,7 @@ and default parameters applied on the k8s pods.
 configuration that will be merged into the default configuration.
 
 *Example*: Enable host metrics receiver on the agents:
+
 ```yaml
 agentCollector:
   configOverride:
