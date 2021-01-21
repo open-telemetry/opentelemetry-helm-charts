@@ -5,9 +5,9 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-  {{- if .Values.service.annotations }}
+  {{- with .Values.service.annotations }}
   annotations:
-    {{ toYaml .Values.service.annotations | nindent 4 }}
+    {{ toYaml . | trim | indent 4 }}
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
