@@ -105,16 +105,16 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 Default config override for agent collector deamonset
 */}}
 {{- define "opentelemetry-collector.agentConfigOverride" -}}
-exporters:
   {{- if .Values.standaloneCollector.enabled }}
+exporters:
   otlp:
     endpoint: {{ include "opentelemetry-collector.fullname" . }}:55680
     insecure: true
   {{- end }}
 
+    {{- if .Values.standaloneCollector.enabled }}
 service:
   pipelines:
-    {{- if .Values.standaloneCollector.enabled }}
     metrics:
       exporters: [otlp]
     traces:
