@@ -38,7 +38,7 @@ Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-tel
 - [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
 
-Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md).
+Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md).
 
 ## License
 
