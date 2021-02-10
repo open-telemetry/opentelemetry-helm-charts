@@ -108,7 +108,7 @@ Default config override for agent collector deamonset
 {{- if .Values.standaloneCollector.enabled }}
 exporters:
   otlp:
-    endpoint: {{ include "opentelemetry-collector.fullname" . }}:55680
+    endpoint: {{ include "opentelemetry-collector.fullname" . }}:4317
     insecure: true
 {{- end }}
 
