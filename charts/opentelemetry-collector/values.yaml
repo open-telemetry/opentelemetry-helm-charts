@@ -39,6 +39,14 @@ config:
     extensions:
       - health_check
     pipelines:
+      logs:
+        exporters:
+          logging
+        processors:
+          - memory_limiter
+          - batch
+        receivers:
+          - otlp
       metrics:
         exporters:
           - logging
@@ -63,8 +71,8 @@ config:
 # Can be overridden here or for any component independently using the same keys.
 
 image:
-  repository: otel/opentelemetry-collector
-  # repository: otel/opentelemetry-collector-contrib
+  # repository: otel/opentelemetry-collector
+  repository: otel/opentelemetry-collector-contrib
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -72,8 +80,8 @@ imagePullSecrets: []
 
 # OpenTelemetry Collector executable
 command:
-  name: otelcol
-  # name: otelcontribcol
+  # name: otelcol
+  name: otelcontribcol
   extraArgs: []
 
 serviceAccount:
@@ -126,6 +134,9 @@ ports:
 # Configuration for agent OpenTelemetry Collector daemonset, enabled by default
 agentCollector:
   enabled: true
+
+  containerLogs:
+    enabled: true
 
   resources:
     limits:
