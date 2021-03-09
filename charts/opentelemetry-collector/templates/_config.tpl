@@ -32,6 +32,7 @@ Build config file for agent OpenTelemetry Collector
 {{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values)  }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- $config := include "opentelemetry-collector.agent.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := include "opentelemetry-collector.agentConfigOverride" $data | fromYaml | mustMergeOverwrite $config }}
 {{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
 {{- end }}
@@ -119,5 +120,83 @@ service:
       exporters: [otlp]
     traces:
       exporters: [otlp]
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.agent.containerLogsConfig" -}}
+{{- if .Values.agentCollector.containerLogs.enabled }}
+receivers:
+  filelog:
+    include: [ /var/log/pods/*/*/*.log ]
+    start_at: beginning
+    include_file_path: true
+    include_file_name: false
+    operators:
+      # # Find out which format is used by kubernetes
+      # - type: router
+      #   id: get-format
+      #   routes:
+      #     - output: parser-docker
+      #       expr: '$$record matches "^\\{"'
+      #     - output: parser-crio
+      #       expr: '$$record matches "^[^ Z]+ "'
+      #     - output: parser-containerd
+      #       expr: '$$record matches "^[^ Z]+Z"'
+      # # Parse CRI-O format
+      # - type: regex_parser
+      #   id: parser-crio
+      #   regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) (?P<log>.*)$'
+      #   output: extract_metadata_from_filepath
+      #   timestamp:
+      #     parse_from: time
+      #     layout_type: gotime
+      #     layout: '2006-01-02T15:04:05.000000000-07:00'
+      # Parse CRI-Containerd format
+      - type: regex_parser
+        id: parser-containerd
+        regex: '^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) (?P<log>.*)$'
+        output: extract_metadata_from_filepath
+        timestamp:
+          parse_from: time
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      # # Parse Docker format
+      # - type: json_parser
+      #   id: parser-docker
+      #   output: extract_metadata_from_filepath
+      #   timestamp:
+      #     parse_from: time
+      #     layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      # Extract metadata from file path
+      - type: regex_parser
+        id: extract_metadata_from_filepath
+        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
+        parse_from: $$labels.file_path
+      # Move out attributes to Attributes
+      - type: metadata
+        labels:
+          stream: 'EXPR($.stream)'
+          k8s.container.name: 'EXPR($.container_name)'
+          k8s.namespace.name: 'EXPR($.namespace)'
+          k8s.pod.name: 'EXPR($.pod_name)'
+          run_id: 'EXPR($.run_id)'
+          k8s.pod.uid: 'EXPR($.uid)'
+      # Clean up log record
+      - type: restructure
+        id: clean-up-log-record
+        ops:
+          - remove: logtag
+          - remove: stream
+          - remove: container_name
+          - remove: namespace
+          - remove: pod_name
+          - remove: run_id
+          - remove: uid
+service:
+  pipelines:
+    logs:
+      receivers:
+        - filelog
+      exporters:
+        - logging
 {{- end }}
 {{- end }}

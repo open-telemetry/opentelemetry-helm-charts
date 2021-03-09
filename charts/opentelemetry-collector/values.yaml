@@ -39,6 +39,11 @@ config:
     extensions:
       - health_check
     pipelines:
+      logs:
+        exporters:
+          - logging
+        receivers:
+          - filelog
       metrics:
         exporters:
           - logging
@@ -93,7 +98,15 @@ tolerations: []
 affinity: {}
 
 extraEnvs: []
-extraHostPathMounts: []
+extraHostPathMounts:
+  - name: varlog
+    hostPath: /var/log
+    mountPath: /var/log
+    readOnly: true
+  - name: varlibdockercontainers
+    hostPath: /var/lib/docker/containers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
 
 # Configuration for ports, shared between agentCollector, standaloneCollector and service.
 # Can be overridden here or for agentCollector and standaloneCollector independently.
@@ -126,6 +139,9 @@ ports:
 # Configuration for agent OpenTelemetry Collector daemonset, enabled by default
 agentCollector:
   enabled: true
+
+  containerLogs:
+    enabled: true
 
   resources:
     limits:
