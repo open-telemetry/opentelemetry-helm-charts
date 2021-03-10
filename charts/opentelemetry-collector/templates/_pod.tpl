@@ -21,7 +21,7 @@ containers:
     image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     ports:
-      - name: liveness
+      - name: health
         containerPort: 13133
         protocal: TCP 
       {{- range $key, $port := .Values.ports }}
