@@ -163,7 +163,7 @@ receivers:
         output: extract_metadata_from_filepath
         timestamp:
           parse_from: time
-          layout: '%Y-%m-%dT%H:%M:%S.%NZ'
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
       {{- end }}
       # Extract metadata from file path
       - type: regex_parser
