@@ -23,7 +23,7 @@ containers:
     ports:
       - name: health
         containerPort: 13133
-        protocal: TCP 
+        protocol: TCP 
       {{- range $key, $port := .Values.ports }}
       {{- if $port.enabled }}
       - name: {{ $key }}
