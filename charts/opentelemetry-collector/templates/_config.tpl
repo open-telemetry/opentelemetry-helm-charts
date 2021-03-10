@@ -128,7 +128,7 @@ service:
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
-    {{- if .Values.agentCollector.containerLogs.includeAgentLogs }}
+    {{- if not .Values.agentCollector.containerLogs.includeAgentLogs }}
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}-agent-*_*/{{ .Chart.Name }}/*.log ]
     {{- end }}
     start_at: beginning
