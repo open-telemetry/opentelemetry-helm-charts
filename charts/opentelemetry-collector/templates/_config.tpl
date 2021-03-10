@@ -191,12 +191,12 @@ receivers:
           - remove: run_id
           - remove: uid
       # Enrich log with k8s metadata
-      - type: k8s_metadata_decorator
-        id: k8s-metadata-enrichment
-        namespace_field: k8s.namespace.name
-        pod_name_field: k8s.pod.name
-        cache_ttl: 10m
-        timeout: 10s
+      # - type: k8s_metadata_decorator
+      #   id: k8s-metadata-enrichment
+      #   namespace_field: k8s.namespace.name
+      #   pod_name_field: k8s.pod.name
+      #   cache_ttl: 10m
+      #   timeout: 10s
       # TODO: multiline concatenate per container
       #- type: file
 service:
