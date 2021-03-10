@@ -128,29 +128,25 @@ service:
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
+    {{- if .Values.agentCollector.containerLogs.includeAgentLogs }}
+    exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}-agent-*_*/{{ .Chart.Name }}/*.log ]
+    {{- end }}
     start_at: beginning
     include_file_path: true
     include_file_name: false
     operators:
-      # # Find out which format is used by kubernetes
-      # - type: router
-      #   id: get-format
-      #   routes:
-      #     - output: parser-docker
-      #       expr: '$$record matches "^\\{"'
-      #     - output: parser-crio
-      #       expr: '$$record matches "^[^ Z]+ "'
-      #     - output: parser-containerd
-      #       expr: '$$record matches "^[^ Z]+Z"'
-      # # Parse CRI-O format
-      # - type: regex_parser
-      #   id: parser-crio
-      #   regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) (?P<log>.*)$'
-      #   output: extract_metadata_from_filepath
-      #   timestamp:
-      #     parse_from: time
-      #     layout_type: gotime
-      #     layout: '2006-01-02T15:04:05.000000000-07:00'
+      {{- if eq .Values.agentCollector.containerLogs.containerRunTime "cri-o" }}
+      # Parse CRI-O format
+      - type: regex_parser
+        id: parser-crio
+        regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) (?P<log>.*)$'
+        output: extract_metadata_from_filepath
+        timestamp:
+          parse_from: time
+          layout_type: gotime
+          layout: '2006-01-02T15:04:05.000000000-07:00'
+      {{- end }}
+      {{- if eq .Values.agentCollector.containerLogs.containerRunTime "containerd" }}
       # Parse CRI-Containerd format
       - type: regex_parser
         id: parser-containerd
@@ -159,13 +155,16 @@ receivers:
         timestamp:
           parse_from: time
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-      # # Parse Docker format
-      # - type: json_parser
-      #   id: parser-docker
-      #   output: extract_metadata_from_filepath
-      #   timestamp:
-      #     parse_from: time
-      #     layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      {{- end }}
+      # Parse Docker format
+      {{- if eq .Values.agentCollector.containerLogs.containerRunTime "docker" }}
+      - type: json_parser
+        id: parser-docker
+        output: extract_metadata_from_filepath
+        timestamp:
+          parse_from: time
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      {{- end }}
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
@@ -191,6 +190,15 @@ receivers:
           - remove: pod_name
           - remove: run_id
           - remove: uid
+      # Enrich log with k8s metadata
+      - type: k8s_metadata_decorator
+        id: k8s-metadata-enrichment
+        namespace_field: k8s.namespace.name
+        pod_name_field: k8s.pod.name
+        cache_ttl: 10m
+        timeout: 10s
+      # TODO: multiline concatenate per container
+      #- type: file
 service:
   pipelines:
     logs:
