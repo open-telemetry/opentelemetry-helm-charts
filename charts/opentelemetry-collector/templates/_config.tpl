@@ -163,12 +163,12 @@ receivers:
         output: extract_metadata_from_filepath
         timestamp:
           parse_from: time
-          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+          layout: '%Y-%m-%dT%H:%M:%S.%NZ'
       {{- end }}
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
+        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{32})\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
         parse_from: $$labels.file_path
       # Move out attributes to Attributes
       - type: metadata
