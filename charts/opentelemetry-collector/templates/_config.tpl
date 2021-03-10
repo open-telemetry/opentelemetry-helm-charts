@@ -199,6 +199,8 @@ receivers:
       #   timeout: 10s
       # TODO: multiline concatenate per container
       #- type: file
+processors:
+
 service:
   pipelines:
     logs:
