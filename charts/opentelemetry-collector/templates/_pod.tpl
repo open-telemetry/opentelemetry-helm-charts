@@ -29,9 +29,6 @@ containers:
       - name: {{ $key }}
         containerPort: {{ $port.containerPort }}
         protocol: {{ $port.protocol }}
-        {{- if and $.isAgent $port.hostPort }}
-        hostPort: {{ $port.hostPort }}
-        {{- end }}
       {{- end }}
       {{- end }}
     env:
