@@ -190,15 +190,7 @@ receivers:
           - remove: pod_name
           - remove: run_id
           - remove: uid
-      # Enrich log with k8s metadata
-      # - type: k8s_metadata_decorator
-      #   id: k8s-metadata-enrichment
-      #   namespace_field: k8s.namespace.name
-      #   pod_name_field: k8s.pod.name
-      #   cache_ttl: 10m
-      #   timeout: 10s
-      # TODO: multiline concatenate per container
-      #- type: file
+
 processors:
   k8s_tagger:
     passthrough: false
@@ -213,9 +205,16 @@ processors:
         - namespace
         - node
         - startTime
+      annotations:
+        {{- toYaml .Values.agentCollector.containerLogs.listOfAnnotations | nindent 8 }}
+      labels:
+        {{- toYaml .Values.agentCollector.containerLogs.listOfLabels | nindent 8 }}
+        
+    pod_association:
+      - from: resource_attribute
+        name: k8s.pod.uid
     filter:
       node_from_env_var: KUBE_NODE_NAME
-
 exporters:
   {{- toYaml .Values.agentCollector.containerLogs.exporters | nindent 2 }}
 
