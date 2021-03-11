@@ -200,12 +200,28 @@ receivers:
       # TODO: multiline concatenate per container
       #- type: file
 processors:
-
+  k8s_tagger:
+    passthrough: false
+    auth_type: "kubeConfig"
+    extract:
+      metadata:
+        # extract the following well-known metadata fields
+        - podName
+        - podUID
+        - deployment
+        - cluster
+        - namespace
+        - node
+        - startTime
+    filter:
+      node_from_env_var: KUBE_NODE_NAME
 service:
   pipelines:
     logs:
       receivers:
         - filelog
+      processors:
+        - k8s_tagger
       exporters:
         - logging
 {{- end }}
