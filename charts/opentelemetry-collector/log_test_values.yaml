@@ -147,13 +147,40 @@ agentCollector:
     enabled: true
     # Container runtime. One of `docker`, `cri-o`, or `containerd`
     containerRunTime: docker
+    includeAgentLogs: false
+    enrichK8sMetadata: true
+
+    # Exporters for container logs
+    exporters:
+      # Example to send logs to splunk
+      splunk_hec:
+        # Splunk HTTP Event Collector token.
+        token: ""
+        # URL to a Splunk instance to send data to.
+        endpoint: "https://172.31.18.227:8088/services/collector"
+        # Optional Splunk source: https://docs.splunk.com/Splexicon:Source
+        source: "otel"
+        # Optional Splunk source type: https://docs.splunk.com/Splexicon:Sourcetype
+        sourcetype: "otel"
+        # Splunk index, optional name of the Splunk index targeted.
+        index: "k8s_log"
+        # Maximum HTTP connections to use simultaneously when sending data. Defaults to 100.
+        max_connections: 2000
+        # Whether to disable gzip compression over HTTP. Defaults to false.
+        disable_compression: false
+        # HTTP timeout when sending data. Defaults to 10s.
+        timeout: 10s
+        # Whether to skip checking the certificate of the HEC endpoint when sending data over HTTPS. Defaults to false.
+        # For this demo, we use a self-signed certificate on the Splunk docker instance, so this flag is set to true.
+        insecure_skip_verify: true
 
   resources:
     limits:
       cpu: 256m
       memory: 512Mi
 
-  podAnnotations: {}
+  podAnnotations: 
+    hello: log
 
   # Configuration override that will be merged into the agent's default config
   configOverride: {}
