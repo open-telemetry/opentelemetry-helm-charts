@@ -172,7 +172,7 @@ receivers:
         parse_from: $$labels.file_path
       # Move out attributes to Attributes
       - type: metadata
-        labels:
+        attributes:
           stream: 'EXPR($.stream)'
           k8s.container.name: 'EXPR($.container_name)'
           k8s.namespace.name: 'EXPR($.namespace)'
@@ -193,29 +193,29 @@ receivers:
           - remove: run_id
           - remove: uid
 
-# processors:
-#   k8s_tagger:
-#     passthrough: false
-#     auth_type: "kubeConfig"
-#     pod_association:
-#       - from: resource_attribute
-#         name: k8s.pod.uid
-#     extract:
-#       metadata:
-#         # extract the following well-known metadata fields
-#         - podName
-#         - podUID
-#         - deployment
-#         - cluster
-#         - namespace
-#         - node
-#         - startTime
-#       annotations:
-#         {{- toYaml .Values.agentCollector.containerLogs.listOfAnnotations | nindent 8 }}
-#       labels:
-#         {{- toYaml .Values.agentCollector.containerLogs.listOfLabels | nindent 8 }}
-#     filter:
-#       node_from_env_var: KUBE_NODE_NAME
+processors:
+  k8s_tagger:
+    passthrough: false
+    auth_type: "kubeConfig"
+    # pod_association:
+    #   - from: resource_attribute
+    #     name: k8s.pod.uid
+    extract:
+      metadata:
+        # extract the following well-known metadata fields
+        - podName
+        - podUID
+        - deployment
+        - cluster
+        - namespace
+        - node
+        - startTime
+      annotations:
+        {{- toYaml .Values.agentCollector.containerLogs.listOfAnnotations | nindent 8 }}
+      labels:
+        {{- toYaml .Values.agentCollector.containerLogs.listOfLabels | nindent 8 }}
+    filter:
+      node_from_env_var: KUBE_NODE_NAME
 exporters:
   {{- toYaml .Values.agentCollector.containerLogs.exporters | nindent 2 }}
 
@@ -226,7 +226,7 @@ service:
         - filelog
       processors:
         - batch
-        # - k8s_tagger
+        #- k8s_tagger
       exporters:
         {{- range $key, $exporterData := .Values.agentCollector.containerLogs.exporters }}
         - {{ $key }}
