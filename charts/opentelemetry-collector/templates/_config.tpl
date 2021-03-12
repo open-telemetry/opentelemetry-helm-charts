@@ -169,7 +169,7 @@ receivers:
       - type: regex_parser
         id: extract_metadata_from_filepath
         regex: '^\/var\/log\/pods\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[^\/]+)\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
-        parse_from: $$labels.file_path
+        parse_from: $$attributes.file_path
       # Move out attributes to Attributes
       - type: metadata
         attributes:
@@ -197,9 +197,9 @@ processors:
   k8s_tagger:
     passthrough: false
     auth_type: "kubeConfig"
-    pod_association:
-      - from: resource_attribute
-        name: k8s.pod.uid
+    # pod_association: # TODO: it is not working. 
+    #   - from: resource_attribute
+    #     name: k8s.pod.uid
     extract:
       metadata:
         # extract the following well-known metadata fields
