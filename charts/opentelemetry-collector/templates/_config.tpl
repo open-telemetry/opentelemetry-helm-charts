@@ -192,14 +192,14 @@ receivers:
           - remove: pod_name
           - remove: run_id
           - remove: uid
-
+{{- if .Values.agentCollector.containerLogs.enrichK8sMetadata }}
 processors:
   k8s_tagger:
     passthrough: false
     auth_type: "kubeConfig"
-    # pod_association:
-    #   - from: resource_attribute
-    #     name: k8s.pod.uid
+    pod_association:
+      - from: resource_attribute
+        name: k8s.pod.uid
     extract:
       metadata:
         # extract the following well-known metadata fields
@@ -216,9 +216,9 @@ processors:
         {{- toYaml .Values.agentCollector.containerLogs.listOfLabels | nindent 8 }}
     filter:
       node_from_env_var: KUBE_NODE_NAME
+{{- end }}
 exporters:
   {{- toYaml .Values.agentCollector.containerLogs.exporters | nindent 2 }}
-
 service:
   pipelines:
     logs:
@@ -226,7 +226,9 @@ service:
         - filelog
       processors:
         - batch
-        #- k8s_tagger
+        {{- if .Values.agentCollector.containerLogs.enrichK8sMetadata }}
+        - k8s_tagger
+        {{- end }}
       exporters:
         {{- range $key, $exporterData := .Values.agentCollector.containerLogs.exporters }}
         - {{ $key }}
