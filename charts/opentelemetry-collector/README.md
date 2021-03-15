@@ -42,8 +42,7 @@ By default collector has the following receivers enabled:
 
 - **metrics**: OTLP and prometheus. Prometheus is configured only for scraping collector's own metrics.
 - **traces**: OTLP, zipkin and jaeger (thrift and grpc).
-- **logs**: OTLP and logs from Kubernetes containers (see [Configuration for Kubernetes container logs](#configuration-for-kubernetes-container-logs)
-  below).
+- **logs**: OTLP (to enable container logs, see [Configuration for Kubernetes container logs](#configuration-for-kubernetes-container-logs)).
 
 There are two ways to configure collector pipelines, which can be used together as well.
 
@@ -111,27 +110,55 @@ agentCollector:
 
 ### Configuration for Kubernetes container logs
 
-The collector is preconfigured to receive logs sent to standard output by Kubernetes containers.
+The collector can be used to collect logs sent to standard output by Kubernetes containers.
+This feature is disabled by default. It has the following requirements:
 
-This feature needs agent collector to be deployed, which means it will not work if only standalone collector is enabled.
+- It needs agent collector to be deployed, which means it will not work if only standalone collector is enabled.
+- It requires the [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version
+of the collector image.
 
-The feature can be disabled by setting the `agentCollector.containerLogs.enabled` property to `false`.
-
-The preconfigured container logs pipeline uses `logging` console exporter by default.
-To prevent looping the logs exported from collector back into the logs receiver,
-the default configuration of the receiver excludes logs from the collector containers.
-To change that, replace the exporter on the logs pipeline and remove the exclude on the logs receiver.
-
-Here's an example `values.yaml` file that replaces the default `logging` exporter on the `logs` pipeline
-with a `file` exporter that writes the container logs to `/var/log/container-logs/container-logs.json`.
-It also sets the `exclude` property of `filelog` receiver to empty array, for collector logs not to be excluded.
+To enable this feature, set the  `agentCollector.containerLogs.enabled` property to `true` and replace the collector image.
+Here is an example `values.yaml`:
 
 ```yaml
 agentCollector:
+  containerLogs:
+    enabled: true
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+command:
+  name: otelcontribcol
+```
+
+The way this feature works is it adds a `filelog` receiver on the `logs` pipeline. This receiver is preconfigured
+to read the files where Kubernetes container runtime writes all containers' console output to.
+
+#### :warning: Warning: Risk of looping the exported logs back into the receiver, causing "log explosion"
+
+The container logs pipeline uses the `logging` console exporter by default.
+Paired with the default `filelog` receiver that receives all containers' console output,
+it is easy to accidentally feed the exported logs back into the receiver.
+
+To prevent this, the default configuration of the receiver excludes logs from the collector's containers.
+
+If you want to include the collector's logs, make sure to replace the `logging` exporter
+with an exporter that does not send logs to collector's standard output.
+
+Here's an example `values.yaml` file that replaces the default `logging` exporter on the `logs` pipeline
+with an `otlphttp` exporter that sends the container logs to `https://example.com:55681` endpoint.
+It also clears the `filelog` receiver's `exclude` property, for collector logs to be included in the pipeline.
+
+```yaml
+agentCollector:
+  containerLogs:
+    enabled: true
+
   configOverride:
     exporters:
-      file:
-        path: /var/log/container-logs/container-logs.json
+      otlphttp:
+        endpoint: https://example.com:55681
     receivers:
       filelog:
         exclude: []
@@ -139,12 +166,13 @@ agentCollector:
       pipelines:
         logs:
           exporters:
-            - file
-  extraHostPathMounts:
-    - name: varlogotclogs
-      hostPath: /var/log/container-logs
-      mountPath: /var/log/container-logs
-      readOnly: false
+            - otlphttp
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+command:
+  name: otelcontribcol
 ```
 
 ### Other configuration options
