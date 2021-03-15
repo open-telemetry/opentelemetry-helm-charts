@@ -130,6 +130,7 @@ service:
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
+    # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
     start_at: beginning
     include_file_path: true
