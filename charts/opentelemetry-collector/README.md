@@ -141,7 +141,10 @@ The container logs pipeline uses the `logging` console exporter by default.
 Paired with the default `filelog` receiver that receives all containers' console output,
 it is easy to accidentally feed the exported logs back into the receiver.
 
-To prevent this, the default configuration of the receiver excludes logs from the collector's containers.
+Also note that using the `--log-level=debug` option for the `logging` exporter causes it to output
+multiple lines per single received log, which when looped, would amplify the logs exponentially.
+
+To prevent the looping, the default configuration of the receiver excludes logs from the collector's containers.
 
 If you want to include the collector's logs, make sure to replace the `logging` exporter
 with an exporter that does not send logs to collector's standard output.
