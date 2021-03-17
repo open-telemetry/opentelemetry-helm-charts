@@ -61,6 +61,14 @@ containers:
         mountPropagation: {{ .mountPropagation }}
         {{- end }}
       {{- end }}
+      {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
+      - name: varlogpods
+        mountPath: /var/log/pods
+        readOnly: true
+      - name: varlibdockercontainers
+        mountPath: /var/lib/docker/containers
+        readOnly: true
+      {{- end }}
 volumes:
   - name: {{ .Chart.Name }}-configmap
     configMap:
@@ -72,6 +80,14 @@ volumes:
   - name: {{ .name }}
     hostPath:
       path: {{ .hostPath }}
+  {{- end }}
+  {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
+  - name: varlogpods
+    hostPath:
+      path: /var/log/pods
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
   {{- end }}
 {{- with .Values.nodeSelector }}
 nodeSelector:
