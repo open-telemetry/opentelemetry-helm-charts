@@ -2,27 +2,28 @@
 Default memory limiter configuration for OpenTelemetry Collector based on k8s resource limits.
 */}}
 {{- define "opentelemetry-collector.memoryLimiter" -}}
-processors:
-  memory_limiter:
-    # check_interval is the time between measurements of memory usage.
-    check_interval: 5s
+# check_interval is the time between measurements of memory usage.
+check_interval: 5s
 
-    # By default limit_mib is set to 80% of ".Values.resources.limits.memory"
-    limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources.limits.memory }}
+# By default limit_mib is set to 80% of ".Values.resources.limits.memory"
+limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources.limits.memory }}
 
-    # By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
-    spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
+# By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
+spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
 
-    # By default ballast_size_mib is set to 40% of ".Values.resources.limits.memory"
-    ballast_size_mib: {{ include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
+# By default ballast_size_mib is set to 40% of ".Values.resources.limits.memory"
+ballast_size_mib: {{ include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
 {{- end }}
 
 {{/*
 Merge user supplied top-level (not particular to standalone or agent) config into memory limiter config.
 */}}
 {{- define "opentelemetry-collector.baseConfig" -}}
-{{- $config := include "opentelemetry-collector.memoryLimiter" . | fromYaml  -}}
-{{- .Values.config | mustMergeOverwrite $config  | toYaml }}
+{{- $processorsConfig := get .Values.config "processors" }}
+{{- if not $processorsConfig.memory_limiter }}
+{{- $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
+{{- end }}
+{{- .Values.config | toYaml }}
 {{- end }}
 
 {{/*
