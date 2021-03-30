@@ -61,6 +61,10 @@ containers:
         mountPropagation: {{ .mountPropagation }}
         {{- end }}
       {{- end }}
+      {{- range .Values.secretMounts }}
+      - name: {{ .name }}
+        mountPath: {{ .path }}
+      {{- end }}
       {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
       - name: varlogpods
         mountPath: /var/log/pods
@@ -80,6 +84,11 @@ volumes:
   - name: {{ .name }}
     hostPath:
       path: {{ .hostPath }}
+  {{- end }}
+  {{- range .Values.secretMounts }}
+  - name: {{ .name }}
+    secret:
+      secretName: {{ .secretName }}
   {{- end }}
   {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
   - name: varlogpods
