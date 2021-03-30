@@ -63,7 +63,11 @@ containers:
       {{- end }}
       {{- range .Values.secretMounts }}
       - name: {{ .name }}
-        mountPath: {{ .path }}
+        mountPath: {{ .mountPath }}
+        readOnly: {{ .readOnly }}
+        {{- if .subPath }}
+        subPath: {{ .subPath }}
+        {{- end }}
       {{- end }}
       {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
       - name: varlogpods
