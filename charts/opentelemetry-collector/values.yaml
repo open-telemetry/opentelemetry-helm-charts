@@ -110,25 +110,21 @@ ports:
     enabled: true
     containerPort: 4317
     servicePort: 4317
-    hostPort: 4317
     protocol: TCP
   jaeger-thrift:
     enabled: true
     containerPort: 14268
     servicePort: 14268
-    hostPort: 14268
     protocol: TCP
   jaeger-grpc:
     enabled: true
     containerPort: 14250
     servicePort: 14250
-    hostPort: 14250
     protocol: TCP
   zipkin:
     enabled: true
     containerPort: 9411
     servicePort: 9411
-    hostPort: 9411
     protocol: TCP
 
 # Configuration for agent OpenTelemetry Collector daemonset, enabled by default
@@ -137,6 +133,17 @@ agentCollector:
 
   containerLogs:
     enabled: false
+    # Container runtime. One of `docker`, `cri-o`, or `containerd`
+    containerRunTime: ""
+    includeAgentLogs: false
+    enrichK8sMetadata: true
+    listOfAnnotations: []
+    listOfLabels: []
+
+    # Exporters for container logs.
+    # https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter
+    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter
+    exporters:
 
   resources:
     limits:

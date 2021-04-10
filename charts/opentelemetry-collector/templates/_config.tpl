@@ -131,22 +131,15 @@ service:
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
+    {{- if not .Values.agentCollector.containerLogs.includeAgentLogs }}
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
+    {{- end }}
     start_at: beginning
     include_file_path: true
     include_file_name: false
     operators:
-      # Find out which format is used by kubernetes
-      - type: router
-        id: get-format
-        routes:
-          - output: parser-docker
-            expr: '$$record matches "^\\{"'
-          - output: parser-crio
-            expr: '$$record matches "^[^ Z]+ "'
-          - output: parser-containerd
-            expr: '$$record matches "^[^ Z]+Z"'
+      {{- if eq .Values.agentCollector.containerLogs.containerRunTime "cri-o" }}
       # Parse CRI-O format
       - type: regex_parser
         id: parser-crio
@@ -156,6 +149,8 @@ receivers:
           parse_from: time
           layout_type: gotime
           layout: '2006-01-02T15:04:05.000000000-07:00'
+      {{- end }}
+      {{- if eq .Values.agentCollector.containerLogs.containerRunTime "containerd" }}
       # Parse CRI-Containerd format
       - type: regex_parser
         id: parser-containerd
@@ -164,27 +159,30 @@ receivers:
         timestamp:
           parse_from: time
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      {{- end }}
       # Parse Docker format
+      {{- if eq .Values.agentCollector.containerLogs.containerRunTime "docker" }}
       - type: json_parser
         id: parser-docker
         output: extract_metadata_from_filepath
         timestamp:
           parse_from: time
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      {{- end }}
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
+        regex: '^\/var\/log\/pods\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[^\/]+)\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
         parse_from: $$attributes.file_path
       # Move out attributes to Attributes
       - type: metadata
-        labels:
+        resource:
+          k8s.pod.uid: 'EXPR($.uid)'
+          run_id: 'EXPR($.run_id)'
           stream: 'EXPR($.stream)'
           k8s.container.name: 'EXPR($.container_name)'
           k8s.namespace.name: 'EXPR($.namespace)'
           k8s.pod.name: 'EXPR($.pod_name)'
-          run_id: 'EXPR($.run_id)'
-          k8s.pod.uid: 'EXPR($.uid)'
       # Clean up log record
       - type: restructure
         id: clean-up-log-record
@@ -192,11 +190,43 @@ receivers:
           - move:
               from: log
               to: $
+{{- if .Values.agentCollector.containerLogs.enrichK8sMetadata }}
+processors:
+  k8s_tagger:
+    passthrough: false
+    auth_type: "kubeConfig"
+    pod_association:
+      - from: resource_attribute
+        name: k8s.pod.uid
+    extract:
+      metadata:
+        - deployment
+        - cluster
+        - namespace
+        - node
+        - startTime
+      annotations:
+        {{- toYaml .Values.agentCollector.containerLogs.listOfAnnotations | nindent 8 }}
+      labels:
+        {{- toYaml .Values.agentCollector.containerLogs.listOfLabels | nindent 8 }}
+    filter:
+      node_from_env_var: KUBE_NODE_NAME
+{{- end }}
+exporters:
+  {{- toYaml .Values.agentCollector.containerLogs.exporters | nindent 2 }}
 service:
   pipelines:
     logs:
       receivers:
         - filelog
-        - otlp
+      processors:
+        - batch
+        {{- if .Values.agentCollector.containerLogs.enrichK8sMetadata }}
+        - k8s_tagger
+        {{- end }}
+      exporters:
+        {{- range $key, $exporterData := .Values.agentCollector.containerLogs.exporters }}
+        - {{ $key }}
+        {{- end }}
 {{- end }}
 {{- end }}
