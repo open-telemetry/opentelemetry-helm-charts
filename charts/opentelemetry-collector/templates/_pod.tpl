@@ -53,6 +53,14 @@ containers:
     volumeMounts:
       - mountPath: /conf
         name: {{ .Chart.Name }}-configmap
+      {{- range .Values.extraConfigMapMounts }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+        readOnly: {{ .readOnly }}
+        {{- if .subPath }}
+        subPath: {{ .subPath }}
+        {{- end }}
+      {{- end }}
       {{- range .Values.extraHostPathMounts }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
@@ -84,6 +92,11 @@ volumes:
       items:
         - key: relay
           path: relay.yaml
+  {{- range .Values.extraConfigMapMounts }}
+  - name: {{ .name }}
+    configMap:
+      name: {{ .configMap }}
+  {{- end }}
   {{- range .Values.extraHostPathMounts }}
   - name: {{ .name }}
     hostPath:
