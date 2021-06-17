@@ -85,6 +85,9 @@ containers:
         mountPath: /var/lib/docker/containers
         readOnly: true
       {{- end }}
+{{- if .Values.priorityClassName }}
+priorityClassName: {{ .Values.priorityClassName | quote }}
+{{- end }}
 volumes:
   - name: {{ .Chart.Name }}-configmap
     configMap:
