@@ -8,8 +8,12 @@ spec:
     - {{ template "opentelemetry-operator.name" . }}-webhook-service.{{ template "opentelemetry-operator.namespace" . }}.svc
     - {{ template "opentelemetry-operator.name" . }}-webhook-service.{{ template "opentelemetry-operator.namespace" . }}.svc.cluster.local
   issuerRef:
+    {{- if .Values.admissionWebhooks.certManager.issuerRef }}
+    {{- toYaml .Values.prometheusOperator.admissionWebhooks.certManager.issuerRef | nindent 4 }}
+    {{- else }}
     kind: Issuer
     name: {{ template "opentelemetry-operator.name" . }}-selfsigned-issuer
+    {{- end }}
   secretName: {{ template "opentelemetry-operator.name" . }}-controller-manager-service-cert
   subject:
     organizationalUnits:
