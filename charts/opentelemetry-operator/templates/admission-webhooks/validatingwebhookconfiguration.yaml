@@ -1,0 +1,31 @@
+{{- if and .Values.admissionWebhooks.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) | quote }}
+  name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vopentelemetrycollector.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+          - DELETE
+        resources:
+          - opentelemetrycollectors
+    sideEffects: None
+{{- end }}
