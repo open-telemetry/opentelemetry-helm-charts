@@ -1,0 +1,32 @@
+{{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.patch.enabled (not .Values.admissionWebhooks.certManager.enabled) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "opentelemetry-operator.name" . }}-cert-patch
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ template "opentelemetry-operator.name" . }}-cert-patch
+{{- with .Values.admissionWebhooks.patch.podAnnotations }}
+      annotations:
+{{ toYaml .  | indent 8 }}
+{{- end }}
+    spec:
+      containers:
+        - name: patch
+          image: {{ .Values.admissionWebhooks.patch.image.repository }}:{{ .Values.admissionWebhooks.patch.image.tag }}
+          args:
+            - patch
+            - --webhook-name={{ template "opentelemetry-operator.name" . }}-webhook-configuration
+            - --namespace={{ template "opentelemetry-operator.namespace" . }}
+            - --secret-name={{ template "opentelemetry-operator.name" . }}-controller-manager-service-cert
+            - --patch-failure-policy={{ .Values.admissionWebhooks.failurePolicy }}
+          resources:
+{{ toYaml .Values.admissionWebhooks.patch.resources | indent 12 }}
+      restartPolicy: OnFailure
+      serviceAccountName: {{ template "opentelemetry-operator.name" . }}-admission
+{{- end }}

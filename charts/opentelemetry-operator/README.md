@@ -54,6 +54,7 @@ $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
 
 ## Upgrade Chart
 
+### TODO: call out version issues
 ```console
 $ helm upgrade my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
@@ -154,7 +155,7 @@ EOF
 ```
 
 ### StatefulSet Mode
-
+### TODO: call out Prometheus PRW scraping
 If you want your collector to have stable persistent identities or storage, you should choose StatefulSet.
 Take Prometheus metrics for example, if you use above two approaches, the metrics collected from the receiver will
 be stored locally by default, which is ephemeral. However, StatefulSet allows you to configure a persistent storage
@@ -187,17 +188,19 @@ spec:
   replicas: 3
   config: |
     receivers:
-      jaeger:
+      jaeger: #TODO: prometheus receiver
+        # kube_sd_configs:
+          # role: pod/cluster
         protocols:
           grpc:
     processors:
 
     exporters:
-      logging:
+      logging: #TODO: PRW exporter
 
     service:
       pipelines:
-        traces:
+        traces: # metrics
           receivers: [jaeger]
           processors: []
           exporters: [logging]
@@ -257,3 +260,7 @@ spec:
         protocol: TCP
 EOF
 ```
+
+### TODO Limitations
+## dependencies
+## cert-manager

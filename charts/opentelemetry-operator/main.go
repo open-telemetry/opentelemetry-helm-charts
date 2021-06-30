@@ -29,7 +29,7 @@ type K8sObject struct {
 // https://github.com/open-telemetry/opentelemetry-operator.
 // Then, it will automatically update the OpenTelemetry Collector CRD YAML file, which is the only CRD at this point.
 // At last, it will retrieve the latest image tag from the OTEL Operator manifest. But it won't update values.yaml automatically since
-// this will damage the comments and the configuration order of the values.yaml. Maintainers need to update the valus.yaml manually.
+// this will damage the comments and the configuration order of the values.yaml. Maintainers need to update the values.yaml manually.
 func main() {
 	// Get the OTEL Operator manifest data.
 	resp, err := http.Get(operatorManifestURL)
@@ -59,7 +59,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println("The OpenTelemetry Collector CRD update finished. It's update to date now.")
+			fmt.Println("The OpenTelemetry Collector CRD update finished. It's up-to-date now.")
 		case "Deployment":
 			// Retrieve the latest image repository and tag of the two container images.
 			managerImage := strings.Split(curObject.Spec["template"].(map[string]interface{})["spec"].

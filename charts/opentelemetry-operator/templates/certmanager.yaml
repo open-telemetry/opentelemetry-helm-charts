@@ -1,3 +1,4 @@
+{{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -18,6 +19,7 @@ spec:
   subject:
     organizationalUnits:
       - {{ template "opentelemetry-operator.name" . }}
+{{- if not .Values.admissionWebhooks.certManager.issuerRef }}
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
@@ -26,3 +28,5 @@ metadata:
   namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   selfSigned: {}
+{{- end }}
+{{- end }}
