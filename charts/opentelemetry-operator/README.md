@@ -11,15 +11,44 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 
 ### TLS Certificate Requirement
 
-In kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
-certificate that the apiserver is configured to trust. There are three ways for you to generated the required TLS certificate.
+In Kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
+certificate that the API server is configured to trust. There are three ways for you to generated the required TLS certificate.
 
   - The easiest and default method is to install the cert-manager and keeps `admissionWebhooks.certManager.enabled` to `true`.
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for the instruction._
   - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Noted that this method also requires the installation of cert-manager.
-  - The last way is to manually modify the secret where stores the TLS certificate. The name of the secret is `opentelemetry-operator-controller-manager-service-cert` and it is in
-    the namespace where you install the Helm chart (`opentelemetry-operator-system` if you follow our guide). TODO: kubectl create secret tls
+  - The last way is to manually modify the secret where the TLS certificate is stored. You can either do this before installation
+    or after.
+    - To do this before installation, you don't have to install cert-manager.
+      - Create namespace for the OTEL Operator and the secret
+        ```console
+        $ kubectl create namespace opentelemetry-operator-system
+        ```
+      - Config the TLS certificate
+        ```console
+        $ kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: opentelemetry-operator-controller-manager-service-cert
+            namespace: opentelemetry-operator-system
+          type: kubernetes.io/tls
+          data:
+            tls.crt: |
+                # your signed cert
+            tls.key: |
+                # your private key
+        ```
+        You can also do this using `kubectl create` command.
+        ```console
+        $ kubectl create secret tls opentelemetry-operator-controller-manager-service-cert \
+            --cert=path/to/cert/file \
+            --key=path/to/key/file \
+            -n opentelemetry-operator-system
+        ```
+    - To do this after installation, you will have to install cert-manager first. Once the Operator is ready, you can override
+      the secret by putting your certificate there. What you need to do is the same as the second step above.
 
 ## Add Repository
 
@@ -63,10 +92,12 @@ $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
 
 ## Upgrade Chart
 
-### TODO: call out version issues
 ```console
 $ helm upgrade my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
+
+Please note that by default, the chart will be upgraded to the latest version. If you want to upgrade to a specific version,
+use `--version` flag.
 
 With Helm v3.0, CRDs created by this chart are not updated by default and should be manually updated.
 Consult also the [Helm Documentation on CRDs](https://helm.sh/docs/chart_best_practices/custom_resource_definitions).
@@ -164,7 +195,6 @@ EOF
 ```
 
 ### StatefulSet Mode
-### TODO: call out Prometheus PRW scraping
 If you want your collector to have stable persistent identities or storage, you should choose StatefulSet.
 Take Prometheus metrics for example, if you use above two approaches, the metrics collected from the receiver will
 be stored locally by default, which is ephemeral. However, StatefulSet allows you to configure a persistent storage
@@ -197,7 +227,7 @@ spec:
   replicas: 3
   config: |
     receivers:
-      jaeger: #TODO: prometheus receiver
+      jaeger:
         # kube_sd_configs:
           # role: pod/cluster
         protocols:
@@ -205,7 +235,7 @@ spec:
     processors:
 
     exporters:
-      logging: #TODO: PRW exporter
+      logging:
 
     service:
       pipelines:
@@ -269,7 +299,3 @@ spec:
         protocol: TCP
 EOF
 ```
-
-### TODO Limitations
-## dependencies
-## cert-manager
