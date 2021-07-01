@@ -8,9 +8,18 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 
 - Kubernetes 1.19+
 - Helm 3.0+
-- cert-manager
-  - To install OpenTelemetry Operator in Kubernetes cluster, you must have cert-manager installed first.
-    _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for the instruction._
+
+### TLS Certificate Requirement
+
+In kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
+certificate that the apiserver is configured to trust. There are three ways for you to generated the required TLS certificate.
+
+  - The easiest and default method is to install the cert-manager and keeps `admissionWebhooks.certManager.enabled` to `true`.
+    In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for the instruction._
+  - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
+    to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Noted that this method also requires the installation of cert-manager.
+  - The last way is to manually modify the secret where stores the TLS certificate. The name of the secret is `opentelemetry-operator-controller-manager-service-cert` and it is in
+    the namespace where you install the Helm chart (`opentelemetry-operator-system` if you follow our guide). TODO: kubectl create secret tls
 
 ## Add Repository
 
