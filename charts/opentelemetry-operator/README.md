@@ -12,7 +12,7 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 ### TLS Certificate Requirement
 
 In Kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
-certificate that the API server is configured to trust. There are three ways for you to generated the required TLS certificate.
+certificate that the API server is configured to trust. There are three ways for you to generate the required TLS certificate.
 
   - The easiest and default method is to install the cert-manager and keeps `admissionWebhooks.certManager.enabled` to `true`.
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for the instruction._
@@ -20,7 +20,7 @@ certificate that the API server is configured to trust. There are three ways for
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Noted that this method also requires the installation of cert-manager.
   - The last way is to manually modify the secret where the TLS certificate is stored. You can either do this before installation
     or after.
-    - To do this before installation, you don't have to install cert-manager.
+    - To do this before installation, you don't have to install cert-manager. Please set `admissionWebhooks.certManager.enabled` to `false`.
       - Create namespace for the OTEL Operator and the secret
         ```console
         $ kubectl create namespace opentelemetry-operator-system
@@ -106,7 +106,7 @@ _See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documen
 
 ## Configuration
 
-The folloing command will show all the configurable options with detailed comments.
+The following command will show all the configurable options with detailed comments.
 
 ```console
 $ helm show values open-telemetry/opentelemetry-operator
