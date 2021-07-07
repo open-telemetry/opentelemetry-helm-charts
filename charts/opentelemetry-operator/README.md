@@ -39,6 +39,7 @@ certificate that the API server is configured to trust. There are three ways for
                 # your signed cert
             tls.key: |
                 # your private key
+          EOF
         ```
         You can also do this using `kubectl create` command.
         ```console
@@ -228,8 +229,6 @@ spec:
   config: |
     receivers:
       jaeger:
-        # kube_sd_configs:
-          # role: pod/cluster
         protocols:
           grpc:
     processors:
@@ -239,11 +238,11 @@ spec:
 
     service:
       pipelines:
-        traces: # metrics
+        traces:
           receivers: [jaeger]
           processors: []
           exporters: [logging]
-  EOF
+EOF
 ```
 
 ### Sidecar Mode
