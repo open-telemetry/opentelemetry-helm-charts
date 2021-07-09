@@ -251,8 +251,9 @@ This collector instance will work on the container level and no new pods or othe
 which is perfect to keep your Kubernetes cluster clean. Moreover, you can also use the sidecar mode when you want
 to use a different collect/export strategy, which just suits this application.
 
-You can deploy the sidecar mode by setting the pod annotation `sidecar.opentelemetry.io/inject` to either `true`,
-or to the name of a concrete `OpenTelemetryCollector` from the same namespace.
+You can deploy the sidecar mode by setting the pod annotation `sidecar.opentelemetry.io/inject` to `true` if there is only one
+collector with mode `sidecar` in the namespace. Otherwise, you will need to set that value to the name of a concrete
+`OpenTelemetryCollector` pod from the namespace.
 
 _See the [OpenTelemetry Operator github repository](https://github.com/open-telemetry/opentelemetry-operator) for more detailed information._
 
