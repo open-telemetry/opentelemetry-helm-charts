@@ -4,6 +4,9 @@ The Helm chart installs [OpenTelemetry Operator](https://github.com/open-telemet
 The OpenTelemetry Operator is an implementation of a [Kubernetes Operator](https://www.openshift.com/learn/topics/operators).
 At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) as the only managed component.
 
+Note that the OpenTelemetry Operator chart will be installed in the namespace `opentelemetry-operator-system` automatically. You don't
+need to specify or create any namespace during installation.
+
 ## Prerequisites
 
 - Kubernetes 1.19+
@@ -21,7 +24,7 @@ certificate that the API server is configured to trust. There are three ways for
   - The last way is to manually modify the secret where the TLS certificate is stored. You can either do this before installation
     or after.
     - To do this before installation, you don't have to install cert-manager. Please set `admissionWebhooks.certManager.enabled` to `false`.
-      - Create namespace for the OTEL Operator and the secret
+      - Create the namespace for the OTEL Operator and the secret
         ```console
         $ kubectl create namespace opentelemetry-operator-system
         ```
@@ -62,13 +65,11 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ## Install Chart
 
-The following command installs the chart with the release name my-opentelemetry-operator in the namespace opentelemetry-operator-system.
-
+The following command installs the chart with the release name `my-opentelemetry-operator` in the namespace `opentelemetry-operator-system`.
+You don't need to provide `--namespace` option here.
 ```console
 $ helm install \
-  my-opentelemetry-operator open-telemetry/opentelemetry-operator \
-  --namespace opentelemetry-operator-system \
-  --create-namespace
+  my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
@@ -89,6 +90,12 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 
 ```console
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
+```
+
+The namespace created should also be removed manually:
+
+```console
+$ kubectl delete ns opentelemetry-operator-system
 ```
 
 ## Upgrade Chart

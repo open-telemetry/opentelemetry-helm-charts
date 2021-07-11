@@ -12,7 +12,7 @@ import (
 
 const (
 	operatorManifestURL = "https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml"
-	collectorCRDPath = "./crds/crd-opentelemetrycollector.yaml"
+	collectorCRDPath = "../crds/crd-opentelemetrycollector.yaml"
 )
 
 // K8sObject describes the values a Kubernetes object typically has.
