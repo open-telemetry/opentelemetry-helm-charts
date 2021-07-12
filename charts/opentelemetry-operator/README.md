@@ -4,9 +4,6 @@ The Helm chart installs [OpenTelemetry Operator](https://github.com/open-telemet
 The OpenTelemetry Operator is an implementation of a [Kubernetes Operator](https://www.openshift.com/learn/topics/operators).
 At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) as the only managed component.
 
-Note that the OpenTelemetry Operator chart will be installed in the namespace `opentelemetry-operator-system` automatically. You don't
-need to specify or create any namespace during installation.
-
 ## Prerequisites
 
 - Kubernetes 1.19+
@@ -20,7 +17,7 @@ certificate that the API server is configured to trust. There are three ways for
   - The easiest and default method is to install the cert-manager and keeps `admissionWebhooks.certManager.enabled` to `true`.
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for the instruction._
   - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
-    to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Noted that this method also requires the installation of cert-manager.
+    to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
   - The last way is to manually modify the secret where the TLS certificate is stored. You can either do this before installation
     or after.
     - To do this before installation, you don't have to install cert-manager. Please set `admissionWebhooks.certManager.enabled` to `false`.
@@ -65,12 +62,25 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ## Install Chart
 
-The following command installs the chart with the release name `my-opentelemetry-operator` in the namespace `opentelemetry-operator-system`.
-You don't need to provide `--namespace` option here.
+If you didn't create the namespace `opentelemetry-operator-system` before (steps in the third method to generate the TLS cert),
+the OTEL Operator chart will be installed in the namespace automatically. Installation command example is as below.
+
 ```console
 $ helm install \
   my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
+
+However, if you create the namespace and place the TLS cert in the desired secret, you will need to set `createNamespace.enabled`
+to `false` to make sure Helm won't try to create an existing namespace, which would cause an error. Installation command example is as below.
+
+```console
+$ helm install \
+  my-opentelemetry-operator open-telemetry/opentelemetry-operator \
+  --set createNamespace.enabled=false
+```
+
+Note that `--namespace` option here won't affect on where the OTEL Operator and other resources this chart contains are installed.
+It will only affect on where the Helm chart release info is stored, which is `default` namespace by default.
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
 
@@ -92,7 +102,8 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
 ```
 
-The namespace created should also be removed manually:
+If the namespace is created by Helm instead of yourself, please skip this step. If you created the namespace and set
+`createNamespace.enabled` to `false`, you should remove it manually:
 
 ```console
 $ kubectl delete ns opentelemetry-operator-system

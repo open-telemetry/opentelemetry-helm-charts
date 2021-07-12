@@ -21,7 +21,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Allow the release namespace to be overridden for multi-namespace deployments in combined charts
+Define the namespace where the resources in the chart will be installed.
 */}}
 {{- define "opentelemetry-operator.namespace" -}}
   "opentelemetry-operator-system"
