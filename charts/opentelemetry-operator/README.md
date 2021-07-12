@@ -70,13 +70,13 @@ $ helm install \
   my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
-However, if you create the namespace and place the TLS cert in the desired secret, you will need to set `createNamespace.enabled`
+However, if you create the namespace and place the TLS cert in the desired secret, you will need to set `createNamespace`
 to `false` to make sure Helm won't try to create an existing namespace, which would cause an error. Installation command example is as below.
 
 ```console
 $ helm install \
   my-opentelemetry-operator open-telemetry/opentelemetry-operator \
-  --set createNamespace.enabled=false
+  --set createNamespace=false
 ```
 
 Note that `--namespace` option here won't affect on where the OTEL Operator and other resources this chart contains are installed.
@@ -103,7 +103,7 @@ $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
 ```
 
 If the namespace is created by Helm instead of yourself, please skip this step. If you created the namespace and set
-`createNamespace.enabled` to `false`, you should remove it manually:
+`createNamespace` to `false`, you should remove it manually:
 
 ```console
 $ kubectl delete ns opentelemetry-operator-system
