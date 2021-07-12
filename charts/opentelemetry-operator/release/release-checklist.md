@@ -7,9 +7,7 @@
 # Checklist
 
 - [ ] Change directory to `opentelemetry-helm-charts/charts/opentelemetry-operator/release`. `cd ./charts/opentelemetry-operator/release` should be helpful.
-- [ ] Run the command `go run main.go` to update the OTEL Collector CRD and get the latest tags of the two images which
-  the Operator will be using. Then update the corresponding values in the `values.yaml` (e.g., change the `manager.image.tag` value to `"v0.29.0"` or latest version).
-- [ ] Update `appVersion` value in the `Chart.yaml` if a new version of `manager.image.tag` is released
+- [ ] Run the command `go run main.go` to update the OTEL Collector CRD, `values.yaml` and `Chart.yaml`
 - [ ] Download the latest OTEL Operator manifest from this [link](https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml).
   As you can see, there are several YAML files in this manifest separated by `---`.
 - [ ] Starting from the third YAML file, compare the YAML files in the manifest and the ones in the `charts/opentelemetry-operator/templates` directory.
