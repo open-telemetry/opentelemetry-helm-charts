@@ -1,0 +1,32 @@
+{{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled }}
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: {{ template "opentelemetry-operator.name" . }}-serving-cert
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
+spec:
+  dnsNames:
+    - {{ template "opentelemetry-operator.name" . }}-webhook-service.{{ template "opentelemetry-operator.namespace" . }}.svc
+    - {{ template "opentelemetry-operator.name" . }}-webhook-service.{{ template "opentelemetry-operator.namespace" . }}.svc.cluster.local
+  issuerRef:
+    {{- if .Values.admissionWebhooks.certManager.issuerRef }}
+    {{- toYaml .Values.prometheusOperator.admissionWebhooks.certManager.issuerRef | nindent 4 }}
+    {{- else }}
+    kind: Issuer
+    name: {{ template "opentelemetry-operator.name" . }}-selfsigned-issuer
+    {{- end }}
+  secretName: {{ template "opentelemetry-operator.name" . }}-controller-manager-service-cert
+  subject:
+    organizationalUnits:
+      - {{ template "opentelemetry-operator.name" . }}
+{{- if not .Values.admissionWebhooks.certManager.issuerRef }}
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: {{ template "opentelemetry-operator.name" . }}-selfsigned-issuer
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
+spec:
+  selfSigned: {}
+{{- end }}
+{{- end }}

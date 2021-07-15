@@ -1,0 +1,31 @@
+{{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "opentelemetry-operator.name" . }}-cert-manager-test-connection"
+  labels:
+    control-plane: controller-manager
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      env:
+        - name: CERT_MANAGER_CLUSTERIP
+          value: "cert-manager-webhook"
+        - name: CERT_MANAGER_PORT
+          value: "443"
+      command:
+        - sh
+        - -c
+        # The following shell script tests if the cert-manager service is up. If the service is up, when we try
+        # to wget its exposed port, we will get an HTTP error 400.
+        - |
+          wget_output=$(wget -q "$CERT_MANAGER_CLUSTERIP:$CERT_MANAGER_PORT")
+          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
+          then exit 0
+          else exit 1
+          fi
+  restartPolicy: Never
+{{- end }}

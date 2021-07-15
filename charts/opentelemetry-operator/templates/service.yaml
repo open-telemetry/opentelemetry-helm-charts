@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: {{ template "opentelemetry-operator.name" . }}-controller-manager-metrics-service
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
+spec:
+  ports:
+    - name: https
+      port: 8443
+      targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
+spec:
+  ports:
+    - port: 443
+      targetPort: 9443
+  selector:
+    control-plane: controller-manager
