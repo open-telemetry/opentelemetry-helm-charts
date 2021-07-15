@@ -6,7 +6,7 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 
 ## Prerequisites
 
-- Kubernetes 1.19+
+- Kubernetes 1.19+ is required for OpenTelemetry Operator installation
 - Helm 3.0+
 
 ### TLS Certificate Requirement
@@ -18,41 +18,33 @@ certificate that the API server is configured to trust. There are three ways for
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
-  - The last way is to manually modify the secret where the TLS certificate is stored. You can either do this before installation
-    or after.
-    - To do this before installation, you don't have to install cert-manager. Please set `admissionWebhooks.certManager.enabled` to `false`.
-      - Create the namespace for the OpenTelemetry Operator and the secret
-        ```console
-        $ kubectl create namespace opentelemetry-operator-system
-        ```
-      - Config the TLS certificate using `kubectl create` command
-        ```console
-        $ kubectl create secret tls opentelemetry-operator-controller-manager-service-cert \
-            --cert=path/to/cert/file \
-            --key=path/to/key/file \
-            -n opentelemetry-operator-system
-        ```
-        You can also do this by applying the secret configuration.
-        ```console
-        $ kubectl apply -f - <<EOF
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: opentelemetry-operator-controller-manager-service-cert
-            namespace: opentelemetry-operator-system
-          type: kubernetes.io/tls
-          data:
-            tls.crt: |
-                # your signed cert
-            tls.key: |
-                # your private key
-          EOF
-        ```
-    - To do this after installation, you will have to install `cert-manager` first. Once the Operator is ready, you can use
-      `kubectl edit` command to edit the `Certificate` resource to provide your own Issuer/ClusterIssuer by replacing the
-      value of `issuerRef`:
+  - The last way is to manually modify the secret where the TLS certificate is stored. Make sure you set `admissionWebhooks.certManager.enabled` to `false` first.
+    - Create the namespace for the OpenTelemetry Operator and the secret
       ```console
-      $ kubectl edit cert opentelemetry-operator-serving-cert -n opentelemetry-operator-system
+      $ kubectl create namespace opentelemetry-operator-system
+      ```
+    - Config the TLS certificate using `kubectl create` command
+      ```console
+      $ kubectl create secret tls opentelemetry-operator-controller-manager-service-cert \
+          --cert=path/to/cert/file \
+          --key=path/to/key/file \
+          -n opentelemetry-operator-system
+      ```
+      You can also do this by applying the secret configuration.
+      ```console
+      $ kubectl apply -f - <<EOF
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: opentelemetry-operator-controller-manager-service-cert
+        namespace: opentelemetry-operator-system
+      type: kubernetes.io/tls
+      data:
+        tls.crt: |
+            # your signed cert
+        tls.key: |
+            # your private key
+      EOF
       ```
 
 ## Add Repository
@@ -183,7 +175,7 @@ EOF
 
 ### DaemonSet Mode
 
-DaemonSet should satisfy your most basic needs and is the most common method to deploy OpenTelemetry Collector.
+DaemonSet should satisfy your needs if you want the Collector run as an agent in your Kubernetes nodes.
 In this case, every Kubernetes node will have its own Collector copy which would monitor the pods in it.
 
 The following example configuration deploys the Collector as DaemonSet resource. The receiver is Jaeger receiver and
@@ -218,10 +210,13 @@ EOF
 ```
 
 ### StatefulSet Mode
-There are basically two main advantages to deploy the Collector as the StatefulSet:
+There are basically three main advantages to deploy the Collector as the StatefulSet:
 - Predictable names of the Collector instance will be expected \
   If you use above two approaches to deploy the Collector, the pod name of your Collector instance will be unique (its name plus random sequence).
   However, each Pod in a StatefulSet derives its hostname from the name of the StatefulSet and the ordinal of the Pod (my-col-0, my-col-1, my-col-2, etc.).
+- Rescheduling will be arranged when a Collector replica fails \
+  If a Collector pod fails in the StatefulSet, Kubernetes will attempt to reschedule a new pod with the same name to the same node. Kubernetes will also attempt
+  to attach the same sticky identity (e.g., volumes) to the new pod.
 - The load balancer could be configured (under construction) \
   The load balancer will use a HTTP server to expose the scrape targets to a specific endpoint URL, which will be used by the Prometheus receiver to scrape metrics
   data. Additionally, the load balancer will use that discovery information to evenly delegate scraping jobs to the collector instances inside a StatefulSet based on
