@@ -3,7 +3,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) | quote }}
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" (include "opentelemetry-operator.namespace" .) (include "opentelemetry-operator.name" .) }}
   name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:

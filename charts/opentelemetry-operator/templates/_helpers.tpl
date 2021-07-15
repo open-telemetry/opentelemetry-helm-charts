@@ -24,5 +24,5 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Define the namespace where the resources in the chart will be installed.
 */}}
 {{- define "opentelemetry-operator.namespace" -}}
-  "opentelemetry-operator-system"
+opentelemetry-operator-system
 {{- end -}}

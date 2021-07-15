@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"gopkg.in/yaml.v3"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -39,6 +39,7 @@ func main() {
 
 	// Parse the manifest.
 	dc := yaml.NewDecoder(resp.Body)
+
 	for {
 		var curObject K8sObject
 		err := dc.Decode(&curObject)
@@ -48,6 +49,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
 		switch curObject.Kind {
 		case "CustomResourceDefinition":
 			// Update the OTEL Collector CRD YAML file.
@@ -59,13 +61,16 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println("The OpenTelemetry Collector CRD update finished. It's up-to-date now.")
+			log.Println("The OpenTelemetry Collector CRD update finished. It's up-to-date now.")
+
 		case "Deployment":
 			// Retrieve the latest image repository and tag of the two container images.
 			managerImage := strings.Split(curObject.Spec["template"].(map[string]interface{})["spec"].
 				(map[string]interface{})["containers"].([]interface{})[0].(map[string]interface{})["image"].(string), ":")
 			kubeRBACProxyImage := strings.Split(curObject.Spec["template"].(map[string]interface{})["spec"].
 				(map[string]interface{})["containers"].([]interface{})[1].(map[string]interface{})["image"].(string), ":")
+
+			// Replace the image tags in values.yaml and appVersion in Chart.yaml with the latest ones.
 			perlCommandStr1 := "s/    repository: quay.io\\/opentelemetry\\/opentelemetry-operator\\n    " +
 				"tag: \\\".*\\\"\\n  resources/    repository: quay.io\\/opentelemetry\\/opentelemetry-operator\\n    tag: \\\"" +
 				managerImage[1] + "\\\"\\n  resources/igs"
@@ -74,6 +79,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+
 			perlCommandStr2 := "s/    repository: gcr.io\\/kubebuilder\\/kube-rbac-proxy\\n    " +
 				"tag: \\\".*\\\"/    repository: gcr.io\\/kubebuilder\\/kube-rbac-proxy\\n    tag: \\\"" +
 				kubeRBACProxyImage[1] + "\\\"/igs"
@@ -82,13 +88,15 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+
 			perlCommandStr3 := "s/appVersion: \\\".*\\\"/appVersion: \\\"" + managerImage[1][1:] + "\\\"/igs"
 			c3 := exec.Command("perl", "-0777", "-i", "-pe", perlCommandStr3, "../Chart.yaml")
 			err = c3.Run()
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println("The values.yaml and Chart.yaml update finished. They are up-to-date now.")
+			log.Println("The values.yaml and Chart.yaml update finished. They are up-to-date now.")
+
 		default:
 			continue
 		}

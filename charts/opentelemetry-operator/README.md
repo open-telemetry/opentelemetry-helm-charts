@@ -14,18 +14,25 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 In Kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
 certificate that the API server is configured to trust. There are three ways for you to generate the required TLS certificate.
 
-  - The easiest and default method is to install the cert-manager and keeps `admissionWebhooks.certManager.enabled` to `true`.
-    In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for the instruction._
+  - The easiest and default method is to install the [cert-manager](https://cert-manager.io/docs/) and set `admissionWebhooks.certManager.enabled` to `true`.
+    In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
   - The last way is to manually modify the secret where the TLS certificate is stored. You can either do this before installation
     or after.
     - To do this before installation, you don't have to install cert-manager. Please set `admissionWebhooks.certManager.enabled` to `false`.
-      - Create the namespace for the OTEL Operator and the secret
+      - Create the namespace for the OpenTelemetry Operator and the secret
         ```console
         $ kubectl create namespace opentelemetry-operator-system
         ```
-      - Config the TLS certificate
+      - Config the TLS certificate using `kubectl create` command
+        ```console
+        $ kubectl create secret tls opentelemetry-operator-controller-manager-service-cert \
+            --cert=path/to/cert/file \
+            --key=path/to/key/file \
+            -n opentelemetry-operator-system
+        ```
+        You can also do this by applying the secret configuration.
         ```console
         $ kubectl apply -f - <<EOF
           apiVersion: v1
@@ -41,15 +48,12 @@ certificate that the API server is configured to trust. There are three ways for
                 # your private key
           EOF
         ```
-        You can also do this using `kubectl create` command.
-        ```console
-        $ kubectl create secret tls opentelemetry-operator-controller-manager-service-cert \
-            --cert=path/to/cert/file \
-            --key=path/to/key/file \
-            -n opentelemetry-operator-system
-        ```
-    - To do this after installation, you will have to install cert-manager first. Once the Operator is ready, you can override
-      the secret by putting your certificate there. What you need to do is the same as the second step above.
+    - To do this after installation, you will have to install `cert-manager` first. Once the Operator is ready, you can use
+      `kubectl edit` command to edit the `Certificate` resource to provide your own Issuer/ClusterIssuer by replacing the
+      value of `issuerRef`:
+      ```console
+      $ kubectl edit cert opentelemetry-operator-serving-cert -n opentelemetry-operator-system
+      ```
 
 ## Add Repository
 
@@ -63,7 +67,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 ## Install Chart
 
 If you didn't create the namespace `opentelemetry-operator-system` before (steps in the third method to generate the TLS cert),
-the OTEL Operator chart will be installed in the namespace automatically. Installation command example is as below.
+the OpenTelemetry Operator chart will be installed in the namespace automatically. The installation command example is as below.
 
 ```console
 $ helm install \
@@ -79,7 +83,7 @@ $ helm install \
   --set createNamespace=false
 ```
 
-Note that `--namespace` option here won't affect on where the OTEL Operator and other resources this chart contains are installed.
+Note that `--namespace` option here won't affect where the OpenTelemetry Operator and other resources this chart contains are installed.
 It will only affect on where the Helm chart release info is stored, which is `default` namespace by default.
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
@@ -102,8 +106,7 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
 ```
 
-If the namespace is created by Helm instead of yourself, please skip this step. If you created the namespace and set
-`createNamespace` to `false`, you should remove it manually:
+If the namespace wasn't created by the Helm chart, you'll need to manually remove it as well:
 
 ```console
 $ kubectl delete ns opentelemetry-operator-system
@@ -143,12 +146,12 @@ mode is Deployment. We will introduce the benefits and use cases of each mode as
 
 ### Deployment Mode
 
-If you want to get more control of the OpenTelemetry collector and create a standalone application, Deployment would
-be your choice. With Deployment, you can relatively easily scale up the collector to monitor more targets, roll back
-to an early version if anything unexpected happens, pause the collector, etc. In general, you can manage your collector
+If you want to get more control of the OpenTelemetry Collector and create a standalone application, Deployment would
+be your choice. With Deployment, you can relatively easily scale up the Collector to monitor more targets, roll back
+to an early version if anything unexpected happens, pause the Collector, etc. In general, you can manage your Collector
 instance just as an application.
 
-The following example configuration deploys the Collector as Deployment resource. The receiver is jaeger-receiver and
+The following example configuration deploys the Collector as Deployment resource. The receiver is Jaeger receiver and
 the exporter is logging exporter.
 
 ```console
@@ -180,10 +183,10 @@ EOF
 
 ### DaemonSet Mode
 
-DaemonSet should satisfy your most basic needs and is the most common method to deploy OpenTelemetry collector.
-In this case, every Kubernetes node will have its own collector copy which would monitor the pods in it.
+DaemonSet should satisfy your most basic needs and is the most common method to deploy OpenTelemetry Collector.
+In this case, every Kubernetes node will have its own Collector copy which would monitor the pods in it.
 
-The following example configuration deploys the Collector as DaemonSet resource. The receiver is jaeger-receiver and
+The following example configuration deploys the Collector as DaemonSet resource. The receiver is Jaeger receiver and
 the exporter is logging exporter.
 
 ```console
@@ -203,6 +206,7 @@ spec:
 
     exporters:
       logging:
+        loglevel: debug
 
     service:
       pipelines:
@@ -214,14 +218,17 @@ EOF
 ```
 
 ### StatefulSet Mode
-If you want your collector to have stable persistent identities or storage, you should choose StatefulSet.
-Take Prometheus metrics for example, if you use above two approaches, the metrics collected from the receiver will
-be stored locally by default, which is ephemeral. However, StatefulSet allows you to configure a persistent storage
-interface called PersistentVolume. PersistentVolume will maintain the historical metrics data and even survive pods
-restart. This feature gives you the possibility that you can reconstruct the time-series logs.
+There are basically two main advantages to deploy the Collector as the StatefulSet:
+- Predictable names of the Collector instance will be expected
+  If you use above two approaches to deploy the Collector, the pod name of your Collector instance will be unique (its name plus random sequence).
+  However, each Pod in a StatefulSet derives its hostname from the name of the StatefulSet and the ordinal of the Pod (my-col-0, my-col-1, my-col-2, etc.).
+- The load balancer could be configured (under construction)
+  The load balancer will use a HTTP server to expose the scrape targets to a specific endpoint URL, which will be used by the Prometheus receiver to scrape metrics
+  data. Additionally, the load balancer will use that discovery information to evenly delegate scraping jobs to the collector instances inside a StatefulSet based on
+  a replica's current workload.
 
 The following example configuration deploys the Collector as StatefulSet resource with three replicas. The receiver
-is jaeger-receiver and the exporter is logging exporter.
+is Jaeger receiver and the exporter is logging exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
@@ -264,14 +271,12 @@ EOF
 ```
 
 ### Sidecar Mode
-If all you want to monitor is a single application, then collector as the sidecar would be the best fit.
-This collector instance will work on the container level and no new pods or other workload resources are needed,
-which is perfect to keep your Kubernetes cluster clean. Moreover, you can also use the sidecar mode when you want
-to use a different collect/export strategy, which just suits this application.
+The biggest advantage of the sidecar mode is that it allows people to offload their telemetry data as fast and reliable as possible from their applications.
+This Collector instance will work on the container level and no new pod will be created, which is perfect to keep your Kubernetes cluster clean and easily to be managed.
+Moreover, you can also use the sidecar mode when you want to use a different collect/export strategy, which just suits this application.
 
-You can deploy the sidecar mode by setting the pod annotation `sidecar.opentelemetry.io/inject` to `true` if there is only one
-collector with mode `sidecar` in the namespace. Otherwise, you will need to set that value to the name of a concrete
-`OpenTelemetryCollector` pod from the namespace.
+Once a Sidecar instance exists in a given namespace, you can have your deployments from that namespace to get a sidecar
+by either adding the annotation `sidecar.opentelemetry.io/inject: true` to the pod spec of your application, or to the namespace.
 
 _See the [OpenTelemetry Operator github repository](https://github.com/open-telemetry/opentelemetry-operator) for more detailed information._
 
