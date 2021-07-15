@@ -219,10 +219,10 @@ EOF
 
 ### StatefulSet Mode
 There are basically two main advantages to deploy the Collector as the StatefulSet:
-- Predictable names of the Collector instance will be expected
+- Predictable names of the Collector instance will be expected \
   If you use above two approaches to deploy the Collector, the pod name of your Collector instance will be unique (its name plus random sequence).
   However, each Pod in a StatefulSet derives its hostname from the name of the StatefulSet and the ordinal of the Pod (my-col-0, my-col-1, my-col-2, etc.).
-- The load balancer could be configured (under construction)
+- The load balancer could be configured (under construction) \
   The load balancer will use a HTTP server to expose the scrape targets to a specific endpoint URL, which will be used by the Prometheus receiver to scrape metrics
   data. Additionally, the load balancer will use that discovery information to evenly delegate scraping jobs to the collector instances inside a StatefulSet based on
   a replica's current workload.
