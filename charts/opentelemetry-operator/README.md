@@ -217,10 +217,6 @@ There are basically three main advantages to deploy the Collector as the Statefu
 - Rescheduling will be arranged when a Collector replica fails \
   If a Collector pod fails in the StatefulSet, Kubernetes will attempt to reschedule a new pod with the same name to the same node. Kubernetes will also attempt
   to attach the same sticky identity (e.g., volumes) to the new pod.
-- The load balancer could be configured (under construction) \
-  The load balancer will use a HTTP server to expose the scrape targets to a specific endpoint URL, which will be used by the Prometheus receiver to scrape metrics
-  data. Additionally, the load balancer will use that discovery information to evenly delegate scraping jobs to the collector instances inside a StatefulSet based on
-  a replica's current workload.
 
 The following example configuration deploys the Collector as StatefulSet resource with three replicas. The receiver
 is Jaeger receiver and the exporter is logging exporter.
@@ -233,18 +229,6 @@ metadata:
   name: my-collector
 spec:
   mode: statefulset
-  volumeMounts:
-    - mountPath: "/usr/share/test-volume"
-      name: test-volume
-  volumeClaimTemplates:
-    - metadata:
-        name: "test-volume"
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "standard"
-        resources:
-          requests:
-            storage: 1Gi
   replicas: 3
   config: |
     receivers:
