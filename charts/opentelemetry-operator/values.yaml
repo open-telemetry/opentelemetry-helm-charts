@@ -1,0 +1,47 @@
+# Default values for opentelemetry-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## Provide a name in place of opentelemetry-operator.
+##
+nameOverride: ""
+
+## Create the opentelemetry-operator-system namespace where the operator will be installed to.
+## Disable this if you have already created the namespace.
+##
+createNamespace: true
+
+## Provide OpenTelemetry Operator manager container image and resources.
+##
+manager:
+  image:
+    repository: quay.io/opentelemetry/opentelemetry-operator
+    tag: "v0.29.0"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+## Provide OpenTelemetry Operator kube-rbac-proxy container image.
+##
+kubeRBACProxy:
+  image:
+    repository: gcr.io/kubebuilder/kube-rbac-proxy
+    tag: "v0.5.0"
+
+## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
+##
+admissionWebhooks:
+  failurePolicy: Fail
+  enabled: true
+
+  ## Provide the issuer kind and name to do the cert auth job.
+  ## By default, OpenTelemetry Operator will use self-signer issuer.
+  certManager:
+    enabled: true
+    issuerRef: {}
+      # kind:
+      # mame:
