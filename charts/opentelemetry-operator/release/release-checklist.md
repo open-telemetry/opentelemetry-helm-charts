@@ -1,9 +1,3 @@
-# Prerequisites
-
-- [ ] Make sure you have installed KUTTL which will be used to do the smoke tests later. See [KUTTL website](https://kuttl.dev/docs/)
-  for installation information.
-- [ ] Make sure you have cloned the [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) in your workspace
-
 # Checklist
 
 - [ ] Change directory to `opentelemetry-helm-charts/charts/opentelemetry-operator/release`. `cd ./charts/opentelemetry-operator/release` should be helpful.
@@ -16,11 +10,8 @@
   Create a new YAML file under `templates` directory if it doesn't exist.
   Use `{{ template "opentelemetry-operator.name" . }}` to represent the name of OTEL Operator which probably is `opentelemetry-operator` in the manifest.
   Use `{{ template "opentelemetry-operator.namespace" . }}` to represent the namespace which probably is `opentelemetry-operator-system` in the manifest.
-- [ ] Test the Operator Helm chart locally:
-  - [ ] Change directory to the OpenTelemetry Operator
-  - [ ] Run the KUTTL smoke tests: `kubectl kuttl test ./tests/e2e`
-  - [ ] Make sure all KUTTL smoke tests pass
 - [ ] Update `README` if there is a breaking change in the Operator Helm chart
+- [ ] Bump chart version in `Chart.yaml`
 
 # Additional Context
 
