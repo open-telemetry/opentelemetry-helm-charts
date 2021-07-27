@@ -60,8 +60,8 @@ jobs:
           sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.0/kubectl-kuttl_0.11.0_linux_x86_64
           sudo chmod +x /usr/local/bin/kubectl-kuttl
           export PATH=$PATH:/usr/local/bin
-          helm install my-opentelemetry-operator .
+          helm install my-opentelemetry-operator ./charts/opentelemetry-operator
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
           git clone https://github.com/open-telemetry/opentelemetry-operator.git
-          kubectl kuttl test ./opentelemetry-operator/tests/e2e --config $GITHUB_WORKSPACE/charts/opentelemetry-operator/release/kuttl-test.yaml
+          kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
         if: steps.list-changed.outputs.operator-changed == 'true'
