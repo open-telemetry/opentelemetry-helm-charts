@@ -31,7 +31,8 @@ type K8sObject struct {
 // First, it scrapes the latest OTEL Operator manifest from the OTEL Operator github:
 // https://github.com/open-telemetry/opentelemetry-operator.
 // Then, it will update the OpenTelemetry Collector CRD YAML file, which is the only CRD at this point.
-// At last, it will retrieve the latest image tag from the OTEL Operator manifest and update the values.yaml and Chart.yaml.
+// Next, it will retrieve the latest image tag from the OTEL Operator manifest and update the values.yaml and Chart.yaml.
+// At last, it will check if every template file is up-to-date with the manifest. If not, it will notify the Helm chart maintainers.
 func main() {
 	// Get all the templates of the OTEL Operator Helm chart.
 	templates, err := getTemplates()
@@ -52,6 +53,7 @@ func main() {
 	dc := yaml.NewDecoder(resp.Body)
 
 	for {
+		// current Kubernetes resource from the upstream manifest
 		var curObject K8sObject
 		err := dc.Decode(&curObject)
 		if errors.Is(err, io.EOF) {
@@ -63,6 +65,7 @@ func main() {
 
 		switch curObject.Kind {
 		case "CustomResourceDefinition":
+			// Update the collector CRD template file.
 			err = updateCRD(curObject, collectorCRDPath)
 			if err != nil {
 				panic(err)
@@ -71,6 +74,7 @@ func main() {
 			log.Println("The OpenTelemetry Collector CRD update finished. It's up-to-date now.")
 
 		case "Deployment":
+			// Update the values.yaml and Chart.yaml with the latest image tags.
 			err = updateImageTags(curObject, valuesYAMLPath, chartYAMLPath)
 			if err != nil {
 				panic(err)
@@ -78,10 +82,10 @@ func main() {
 
 			log.Println("The values.yaml and Chart.yaml update finished. They are up-to-date now.")
 
-			needUpdate = needUpdate || checkTemplate(curObject, templates)
+			needUpdate = checkTemplate(curObject, templates) || needUpdate
 
 		default:
-			needUpdate = needUpdate || checkTemplate(curObject, templates)
+			needUpdate = checkTemplate(curObject, templates) || needUpdate
 		}
 	}
 

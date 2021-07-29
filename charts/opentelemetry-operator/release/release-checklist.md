@@ -1,18 +1,13 @@
 # Prerequisites
 
-- [ ] Make sure you have installed KUTTL which will be used to do the smoke tests later. See [KUTTL website](https://kuttl.dev/docs/)
+- [ ] Make sure you have installed Helm v3 or later versions. See [Helm website](https://helm.sh/docs/helm/helm_install/)
   for installation information.
-- [ ] Make sure you have cloned the [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) in your workspace
 
 # Checklist
 
 - [ ] Change directory to `opentelemetry-helm-charts/charts/opentelemetry-operator/release`. `cd ./charts/opentelemetry-operator/release` should be helpful.
-- [ ] Run the command `go run main.go` to update the OTEL Collector CRD, `values.yaml` and `Chart.yaml`
-- [ ] Download the latest OTEL Operator manifest from this [link](https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml).
-  As you can see, there are several YAML files in this manifest separated by `---`.
-- [ ] Starting from the third YAML file, compare the YAML files in the manifest and the ones in the `charts/opentelemetry-operator/templates` directory.
-  The names of YAML files under `templates` directory are the same as the value of key `kind` of the YAML files in the manifest.
-- [ ] Update our template YAML files to maintain consistency with the ones in the manifest (especially be careful with `role.yaml` and `clusterrole.yaml`).
+- [ ] Run the command `go run main.go` to update the OTEL Collector CRD, `values.yaml` and `Chart.yaml`and detect if any template file needs to be updated
+- [ ] If you see any template files need to be updated, update them to maintain consistency with the ones in the manifest (especially be careful with `role.yaml` and `clusterrole.yaml`).  \
   Create a new YAML file under `templates` directory if it doesn't exist.
   Use `{{ template "opentelemetry-operator.name" . }}` to represent the name of OTEL Operator which probably is `opentelemetry-operator` in the manifest.
   Use `{{ template "opentelemetry-operator.namespace" . }}` to represent the namespace which probably is `opentelemetry-operator-system` in the manifest.
