@@ -82,6 +82,12 @@ func main() {
 
 			log.Println("The values.yaml and Chart.yaml update finished. They are up-to-date now.")
 
+			// Update the templates since we have made changes to values.yaml.
+			templates, err = getTemplates()
+			if err != nil {
+				panic(err)
+			}
+
 			needUpdate = checkTemplate(curObject, templates) || needUpdate
 
 		default:
