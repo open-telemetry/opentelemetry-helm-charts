@@ -5,6 +5,10 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+{{- if .Values.standaloneCollector.annotations }}
+  annotations:
+    {{- toYaml .Values.standaloneCollector.annotations | nindent 4 }}
+{{- end }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.standaloneCollector.replicaCount }}
