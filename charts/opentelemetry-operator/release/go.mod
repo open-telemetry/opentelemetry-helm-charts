@@ -1,4 +1,4 @@
-module main
+module github.com/opentelemetry-helm-charts/charts/opentelemetry-operator/release
 
 go 1.16
 
