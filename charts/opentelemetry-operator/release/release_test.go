@@ -186,7 +186,7 @@ func TestUpdateCRD(t *testing.T) {
 				if err != nil {
 					t.Errorf("Cannot read mockCRD.yaml file: %v", err)
 				}
-				assert.Equal(t, "apiVersion: testApiVersion\nkind: testKind\nmetadata: {}\nspec: {}\nstatus: {}\n", string(mockCRDFile))
+				assert.Equal(t, "apiVersion: testApiVersion\nkind: testKind\nmetadata: {}\nspec: {}\nstatus: {}\nrules: []\nroleRef: {}\nsubjects: []\nwebhooks: []\n", string(mockCRDFile))
 			}
 		})
 	}

@@ -6,7 +6,7 @@
 # Checklist
 
 - [ ] Change directory to `opentelemetry-helm-charts/charts/opentelemetry-operator/release`. `cd ./charts/opentelemetry-operator/release` should be helpful.
-- [ ] Run the command `go run main.go` to update the OTEL Collector CRD, `values.yaml` and `Chart.yaml`and detect if any template file needs to be updated
+- [ ] Run the command `go run .` to update the OTEL Collector CRD, `values.yaml` and `Chart.yaml`and detect if any template file needs to be updated
 - [ ] If you see any template files need to be updated, update them to maintain consistency with the ones in the manifest (especially be careful with `role.yaml` and `clusterrole.yaml`).  \
   Create a new YAML file under `templates` directory if it doesn't exist.
   Use `{{ template "opentelemetry-operator.name" . }}` to represent the name of OTEL Operator which probably is `opentelemetry-operator` in the manifest.

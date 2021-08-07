@@ -25,6 +25,10 @@ type K8sObject struct {
 	Metadata   map[interface{}]interface{} `yaml:"metadata"`
 	Spec       map[interface{}]interface{} `yaml:"spec"`
 	Status     map[interface{}]interface{} `yaml:"status"`
+	Rules      []map[interface{}]interface{} `yaml:"rules"`
+	RoleRef    map[interface{}]interface{} `yaml:"roleRef"`
+	Subjects   []map[interface{}]interface{} `yaml:"subjects"`
+	Webhooks   []map[interface{}]interface{} `yaml:"webhooks"`
 }
 
 // The main keeps the OpenTelemetry Operator (OTEL Operator) Helm chart configurations up-to-date with the upstream automatically.
