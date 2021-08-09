@@ -22,3 +22,4 @@
 - `values.yaml` stores the default values passed into the chart.
 - `Chart.yaml` contains all the basic information of the Helm chart.
 - `role.yaml` and `clusterrole.yaml` define what types of actions will be permitted.
+- `main.go` contains the release process code, `release.go` contains all the release functions
