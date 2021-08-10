@@ -20,13 +20,13 @@ const (
 
 // K8sObject describes the values a Kubernetes object typically has.
 type K8sObject struct {
-	ApiVersion string                      `yaml:"apiVersion"`
-	Kind       string                      `yaml:"kind"`
-	Metadata   map[interface{}]interface{} `yaml:"metadata"`
-	Spec       map[interface{}]interface{} `yaml:"spec"`
-	Status     map[interface{}]interface{} `yaml:"status"`
+	ApiVersion string                        `yaml:"apiVersion"`
+	Kind       string                        `yaml:"kind"`
+	Metadata   map[interface{}]interface{}   `yaml:"metadata"`
+	Spec       map[interface{}]interface{}   `yaml:"spec"`
+	Status     map[interface{}]interface{}   `yaml:"status"`
 	Rules      []map[interface{}]interface{} `yaml:"rules"`
-	RoleRef    map[interface{}]interface{} `yaml:"roleRef"`
+	RoleRef    map[interface{}]interface{}   `yaml:"roleRef"`
 	Subjects   []map[interface{}]interface{} `yaml:"subjects"`
 	Webhooks   []map[interface{}]interface{} `yaml:"webhooks"`
 }
