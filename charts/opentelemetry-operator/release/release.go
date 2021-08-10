@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -59,17 +60,24 @@ func updateCRD(object K8sObject, collectorCRDPath string) error {
 
 // updateImageTags retrieves the latest image tags and update the values.yaml and Chart.yaml respectively.
 func updateImageTags(object K8sObject, valuesYAMLPath string, chartYAMLPath string) error {
-	// Retrieve the latest image repository and tag of the two container images.
+	var managerImageTag, kubeRBACProxyImageTag string
+
+	// Retrieve the latest image tags of the two container images.
 	containers := object.Spec["template"].(map[string]interface{})["spec"].(map[string]interface{})["containers"].([]interface{})
-	var managerImage, kubeRBACProxyImage []string
+
 	for i := range containers {
 		image := containers[i].(map[string]interface{})["image"].(string)
 		switch containers[i].(map[string]interface{})["name"].(string) {
 		case "manager":
-			managerImage = strings.Split(image, ":")
+			managerImageTag = strings.Split(image, ":")[1]
 		case "kube-rbac-proxy":
-			kubeRBACProxyImage = strings.Split(image, ":")
+			kubeRBACProxyImageTag = strings.Split(image, ":")[1]
 		}
+	}
+
+	// Check whether both image tags are found.
+	if managerImageTag == "" || kubeRBACProxyImageTag == "" {
+		return errors.New("Error: could not find image tags of OpenTelemetry Operator")
 	}
 
 	// Replace the image tags in values.yaml with the latest ones.
@@ -81,9 +89,9 @@ func updateImageTags(object K8sObject, valuesYAMLPath string, chartYAMLPath stri
 	valuesFileLines := strings.Split(string(valuesFile), "\n")
 	for i, line := range valuesFileLines {
 		if strings.Contains(line, operatorRepoPath) {
-			valuesFileLines[i+1] = "    tag: " + managerImage[1]
+			valuesFileLines[i+1] = "    tag: " + managerImageTag
 		} else if strings.Contains(line, kubeRBACProxyRepoPath) {
-			valuesFileLines[i+1] = "    tag: " + kubeRBACProxyImage[1]
+			valuesFileLines[i+1] = "    tag: " + kubeRBACProxyImageTag
 		}
 	}
 
@@ -94,7 +102,7 @@ func updateImageTags(object K8sObject, valuesYAMLPath string, chartYAMLPath stri
 	}
 
 	// Update the appVersion in Chart.yaml.
-	if err = updateAPPVersion(managerImage[1][1:], chartYAMLPath); err != nil {
+	if err = updateAPPVersion(managerImageTag[1:], chartYAMLPath); err != nil {
 		return err
 	}
 
