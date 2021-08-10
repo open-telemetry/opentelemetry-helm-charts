@@ -56,7 +56,7 @@ jobs:
 
       - name: Run KUTTL smoke tests
         run: |
-          sleep 10s
+          until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
           sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.0/kubectl-kuttl_0.11.0_linux_x86_64
           sudo chmod +x /usr/local/bin/kubectl-kuttl
           helm install my-opentelemetry-operator ./charts/opentelemetry-operator
