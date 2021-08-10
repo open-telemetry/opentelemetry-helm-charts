@@ -57,11 +57,20 @@ func updateCRD(object K8sObject, collectorCRDPath string) error {
 	return nil
 }
 
-// updateImageTags retrieve the latest image tags and update the values.yaml and Chart.yaml respectively.
+// updateImageTags retrieves the latest image tags and update the values.yaml and Chart.yaml respectively.
 func updateImageTags(object K8sObject, valuesYAMLPath string, chartYAMLPath string) error {
 	// Retrieve the latest image repository and tag of the two container images.
-	managerImage := strings.Split(object.Spec["template"].(map[string]interface{})["spec"].(map[string]interface{})["containers"].([]interface{})[0].(map[string]interface{})["image"].(string), ":")
-	kubeRBACProxyImage := strings.Split(object.Spec["template"].(map[string]interface{})["spec"].(map[string]interface{})["containers"].([]interface{})[1].(map[string]interface{})["image"].(string), ":")
+	containers := object.Spec["template"].(map[string]interface{})["spec"].(map[string]interface{})["containers"].([]interface{})
+	var managerImage, kubeRBACProxyImage []string
+	for i := range containers {
+		image := containers[i].(map[string]interface{})["image"].(string)
+		switch containers[i].(map[string]interface{})["name"].(string) {
+		case "manager":
+			managerImage = strings.Split(image, ":")
+		case "kube-rbac-proxy":
+			kubeRBACProxyImage = strings.Split(image, ":")
+		}
+	}
 
 	// Replace the image tags in values.yaml with the latest ones.
 	valuesFile, err := os.ReadFile(valuesYAMLPath)
