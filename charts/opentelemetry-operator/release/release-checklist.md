@@ -11,11 +11,8 @@
   Create a new YAML file under `templates` directory if it doesn't exist.
   Use `{{ template "opentelemetry-operator.name" . }}` to represent the name of OTEL Operator which probably is `opentelemetry-operator` in the manifest.
   Use `{{ template "opentelemetry-operator.namespace" . }}` to represent the namespace which probably is `opentelemetry-operator-system` in the manifest.
-- [ ] Test the Operator Helm chart locally:
-  - [ ] Change directory to the OpenTelemetry Operator
-  - [ ] Run the KUTTL smoke tests: `kubectl kuttl test ./tests/e2e`
-  - [ ] Make sure all KUTTL smoke tests pass
 - [ ] Update `README` if there is a breaking change in the Operator Helm chart
+- [ ] Bump chart version in `Chart.yaml`
 
 # Additional Context
 
