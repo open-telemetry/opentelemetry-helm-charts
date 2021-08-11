@@ -15,7 +15,7 @@ webhooks:
         namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
-    name: vopentelemetrycollector.kb.io
+    name: vopentelemetrycollectorcreateupdate.kb.io
     rules:
       - apiGroups:
           - opentelemetry.io
@@ -24,6 +24,25 @@ webhooks:
         operations:
           - CREATE
           - UPDATE
+        resources:
+          - opentelemetrycollectors
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
+    failurePolicy: Ignore
+    name: vopentelemetrycollectordelete.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1alpha1
+        operations:
           - DELETE
         resources:
           - opentelemetrycollectors
