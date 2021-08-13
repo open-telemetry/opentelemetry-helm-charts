@@ -12,6 +12,9 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
+  {{- if .Values.service.headless }}
+  clusterIP: "None"
+  {{- end}}
   ports:
     {{- range $key, $port := .Values.ports }}
     {{- if $port.enabled }}
