@@ -27,6 +27,9 @@ spec:
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
         component: standalone-collector
+        {{- with .Values.standaloneCollector.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- $podValues := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}
