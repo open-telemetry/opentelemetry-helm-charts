@@ -1,31 +1,26 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema",
   "type": "object",
   "title": "Values",
-  "properties": {
-    "standaloneCollector": {
-      "description": "Configuration for standalone OpenTelemetry Collector deployment",
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        }
-      },
-      "required": ["enabled"]
+  "examples": [
+    {
+      "mode": "deployment"
     },
-    "agentCollector": {
-      "description": "Configuration for OpenTelemetry Collector daemonset",
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        }
-      },
-      "required": ["enabled"]
+    {
+      "mode": "daemonset"
+    }
+  ],
+  "properties": {
+    "mode": {
+      "description": "The setup configuration of the opentelemery collector, Agent or Standalone",
+      "enum": [
+        "deployment",
+        "daemonset"
+      ],
+      "type": "string"
     }
   },
-  "anyOf": [
-    {"properties": {"standaloneCollector": {"properties": {"enabled": {"const": true}}}}},
-    {"properties": {"agentCollector": {"properties": {"enabled": {"const": true}}}}}
+  "required": [
+    "mode"
   ]
 }

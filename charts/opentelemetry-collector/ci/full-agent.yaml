@@ -1,0 +1,49 @@
+enabledConfigPresets:
+  containerLogs: true
+  hostMetrics: true
+  memoryLimiter: true
+resources:
+  limits:
+    cpu: 256m
+    memory: 512Mi
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
+  processors:
+    batch:
+  exporters:
+    logging:
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - logging
+        processors:
+          - batch
+          - memory_limiter/k8s
+        receivers:
+          - otlp
+          - filelog/k8s
+      metrics:
+        exporters:
+          - logging
+        processors:
+          - batch
+          - memory_limiter/k8s
+        receivers:
+          - otlp
+          - hostmetrics/k8s
+      traces:
+        exporters:
+          - logging
+        processors:
+          - batch
+          - memory_limiter/k8s
+        receivers:
+          - otlp
+ports:
+  otlp:
+    enabled: true

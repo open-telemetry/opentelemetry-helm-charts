@@ -1,51 +1,17 @@
-{{/*
-Default memory limiter configuration for OpenTelemetry Collector based on k8s resource limits.
-*/}}
-{{- define "opentelemetry-collector.memoryLimiter" -}}
-# check_interval is the time between measurements of memory usage.
-check_interval: 5s
+{{- $isDaemonset := eq .Values.mode "daemonset" -}}
+{{- $isDeployment := eq .Values.mode "deployment" -}}
+{{- if or $isDaemonset $isDeployment -}}
+{{- fail (print "value for mode (.Values.mode) needs to be either daemonset or deployment, it's" .Values.mode) }}
+{{- end -}}
 
-# By default limit_mib is set to 80% of ".Values.resources.limits.memory"
-limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources.limits.memory }}
 
-# By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
-spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
-
-# By default ballast_size_mib is set to 40% of ".Values.resources.limits.memory"
-ballast_size_mib: {{ include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
-{{- end }}
-
-{{/*
-Merge user supplied top-level (not particular to standalone or agent) config into memory limiter config.
-*/}}
-{{- define "opentelemetry-collector.baseConfig" -}}
-{{- $processorsConfig := get .Values.config "processors" }}
-{{- if not $processorsConfig.memory_limiter }}
-{{- $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
-{{- end }}
-{{- .Values.config | toYaml }}
-{{- end }}
-
-{{/*
-Build config file for agent OpenTelemetry Collector
-*/}}
-{{- define "opentelemetry-collector.agentCollectorConfig" -}}
-{{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values)  }}
-{{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
-{{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- $config := include "opentelemetry-collector.agent.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.agentConfigOverride" $data | fromYaml | mustMergeOverwrite $config }}
-{{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- end }}
-
-{{/*
-Build config file for standalone OpenTelemetry Collector
-*/}}
-{{- define "opentelemetry-collector.standaloneCollectorConfig" -}}
-{{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values)  }}
-{{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
-{{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- .Values.standaloneCollector.configOverride | mustMergeOverwrite $config | toYaml }}
+{{/* Merge user supplied top-level config into all the presets */}}
+{{- define "opentelemetry-collector.config" -}}
+{{- $config := deepCopy .Values.config }}
+{{- $config := include "opentelemetry-collector.containerLogsConfig" . | fromYaml | mustMergeOverwrite $config }}
+{{- $config := include "opentelemetry-collector.hostMetricsConfig" . | fromYaml | mustMergeOverwrite $config }}
+{{- $config := include "opentelemetry-collector.memoryLimiterConfig" . | fromYaml | mustMergeOverwrite $config }}
+{{- $config | toYaml }}
 {{- end }}
 
 {{/*
@@ -103,33 +69,42 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- div (mul (include "opentelemetry-collector.convertMemToMib" .) 40) 100 }}
 {{- end -}}
 
-{{/*
-Default config override for agent collector deamonset
-*/}}
-{{- define "opentelemetry-collector.agentConfigOverride" -}}
-{{- if .Values.standaloneCollector.enabled }}
-exporters:
-  otlp:
-    endpoint: {{ include "opentelemetry-collector.fullname" . }}:4317
-    insecure: true
-{{- end }}
-
-{{- if .Values.standaloneCollector.enabled }}
-service:
-  pipelines:
-    logs:
-      exporters: [otlp]
-    metrics:
-      exporters: [otlp]
-    traces:
-      exporters: [otlp]
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.agent.containerLogsConfig" -}}
-{{- if .Values.agentCollector.containerLogs.enabled }}
+{{- define "opentelemetry-collector.hostMetricsConfig" -}}
+{{- $isDaemonset := eq .Values.mode "daemonset" -}}
+{{- if (and .Values.enabledConfigPresets.hostMetrics $isDaemonset) }}
 receivers:
-  filelog:
+  hostmetrics/k8s:
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+{{- end }}
+{{- end }}
+
+{{/* Memory limiter configuration for OpenTelemetry Collector based on k8s resource limits. */}}
+{{- define "opentelemetry-collector.memoryLimiterConfig" -}}
+{{- if .Values.enabledConfigPresets.memoryLimiter }}
+processors:
+  memory_limiter/k8s:
+    # check_interval is the time between measurements of memory usage.
+    check_interval: 5s
+
+    # By default limit_mib is set to 80% of ".Values.resources.limits.memory"
+    limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources.limits.memory }}
+
+    # by default spike_limit_mib is set to 25% of ".values.resources.limits.memory"
+    spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
+
+    # By default ballast_size_mib is set to 40% of ".Values.resources.limits.memory"
+    ballast_size_mib: {{ include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.containerLogsConfig" -}}
+{{- $isDaemonset := eq .Values.mode "daemonset" -}}
+{{- if (and .Values.enabledConfigPresets.containerLogs $isDaemonset) }}
+receivers:
+  filelog/k8s:
     include: [ /var/log/pods/*/*/*.log ]
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
@@ -192,11 +167,5 @@ receivers:
           - move:
               from: log
               to: $
-service:
-  pipelines:
-    logs:
-      receivers:
-        - filelog
-        - otlp
 {{- end }}
 {{- end }}

@@ -1,11 +1,10 @@
-{{- if .Values.standaloneCollector.enabled -}}
+{{- if eq .Values.mode "deployment" -}}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    component: standalone-collector
   {{- if .Values.service.annotations }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
@@ -26,5 +25,4 @@ spec:
     {{- end }}
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
-    component: standalone-collector
 {{- end }}

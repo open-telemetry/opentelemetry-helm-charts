@@ -1,4 +1,5 @@
 {{- define "opentelemetry-collector.pod" -}}
+{{- $isDaemonset := eq .Values.mode "daemonset" -}}
 {{- with .Values.imagePullSecrets }}
 imagePullSecrets:
   {{- toYaml . | nindent 2 }}
@@ -12,7 +13,6 @@ containers:
       - /{{ .Values.command.name }}
       - --config=/conf/relay.yaml
       - --metrics-addr=0.0.0.0:8888
-      - --mem-ballast-size-mib={{ template "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
       {{- range .Values.command.extraArgs }}
       - {{ . }}
       {{- end }}
@@ -26,7 +26,7 @@ containers:
       - name: {{ $key }}
         containerPort: {{ $port.containerPort }}
         protocol: {{ $port.protocol }}
-        {{- if and $.isAgent $port.hostPort }}
+        {{- if and $isDaemonset $port.hostPort }}
         hostPort: {{ $port.hostPort }}
         {{- end }}
       {{- end }}
@@ -39,6 +39,20 @@ containers:
             fieldPath: status.podIP
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
+      {{- end }}
+      {{- if and $isDaemonset .Values.enabledConfigPresets.hostMetrics }}
+      - name: HOST_PROC
+        value: /hostfs/proc
+      - name: HOST_SYS
+        value: /hostfs/sys
+      - name: HOST_ETC
+        value: /hostfs/etc
+      - name: HOST_VAR
+        value: /hostfs/var
+      - name: HOST_RUN
+        value: /hostfs/run
+      - name: HOST_DEV
+        value: /hostfs/dev
       {{- end }}
     livenessProbe:
       httpGet:
@@ -77,7 +91,7 @@ containers:
         subPath: {{ .subPath }}
         {{- end }}
       {{- end }}
-      {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
+      {{- if and $isDaemonset .Values.enabledConfigPresets.containerLogs }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
@@ -85,13 +99,19 @@ containers:
         mountPath: /var/lib/docker/containers
         readOnly: true
       {{- end }}
+      {{- if and $isDaemonset .Values.enabledConfigPresets.hostMetrics }}
+      - name: hostfs
+        mountPath: /hostfs
+        readOnly: true
+        mountPropagation: HostToContainer
+      {{- end }}
 {{- if .Values.priorityClassName }}
 priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
 volumes:
   - name: {{ .Chart.Name }}-configmap
     configMap:
-      name: {{ include "opentelemetry-collector.fullname" . }}{{ .configmapSuffix }}
+      name: {{ include "opentelemetry-collector.fullname" . }}
       items:
         - key: relay
           path: relay.yaml
@@ -110,13 +130,18 @@ volumes:
     secret:
       secretName: {{ .secretName }}
   {{- end }}
-  {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
+  {{- if and $isDaemonset .Values.enabledConfigPresets.containerLogs }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
   - name: varlibdockercontainers
     hostPath:
       path: /var/lib/docker/containers
+  {{- end }}
+  {{- if and $isDaemonset .Values.enabledConfigPresets.hostMetrics }}
+  - name: hostfs
+    hostPath:
+      path: /
   {{- end }}
 {{- with .Values.nodeSelector }}
 nodeSelector:

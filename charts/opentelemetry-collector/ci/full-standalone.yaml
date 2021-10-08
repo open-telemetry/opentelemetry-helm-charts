@@ -1,0 +1,48 @@
+mode: "deployment"
+enabledConfigPresets:
+  memoryLimiter: true
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
+  processors:
+    batch:
+  exporters:
+    logging:
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - logging
+        processors:
+          - batch
+          - memory_limiter/k8s
+        receivers:
+          - otlp
+      metrics:
+        exporters:
+          - logging
+        processors:
+          - batch
+          - memory_limiter/k8s
+        receivers:
+          - otlp
+      traces:
+        exporters:
+          - logging
+        processors:
+          - batch
+          - memory_limiter/k8s
+        receivers:
+          - otlp
+ports:
+  otlp:
+    enabled: true
+service:
+  enabled: true

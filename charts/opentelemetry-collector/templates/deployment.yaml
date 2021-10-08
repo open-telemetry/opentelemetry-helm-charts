@@ -1,37 +1,33 @@
-{{- if .Values.standaloneCollector.enabled -}}
+{{- if eq .Values.mode "deployment" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-{{- if .Values.standaloneCollector.annotations }}
+{{- if .Values.podAnnotations }}
   annotations:
-    {{- toYaml .Values.standaloneCollector.annotations | nindent 4 }}
+    {{- toYaml .Values.podAnnotations | nindent 4 }}
 {{- end }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.standaloneCollector.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
-      component: standalone-collector
   template:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- with .Values.standaloneCollector.podAnnotations }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
-        component: standalone-collector
-        {{- with .Values.standaloneCollector.podLabels }}
+        {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- $podValues := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
-      {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}
-      {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
+      {{- include "opentelemetry-collector.pod" . | nindent 6 }}
 {{- end }}
