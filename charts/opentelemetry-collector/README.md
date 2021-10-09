@@ -58,6 +58,7 @@ configuration is necessary for it to function.
 
 * otlp receiver
 * logging exporter
+* health_check extension (LivenessProbe and ReadinessProbe depend on this)
 * no monitoring for neither the collector
 * visible through service
 
@@ -66,6 +67,8 @@ mode: deployment
 config:
   exporters:
     logging:
+  extensions:
+    health_check:
   processors:
     batch:
   receivers:
@@ -74,6 +77,8 @@ config:
         grpc:
         http:
   service:
+    extensions:
+      - health_check
     pipelines:
       logs:
         exporters:
@@ -119,6 +124,8 @@ resources:
 config:
   exporters:
     logging:
+  extensions:
+    health_check:
   processors:
     batch:
   receivers:
@@ -127,6 +134,8 @@ config:
         grpc:
         http:
   service:
+    extensions:
+      - health_check
     pipelines:
       logs:
         exporters:
@@ -167,6 +176,8 @@ resources:
 config:
   exporters:
     logging:
+  extensions:
+    health_check:
   processors:
     batch:
   receivers:
@@ -175,6 +186,8 @@ config:
         grpc:
         http:
   service:
+    extensions:
+      - health_check
     pipelines:
       logs:
         exporters:
@@ -212,6 +225,8 @@ enabledConfigurationPresets:
 config:
   exporters:
     logging:
+  extensions:
+    health_check:
   processors:
     batch:
   receivers:
@@ -220,6 +235,8 @@ config:
         grpc:
         http:
   service:
+    extensions:
+      - health_check
     pipelines:
       logs:
         exporters:
@@ -292,12 +309,16 @@ config:
   exporters:
     otlphttp:
       endpoint: https://example.com:55681
+  extensions:
+    health_check:
   processors:
     batch:
   receivers:
     filelog/k8s:
       exclude: []
   service:
+    extensions:
+      - health_check
     pipelines:
       logs:
         receivers:
