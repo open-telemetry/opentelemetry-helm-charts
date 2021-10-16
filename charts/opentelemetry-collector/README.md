@@ -47,6 +47,291 @@ command:
   name: otelcol
 ```
 
+#### Upgrading 0.6.0 agent only installation
+
+To upgrade a chart installation with only `agentCollector` enabled:
+```yaml
+# No values supplied
+```
+
+The configuration would be akin in the new set up to:
+
+<details>
+<summary>Click to expand!</summary>
+
+```yaml
+enabledConfigurationPresets:
+  memoryLimiter: true
+resources:
+  limits:
+    cpu: 256m
+    memory: 512Mi
+config:
+  exporters:
+    logging:
+  extensions:
+    health_check:
+  processors:
+    batch:
+  receivers:
+    jaeger:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:14250
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+    otlp:
+      protocols:
+        grpc:
+        http:
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
+            static_configs:
+              - targets:
+                  - localhost:8888
+    zipkin:
+      endpoint: 0.0.0.0:9411
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      logs:
+        exporters:
+          - logging
+        processors:
+          - memorylimit/k8s
+          - batch
+        receivers:
+          - otlp
+      metrics:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter/k8s
+          - batch
+        receivers:
+          - otlp
+          - prometheus
+      traces:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter/k8s
+          - batch
+        receivers:
+          - otlp
+          - jaeger
+          - zipkin
+ports:
+  otlp:
+    enabled: true
+  jaeger-thrift:
+    enabled: true
+  jaeger-grpc:
+    enabled: true
+  zipkin:
+    enabled: true
+```
+
+</details>
+
+#### Upgrading 0.6.0 standalone only installation
+
+If only standalone collector setup was used with:
+
+```yaml
+agentCollector:
+  enabled: false
+standaloneCollector:
+  enabled: true
+```
+<details>
+<summary>Click to expand!</summary>
+
+```yaml
+mode: deployment
+enabledConfigurationPresets:
+  memoryLimiter: true
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+config:
+  exporters:
+    logging:
+  extensions:
+    health_check:
+  processors:
+    batch:
+  receivers:
+    jaeger:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:14250
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+    otlp:
+      protocols:
+        grpc:
+        http:
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
+            static_configs:
+              - targets:
+                  - localhost:8888
+    zipkin:
+      endpoint: 0.0.0.0:9411
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      logs:
+        exporters:
+          - logging
+        processors:
+          - memorylimit/k8s
+          - batch
+        receivers:
+          - otlp
+      metrics:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter/k8s
+          - batch
+        receivers:
+          - otlp
+          - prometheus
+      traces:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter/k8s
+          - batch
+        receivers:
+          - otlp
+          - jaeger
+          - zipkin
+ports:
+  otlp:
+    enabled: true
+  jaeger-thrift:
+    enabled: true
+  jaeger-grpc:
+    enabled: true
+  zipkin:
+    enabled: true
+```
+
+</details>
+
+
+###3 Upgrading 0.6.0 dual installation
+If previously deployed the chart with double config, both agent and standalone collectors enabled, such as:
+
+```yaml
+standaloneCollector:
+  enabled: true
+```
+
+Then the chart needs to be deployed twice, with the previously explained configs, plus an exporter section in the
+"daemonset" mode deployment.
+
+<details>
+<summary>Click to expand!</summary>
+
+```yaml
+enabledConfigurationPresets:
+  memoryLimiter: true
+resources:
+  limits:
+    cpu: 256m
+    memory: 512Mi
+config:
+  exporters:
+    logging:
+    otlp:  # NEW!
+      endpoint: DEPLOYMENT_COLLECTOR_FULLNAME_SERVICE_HERE:4317
+      insecure: true
+  extensions:
+    health_check:
+  processors:
+    batch:
+  receivers:
+    jaeger:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:14250
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+    otlp:
+      protocols:
+        grpc:
+        http:
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
+            static_configs:
+              - targets:
+                  - localhost:8888
+    zipkin:
+      endpoint: 0.0.0.0:9411
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      logs:
+        exporters:
+          - logging
+          - otlp  # NEW!
+        processors:
+          - memorylimit/k8s
+          - batch
+        receivers:
+          - otlp
+      metrics:
+        exporters:
+          - logging
+          - otlp  # NEW!
+        processors:
+          - memory_limiter/k8s
+          - batch
+        receivers:
+          - otlp
+          - prometheus
+      traces:
+        exporters:
+          - logging
+          - otlp  # NEW!
+        processors:
+          - memory_limiter/k8s
+          - batch
+        receivers:
+          - otlp
+          - jaeger
+          - zipkin
+ports:
+  otlp:
+    enabled: true
+  jaeger-thrift:
+    enabled: true
+  jaeger-grpc:
+    enabled: true
+  zipkin:
+    enabled: true
+```
+
+</details>
+
+
 ## Configuration
 
 ### Default configuration
@@ -61,6 +346,9 @@ configuration is necessary for it to function.
 * health_check extension (LivenessProbe and ReadinessProbe depend on this)
 * no monitoring for neither the collector
 * visible through service
+
+<details>
+<summary>Click to expand!</summary>
 
 ```yaml
 mode: deployment
@@ -108,9 +396,14 @@ service:
   enabled: true
 ```
 
+</details>
+
 ### Configuration for memory limit
 
 For agent set up recommended values 256m and 512Mi:
+
+<details>
+<summary>Click to expand!</summary>
 
 ```yaml
 # Default
@@ -163,7 +456,12 @@ config:
           - otlp
 ```
 
+</details>
+
 For standalone set up recommended values 1 cpu and 2Gi memory:
+
+<details>
+<summary>Click to expand!</summary>
 
 ```yaml
 mode: deployment
@@ -215,9 +513,14 @@ config:
           - otlp
 ```
 
+</details>
+
 ### Relevant configuration for hostMetrics
 
 This will only work in daemonset mode (Agent setup)
+
+<details>
+<summary>Click to expand!</summary>
 
 ```yaml
 enabledConfigurationPresets:
@@ -262,8 +565,9 @@ config:
         receivers:
           - otlp
           - hostmetrics/k8s
-
 ```
+
+</details>
 
 ### Configuration for Kubernetes container logs
 
@@ -298,6 +602,9 @@ Here's an example `values.yaml` file that replaces the default `logging` exporte
 with an `otlphttp` exporter that sends the container logs to `https://example.com:55681` endpoint.
 It also clears the `filelog/k8s` receiver's `exclude` property, for collector logs to be included in the pipeline.
 
+<details>
+<summary>Click to expand!</summary>
+
 ```yaml
 # Default mode
 # mode: daemonset
@@ -328,6 +635,8 @@ config:
         exporters:
         - otlphttp
 ```
+
+</details>
 
 ### Other configuration options
 

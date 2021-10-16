@@ -32,11 +32,6 @@ containers:
       {{- end }}
       {{- end }}
     env:
-      - name: MY_POD_IP
-        valueFrom:
-          fieldRef:
-            apiVersion: v1
-            fieldPath: status.podIP
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
