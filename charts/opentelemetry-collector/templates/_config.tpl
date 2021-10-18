@@ -27,12 +27,25 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- end }}
 
 {{/*
+Merge user supplied top-level (not particular to standalone or agent) config into memory ballast config.
+*/}}
+{{- define "opentelemetry-collector.ballastConfig" -}}
+{{- $memoryBallastConfig := get .Values.config.extensions "memory_ballast" }}
+{{- if or (not $memoryBallastConfig) (not $memoryBallastConfig.size_mib) }}
+{{- $_ := set $memoryBallastConfig "size_mib" (include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory) }}
+{{- end }}
+{{- .Values.config | toYaml }}
+{{- end }}
+
+
+{{/*
 Build config file for agent OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.agentCollectorConfig" -}}
 {{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values)  }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := include "opentelemetry-collector.agent.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := include "opentelemetry-collector.agentConfigOverride" $data | fromYaml | mustMergeOverwrite $config }}
 {{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
@@ -175,11 +188,11 @@ receivers:
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
-        parse_from: $$attributes.file_path
+        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
+        parse_from: $$attributes["file.path"]
       # Move out attributes to Attributes
       - type: metadata
-        labels:
+        attributes:
           stream: 'EXPR($.stream)'
           k8s.container.name: 'EXPR($.container_name)'
           k8s.namespace.name: 'EXPR($.namespace)'
