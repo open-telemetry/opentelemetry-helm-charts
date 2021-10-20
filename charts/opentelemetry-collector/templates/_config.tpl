@@ -33,8 +33,6 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- $memoryBallastConfig := get .Values.config.extensions "memory_ballast" }}
 {{- if or (not $memoryBallastConfig) (not $memoryBallastConfig.size_mib) }}
 {{- $_ := set $memoryBallastConfig "size_mib" (include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory) }}
-{{- $newExtensionList := append .Values.config.service.extensions "memory_ballast" }}
-{{- $_ := set .Values.config.service "extensions" $newExtensionList }}
 {{- end }}
 {{- .Values.config | toYaml }}
 {{- end }}
