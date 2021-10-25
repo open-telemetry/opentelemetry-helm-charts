@@ -10,9 +10,6 @@ limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources
 
 # By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
 spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
-
-# By default ballast_size_mib is set to 40% of ".Values.resources.limits.memory"
-ballast_size_mib: {{ include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
 {{- end }}
 
 {{/*
