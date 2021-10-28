@@ -14,16 +14,8 @@ spec:
   type: {{ .Values.service.type }}
   {{- if .Values.service.clusterIP }}
   clusterIP: {{ .Values.service.clusterIP }}
-  {{- end}}
-  ports:
-    {{- range $key, $port := .Values.ports }}
-    {{- if $port.enabled }}
-    - name: {{ $key }}
-      port: {{ $port.servicePort }}
-      targetPort: {{ $key }}
-      protocol: {{ $port.protocol }}
-    {{- end }}
-    {{- end }}
+  {{- end }}
+  ports: {{ include "opentelemetry-collector.standalonePortsConfig" . | nindent 4 }}
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
     component: standalone-collector
