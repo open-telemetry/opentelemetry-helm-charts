@@ -211,3 +211,19 @@ service:
         - otlp
 {{- end }}
 {{- end }}
+
+{{/* Build the list of port for standalone service */}}
+{{- define "opentelemetry-collector.standalonePortsConfig" -}}
+{{- $ports := deepCopy .Values.ports }}
+{{- if .Values.standaloneCollector.ports  }}
+{{- $ports = deepCopy .Values.standaloneCollector.ports | mustMergeOverwrite (deepCopy .Values.ports) }}
+{{- end }}
+{{- range $key, $port := $ports }}
+{{- if $port.enabled }}
+- name: {{ $key }}
+  port: {{ $port.servicePort }}
+  targetPort: {{ $key }}
+  protocol: {{ $port.protocol }}
+{{- end }}
+{{- end }}
+{{- end }}
