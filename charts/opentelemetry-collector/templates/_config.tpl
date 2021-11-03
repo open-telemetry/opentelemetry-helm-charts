@@ -10,9 +10,6 @@ limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources
 
 # By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
 spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
-
-# By default ballast_size_mib is set to 40% of ".Values.resources.limits.memory"
-ballast_size_mib: {{ include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory }}
 {{- end }}
 
 {{/*
@@ -27,12 +24,25 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- end }}
 
 {{/*
+Merge user supplied top-level (not particular to standalone or agent) config into memory ballast config.
+*/}}
+{{- define "opentelemetry-collector.ballastConfig" -}}
+{{- $memoryBallastConfig := get .Values.config.extensions "memory_ballast" }}
+{{- if or (not $memoryBallastConfig) (not $memoryBallastConfig.size_mib) }}
+{{- $_ := set $memoryBallastConfig "size_mib" (include "opentelemetry-collector.getMemBallastSizeMib" .Values.resources.limits.memory) }}
+{{- end }}
+{{- .Values.config | toYaml }}
+{{- end }}
+
+
+{{/*
 Build config file for agent OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.agentCollectorConfig" -}}
 {{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values)  }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := include "opentelemetry-collector.agent.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := include "opentelemetry-collector.agentConfigOverride" $data | fromYaml | mustMergeOverwrite $config }}
 {{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
@@ -111,7 +121,8 @@ Default config override for agent collector deamonset
 exporters:
   otlp:
     endpoint: {{ include "opentelemetry-collector.fullname" . }}:4317
-    insecure: true
+    tls:
+      insecure: true
 {{- end }}
 
 {{- if .Values.standaloneCollector.enabled }}
@@ -174,11 +185,11 @@ receivers:
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
-        parse_from: $$attributes.file_path
+        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<run_id>\d+)\.log$'
+        parse_from: $$attributes["file.path"]
       # Move out attributes to Attributes
       - type: metadata
-        labels:
+        attributes:
           stream: 'EXPR($.stream)'
           k8s.container.name: 'EXPR($.container_name)'
           k8s.namespace.name: 'EXPR($.namespace)'
@@ -198,5 +209,21 @@ service:
       receivers:
         - filelog
         - otlp
+{{- end }}
+{{- end }}
+
+{{/* Build the list of port for standalone service */}}
+{{- define "opentelemetry-collector.standalonePortsConfig" -}}
+{{- $ports := deepCopy .Values.ports }}
+{{- if .Values.standaloneCollector.ports  }}
+{{- $ports = deepCopy .Values.standaloneCollector.ports | mustMergeOverwrite (deepCopy .Values.ports) }}
+{{- end }}
+{{- range $key, $port := $ports }}
+{{- if $port.enabled }}
+- name: {{ $key }}
+  port: {{ $port.servicePort }}
+  targetPort: {{ $key }}
+  protocol: {{ $port.protocol }}
+{{- end }}
 {{- end }}
 {{- end }}
