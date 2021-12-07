@@ -1,5 +1,5 @@
 {{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled }}
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ template "opentelemetry-operator.name" . }}-serving-cert
@@ -21,7 +21,7 @@ spec:
       - {{ template "opentelemetry-operator.name" . }}
 {{- if not .Values.admissionWebhooks.certManager.issuerRef }}
 ---
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ template "opentelemetry-operator.name" . }}-selfsigned-issuer
