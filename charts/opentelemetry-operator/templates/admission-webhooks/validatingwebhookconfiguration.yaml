@@ -7,6 +7,47 @@ metadata:
   name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
+    - v1
+    - v1beta1
+    clientConfig:
+      service:
+        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        path: /validate-opentelemetry-io-v1alpha1-instrumentation
+    failurePolicy: Fail
+    name: vinstrumentationcreateupdate.kb.io
+    rules:
+    - apiGroups:
+        - opentelemetry.io
+      apiVersions:
+        - v1alpha1
+      operations:
+        - CREATE
+        - UPDATE
+      resources:
+        - instrumentations
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        path: /validate-opentelemetry-io-v1alpha1-instrumentation
+    failurePolicy: Ignore
+    name: vinstrumentationdelete.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - DELETE
+        resources:
+          - instrumentations
+    sideEffects: None
+  - admissionReviewVersions:
       - v1
       - v1beta1
     clientConfig:
