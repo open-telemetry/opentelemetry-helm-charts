@@ -19,7 +19,9 @@ spec:
         - args:
             - --metrics-addr=127.0.0.1:8080
             - --enable-leader-election
+            {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --otelcol-image="{{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}"
+            {{- end }}
           command:
             - /manager
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
