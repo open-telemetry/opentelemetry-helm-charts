@@ -11,7 +11,6 @@ containers:
     command:
       - /{{ .Values.command.name }}
       - --config=/conf/relay.yaml
-      - --metrics-addr=0.0.0.0:8888
       {{- range .Values.command.extraArgs }}
       - {{ . }}
       {{- end }}
