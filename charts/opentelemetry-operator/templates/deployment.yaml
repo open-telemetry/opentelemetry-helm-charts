@@ -62,8 +62,18 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-          resources:
-{{ toYaml .Values.kubeRBACProxy.resources | indent 12 }}
+          {{- with .Values.kubeRBACProxy.resources }}
+          resources: {{ toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.name" . }}-controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
