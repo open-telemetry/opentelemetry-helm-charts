@@ -1,4 +1,4 @@
-{{- if .Values.PodDisruptionBudget.enabled .Values.standaloneCollector.enabled }}
+{{- if .Values.podDisruptionBudget.enabled .Values.standaloneCollector.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -6,8 +6,8 @@ metadata:
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
 spec:
-  minAvailable: {{.Values.PodDisruptionBudget.minAvailable}}
-  maxUnavailable: {{.Values.PodDisruptionBudget.maxUnavailable}}
+  minAvailable: {{.Values.podDisruptionBudget.minAvailable}}
+  maxUnavailable: {{.Values.podDisruptionBudget.maxUnavailable}}
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6}}
