@@ -1,4 +1,4 @@
-{{- if and .Values.podDisruptionBudget | toYaml | trim | indent 2 .Values.standaloneCollector.enabled }}
+{{- if and .Values.podDisruptionBudget.enabled .Values.standaloneCollector.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -6,7 +6,9 @@ metadata:
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
 spec:
-  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- with podDisruptionBudget.minAvailable }}
+     minAvailable: {{ . }}
+  {{- end }}
   maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
   selector:
     matchLabels:
