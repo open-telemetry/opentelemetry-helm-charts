@@ -129,7 +129,7 @@ image:
   repository: otel/opentelemetry-collector-contrib
 
 command:
-  name: otelcontribcol
+  name: otelcol-contrib
 ```
 
 The way this feature works is it adds a `filelog` receiver on the `logs` pipeline. This receiver is preconfigured
@@ -175,7 +175,7 @@ image:
   repository: otel/opentelemetry-collector-contrib
 
 command:
-  name: otelcontribcol
+  name: otelcol-contrib
 ```
 
 ### Other configuration options

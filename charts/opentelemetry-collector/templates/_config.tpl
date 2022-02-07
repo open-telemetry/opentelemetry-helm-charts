@@ -134,6 +134,9 @@ service:
       exporters: [otlp]
     traces:
       exporters: [otlp]
+  telemetry:
+    metrics:
+      address: 0.0.0.0:8888
 {{- end }}
 {{- end }}
 
