@@ -19,10 +19,3 @@ Selector labels
 app.kubernetes.io/name: {{ include "opentelemetry-operator.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-
-{{/*
-Define the namespace where the resources in the chart will be installed.
-*/}}
-{{- define "opentelemetry-operator.namespace" -}}
-opentelemetry-operator-system
-{{- end -}}

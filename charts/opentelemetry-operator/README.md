@@ -58,25 +58,17 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ## Install Chart
 
-If you didn't create the namespace `opentelemetry-operator-system` before (steps in the third method to generate the TLS cert),
-the OpenTelemetry Operator chart will be installed in the namespace automatically. The installation command example is as below.
-
 ```console
 $ helm install \
   my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
-However, if you create the namespace and place the TLS cert in the desired secret, you will need to set `createNamespace`
-to `false` to make sure Helm won't try to create an existing namespace, which would cause an error. Installation command example is as below.
+If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
-$ helm install \
-  my-opentelemetry-operator open-telemetry/opentelemetry-operator \
-  --set createNamespace=false
+$ helm install --namespace opentelemetry-operator-system \
+  my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
-
-Note that `--namespace` option here won't affect where the OpenTelemetry Operator and other resources this chart contains are installed.
-It will only affect on where the Helm chart release info is stored, which is `default` namespace by default.
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
 
@@ -96,12 +88,6 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 
 ```console
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
-```
-
-If the namespace wasn't created by the Helm chart, you'll need to manually remove it as well:
-
-```console
-$ kubectl delete ns opentelemetry-operator-system
 ```
 
 ## Upgrade Chart

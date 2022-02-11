@@ -59,7 +59,8 @@ jobs:
           until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
           sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.1/kubectl-kuttl_0.11.1_linux_x86_64
           sudo chmod +x /usr/local/bin/kubectl-kuttl
-          helm install my-opentelemetry-operator ./charts/opentelemetry-operator
+          kubectl create namespace opentelemetry-operator-system
+          helm install --namespace=opentelemetry-operator-system my-opentelemetry-operator ./charts/opentelemetry-operator
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
           git clone https://github.com/open-telemetry/opentelemetry-operator.git
           kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml

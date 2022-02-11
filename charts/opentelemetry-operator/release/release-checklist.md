@@ -10,7 +10,7 @@
 - [ ] If you see any template files need to be updated, update them to maintain consistency with the ones in the manifest (especially be careful with `role.yaml` and `clusterrole.yaml`).  \
   Create a new YAML file under `templates` directory if it doesn't exist.
   Use `{{ template "opentelemetry-operator.name" . }}` to represent the name of OTEL Operator which probably is `opentelemetry-operator` in the manifest.
-  Use `{{ template "opentelemetry-operator.namespace" . }}` to represent the namespace which probably is `opentelemetry-operator-system` in the manifest.
+  Use `{{ .Release.Namespace }}` to represent the namespace.
 - [ ] Update `README` if there is a breaking change in the Operator Helm chart
 - [ ] Bump chart version in `Chart.yaml`
 

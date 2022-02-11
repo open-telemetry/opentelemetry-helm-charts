@@ -3,7 +3,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" (include "opentelemetry-operator.namespace" .) (include "opentelemetry-operator.name" .) }}
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
   labels:
     app.kubernetes.io/name: opentelemetry-operator
   name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
@@ -13,7 +13,7 @@ webhooks:
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
-        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Fail
     name: vinstrumentationcreateupdate.kb.io
@@ -33,7 +33,7 @@ webhooks:
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
-        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Ignore
     name: vinstrumentationdelete.kb.io
@@ -52,7 +52,7 @@ webhooks:
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
-        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vopentelemetrycollectorcreateupdate.kb.io
@@ -72,7 +72,7 @@ webhooks:
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
-        namespace: {{ template "opentelemetry-operator.namespace" . }}
+        namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Ignore
     name: vopentelemetrycollectordelete.kb.io
