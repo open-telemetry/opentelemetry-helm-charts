@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/name: opentelemetry-operator
     control-plane: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager
   namespace: {{ template "opentelemetry-operator.namespace" . }}
@@ -9,10 +10,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
+      app.kubernetes.io/name: opentelemetry-operator
       control-plane: controller-manager
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: opentelemetry-operator
         control-plane: controller-manager
     spec:
       containers:
@@ -30,6 +33,18 @@ spec:
             - containerPort: 9443
               name: webhook-server
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
 {{ toYaml .Values.manager.resources | indent 12 }}
           volumeMounts:
@@ -40,13 +55,15 @@ spec:
             - --secure-listen-address=0.0.0.0:8443
             - --upstream=http://127.0.0.1:8080/
             - --logtostderr=true
-            - --v=10
+            - --v=0
           image: "{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
           name: kube-rbac-proxy
           ports:
             - containerPort: 8443
               name: https
               protocol: TCP
+          resources:
+{{ toYaml .Values.kubeRBACProxy.resources | indent 12 }}
       serviceAccountName: {{ template "opentelemetry-operator.name" . }}-controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
