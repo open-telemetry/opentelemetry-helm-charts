@@ -4,11 +4,12 @@ kind: MutatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" (include "opentelemetry-operator.namespace" .) (include "opentelemetry-operator.name" .) }}
+  labels:
+    app.kubernetes.io/name: opentelemetry-operator
   name: {{ template "opentelemetry-operator.name" . }}-mutating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
-    - v1
-    - v1beta1
+      - v1
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
@@ -29,7 +30,6 @@ webhooks:
     sideEffects: None
   - admissionReviewVersions:
       - v1
-      - v1beta1
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
@@ -50,7 +50,6 @@ webhooks:
     sideEffects: None
   - admissionReviewVersions:
       - v1
-      - v1beta1
     clientConfig:
       service:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
