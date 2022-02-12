@@ -7,7 +7,7 @@ metadata:
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-operator
@@ -45,8 +45,7 @@ spec:
               port: 8081
             initialDelaySeconds: 5
             periodSeconds: 10
-          resources:
-{{ toYaml .Values.manager.resources | indent 12 }}
+          resources: {{ toYaml .Values.manager.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
@@ -62,8 +61,18 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-          resources:
-{{ toYaml .Values.kubeRBACProxy.resources | indent 12 }}
+          {{- with .Values.kubeRBACProxy.resources }}
+          resources: {{ toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.name" . }}-controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
