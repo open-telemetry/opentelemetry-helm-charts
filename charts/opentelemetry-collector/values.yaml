@@ -183,6 +183,13 @@ ports:
     servicePort: 9411
     hostPort: 9411
     protocol: TCP
+  metrics:
+    # The metrics port is disabled by default. However you need to enable the port
+    # in order to use the ServiceMonitor (serviceMonitor.enabled) or PodMonitor (podMonitor.enabled).
+    enabled: false
+    containerPort: 8888
+    servicePort: 8888
+    protocol: TCP
 
 # Configuration for agent OpenTelemetry Collector daemonset, enabled by default
 agentCollector:
@@ -309,19 +316,24 @@ ingress:
 #        - collector.example.com
 
 podMonitor:
+  # The pod monitor by default scrapes the metrics port.
+  # The metrics port needs to be enabled as well.
   enabled: false
-  metricsEndpoints: {}
-  # - port: prometheus
+  metricsEndpoints:
+  - port: metrics
+    # interval: 15s
 
   # additional labels for the PodMonitor
   extraLabels: {}
   #   release: kube-prometheus-stack
 
 serviceMonitor:
+  # The service monitor by default scrapes the metrics port.
+  # The metrics port needs to be enabled as well.
   enabled: false
-  metricsEndpoints: {}
-  # - port: metrics
-  #   interval: 15s
+  metricsEndpoints:
+  - port: metrics
+    # interval: 15s
 
   # additional labels for the ServiceMonitor
   extraLabels: {}
