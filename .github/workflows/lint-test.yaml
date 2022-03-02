@@ -63,5 +63,6 @@ jobs:
           helm install --namespace=opentelemetry-operator-system my-opentelemetry-operator ./charts/opentelemetry-operator
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
           git clone https://github.com/open-telemetry/opentelemetry-operator.git
+          git checkout tags/v0.43.0 -b matching-chart-version
           kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
         if: steps.list-changed.outputs.operator-changed == 'true'
