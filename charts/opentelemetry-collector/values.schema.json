@@ -186,7 +186,9 @@
           "type": "boolean"
         }
       },
-      "required": ["enabled"]
+      "required": [
+        "enabled"
+      ]
     },
     "agentCollector": {
       "description": "Configuration for OpenTelemetry Collector daemonset",
@@ -196,7 +198,9 @@
           "type": "boolean"
         }
       },
-      "required": ["enabled"]
+      "required": [
+        "enabled"
+      ]
     },
     "service": {
       "type": "object",
@@ -234,7 +238,10 @@
           "type": "boolean"
         },
         "metricsEndpoints": {
-          "type": "object"
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
         },
         "extraLabels": {
           "type": "object"
@@ -248,7 +255,10 @@
           "type": "boolean"
         },
         "metricsEndpoints": {
-          "type": "object"
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
         },
         "extraLabels": {
           "type": "object"
@@ -282,7 +292,27 @@
     }
   },
   "anyOf": [
-    {"properties": {"standaloneCollector": {"properties": {"enabled": {"const": true}}}}},
-    {"properties": {"agentCollector": {"properties": {"enabled": {"const": true}}}}}
+    {
+      "properties": {
+        "standaloneCollector": {
+          "properties": {
+            "enabled": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "agentCollector": {
+          "properties": {
+            "enabled": {
+              "const": true
+            }
+          }
+        }
+      }
+    }
   ]
 }
