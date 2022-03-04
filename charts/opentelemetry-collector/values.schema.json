@@ -137,6 +137,32 @@
         "type": "object"
       }
     },
+    "ports": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "containerPort": {
+              "type": "integer"
+            },
+            "servicePort": {
+              "type": "integer"
+            },
+            "hostPort": {
+              "type": "integer"
+            },
+            "protocol": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "serviceAccount": {
       "type": "object",
       "additionalProperties": false,
@@ -171,6 +197,32 @@
         }
       },
       "required": ["enabled"]
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "ClusterIP",
+            "NodePort",
+            "LoadBalancer",
+            "ExternalName"
+          ]
+        },
+        "annotations": {
+          "type": "object"
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
     }
   },
   "anyOf": [
