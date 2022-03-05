@@ -2,16 +2,190 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "title": "Values",
+  "additionalProperties": false,
   "properties": {
-    "standaloneCollector": {
-      "description": "Configuration for standalone OpenTelemetry Collector deployment",
+    "nameOverride": {
+      "description": "Override name of the chart used in Kubernetes object names.",
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "description": "Override fully qualified app name.",
+      "type": "string"
+    },
+    "config": {
+      "description": "Configuration that applies to both standalone and agent collector. Overwritable by standalone and agent specific configs.",
+      "type": "object"
+    },
+    "image": {
+      "description": "Image use in both standalone and agent configs",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "enabled": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": [
+            "IfNotPresent",
+            "Always",
+            "Never"
+          ]
+        }
+      }
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "command": {
+      "description": "OpenTelemetry Collector executable",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
           "type": "boolean"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
         }
       },
-      "required": ["enabled"]
+      "required": [
+        "create"
+      ]
+    },
+    "clusterRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "clusterRoleBinding": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "type": "object"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "create"
+      ]
+    },
+    "podSecurityContext": {
+      "type": "object"
+    },
+    "securityContext": {
+      "type": "object"
+    },
+    "nodeSelector": {
+      "type": "object"
+    },
+    "tolerations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "affinity": {
+      "type": "object"
+    },
+    "priorityClassName": {
+      "type": "string"
+    },
+    "extraEnvs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "extraConfigMapMounts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "extraHostPathMounts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "secretMounts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "ports": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "containerPort": {
+              "type": "integer"
+            },
+            "servicePort": {
+              "type": "integer"
+            },
+            "hostPort": {
+              "type": "integer"
+            },
+            "protocol": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        }
+      }
     },
     "agentCollector": {
       "description": "Configuration for OpenTelemetry Collector daemonset",
@@ -19,13 +193,255 @@
       "properties": {
         "enabled": {
           "type": "boolean"
+        },
+        "containerLogs": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "limits": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "podAnnotations": {
+          "type": "object"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "configOverride": {
+          "type": "object"
         }
       },
-      "required": ["enabled"]
+      "required": [
+        "enabled",
+        "containerLogs"
+      ]
+    },
+    "standaloneCollector": {
+      "description": "Configuration for standalone OpenTelemetry Collector deployment",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "replicaCount": {
+          "type": "integer"
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "limits": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "podAnnotations": {
+          "type": "object"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "configOverride": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "ClusterIP",
+            "NodePort",
+            "LoadBalancer",
+            "ExternalName"
+          ]
+        },
+        "annotations": {
+          "type": "object"
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "podMonitor": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "metricsEndpoints": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "extraLabels": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "metricsEndpoints": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "extraLabels": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "podDisruptionBudget": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "autoscaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "minReplicas": {
+          "type": "integer"
+        },
+        "maxReplicas": {
+          "type": "integer"
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
     }
   },
   "anyOf": [
-    {"properties": {"standaloneCollector": {"properties": {"enabled": {"const": true}}}}},
-    {"properties": {"agentCollector": {"properties": {"enabled": {"const": true}}}}}
+    {
+      "properties": {
+        "standaloneCollector": {
+          "properties": {
+            "enabled": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "agentCollector": {
+          "properties": {
+            "enabled": {
+              "const": true
+            }
+          }
+        }
+      }
+    }
   ]
 }
