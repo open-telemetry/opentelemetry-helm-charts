@@ -19,3 +19,14 @@ Selector labels
 app.kubernetes.io/name: {{ include "opentelemetry-operator.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+
+{{/*
+Manager add environment variables from map to env obj.
+*/}}
+{{- define "opentelemetry-operator.envs" -}}
+{{- range $name, $value := .Values.manager.envs }}
+- name: {{ $name }}
+  value: {{ $value | quote -}}
+{{- end }}
+{{- end }}
