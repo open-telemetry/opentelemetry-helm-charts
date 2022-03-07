@@ -27,6 +27,10 @@ spec:
             {{- end }}
           command:
             - /manager
+          {{- if .Values.manager.env }}
+          env:
+            {{- include "opentelemetry-operator.envs" . | nindent 12 -}}
+          {{- end }}
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
           name: manager
           ports:
