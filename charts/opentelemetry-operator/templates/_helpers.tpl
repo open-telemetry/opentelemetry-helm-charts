@@ -24,8 +24,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/*
 Manager add environment variables from map to env obj.
 */}}
-{{- define "opentelemetry-operator.envs" -}}
-{{- range $name, $value := .Values.manager.envs }}
+{{- define "opentelemetry-operator.env" -}}
+{{- range $name, $value := .Values.manager.env }}
 - name: {{ $name }}
   value: {{ $value | quote -}}
 {{- end }}
