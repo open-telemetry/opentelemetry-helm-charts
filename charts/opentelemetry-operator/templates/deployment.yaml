@@ -27,6 +27,13 @@ spec:
             {{- end }}
           command:
             - /manager
+          {{- if .Values.manager.env }}
+          env:
+            {{- range $name, $value := .Values.manager.env  }}
+            - name: {{ $name }}
+              value: {{ $value | quote -}}
+            {{- end }}
+          {{- end }}
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
           name: manager
           ports:
