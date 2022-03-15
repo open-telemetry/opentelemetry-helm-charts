@@ -128,4 +128,5 @@ affinity:
 tolerations:
   {{- toYaml . | nindent 2 }}
 {{- end }}
+hostNetwork: {{ .Values.hostNetwork }}
 {{- end }}
