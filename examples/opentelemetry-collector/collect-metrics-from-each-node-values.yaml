@@ -1,0 +1,86 @@
+config: {}
+
+ports:
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  metrics:
+    enabled: true
+
+# Configuration for agent OpenTelemetry Collector daemonset, enabled by default
+agentCollector:
+  enabled: true
+  
+  podAnnotations: {}
+  podLabels: {}
+
+  hostNetwork: true
+
+  # Configuration override that will be merged into the agent's default config
+  configOverride: 
+    exporters:
+      logging: {}
+    extensions:
+      health_check: {}
+      memory_ballast: {}
+    processors:
+      batch: {}
+      memory_limiter: null
+    receivers:
+      jaeger: null
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus/agent:
+        config:
+          scrape_configs:
+            - job_name: opentelemetry-collector
+              scrape_interval: 10s
+              static_configs:
+                - targets:
+                    - ${MY_POD_IP}:8888
+      zipkin: null
+      hostmetrics:
+        collection_interval: 30s
+        scrapers:
+          cpu:
+          disk:
+          filesystem:
+          load:
+          memory:
+          network:
+          paging:
+          processes:
+    service:
+      extensions:
+        - health_check
+        - memory_ballast
+      pipelines:
+        metrics:
+          exporters:
+            - logging
+          processors:
+            - memory_limiter
+            - batch
+          receivers:
+            - otlp
+            - hostmetrics
+        metrics/agent:
+          exporters:
+            - logging
+          processors:
+            - memory_limiter
+            - batch
+          receivers:
+            - prometheus/agent
+      telemetry:
+        metrics:
+          address: 0.0.0.0:8888
