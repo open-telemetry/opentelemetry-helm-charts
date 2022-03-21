@@ -42,6 +42,7 @@ jobs:
         run: |
           ls -la
           for d in */ ; do
+            echo "Checking example: ${d}"
             helm template example ../../charts/opentelemetry-collector --values "${d}/values.yaml" --output-dir=./test
             diff "${d}/manifest" ./test/opentelemetry-collector/templates
           done
