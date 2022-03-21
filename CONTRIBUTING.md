@@ -42,3 +42,13 @@ changes to a chart should:
 1. Bump the MAJOR version
 2. In the README, under a section called "Upgrading", describe the manual steps
    necessary to upgrade to the new (specified) MAJOR version
+
+### Adding new examples
+
+When adding new examples, use the following command
+
+```
+helm template example ./charts/opentelemetry-collector --values ./example/{your-example-folder}/values.yaml --output-dir ./example/{your-example-folder}/manifest
+```
+
+You will then have to flatten `./example/{your-example-folder}/manifest/opentelemetry-collector/templates/` into `./example/{your-example-folder}/manifest`.
