@@ -43,7 +43,7 @@ jobs:
           ls -la
           for d in */ ; do
             helm template example ../../charts/opentelemetry-collector --values "${d}/values.yaml" --output-dir=./test
-            ls -la ./test
+            diff "${d}/manifest" ./test/opentelemetry-collector/templates
           done
 
       # - name: Run chart-testing (lint)
