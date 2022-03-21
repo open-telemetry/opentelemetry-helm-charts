@@ -44,7 +44,11 @@ jobs:
           for d in */ ; do
             echo "Checking example: ${d}"
             helm template example ../../charts/opentelemetry-collector --values "${d}/values.yaml" --output-dir "./test/${d}"
-            diff "${d}/manifest" "./test/${d}/opentelemetry-collector/templates"
+            if diff "${d}/manifest" "./test/${d}/opentelemetry-collector/templates" >/dev/null; then
+                echo "Passed $x";
+            else
+                echo "Failed $x";
+            fi
           done
 
       # - name: Run chart-testing (lint)
