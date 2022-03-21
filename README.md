@@ -33,6 +33,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
 
 - [Naseem K. Ullah](https://github.com/naseemkullah), Transit
+- [Tyler Helmuth](https://github.com/TylerHelmuth), New Relic
 
 Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
 
