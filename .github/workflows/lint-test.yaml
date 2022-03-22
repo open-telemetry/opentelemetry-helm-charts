@@ -39,20 +39,9 @@ jobs:
 
       - name: Run chart-testing (lint)
         run: ct lint --target-branch main
-      
-      - name: Run example check
-        working-directory: examples/opentelemetry-collector
-        run: |
-          for d in */ ; do
-            echo "Checking example: ${d}"
-            helm template example ../../charts/opentelemetry-collector --values "${d}values.yaml" --output-dir "./test/${d}"
-            if diff "${d}manifest" "./test/${d}opentelemetry-collector/templates" >/dev/null; then
-                echo "Passed ${d}";
-            else
-                echo "Failed ${d}. Check that manifest/ has been rendered with the latest ${d}values.yaml";
-                exit 1                
-            fi
-          done
+
+      - name: Run make check-example
+        run: make check-examples
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.2.0
