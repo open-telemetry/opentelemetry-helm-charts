@@ -23,49 +23,49 @@ jobs:
         with:
           python-version: 3.7
 
-      # - name: Set up chart-testing
-      #   uses: helm/chart-testing-action@v2.0.1
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.0.1
 
-      # - name: Run chart-testing (list-changed)
-      #   id: list-changed
-      #   run: |
-      #     changed=$(ct list-changed --target-branch main)
-      #     if [[ -n "$changed" ]]; then
-      #       echo "::set-output name=changed::true"
-      #     fi
-      #     if [[ "$changed" == *"opentelemetry-operator"* ]]; then
-      #       echo "::set-output name=operator-changed::true"
-      #     fi
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch main)
+          if [[ -n "$changed" ]]; then
+            echo "::set-output name=changed::true"
+          fi
+          if [[ "$changed" == *"opentelemetry-operator"* ]]; then
+            echo "::set-output name=operator-changed::true"
+          fi
 
       - name: Run make check-example
         run: make check-examples
 
-      # - name: Run chart-testing (lint)
-      #   run: ct lint --target-branch main
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch main
 
-      # - name: Create kind cluster
-      #   uses: helm/kind-action@v1.2.0
-      #   if: steps.list-changed.outputs.changed == 'true'
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+        if: steps.list-changed.outputs.changed == 'true'
 
-      # - name: Install cert-manager
-      #   run: |
-      #     kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
-      #     kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
-      #     kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
-      #   if: steps.list-changed.outputs.operator-changed == 'true'
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
+        if: steps.list-changed.outputs.operator-changed == 'true'
 
-      # - name: Run chart-testing (install)
-      #   run: ct install --target-branch main
+      - name: Run chart-testing (install)
+        run: ct install --target-branch main
 
-      # - name: Run KUTTL smoke tests
-      #   run: |
-      #     until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
-      #     sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.1/kubectl-kuttl_0.11.1_linux_x86_64
-      #     sudo chmod +x /usr/local/bin/kubectl-kuttl
-      #     kubectl create namespace opentelemetry-operator-system
-      #     helm install --namespace=opentelemetry-operator-system my-opentelemetry-operator ./charts/opentelemetry-operator
-      #     kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
-      #     appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
-      #     git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
-      #     kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
-      #   if: steps.list-changed.outputs.operator-changed == 'true'
+      - name: Run KUTTL smoke tests
+        run: |
+          until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
+          sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.1/kubectl-kuttl_0.11.1_linux_x86_64
+          sudo chmod +x /usr/local/bin/kubectl-kuttl
+          kubectl create namespace opentelemetry-operator-system
+          helm install --namespace=opentelemetry-operator-system my-opentelemetry-operator ./charts/opentelemetry-operator
+          kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
+          appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
+          git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
+          kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
+        if: steps.list-changed.outputs.operator-changed == 'true'
