@@ -47,7 +47,7 @@ changes to a chart should:
 
 New examples should be added as independent folders in the respective chart's `examples` folder.  Examples should always contain a `values.yaml` and a `rendered` folder.
 
-To generate the rendered files run
+To generate the rendered files run:
 
 ```console
 make generate-examples
