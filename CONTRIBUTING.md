@@ -45,10 +45,10 @@ changes to a chart should:
 
 ### Adding new examples
 
-When adding new examples, use the following command
+New examples should be added as independent folders in the respective chart's `examples` folder.  Examples should always contain a `values.yaml` and a `rendered` folder.
 
-```
-helm template example ./charts/opentelemetry-collector --values ./example/{your-example-folder}/values.yaml --output-dir ./example/{your-example-folder}/manifest
-```
+To generate the rendered files run
 
-You will then have to flatten `./example/{your-example-folder}/manifest/opentelemetry-collector/templates/` into `./example/{your-example-folder}/manifest`.
+```console
+make generate-examples
+```
