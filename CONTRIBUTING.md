@@ -42,3 +42,13 @@ changes to a chart should:
 1. Bump the MAJOR version
 2. In the README, under a section called "Upgrading", describe the manual steps
    necessary to upgrade to the new (specified) MAJOR version
+
+### Adding new examples
+
+New examples should be added as independent folders in the respective chart's `examples` folder.  Examples should always contain a `values.yaml` and a `rendered` folder.
+
+To generate the rendered files run:
+
+```console
+make generate-examples
+```
