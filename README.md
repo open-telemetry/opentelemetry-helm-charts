@@ -45,4 +45,3 @@ Learn more about roles in the [community repository](https://github.com/open-tel
 ## License
 
 [Apache 2.0 License](./LICENSE).
-
