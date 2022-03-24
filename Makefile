@@ -4,8 +4,8 @@ CHARTS ?= opentelemetry-collector opentelemetry-operator
 .PHONY: generate-examples
 generate-examples: 
 	for chart_name in $(CHARTS); do \
-		export EXAMPLES_DIR=charts/$${chart_name}/examples; \
-		export EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename {} \;); \
+		EXAMPLES_DIR=charts/$${chart_name}/examples; \
+		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
 			rm -rf "$${EXAMPLES_DIR}/$${example}/rendered"; \
 			helm template example charts/$${chart_name} --values "$${EXAMPLES_DIR}/$${example}/values.yaml" --output-dir "$${EXAMPLES_DIR}/$${example}/rendered"; \
@@ -17,8 +17,8 @@ generate-examples:
 .PHONY: check-examples
 check-examples:
 	for chart_name in $(CHARTS); do \
-		export EXAMPLES_DIR=charts/$${chart_name}/examples; \
-		export EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename {} \;); \
+		EXAMPLES_DIR=charts/$${chart_name}/examples; \
+		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
 			echo "Checking example: $${example}"; \
 			helm template example charts/$${chart_name} --values "$${EXAMPLES_DIR}/$${example}/values.yaml" --output-dir "${TMP_DIRECTORY}/$${example}"; \
