@@ -110,3 +110,32 @@ Return if ingress is stable.
 {{- define "ingress.isStable" -}}
   {{- eq (include "ingress.apiVersion" .) "networking.k8s.io/v1" -}}
 {{- end -}}
+
+
+{{- define "opentelemetry-collector.podAnnotations" -}}
+{{- $podAnnotations := get .Values.podAnnotations }}
+{{- if .Values.agentCollector.podAnnotations }}
+{{- $podAnnotations := mustMergeOverwrite .Values.agentCollector.podAnnotations $podAnnotations }}
+{{- else if .Values.standaloneCollector.podAnnotations }}
+{{- $podAnnotations := mustMergeOverwrite .Values.standaloneCollector.podAnnotations $podAnnotations }}
+{{- end }}
+{{- $podAnnotations | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.podLabels" -}}
+{{- $podLabels := get .Values.podLabels }}
+{{- if .Values.agentCollector.podLabels }}
+{{- $podLabels := mustMergeOverwrite .Values.agentCollector.podLabels $podLabels }}
+{{- else if .Values.standaloneCollector.podLabels }}
+{{- $podLabels := mustMergeOverwrite .Values.standaloneCollector.podLabels $podLabels }}
+{{- end }}
+{{- $podLabels | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.annotations" -}}
+{{- $annotations := get .Values.annotations }}
+{{- if .Values.standaloneCollector.annotations }}
+{{- $annotations := mustMergeOverwrite .Values.standaloneCollector.annotations $annotations }}
+{{- end }}
+{{- $annotations | toYaml }}
+{{- end }}

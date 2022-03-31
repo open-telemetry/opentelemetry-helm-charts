@@ -11,7 +11,11 @@ metadata:
 {{- end }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.standaloneCollector.replicaCount }}
+{{- $replicas := .Values.replicas -}}
+{{- if .Values.standaloneCollector.replicaCount }}
+  {{- $replicas = .Values.standaloneCollector.replicaCount -}}
+{{- end }}
+  replicas: {{ $replicas }}
 {{- end }}
   selector:
     matchLabels:

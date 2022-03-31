@@ -1,4 +1,4 @@
-{{- if .Values.agentCollector.enabled -}}
+{{- if or (eq .Values.agentCollector.enabled true) (eq .Values.mode "daemonset") -}}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -27,5 +27,10 @@ spec:
       {{- $podValues := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values) }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "-agent" "isAgent" true }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
-      hostNetwork: {{ .Values.agentCollector.hostNetwork }}
+{{- $hostNetwork := .Values.hostNetwork -}}
+{{- if .Values.agentCollector.hostNetwork }}
+{{- $hostNetwork = .Values.agentCollector.hostNetwork -}}
 {{- end }}
+      hostNetwork: {{ $hostNetwork }}
+{{- end }}
+  

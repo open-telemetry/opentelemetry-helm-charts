@@ -36,26 +36,31 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 
 
 {{/*
+DEPRECATED
 Build config file for agent OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.agentCollectorConfig" -}}
+{{ if .Values.agentCollector }}
 {{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values)  }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.agent.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.agentConfigOverride" $data | fromYaml | mustMergeOverwrite $config }}
+{{- $config := include "opentelemetry-collector.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
+{{- end }}
 {{- end }}
 
 {{/*
+DEPRECATED
 Build config file for standalone OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.standaloneCollectorConfig" -}}
+{{ if .Values.standaloneCollector }}
 {{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values)  }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- .Values.standaloneCollector.configOverride | mustMergeOverwrite $config | toYaml }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -113,35 +118,8 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- div (mul (include "opentelemetry-collector.convertMemToMib" .) 40) 100 }}
 {{- end -}}
 
-{{/*
-Default config override for agent collector deamonset
-*/}}
-{{- define "opentelemetry-collector.agentConfigOverride" -}}
-{{- if .Values.standaloneCollector.enabled }}
-exporters:
-  otlp:
-    endpoint: {{ include "opentelemetry-collector.fullname" . }}:4317
-    tls:
-      insecure: true
-{{- end }}
-
-{{- if .Values.standaloneCollector.enabled }}
-service:
-  pipelines:
-    logs:
-      exporters: [otlp]
-    metrics:
-      exporters: [otlp]
-    traces:
-      exporters: [otlp]
-  telemetry:
-    metrics:
-      address: 0.0.0.0:8888
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.agent.containerLogsConfig" -}}
-{{- if .Values.agentCollector.containerLogs.enabled }}
+{{- define "opentelemetry-collector.containerLogsConfig" -}}
+{{- if or (eq .Values.agentCollector.containerLogs.enabled true) (eq .Values.containerLogs.enabled true) }}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]

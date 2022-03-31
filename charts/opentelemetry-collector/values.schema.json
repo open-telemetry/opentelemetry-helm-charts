@@ -15,6 +15,13 @@
       "description": "Override fully qualified app name.",
       "type": "string"
     },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "daemonset",
+        "deployment"
+      ]
+    },
     "config": {
       "description": "Configuration that applies to both standalone and agent collector. Overwritable by standalone and agent specific configs.",
       "type": "object"
@@ -202,6 +209,68 @@
         }
       }
     },
+    "containerLogs": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu": {
+              "type": [
+                "string",
+                "integer"
+              ]
+            },
+            "memory": {
+              "type": "string"
+            }
+          }
+        },
+        "requests": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu": {
+              "type": [
+                "string",
+                "integer"
+              ]
+            },
+            "memory": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "podAnnotations": {
+      "type": "object"
+    },
+    "podLabels": {
+      "type": "object"
+    },
+    "hostNetwork": {
+      "type": "boolean"
+    },
+    "replicaCount": {
+      "type": "integer"
+    },
+    "annotations": {
+      "type": "object"
+    },
     "agentCollector": {
       "description": "Configuration for OpenTelemetry Collector daemonset",
       "type": "object",
@@ -259,7 +328,7 @@
         "podAnnotations": {
           "type": "object"
         },
-        "annotations": {
+        "podLabels": {
           "type": "object"
         },
         "hostNetwork": {
@@ -268,11 +337,7 @@
         "configOverride": {
           "type": "object"
         }
-      },
-      "required": [
-        "enabled",
-        "containerLogs"
-      ]
+      }
     },
     "standaloneCollector": {
       "description": "Configuration for standalone OpenTelemetry Collector deployment",
@@ -329,10 +394,7 @@
         "configOverride": {
           "type": "object"
         }
-      },
-      "required": [
-        "enabled"
-      ]
+      }
     },
     "service": {
       "type": "object",
@@ -440,26 +502,47 @@
   },
   "anyOf": [
     {
-      "properties": {
-        "standaloneCollector": {
+      "oneOf": [
+        {
           "properties": {
-            "enabled": {
-              "const": true
+            "standaloneCollector": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "agentCollector": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
             }
           }
         }
-      }
+      ]
     },
     {
-      "properties": {
-        "agentCollector": {
+      "oneOf": [
+        {
           "properties": {
-            "enabled": {
-              "const": true
+            "mode": {
+              "const": "daemonset"
+            }
+          }
+        },{
+          "properties": {
+            "mode": {
+              "const": "deployment"
             }
           }
         }
-      }
+      ]
     }
   ]
 }

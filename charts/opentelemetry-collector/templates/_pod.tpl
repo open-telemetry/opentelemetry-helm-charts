@@ -75,7 +75,7 @@ containers:
         subPath: {{ .subPath }}
         {{- end }}
       {{- end }}
-      {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
+      {{- if and $.isAgent (or .Values.containerLogs.enabled .Values.agentCollector.containerLogs.enabled) }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
