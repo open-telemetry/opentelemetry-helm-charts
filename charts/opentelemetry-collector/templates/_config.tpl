@@ -20,7 +20,12 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- if not $processorsConfig.memory_limiter }}
 {{- $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
 {{- end }}
+{{- if and (eq .Values.mode "daemonset") (not .Values.standaloneCollector.enabled ) }}
+{{- $config := include "opentelemetry-collector.ballastConfig" . | fromYaml }}
+{{- .Values.config | mustMergeOverwrite $config | toYaml }}
+{{- else }}
 {{- .Values.config | toYaml }}
+{{- end }}
 {{- end }}
 
 {{/*

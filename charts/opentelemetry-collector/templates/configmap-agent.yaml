@@ -1,4 +1,4 @@
-{{- if or (eq .Values.agentCollector.enabled true) (eq .Values.mode "daemonset") -}}
+{{- if and (not .Values.standaloneCollector.enabled) (or .Values.agentCollector.enabled (eq .Values.mode "daemonset")) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

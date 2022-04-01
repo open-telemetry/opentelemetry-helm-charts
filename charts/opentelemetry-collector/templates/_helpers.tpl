@@ -113,29 +113,32 @@ Return if ingress is stable.
 
 
 {{- define "opentelemetry-collector.podAnnotations" -}}
-{{- $podAnnotations := get .Values.podAnnotations }}
-{{- if .Values.agentCollector.podAnnotations }}
-{{- $podAnnotations := mustMergeOverwrite .Values.agentCollector.podAnnotations $podAnnotations }}
+{{- if .Values.podAnnotations }}
+{{- toYaml .Values.podAnnotations }}
+{{- else if .Values.agentCollector.podAnnotations }}
+{{- toYaml .Values.agentCollector.podAnnotations }}
 {{- else if .Values.standaloneCollector.podAnnotations }}
-{{- $podAnnotations := mustMergeOverwrite .Values.standaloneCollector.podAnnotations $podAnnotations }}
+{{- toYaml .Values.standaloneCollector.podAnnotations }}
 {{- end }}
-{{- $podAnnotations | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.podLabels" -}}
-{{- $podLabels := get .Values.podLabels }}
-{{- if .Values.agentCollector.podLabels }}
-{{- $podLabels := mustMergeOverwrite .Values.agentCollector.podLabels $podLabels }}
+{{- if .Values.podLabels }}
+{{- toYaml .Values.podLabels }}
+{{- else if .Values.agentCollector.podLabels }}
+{{- toYaml .Values.agentCollector.podLabels }}
 {{- else if .Values.standaloneCollector.podLabels }}
-{{- $podLabels := mustMergeOverwrite .Values.standaloneCollector.podLabels $podLabels }}
+{{- toYaml .Values.standaloneCollector.podLabels }}
 {{- end }}
-{{- $podLabels | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.annotations" -}}
-{{- $annotations := get .Values.annotations }}
-{{- if .Values.standaloneCollector.annotations }}
-{{- $annotations := mustMergeOverwrite .Values.standaloneCollector.annotations $annotations }}
+{{- if or .Values.annotations .Values.standaloneCollector.annotations}}
+annotations:
+{{- if .Values.annotations }}
+  {{ toYaml .Values.annotations }}
+{{- else if .Values.standaloneCollector.annotations }}
+  {{ toYaml .Values.standaloneCollector.annotations }}
 {{- end }}
-{{- $annotations | toYaml }}
+{{- end }}
 {{- end }}

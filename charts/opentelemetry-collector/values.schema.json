@@ -500,49 +500,54 @@
       ]
     }
   },
-  "anyOf": [
+  "allOf": [
     {
-      "oneOf": [
-        {
-          "properties": {
-            "standaloneCollector": {
-              "properties": {
-                "enabled": {
-                  "const": true
-                }
-              }
-            }
-          }
-        },
-        {
-          "properties": {
-            "agentCollector": {
-              "properties": {
-                "enabled": {
-                  "const": true
-                }
+      "if": {
+        "properties": {
+          "standaloneCollector": {
+            "properties": {
+              "enabled": {
+                "const": true
               }
             }
           }
         }
-      ]
+      },
+      "then": {
+        "properties": {
+          "agentCollector": {
+            "properties": {
+              "enabled": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "oneOf": [
-        {
-          "properties": {
-            "mode": {
-              "const": "daemonset"
-            }
-          }
-        },{
-          "properties": {
-            "mode": {
-              "const": "deployment"
+      "if": {
+        "properties": {
+          "agentCollector": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
             }
           }
         }
-      ]
+      },
+      "then": {
+        "properties": {
+          "standaloneCollector": {
+            "properties": {
+              "enabled": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
