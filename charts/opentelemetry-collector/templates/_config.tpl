@@ -21,8 +21,10 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
 {{- end }}
 {{- if and (eq .Values.mode "daemonset") (not .Values.standaloneCollector.enabled ) }}
-{{- $config := include "opentelemetry-collector.ballastConfig" . | fromYaml }}
-{{- .Values.config | mustMergeOverwrite $config | toYaml }}
+{{- $data := dict "Values" (deepCopy .Values) | mustMergeOverwrite (deepCopy .) }}
+{{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml }}
+{{- $config := include "opentelemetry-collector.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
+{{- $config | toYaml }}
 {{- else }}
 {{- .Values.config | toYaml }}
 {{- end }}
@@ -124,7 +126,7 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- end -}}
 
 {{- define "opentelemetry-collector.containerLogsConfig" -}}
-{{- if or (eq .Values.agentCollector.containerLogs.enabled true) (eq .Values.containerLogs.enabled true) }}
+{{- if or .Values.agentCollector.containerLogs.enabled .Values.containerLogs.enabled }}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]

@@ -111,7 +111,7 @@ volumes:
     secret:
       secretName: {{ .secretName }}
   {{- end }}
-  {{- if and $.isAgent .Values.agentCollector.containerLogs.enabled }}
+  {{- if and $.isAgent (or .Values.containerLogs.enabled .Values.agentCollector.containerLogs.enabled) }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
