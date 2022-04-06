@@ -1,4 +1,4 @@
-{{- if and (not .Values.standaloneCollector.enabled) (or .Values.agentCollector.enabled (eq .Values.mode "daemonset")) -}}
+{{- if and (not .Values.standaloneCollector.enabled) (not (eq .Values.mode "deployment")) (or .Values.agentCollector.enabled (eq .Values.mode "daemonset")) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,9 +7,5 @@ metadata:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
 data:
   relay: |
-    {{- if .Values.agentCollector.enabled }}
-    {{- include "opentelemetry-collector.agentCollectorConfig" . | nindent 4 -}}
-    {{- else }}
-    {{- include "opentelemetry-collector.baseConfig" . | nindent 4 -}}
-    {{- end }}
+    {{- include "opentelemetry-collector.daemonset" . | nindent 4 -}}
 {{- end }}

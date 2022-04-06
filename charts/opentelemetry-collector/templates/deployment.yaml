@@ -22,11 +22,11 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
+        {{- include "opentelemetry-collector.deployment-podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
         component: standalone-collector
-        {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
+        {{- include "opentelemetry-collector.deployment-podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}

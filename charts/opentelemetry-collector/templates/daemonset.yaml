@@ -1,4 +1,4 @@
-{{- if and (not .Values.standaloneCollector.enabled) (or (.Values.agentCollector.enabled) (eq .Values.mode "daemonset")) -}}
+{{- if and (not .Values.standaloneCollector.enabled) (not (eq .Values.mode "deployment")) (or (.Values.agentCollector.enabled) (eq .Values.mode "daemonset")) -}}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -14,11 +14,11 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
-        {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
+        {{- include "opentelemetry-collector.daemonset-podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
         component: agent-collector
-        {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
+        {{- include "opentelemetry-collector.daemonset-podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values }}
       {{- if .Values.agentCollector.enabled }}
@@ -32,4 +32,3 @@ spec:
 {{- end }}
       hostNetwork: {{ $hostNetwork }}
 {{- end }}
-  

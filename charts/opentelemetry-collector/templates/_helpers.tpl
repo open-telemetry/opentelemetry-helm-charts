@@ -112,21 +112,33 @@ Return if ingress is stable.
 {{- end -}}
 
 
-{{- define "opentelemetry-collector.podAnnotations" -}}
+{{- define "opentelemetry-collector.daemonset-podAnnotations" -}}
 {{- if .Values.podAnnotations }}
 {{- toYaml .Values.podAnnotations }}
 {{- else if .Values.agentCollector.podAnnotations }}
 {{- toYaml .Values.agentCollector.podAnnotations }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.deployment-podAnnotations" -}}
+{{- if .Values.podAnnotations }}
+{{- toYaml .Values.podAnnotations }}
 {{- else if .Values.standaloneCollector.podAnnotations }}
 {{- toYaml .Values.standaloneCollector.podAnnotations }}
 {{- end }}
 {{- end }}
 
-{{- define "opentelemetry-collector.podLabels" -}}
+{{- define "opentelemetry-collector.daemonset-podLabels" -}}
 {{- if .Values.podLabels }}
 {{- toYaml .Values.podLabels }}
 {{- else if .Values.agentCollector.podLabels }}
 {{- toYaml .Values.agentCollector.podLabels }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.deployment-podLabels" -}}
+{{- if .Values.podLabels }}
+{{- toYaml .Values.podLabels }}
 {{- else if .Values.standaloneCollector.podLabels }}
 {{- toYaml .Values.standaloneCollector.podLabels }}
 {{- end }}

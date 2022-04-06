@@ -20,14 +20,7 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- if not $processorsConfig.memory_limiter }}
 {{- $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
 {{- end }}
-{{- if and (eq .Values.mode "daemonset") (not .Values.standaloneCollector.enabled ) }}
-{{- $data := dict "Values" (deepCopy .Values) | mustMergeOverwrite (deepCopy .) }}
-{{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml }}
-{{- $config := include "opentelemetry-collector.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config | toYaml }}
-{{- else }}
 {{- .Values.config | toYaml }}
-{{- end }}
 {{- end }}
 
 {{/*
@@ -43,31 +36,39 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 
 
 {{/*
-DEPRECATED
-Build config file for agent OpenTelemetry Collector
+Build config file for daemonset OpenTelemetry Collector
 */}}
-{{- define "opentelemetry-collector.agentCollectorConfig" -}}
-{{ if .Values.agentCollector }}
-{{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values)  }}
+{{- define "opentelemetry-collector.daemonset" -}}
+{{- $values :=  deepCopy .Values }}
+{{- if .Values.agentCollector.enabled }}
+{{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite $values  }}
+{{- end}}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
+{{- $config := include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
+{{- if .Values.agentCollector.enabled }}
 {{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- end }}
+{{- else }}
+{{- $config | toYaml }}
+{{- end}}
 {{- end }}
 
 {{/*
-DEPRECATED
-Build config file for standalone OpenTelemetry Collector
+Build config file for deployment OpenTelemetry Collector
 */}}
-{{- define "opentelemetry-collector.standaloneCollectorConfig" -}}
-{{ if .Values.standaloneCollector }}
-{{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values)  }}
+{{- define "opentelemetry-collector.deployment" -}}
+{{- $values :=  deepCopy .Values }}
+{{- if .Values.standaloneCollector.enabled }}
+{{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite $values  }}
+{{- end}}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- if .Values.standaloneCollector.enabled }}
 {{- .Values.standaloneCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- end }}
+{{- else }}
+{{- $config | toYaml }}
+{{- end}}
 {{- end }}
 
 {{/*
@@ -125,7 +126,7 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- div (mul (include "opentelemetry-collector.convertMemToMib" .) 40) 100 }}
 {{- end -}}
 
-{{- define "opentelemetry-collector.containerLogsConfig" -}}
+{{- define "opentelemetry-collector.daemonset.containerLogsConfig" -}}
 {{- if or .Values.agentCollector.containerLogs.enabled .Values.containerLogs.enabled }}
 receivers:
   filelog:
