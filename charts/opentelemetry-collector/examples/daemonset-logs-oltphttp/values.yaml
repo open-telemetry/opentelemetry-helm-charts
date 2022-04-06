@@ -1,0 +1,20 @@
+mode: daemonset
+
+agentCollector:
+  enabled: false
+
+containerLogs:
+  enabled: true
+
+config:
+  exporters:
+    otlphttp:
+      endpoint: https://example.com:55681
+  receivers:
+    filelog:
+      exclude: []
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp

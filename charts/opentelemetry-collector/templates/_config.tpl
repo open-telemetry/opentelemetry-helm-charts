@@ -46,7 +46,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml | mustMergeOverwrite $config }}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml) $config }}
 {{- if .Values.agentCollector.enabled }}
 {{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
 {{- else }}
