@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 775085f96fab5d9d57a9c7b3630f637479a5f78b361ede5ed3d3d07a37178e7f
+        checksum/config: d0cb0e678c8eb220b3666d3e40996ee3f0b0b07bde2b413b0b8e7133cce1d52f
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -71,6 +71,18 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: HOST_PROC
+              value: /hostfs/proc
+            - name: HOST_SYS
+              value: /hostfs/sys
+            - name: HOST_ETC
+              value: /hostfs/etc
+            - name: HOST_VAR
+              value: /hostfs/var
+            - name: HOST_RUN
+              value: /hostfs/run
+            - name: HOST_DEV
+              value: /hostfs/dev
           livenessProbe:
             httpGet:
               path: /
@@ -81,11 +93,15 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 256m
-              memory: 512Mi
+              cpu: 1
+              memory: 2Gi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - name: hostfs
+              mountPath: /hostfs
+              readOnly: true
+              mountPropagation: HostToContainer
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -93,4 +109,7 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: hostfs
+          hostPath:
+            path: /
       hostNetwork: false

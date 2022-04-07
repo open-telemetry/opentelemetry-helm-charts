@@ -17,14 +17,20 @@ data:
     extensions:
       health_check: {}
       memory_ballast:
-        size_mib: "204"
+        size_mib: "819"
     processors:
       batch: {}
       memory_limiter:
         check_interval: 5s
-        limit_mib: 409
-        spike_limit_mib: 128
+        limit_mib: 1638
+        spike_limit_mib: 512
     receivers:
+      hostmetrics:
+        scrapers:
+          cpu: null
+          disk: null
+          load: null
+          memory: null
       jaeger:
         protocols:
           grpc:
@@ -69,6 +75,7 @@ data:
           - memory_limiter
           - batch
           receivers:
+          - hostmestrics
           - otlp
           - prometheus
         traces:
