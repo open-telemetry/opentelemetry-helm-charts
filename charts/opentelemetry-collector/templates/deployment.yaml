@@ -8,9 +8,9 @@ metadata:
   {{- include "opentelemetry-collector.annotations" . | nindent 2 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
+{{- $replicas := .Values.standaloneCollector.replicaCount -}}
+{{- if eq .Values.mode "deployment" }}
 {{- $replicas := .Values.replicaCount -}}
-{{- if .Values.standaloneCollector.enabled }}
-  {{- $replicas = .Values.standaloneCollector.replicaCount -}}
 {{- end }}
   replicas: {{ $replicas }}
 {{- end }}
@@ -29,6 +29,9 @@ spec:
         {{- include "opentelemetry-collector.deployment-podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
+      {{- if eq .Values.mode "deployment" }}
+      {{- $podValues := deepCopy .Values }}
+      {{- end }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
 {{- end }}

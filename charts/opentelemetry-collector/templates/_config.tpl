@@ -34,23 +34,22 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- .Values.config | toYaml }}
 {{- end }}
 
-
 {{/*
 Build config file for daemonset OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.daemonset" -}}
-{{- $values :=  deepCopy .Values }}
-{{- if .Values.agentCollector.enabled }}
-{{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite $values  }}
+{{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values) }}
+{{- if eq .Values.mode "daemonset" }}
+{{- $values =  deepCopy .Values }}
 {{- end}}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml) $config }}
-{{- if .Values.agentCollector.enabled }}
-{{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- else }}
+{{- if eq .Values.mode "daemonset" }}
 {{- $config | toYaml }}
+{{- else }}
+{{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
 {{- end}}
 {{- end }}
 
@@ -58,16 +57,16 @@ Build config file for daemonset OpenTelemetry Collector
 Build config file for deployment OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.deployment" -}}
-{{- $values :=  deepCopy .Values }}
-{{- if .Values.standaloneCollector.enabled }}
-{{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite $values  }}
+{{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
+{{- if eq .Values.mode "deployment" }}
+{{- $values =  deepCopy .Values }}
 {{- end}}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- if .Values.standaloneCollector.enabled }}
-{{- .Values.standaloneCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- else }}
+{{- if eq .Values.mode "deployment" }}
 {{- $config | toYaml }}
+{{- else }}
+{{- .Values.standaloneCollector.configOverride | mustMergeOverwrite $config | toYaml }}
 {{- end}}
 {{- end }}
 
@@ -204,7 +203,7 @@ service:
 {{/* Build the list of port for standalone service */}}
 {{- define "opentelemetry-collector.standalonePortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
-{{- if .Values.standaloneCollector.ports  }}
+{{- if and (.Values.standaloneCollector.ports) (not (eq .Values.mode "deployment")) }}
 {{- $ports = deepCopy .Values.standaloneCollector.ports | mustMergeOverwrite (deepCopy .Values.ports) }}
 {{- end }}
 {{- range $key, $port := $ports }}

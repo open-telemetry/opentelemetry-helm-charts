@@ -1,3 +1,7 @@
+{{- define "opentelemetry-collector.var_dump" -}}
+{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
+{{- end -}}
+
 {{/*
 Expand the name of the chart.
 */}}
