@@ -47,16 +47,18 @@ There are two ways to configure collector pipelines, which can be used together 
 
 Default components can be removed with `null`.  When changing a pipeline, you must explicitly list all the components that are in the pipeline, including any default components.
 
-*Example*: Disable metrics and logging pipelines and logging exporter:
+*Example*: Disable metrics and logging pipelines and non-otlp receivers:
 
 ```yaml
 config:
-  exporters:
-    logging: null
+  receivers:
+    jaeger: null
+    prometheus: null
+    zipkin: null
   service:
     pipelines:
       traces:
-        exporters:
+        receivers:
           - otlp
       metrics: null
       logs: null
@@ -66,8 +68,7 @@ config:
 
 ```yaml
 mode: daemonset
-agentCollector:
-  enabled: false
+
 config:
   receivers:
     hostmetrics:
@@ -83,6 +84,7 @@ config:
           - hostmestrics
           - otlp
           - prometheus
+
 extraEnvs:
 - name: HOST_PROC
   value: /hostfs/proc
@@ -119,9 +121,6 @@ Here is an example `values.yaml`:
 ```yaml
 mode: daemonset
 
-agentCollector:
-  enabled: false
-
 containerLogs:
   enabled: true
 
@@ -155,9 +154,6 @@ It also clears the `filelog` receiver's `exclude` property, for collector logs t
 
 ```yaml
 mode: daemonset
-
-agentCollector:
-  enabled: false
 
 containerLogs:
   enabled: true
