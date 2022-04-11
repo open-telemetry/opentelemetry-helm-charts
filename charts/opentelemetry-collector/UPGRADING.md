@@ -4,17 +4,17 @@
 
 [Remove two-deployment mode](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/159)
 
-The ability to install both the agent and standalone collectors simultaneous with the chart has been removed.  Installs/upgrades where both  `.Values.agentCollector.enabled` and `.Values.standloneCollector.enables` are true will fail.  `agentCollector` and `standloneCollector` have also be deprecated, but backwords compatibility has been maintained.
+The ability to install both the agent and standalone collectors simultaneous with the chart has been removed.  Installs/upgrades where both  `.Values.agentCollector.enabled` and `.Values.standloneCollector.enables` are true will fail.  `agentCollector` and `standloneCollector` have also be deprecated, but backward compatibility has been maintained.
 
-### To run both a deployment and daemonset:
+### To run both a deployment and daemonset
 
 Install a deployment version of the collector. This is done by setting `.Values.mode` to `deployment`
 
 ```yaml
-mode: daemonset
+mode: deployment
 ```
 
-Next, install an daemonset version of the collector that is configure to send traffic to the previously install deployment.  This is done by setting `.Values.mode` to `daemonset` and updating `.Values.config` so that data is exported to the deployment.
+Next, install an daemonset version of the collector that is configured to send traffic to the previously installed deployment.  This is done by setting `.Values.mode` to `daemonset` and updating `.Values.config` so that data is exported to the deployment.
 
 ```yaml
 mode: daemonset
@@ -50,7 +50,7 @@ The `agentCollector` and `standaloneCollector` sections in values.yaml have been
 ```yaml
 # Valid values are "daemonset" and "deployment".
 # If set, agentCollector and standaloneCollector are ignored.
-mode: ""
+mode: <daemonset|deployment>
 ```
 
 The following fields have also been added to the root-level to replace the depracated `agentCollector` and `standaloneCollector` settings.
@@ -84,7 +84,7 @@ Set `mode` to `daemonset` if `agentCollector` was being used.  Move all `agentCo
 Example agentCollector values.yaml:
 
 ```yaml
-agentConfig:
+agentCollector:
   resources:
     limits:
       cpu: 3
@@ -131,6 +131,7 @@ Example standaloneCollector values.yaml:
 
 ```yaml
 standaloneCollector:
+  enabled: true
   replicaCount: 2
   configOverride:
     receivers:

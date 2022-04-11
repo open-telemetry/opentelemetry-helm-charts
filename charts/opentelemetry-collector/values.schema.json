@@ -501,94 +501,42 @@
       ]
     }
   },
-  "allOf": [
+  "anyOf": [
     {
-      "if": {
-        "properties": {
-          "standaloneCollector": {
-            "properties": {
-              "enabled": {
-                "const": true
-              }
-            }
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "agentCollector": {
-            "properties": {
-              "enabled": {
-                "const": false
-              }
+      "properties": {
+        "agentCollector": {
+          "properties": {
+            "enabled": {
+              "const": true
             }
           }
         }
       }
     },
     {
-      "if": {
-        "properties": {
-          "agentCollector": {
-            "properties": {
-              "enabled": {
-                "const": true
-              }
-            }
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "standaloneCollector": {
-            "properties": {
-              "enabled": {
-                "const": false
-              }
+      "properties": {
+        "standaloneCollector": {
+          "properties": {
+            "enabled": {
+              "const": true
             }
           }
         }
       }
     },
     {
-      "anyOf": [
-        {
-          "properties": {
-            "agentCollector": {
-              "properties": {
-                "enabled": {
-                  "const": true
-                }
-              }
-            }
-          }
-        },
-        {
-          "properties": {
-            "standaloneCollector": {
-              "properties": {
-                "enabled": {
-                  "const": true
-                }
-              }
-            }
-          }
-        },
-        {
-          "properties": {
-            "mode": {
-              "const": "deployment"
-            }
-          }
-        },
-        {
-          "properties": {
-            "mode": {
-              "const": "daemonset"
-            }
-          }
+      "properties": {
+        "mode": {
+          "const": "deployment"
         }
-      ]
+      }
+    },
+    {
+      "properties": {
+        "mode": {
+          "const": "daemonset"
+        }
+      }
     }
   ]
 }

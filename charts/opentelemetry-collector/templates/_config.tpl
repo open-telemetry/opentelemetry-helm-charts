@@ -37,7 +37,7 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{/*
 Build config file for daemonset OpenTelemetry Collector
 */}}
-{{- define "opentelemetry-collector.daemonset" -}}
+{{- define "opentelemetry-collector.daemonsetConfig" -}}
 {{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values) }}
 {{- if eq .Values.mode "daemonset" }}
 {{- $values =  deepCopy .Values }}
@@ -56,7 +56,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{/*
 Build config file for deployment OpenTelemetry Collector
 */}}
-{{- define "opentelemetry-collector.deployment" -}}
+{{- define "opentelemetry-collector.deploymentConfig" -}}
 {{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
 {{- if eq .Values.mode "deployment" }}
 {{- $values =  deepCopy .Values }}

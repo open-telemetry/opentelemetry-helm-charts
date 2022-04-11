@@ -11,5 +11,9 @@
 {{ end }}
 
 {{- if not (eq (toString .Values.mode) "<nil>") }}
-[WARNING] "standaloneCollector" and "agentCollector" are deprecated, please use "mode". See UPGRADING.md for instructions.
+[WARNING] "standaloneCollector" and "agentCollector" are deprecated, please use "mode". See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.mdUPGRADING.md for instructions.
+{{ end }}
+
+{{- if and .Values.standaloneCollector.enabled .Values.agentCollector.enabled  }}
+{{ fail "[ERROR] 'standaloneCollector' and 'agentCollector' are deprecated, please use 'mode'. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
 {{ end }}

@@ -21,6 +21,10 @@ To install the chart with the release name my-opentelemetry-collector, run the f
 helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector
 ```
 
+## Upgrading
+
+See [UPGRADING.md](UPGRADING.md).
+
 ## Configuration
 
 ### Default configuration

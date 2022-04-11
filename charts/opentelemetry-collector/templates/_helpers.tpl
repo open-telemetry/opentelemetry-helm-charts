@@ -1,7 +1,3 @@
-{{- define "opentelemetry-collector.var_dump" -}}
-{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
-{{- end -}}
-
 {{/*
 Expand the name of the chart.
 */}}
@@ -152,9 +148,9 @@ Return if ingress is stable.
 {{- if or .Values.annotations .Values.standaloneCollector.annotations}}
 annotations:
 {{- if .Values.annotations }}
-  {{ toYaml .Values.annotations }}
+{{- toYaml .Values.annotations | nindent 2 }}
 {{- else if .Values.standaloneCollector.annotations }}
-  {{ toYaml .Values.standaloneCollector.annotations }}
+{{- toYaml .Values.standaloneCollector.annotations | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- end }}
