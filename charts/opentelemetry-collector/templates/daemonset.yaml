@@ -10,6 +10,10 @@ spec:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
       component: agent-collector
+  updateStrategy:
+    rollingUpdate:
+      {{- include "opentelemetry-collector.rollingUpdate" . | nindent 6 }}
+    type: RollingUpdate
   template:
     metadata:
       annotations:
