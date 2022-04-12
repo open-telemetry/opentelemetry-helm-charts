@@ -113,44 +113,53 @@ Return if ingress is stable.
 
 
 {{- define "opentelemetry-collector.daemonset-podAnnotations" -}}
-{{- if .Values.podAnnotations }}
-{{- toYaml .Values.podAnnotations }}
+{{- if eq .Values.mode "daemonset" }}
+  {{- if .Values.podAnnotations }}
+  {{- .Values.podAnnotations | toYaml }}
+  {{- end }}
 {{- else if .Values.agentCollector.podAnnotations }}
-{{- toYaml .Values.agentCollector.podAnnotations }}
+{{- .Values.agentCollector.podAnnotations | toYaml }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.deployment-podAnnotations" -}}
-{{- if .Values.podAnnotations }}
-{{- toYaml .Values.podAnnotations }}
+{{- if eq .Values.mode "deployment" }}
+  {{- if .Values.podAnnotations }}
+  {{- .Values.podAnnotations | toYaml }}
+  {{- end }}
 {{- else if .Values.standaloneCollector.podAnnotations }}
-{{- toYaml .Values.standaloneCollector.podAnnotations }}
+{{- .Values.standaloneCollector.podAnnotations | toYaml }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.daemonset-podLabels" -}}
-{{- if .Values.podLabels }}
-{{- toYaml .Values.podLabels }}
+{{- if eq .Values.mode "daemonset" }}
+  {{- if .Values.podLabels }}
+  {{- .Values.podLabels | toYaml }}
+  {{- end }}
 {{- else if .Values.agentCollector.podLabels }}
-{{- toYaml .Values.agentCollector.podLabels }}
+{{- .Values.agentCollector.podLabels | toYaml }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.deployment-podLabels" -}}
-{{- if .Values.podLabels }}
-{{- toYaml .Values.podLabels }}
+{{- if eq .Values.mode "deployment" }}
+  {{- if .Values.podLabels }}
+  {{- .Values.podLabels | toYaml }}
+  {{- end }}
 {{- else if .Values.standaloneCollector.podLabels }}
-{{- toYaml .Values.standaloneCollector.podLabels }}
+{{- .Values.standaloneCollector.podLabels | toYaml }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.annotations" -}}
-{{- if or .Values.annotations .Values.standaloneCollector.annotations}}
-annotations:
+{{- if eq .Values.mode "deployment" }}
 {{- if .Values.annotations }}
-{{- toYaml .Values.annotations | nindent 2 }}
-{{- else if .Values.standaloneCollector.annotations }}
-{{- toYaml .Values.standaloneCollector.annotations | nindent 2 }}
+annotations:
+{{- .Values.annotations | toYaml | nindent 2  }}
 {{- end }}
+{{- else if .Values.standaloneCollector.annotations }}
+annotations:
+{{- .Values.standaloneCollector.annotations | toYaml | nindent 2  }}
 {{- end }}
 {{- end }}
