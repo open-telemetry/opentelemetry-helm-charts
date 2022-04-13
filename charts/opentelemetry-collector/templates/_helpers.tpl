@@ -54,15 +54,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Update rollingUpdate daemonset
 */}}
 {{- define "opentelemetry-collector.rollingUpdate" -}}
-{{- if .Values.agentCollector.rollingUpdate.create }}
-maxSurge: {{ .Values.agentCollector.rollingUpdate.maxSurge }}
-maxUnavailable: {{ .Values.agentCollector.rollingUpdate.maxUnavailable }}
-{{- else }}
-maxSurge: 0
-maxUnavailable: 1
+maxSurge: {{ .Values.agentCollector.rollingUpdate.maxSurge | default 1 }}
+maxUnavailable: {{ .Values.agentCollector.rollingUpdate.maxUnavailable | default 2 }}
 {{- end }}
-{{- end }}
-
 {{/*
 Create the name of the service account to use
 */}}
