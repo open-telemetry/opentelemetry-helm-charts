@@ -1,4 +1,4 @@
-{{- if and .Values.standaloneCollector.enabled .Values.ingress.enabled -}}
+{{- if and (or .Values.standaloneCollector.enabled (eq .Values.mode "deployment")) .Values.ingress.enabled -}}
 {{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
 {{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
 apiVersion: {{ include "ingress.apiVersion" . }}

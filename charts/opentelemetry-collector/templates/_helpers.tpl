@@ -110,3 +110,56 @@ Return if ingress is stable.
 {{- define "ingress.isStable" -}}
   {{- eq (include "ingress.apiVersion" .) "networking.k8s.io/v1" -}}
 {{- end -}}
+
+
+{{- define "opentelemetry-collector.daemonset-podAnnotations" -}}
+{{- if eq .Values.mode "daemonset" }}
+  {{- if .Values.podAnnotations }}
+  {{- .Values.podAnnotations | toYaml }}
+  {{- end }}
+{{- else if .Values.agentCollector.podAnnotations }}
+{{- .Values.agentCollector.podAnnotations | toYaml }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.deployment-podAnnotations" -}}
+{{- if eq .Values.mode "deployment" }}
+  {{- if .Values.podAnnotations }}
+  {{- .Values.podAnnotations | toYaml }}
+  {{- end }}
+{{- else if .Values.standaloneCollector.podAnnotations }}
+{{- .Values.standaloneCollector.podAnnotations | toYaml }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.daemonset-podLabels" -}}
+{{- if eq .Values.mode "daemonset" }}
+  {{- if .Values.podLabels }}
+  {{- .Values.podLabels | toYaml }}
+  {{- end }}
+{{- else if .Values.agentCollector.podLabels }}
+{{- .Values.agentCollector.podLabels | toYaml }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.deployment-podLabels" -}}
+{{- if eq .Values.mode "deployment" }}
+  {{- if .Values.podLabels }}
+  {{- .Values.podLabels | toYaml }}
+  {{- end }}
+{{- else if .Values.standaloneCollector.podLabels }}
+{{- .Values.standaloneCollector.podLabels | toYaml }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.annotations" -}}
+{{- if eq .Values.mode "deployment" }}
+{{- if .Values.annotations }}
+annotations:
+{{- .Values.annotations | toYaml | nindent 2  }}
+{{- end }}
+{{- else if .Values.standaloneCollector.annotations }}
+annotations:
+{{- .Values.standaloneCollector.annotations | toYaml | nindent 2  }}
+{{- end }}
+{{- end }}

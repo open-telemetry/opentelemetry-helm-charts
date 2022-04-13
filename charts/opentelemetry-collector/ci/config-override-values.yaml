@@ -1,16 +1,16 @@
-agentCollector:
-  enabled: true
-  configOverride:
-    receivers:
-      hostmetrics:
-        scrapers:
-          cpu:
-          disk:
-          filesystem:
-    service:
-      pipelines:
-        metrics:
-          receivers: [prometheus, hostmetrics]
-
-standaloneCollector:
-  enabled: false
+mode: daemonset
+config:
+  receivers:
+    jaeger: null
+    otlp: null
+    hostmetrics:
+      scrapers:
+        cpu:
+        disk:
+        filesystem:
+  service:
+    pipelines:
+      metrics:
+        receivers:
+          - prometheus
+          - hostmetrics

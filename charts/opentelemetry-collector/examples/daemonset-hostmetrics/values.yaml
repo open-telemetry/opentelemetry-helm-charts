@@ -1,0 +1,35 @@
+mode: daemonset
+config:
+  receivers:
+    hostmetrics:
+      scrapers:
+        cpu:
+        load:
+        memory:
+        disk:
+  service:
+    pipelines:
+      metrics: 
+        receivers:
+          - hostmestrics
+          - otlp
+          - prometheus
+extraEnvs:
+- name: HOST_PROC
+  value: /hostfs/proc
+- name: HOST_SYS
+  value: /hostfs/sys
+- name: HOST_ETC
+  value: /hostfs/etc
+- name: HOST_VAR
+  value: /hostfs/var
+- name: HOST_RUN
+  value: /hostfs/run
+- name: HOST_DEV
+  value: /hostfs/dev
+extraHostPathMounts:
+- name: hostfs
+  hostPath: /
+  mountPath: /hostfs
+  readOnly: true
+  mountPropagation: HostToContainer
