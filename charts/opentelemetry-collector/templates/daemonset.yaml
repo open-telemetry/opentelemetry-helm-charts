@@ -11,6 +11,7 @@ spec:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
       component: agent-collector
   updateStrategy:
+    {{- if not (eq .Values.agentCollector.updateStrategy "OnDelete") }}
     rollingUpdate:
       {{- if .Values.agentCollector.rollingUpdate.maxSurge }}
       maxSurge: {{ .Values.agentCollector.rollingUpdate.maxSurge }}
@@ -20,6 +21,7 @@ spec:
       {{- else }}
       maxUnavailable: 1
       {{- end }}
+    {{- end }}
     type: {{ .Values.agentCollector.updateStrategy }}
   template:
     metadata:
