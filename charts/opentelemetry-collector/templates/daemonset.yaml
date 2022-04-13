@@ -12,7 +12,14 @@ spec:
       component: agent-collector
   updateStrategy:
     rollingUpdate:
-      {{- include "opentelemetry-collector.rollingUpdate" . | nindent 6 }}
+      {{- if .Values.agentCollector.rollingUpdate.maxSurge }}
+      maxSurge: {{ .Values.agentCollector.rollingUpdate.maxSurge }}
+      {{- end }}
+      {{- if .Values.agentCollector.rollingUpdate.maxUnavailable }}
+      maxUnavailable: {{ .Values.agentCollector.rollingUpdate.maxUnavailable }}
+      {{- else }}
+      maxUnavailable: 1
+      {{- end }}
     type: {{ .Values.agentCollector.updateStrategy }}
   template:
     metadata:
