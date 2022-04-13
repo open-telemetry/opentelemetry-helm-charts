@@ -21,6 +21,10 @@ To install the chart with the release name my-opentelemetry-collector, run the f
 helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector
 ```
 
+## Upgrading
+
+See [UPGRADING.md](UPGRADING.md).
+
 ## Configuration
 
 ### Default configuration
@@ -32,10 +36,7 @@ Both modes can be enabled together, in that case logs, metrics and traces will b
 *Example*: Install collector as a standalone deployment, and do not run it as an agent.
 
 ```yaml
-agentCollector:
-  enabled: false
-standaloneCollector:
-  enabled: true
+mode: deployment
 ```
 
 By default collector has the following receivers enabled:
@@ -48,64 +49,65 @@ There are two ways to configure collector pipelines, which can be used together 
 
 ### Basic top level configuration
 
-*Example*: Disable metrics pipeline and send traces to zipkin exporter:
+Default components can be removed with `null`.  When changing a pipeline, you must explicitly list all the components that are in the pipeline, including any default components.
+
+*Example*: Disable metrics and logging pipelines and non-otlp receivers:
 
 ```yaml
 config:
-  exporters:
-    zipkin:
-      endpoint: zipkin-all-in-one:14250
+  receivers:
+    jaeger: null
+    prometheus: null
+    zipkin: null
   service:
     pipelines:
-      metrics: null
       traces:
-        exporters:
-          - zipkin
+        receivers:
+          - otlp
+      metrics: null
+      logs: null
 ```
 
-### Configuration with `agentCollector` and `standaloneCollector` properties
-
-`agentCollector` and `standaloneCollector` properties allow to override collector configurations
-and default parameters applied on the k8s pods.
-
-`agentCollector(standaloneCollector).configOverride` property allows to provide an extra
-configuration that will be merged into the default configuration.
-
-*Example*: Enable host metrics receiver on the agents:
+*Example*: Add host metrics receiver:
 
 ```yaml
-agentCollector:
-  configOverride:
-    receivers:
-      hostmetrics:
-        scrapers:
-          cpu:
-          load:
-          memory:
-          disk:
-    service:
-      pipelines:
-        metrics:
-          receivers: [prometheus, hostmetrics]
-  extraEnvs:
-  - name: HOST_PROC
-    value: /hostfs/proc
-  - name: HOST_SYS
-    value: /hostfs/sys
-  - name: HOST_ETC
-    value: /hostfs/etc
-  - name: HOST_VAR
-    value: /hostfs/var
-  - name: HOST_RUN
-    value: /hostfs/run
-  - name: HOST_DEV
-    value: /hostfs/dev
-  extraHostPathMounts:
-  - name: hostfs
-    hostPath: /
-    mountPath: /hostfs
-    readOnly: true
-    mountPropagation: HostToContainer
+mode: daemonset
+
+config:
+  receivers:
+    hostmetrics:
+      scrapers:
+        cpu:
+        load:
+        memory:
+        disk:
+  service:
+    pipelines:
+      metrics: 
+        receivers:
+          - hostmestrics
+          - otlp
+          - prometheus
+
+extraEnvs:
+- name: HOST_PROC
+  value: /hostfs/proc
+- name: HOST_SYS
+  value: /hostfs/sys
+- name: HOST_ETC
+  value: /hostfs/etc
+- name: HOST_VAR
+  value: /hostfs/var
+- name: HOST_RUN
+  value: /hostfs/run
+- name: HOST_DEV
+  value: /hostfs/dev
+extraHostPathMounts:
+- name: hostfs
+  hostPath: /
+  mountPath: /hostfs
+  readOnly: true
+  mountPropagation: HostToContainer
 ```
 
 ### Configuration for Kubernetes container logs
@@ -117,13 +119,14 @@ This feature is disabled by default. It has the following requirements:
 - It requires the [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version
 of the collector image.
 
-To enable this feature, set the  `agentCollector.containerLogs.enabled` property to `true` and replace the collector image.
+To enable this feature, set the  `containerLogs.enabled` property to `true` and replace the collector image.
 Here is an example `values.yaml`:
 
 ```yaml
-agentCollector:
-  containerLogs:
-    enabled: true
+mode: daemonset
+
+containerLogs:
+  enabled: true
 
 image:
   repository: otel/opentelemetry-collector-contrib
@@ -154,22 +157,23 @@ with an `otlphttp` exporter that sends the container logs to `https://example.co
 It also clears the `filelog` receiver's `exclude` property, for collector logs to be included in the pipeline.
 
 ```yaml
-agentCollector:
-  containerLogs:
-    enabled: true
+mode: daemonset
 
-  configOverride:
-    exporters:
-      otlphttp:
-        endpoint: https://example.com:55681
-    receivers:
-      filelog:
-        exclude: []
-    service:
-      pipelines:
-        logs:
-          exporters:
-            - otlphttp
+containerLogs:
+  enabled: true
+
+config:
+  exporters:
+    otlphttp:
+      endpoint: https://example.com:55681
+  receivers:
+    filelog:
+      exclude: []
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp
 
 image:
   repository: otel/opentelemetry-collector-contrib
@@ -182,3 +186,5 @@ command:
 
 The [values.yaml](./values.yaml) file contains information about all other configuration
 options for this chart.
+
+For more examples see [Examples](examples).

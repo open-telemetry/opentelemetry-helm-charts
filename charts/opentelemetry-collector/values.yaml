@@ -5,6 +5,10 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# Valid values are "daemonset" and "deployment".
+# If set, agentCollector and standaloneCollector are ignored.
+mode: ""
+
 config:
   exporters:
     logging: {}
@@ -190,84 +194,30 @@ ports:
     servicePort: 8888
     protocol: TCP
 
-# Configuration for agent OpenTelemetry Collector daemonset, enabled by default
-agentCollector:
-  enabled: true
+containerLogs:
+  enabled: false
 
-  containerLogs:
-    enabled: false
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
 
-  resources:
-    limits:
-      cpu: 256m
-      memory: 512Mi
+podAnnotations: {}
 
-  podAnnotations: {}
+podLabels: {}
 
   podLabels: {}
   updateStrategy: RollingUpdate
   rollingUpdate: {}
+# Host networking requested for this pod. Use the host's network namespace.
+hostNetwork: false
 
-  # Host networking requested for this pod. Use the host's network namespace.
-  hostNetwork: false
+# only used with deployment mode
+replicaCount: 1
 
-  # Configuration override that will be merged into the agent's default config
-  configOverride: {}
-  # The following config override can be used to enable host receiver
-  #   receivers:
-  #     hostmetrics:
-  #       scrapers:
-  #         cpu:
-  #         disk:
-  #         filesystem:
-  #   service:
-  #     pipelines:
-  #       metrics:
-  #         receivers: [prometheus, hostmetrics]
+annotations: {}
 
-  # Any of the top level options can be overridden specifically for agent
-  # image: {}
-  # imagePullSecrets: []
-  # command: {}
-  # serviceAccount: {}
-  # podSecurityContext: {}
-  # securityContext: {}
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
-  # priorityClassName: ""
-
-  # The following option overrides can be used with host receiver
-  # extraEnvs:
-  # - name: HOST_PROC
-  #   value: /hostfs/proc
-  # - name: HOST_SYS
-  #   value: /hostfs/sys
-  # - name: HOST_ETC
-  #   value: /hostfs/etc
-  # - name: HOST_VAR
-  #   value: /hostfs/var
-  # - name: HOST_RUN
-  #   value: /hostfs/run
-  # - name: HOST_DEV
-  #   value: /hostfs/dev
-  # extraHostPathMounts:
-  # - name: hostfs
-  #   hostPath: /
-  #   mountPath: /hostfs
-  #   readOnly: true
-  #   mountPropagation: HostToContainer
-
-  # The following example disables all jaeger ports and zipkin hostPort on the agent
-  # ports:
-  #   jaeger-thrift:
-  #     enabled: false
-  #   jaeger-grpc:
-  #     enabled: false
-  #   zipkin:
-  #     hostPort: ""
-
-# Configuration for standalone OpenTelemetry Collector deployment, disabled by default
+# DEPRECATED. See UPGRADING.md
 standaloneCollector:
   enabled: false
 
@@ -287,18 +237,27 @@ standaloneCollector:
   # Configuration override that will be merged into the standalone collector default config
   configOverride: {}
 
-  # Any of the top level options can be overridden specifically for standalone collector
-  # image: {}
-  # imagePullSecrets: []
-  # command: {}
-  # serviceAccount: {}
-  # podSecurityContext: {}
-  # securityContext: {}
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
-  # priorityClassName: ""
-  # ports: {}
+# DEPRECATED. See UPGRADING.md
+agentCollector:
+  enabled: true
+
+  containerLogs:
+    enabled: false
+
+  resources:
+    limits:
+      cpu: 256m
+      memory: 512Mi
+
+  podAnnotations: {}
+
+  podLabels: {}
+
+  # Host networking requested for this pod. Use the host's network namespace.
+  hostNetwork: false
+
+  # Configuration override that will be merged into the agent's default config
+  configOverride: {}
 
 service:
   type: ClusterIP

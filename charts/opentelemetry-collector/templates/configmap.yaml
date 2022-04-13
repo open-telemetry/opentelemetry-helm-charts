@@ -1,4 +1,4 @@
-{{- if .Values.standaloneCollector.enabled -}}
+{{- if or .Values.standaloneCollector.enabled (eq .Values.mode "deployment") -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,5 +7,5 @@ metadata:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
 data:
   relay: |
-    {{- include "opentelemetry-collector.standaloneCollectorConfig" . | nindent 4 -}}
+    {{- include "opentelemetry-collector.deploymentConfig" . | nindent 4 -}}
 {{- end }}

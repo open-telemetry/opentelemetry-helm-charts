@@ -1,0 +1,48 @@
+---
+# Source: opentelemetry-collector/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-collector
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.14.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.48.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  relay: |
+    exporters:
+      logging: {}
+    extensions:
+      health_check: {}
+      memory_ballast: {}
+    processors:
+      batch: {}
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 1638
+        spike_limit_mib: 512
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    service:
+      extensions:
+      - health_check
+      - memory_ballast
+      pipelines:
+        traces:
+          exporters:
+          - logging
+          processors:
+          - memory_limiter
+          - batch
+          receivers:
+          - otlp
+      telemetry:
+        metrics:
+          address: 0.0.0.0:8888
