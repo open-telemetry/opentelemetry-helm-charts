@@ -40,7 +40,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- define "opentelemetry-collector.daemonsetConfig" -}}
 {{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values) }}
 {{- if eq .Values.mode "daemonset" }}
-{{- $values =  deepCopy .Values }}
+{{- $values = deepCopy .Values }}
 {{- end}}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
@@ -59,7 +59,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- define "opentelemetry-collector.deploymentConfig" -}}
 {{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
 {{- if eq .Values.mode "deployment" }}
-{{- $values =  deepCopy .Values }}
+{{- $values = deepCopy .Values }}
 {{- end}}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
