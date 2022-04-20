@@ -1,67 +1,30 @@
-name: Lint and Test Charts
+name: Test Operator Charts
 
 on:
   pull_request:
+    paths: 
+    - 'charts/opentelemetry-operator/**'
     branches:
       - main
 
 jobs:
-  lint-test:
+  operator-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Setup
+        uses: ./.github/actions/setup
         with:
-          fetch-depth: 0
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.4.1
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.0.1
-
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch main)
-          if [[ -n "$changed" ]]; then
-            echo "::set-output name=changed::true"
-          fi
-          if [[ "$changed" == *"opentelemetry-operator"* ]]; then
-            echo "::set-output name=operator-changed::true"
-          fi
-
-      - name: Run chart-testing (lint)
-        run: ct lint --target-branch main
-
-      - name: Run make check-examples
-        run: make check-examples
-
-      - name: Create kind cluster
-        uses: helm/kind-action@v1.2.0
-        if: steps.list-changed.outputs.changed == 'true'
+          create-kind-cluster: "true"
 
       - name: Install cert-manager
         run: |
           kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
           kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
           kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
-        if: steps.list-changed.outputs.operator-changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --target-branch main
-
-      - name: Run daemonset and deployment install test
-        run: |
-          kubectl apply -f ./charts/opentelemetry-collector/examples/daemonset-and-deployment/rendered
-          kubectl rollout status daemonset example-opentelemetry-collector-agent --timeout=30s
-          kubectl rollout status deployment example-opentelemetry-collector --timeout=30s
+        run: ct install --charts charts/opentelemetry-operator
 
       - name: Run KUTTL smoke tests
         run: |
@@ -74,4 +37,3 @@ jobs:
           appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
           kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
-        if: steps.list-changed.outputs.operator-changed == 'true'

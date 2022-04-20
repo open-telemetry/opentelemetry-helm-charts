@@ -1,0 +1,19 @@
+name: Lint Charts
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "false"
+
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch main
