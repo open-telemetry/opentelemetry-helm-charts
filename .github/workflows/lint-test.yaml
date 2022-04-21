@@ -57,6 +57,12 @@ jobs:
       - name: Run chart-testing (install)
         run: ct install --target-branch main
 
+      - name: Run daemonset and deployment install test
+        run: |
+          kubectl apply -f ./charts/opentelemetry-collector/examples/daemonset-and-deployment/rendered
+          kubectl rollout status daemonset example-opentelemetry-collector-agent --timeout=30s
+          kubectl rollout status deployment example-opentelemetry-collector --timeout=30s
+
       - name: Run KUTTL smoke tests
         run: |
           until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done

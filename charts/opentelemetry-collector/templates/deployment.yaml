@@ -10,7 +10,7 @@ spec:
 {{- if not .Values.autoscaling.enabled }}
 {{- $replicas := .Values.standaloneCollector.replicaCount -}}
 {{- if eq .Values.mode "deployment" }}
-{{- $replicas := .Values.replicaCount -}}
+{{- $replicas = .Values.replicaCount -}}
 {{- end }}
   replicas: {{ $replicas }}
 {{- end }}
@@ -30,7 +30,7 @@ spec:
     spec:
       {{- $podValues := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
       {{- if eq .Values.mode "deployment" }}
-      {{- $podValues := deepCopy .Values }}
+      {{- $podValues = deepCopy .Values }}
       {{- end }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
