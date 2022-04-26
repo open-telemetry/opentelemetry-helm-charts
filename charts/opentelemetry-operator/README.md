@@ -257,7 +257,7 @@ spec:
     receivers:
       jaeger:
         protocols:
-          grpc:
+          thrift_compact:
     processors:
 
     exporters:
