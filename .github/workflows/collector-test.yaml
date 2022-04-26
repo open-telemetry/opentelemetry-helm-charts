@@ -1,0 +1,30 @@
+name: Test Collector Chart
+
+on:
+  pull_request:
+    paths: 
+    - 'charts/opentelemetry-collector/**'
+    branches:
+      - main
+
+jobs:
+  collector-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "true"
+
+      - name: Run chart-testing (install)
+        run: ct install --charts charts/opentelemetry-collector
+
+      - name: Run daemonset and deployment install test
+        run: |
+          kubectl apply -f ./charts/opentelemetry-collector/examples/daemonset-and-deployment/rendered
+          kubectl rollout status daemonset example-opentelemetry-collector-agent --timeout=30s
+          kubectl rollout status deployment example-opentelemetry-collector --timeout=30s
