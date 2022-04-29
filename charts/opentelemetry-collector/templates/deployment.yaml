@@ -5,6 +5,7 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+    app.kubernetes.io/component: standalone-collector
   {{- include "opentelemetry-collector.annotations" . | nindent 2 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
@@ -17,15 +18,15 @@ spec:
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
-      component: standalone-collector
+      app.kubernetes.io/component: standalone-collector
   template:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- include "opentelemetry-collector.deployment-podAnnotations" . | nindent 8 }}
       labels:
-        {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
-        component: standalone-collector
+        {{- include "opentelemetry-collector.labels" . | nindent 8 }}
+        app.kubernetes.io/component: standalone-collector
         {{- include "opentelemetry-collector.deployment-podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
