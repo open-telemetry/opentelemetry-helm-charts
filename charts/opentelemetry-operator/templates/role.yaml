@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
   name: {{ template "opentelemetry-operator.name" . }}-leader-election-role
   namespace: {{ .Release.Namespace }}
 rules:
