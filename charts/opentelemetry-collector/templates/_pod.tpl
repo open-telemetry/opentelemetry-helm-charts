@@ -38,6 +38,10 @@ containers:
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
+    {{- if .Values.lifecycleHooks }}
+    lifecycle:
+      {{- toYaml .Values.lifecycleHooks | nindent 6 }}
+    {{- end }}
     livenessProbe:
       httpGet:
         path: /
@@ -86,6 +90,10 @@ containers:
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
+{{- if .Values.initContainers }}
+initContainers:
+  {{- toYaml .Values.initContainers | nindent 2 }}
+{{- end }}
 {{- if .Values.priorityClassName }}
 priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
