@@ -128,6 +128,14 @@ mode: daemonset
 containerLogs:
   enabled: true
 
+config:
+  service:
+    pipelines:
+      logs:
+        receivers:
+          - otlp
+          - filelog
+
 image:
   repository: otel/opentelemetry-collector-contrib
 
@@ -172,6 +180,9 @@ config:
   service:
     pipelines:
       logs:
+        receivers:
+          - otlp
+          - filelog
         exporters:
           - otlphttp
 
