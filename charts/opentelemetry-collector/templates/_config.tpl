@@ -192,9 +192,6 @@ receivers:
         from: attributes.restart_count
         to: attributes["k8s.container.restart_count"]
       - type: move
-        from: attributes.run_id
-        to: attributes["run_id"]
-      - type: move
         from: attributes.uid
         to: attributes["k8s.pod.uid"]
       # Clean up log body
