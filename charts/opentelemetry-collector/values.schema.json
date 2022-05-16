@@ -145,6 +145,21 @@
     "priorityClassName": {
       "type": "string"
     },
+    "initContainers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
     "extraEnvs": {
       "type": "array",
       "items": {
@@ -254,6 +269,114 @@
               "type": "string"
             }
           }
+        }
+      }
+    },
+    "lifecycleHooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "postStart": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "exec": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "httpGet": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "host": {
+                  "type": "string"
+                },
+                "httpHeaders": {
+                  "type": "array"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                },
+                "scheme": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "exec"
+              ]
+            },
+            {
+              "required": [
+                "httpGet"
+              ]
+            }
+          ]
+        },
+        "preStop": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "exec": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "httpGet": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "host": {
+                  "type": "string"
+                },
+                "httpHeaders": {
+                  "type": "array"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                },
+                "scheme": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "exec"
+              ]
+            },
+            {
+              "required": [
+                "httpGet"
+              ]
+            }
+          ]
         }
       }
     },

@@ -14,20 +14,16 @@ data:
   relay: |
     exporters:
       logging: {}
-      otlp:
-        endpoint: example-opentelemetry-collector:4317
-        tls:
-          insecure: true
     extensions:
       health_check: {}
       memory_ballast:
-        size_mib: "78"
+        size_mib: "204"
     processors:
       batch: {}
       memory_limiter:
         check_interval: 5s
-        limit_mib: 156
-        spike_limit_mib: 48
+        limit_mib: 409
+        spike_limit_mib: 128
     receivers:
       jaeger:
         protocols:
@@ -60,7 +56,6 @@ data:
       pipelines:
         logs:
           exporters:
-          - otlp
           - logging
           processors:
           - memory_limiter
@@ -69,7 +64,6 @@ data:
           - otlp
         metrics:
           exporters:
-          - otlp
           - logging
           processors:
           - memory_limiter
@@ -79,7 +73,6 @@ data:
           - prometheus
         traces:
           exporters:
-          - otlp
           - logging
           processors:
           - memory_limiter
