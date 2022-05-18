@@ -83,7 +83,7 @@ config:
         disk:
   service:
     pipelines:
-      metrics: 
+      metrics:
         receivers:
           - hostmestrics
           - otlp
@@ -192,6 +192,10 @@ image:
 command:
   name: otelcol-contrib
 ```
+
+### CRDs
+
+At this time, Prometheus CRDs are supported but other CRDs are not.
 
 ### Other configuration options
 
