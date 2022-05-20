@@ -153,13 +153,13 @@ Return if ingress is stable.
 {{- end }}
 
 {{- define "opentelemetry-collector.annotations" -}}
-{{- if eq .Values.mode "deployment" }}
-{{- if .Values.annotations }}
+{{- if or .Values.annotations .Values.standaloneCollector.annotations -}}
 annotations:
+{{- if .Values.annotations }}
 {{- .Values.annotations | toYaml | nindent 2  }}
 {{- end }}
-{{- else if .Values.standaloneCollector.annotations }}
-annotations:
+{{- if .Values.standaloneCollector.annotations }}
 {{- .Values.standaloneCollector.annotations | toYaml | nindent 2  }}
+{{- end }}
 {{- end }}
 {{- end }}
