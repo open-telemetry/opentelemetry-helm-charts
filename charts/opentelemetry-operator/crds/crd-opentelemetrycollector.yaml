@@ -186,6 +186,11 @@ spec:
                     - sidecar
                     - statefulset
                   type: string
+                nodeSelector:
+                  additionalProperties:
+                    type: string
+                  description: NodeSelector to schedule OpenTelemetry Collector pods. This is only relevant to daemonset, statefulset, and deployment mode
+                  type: object
                 podAnnotations:
                   additionalProperties:
                     type: string
@@ -438,9 +443,16 @@ spec:
                     image:
                       description: Image indicates the container image to use for the OpenTelemetry TargetAllocator.
                       type: string
+                    prometheusCR:
+                      description: PrometheusCR defines the configuration for the retrieval of PrometheusOperator CRDs ( servicemonitor.monitoring.coreos.com/v1 and podmonitor.monitoring.coreos.com/v1 )  retrieval. All CR instances which the ServiceAccount has access to will be retrieved. This includes other namespaces.
+                      properties:
+                        enabled:
+                          description: Enabled indicates whether to use a PrometheusOperator custom resources as targets or not.
+                          type: boolean
+                      type: object
                   type: object
                 tolerations:
-                  description: Toleration to schedule OpenTelemetry Collector pods. This is only relevant to daemonsets, statefulsets and deployments
+                  description: Toleration to schedule OpenTelemetry Collector pods. This is only relevant to daemonset, statefulset, and deployment mode
                   items:
                     description: The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
                     properties:
@@ -1640,9 +1652,20 @@ spec:
                   type: array
                   x-kubernetes-list-type: atomic
                 replicas:
-                  description: Replicas is currently not being set and might be removed in the next version.
+                  description: 'Replicas is currently not being set and might be removed in the next version. Deprecated: use "OpenTelemetryCollector.Status.Scale.Replicas" instead.'
                   format: int32
                   type: integer
+                scale:
+                  description: Scale is the OpenTelemetryCollector's scale subresource status.
+                  properties:
+                    replicas:
+                      description: The total number non-terminated pods targeted by this OpenTelemetryCollector's deployment or statefulSet.
+                      format: int32
+                      type: integer
+                    selector:
+                      description: The selector used to match the OpenTelemetryCollector's deployment or statefulSet pods.
+                      type: string
+                  type: object
                 version:
                   description: Version of the managed OpenTelemetry Collector (operand)
                   type: string
@@ -1652,8 +1675,9 @@ spec:
       storage: true
       subresources:
         scale:
+          labelSelectorPath: .status.scale.selector
           specReplicasPath: .spec.replicas
-          statusReplicasPath: .status.replicas
+          statusReplicasPath: .status.scale.replicas
         status: {}
 status:
   acceptedNames:
