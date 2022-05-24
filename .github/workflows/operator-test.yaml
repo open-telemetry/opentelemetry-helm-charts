@@ -2,8 +2,8 @@ name: Test Operator Charts
 
 on:
   pull_request:
-    paths: 
-    - 'charts/opentelemetry-operator/**'
+    paths:
+      - 'charts/opentelemetry-operator/**'
     branches:
       - main
 
@@ -29,14 +29,30 @@ jobs:
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-operator
 
-      - name: Run KUTTL smoke tests
+      - name: Get opentelemetry-operator repository
         run: |
-          until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
+          appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
+          git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
+
+      - name: Use public target-allocator image in tests
+        run: |
+          LOCAL_TARGET_ALLOCATOR_IMG="local\/opentelemetry-operator-targetallocator:e2e"
+          PUBLIC_TARGET_ALLOCATOR_IMG="ghcr.io\/open-telemetry\/opentelemetry-operator\/target-allocator:0.1.0"
+
+          sed -i "s/$LOCAL_TARGET_ALLOCATOR_IMG/${PUBLIC_TARGET_ALLOCATOR_IMG}/g" ./opentelemetry-operator/tests/e2e/smoke-targetallocator/02-install.yaml
+          sed -i "s/$LOCAL_TARGET_ALLOCATOR_IMG/${PUBLIC_TARGET_ALLOCATOR_IMG}/g" ./opentelemetry-operator/tests/e2e/targetallocator-features/02-install.yaml
+
+      - name: Install kuttl
+        run: |
           sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.1/kubectl-kuttl_0.11.1_linux_x86_64
           sudo chmod +x /usr/local/bin/kubectl-kuttl
+
+      - name: Install opentelemetry-operator chart
+        run: |
+          until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
           kubectl create namespace opentelemetry-operator-system
           helm install --namespace=opentelemetry-operator-system my-opentelemetry-operator ./charts/opentelemetry-operator
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
-          appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
-          git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
-          kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
+
+      - name: Run e2e tests
+        run:  kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
