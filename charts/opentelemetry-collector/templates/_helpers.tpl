@@ -157,8 +157,7 @@ Return if ingress is stable.
 annotations:
 {{- if .Values.annotations }}
 {{- .Values.annotations | toYaml | nindent 2  }}
-{{- end }}
-{{- if .Values.standaloneCollector.annotations }}
+{{- else }}
 {{- .Values.standaloneCollector.annotations | toYaml | nindent 2  }}
 {{- end }}
 {{- end }}
