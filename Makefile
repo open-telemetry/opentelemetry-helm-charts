@@ -2,10 +2,10 @@ TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator
 
 .PHONY: generate-examples
-generate-examples: 
+generate-examples:
 	for chart_name in $(CHARTS); do \
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
-		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
+		EXAMPLES=$$(find $${EXAMPLES_DIR} -maxdepth 1 -mindepth 1 -type d -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
 			VALUES=$$(find $${EXAMPLES_DIR}/$${example} -name *values.yaml); \
 			rm -rf "$${EXAMPLES_DIR}/$${example}/rendered"; \
@@ -21,7 +21,7 @@ generate-examples:
 check-examples:
 	for chart_name in $(CHARTS); do \
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
-		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
+		EXAMPLES=$$(find $${EXAMPLES_DIR} -maxdepth 1 -mindepth 1 -type d -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
 			echo "Checking example: $${example}"; \
 			VALUES=$$(find $${EXAMPLES_DIR}/$${example} -name *values.yaml); \
