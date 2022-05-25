@@ -111,54 +111,28 @@ Return if ingress is stable.
   {{- eq (include "ingress.apiVersion" .) "networking.k8s.io/v1" -}}
 {{- end -}}
 
-
-{{- define "opentelemetry-collector.daemonset-podAnnotations" -}}
-{{- if eq .Values.mode "daemonset" }}
-  {{- if .Values.podAnnotations }}
-  {{- .Values.podAnnotations | toYaml }}
-  {{- end }}
-{{- else if .Values.agentCollector.podAnnotations }}
-{{- .Values.agentCollector.podAnnotations | toYaml }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.deployment-podAnnotations" -}}
-{{- if eq .Values.mode "deployment" }}
-  {{- if .Values.podAnnotations }}
-  {{- .Values.podAnnotations | toYaml }}
-  {{- end }}
-{{- else if .Values.standaloneCollector.podAnnotations }}
+{{- define "opentelemetry-collector.podAnnotations" -}}
+{{- if and .Values.podAnnotations .Values.mode  }}
+{{- .Values.podAnnotations | toYaml }}
+{{- else if and .Values.standaloneCollector.enabled .Values.standaloneCollector.podAnnotations }}
 {{- .Values.standaloneCollector.podAnnotations | toYaml }}
 {{- end }}
 {{- end }}
 
-{{- define "opentelemetry-collector.daemonset-podLabels" -}}
-{{- if eq .Values.mode "daemonset" }}
-  {{- if .Values.podLabels }}
+{{- define "opentelemetry-collector.podLabels" -}}
+{{- if and .Values.podLabels .Values.mode }}
   {{- .Values.podLabels | toYaml }}
-  {{- end }}
-{{- else if .Values.agentCollector.podLabels }}
-{{- .Values.agentCollector.podLabels | toYaml }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.deployment-podLabels" -}}
-{{- if eq .Values.mode "deployment" }}
-  {{- if .Values.podLabels }}
-  {{- .Values.podLabels | toYaml }}
-  {{- end }}
-{{- else if .Values.standaloneCollector.podLabels }}
+{{- else if and .Values.standaloneCollector.enabled .Values.standaloneCollector.podLabels }}
 {{- .Values.standaloneCollector.podLabels | toYaml }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.annotations" -}}
-{{- if or .Values.annotations .Values.standaloneCollector.annotations -}}
+{{- if and .Values.annotations .Values.mode -}}
 annotations:
-{{- if .Values.annotations }}
 {{- .Values.annotations | toYaml | nindent 2  }}
-{{- else }}
+{{-  else if and .Values.standaloneCollector.enabled .Values.standaloneCollector.annotations }}
+annotations:
 {{- .Values.standaloneCollector.annotations | toYaml | nindent 2  }}
-{{- end }}
 {{- end }}
 {{- end }}
