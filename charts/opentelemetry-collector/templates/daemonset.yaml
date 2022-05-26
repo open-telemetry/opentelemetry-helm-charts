@@ -14,11 +14,11 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
-        {{- include "opentelemetry-collector.daemonset-podAnnotations" . | nindent 8 }}
+        {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
         component: agent-collector
-        {{- include "opentelemetry-collector.daemonset-podLabels" . | nindent 8 }}
+        {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "-agent" "isAgent" true }}

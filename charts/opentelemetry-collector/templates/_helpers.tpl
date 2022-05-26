@@ -116,15 +116,17 @@ Return if ingress is stable.
 {{- if .Values.podAnnotations }}
 {{- .Values.podAnnotations | toYaml }}
 {{- end }}
+{{- end }}
 
 {{- define "opentelemetry-collector.podLabels" -}}
 {{- if .Values.podLabels }}
 {{- .Values.podLabels | toYaml }}
 {{- end }}
-
+{{- end }}
 
 {{- define "opentelemetry-collector.annotations" -}}
 {{- if and (eq .Values.mode "deployment") .Values.annotations }}
 annotations:
   {{- .Values.annotations | toYaml | nindent 2  }}
+{{- end }}
 {{- end }}
