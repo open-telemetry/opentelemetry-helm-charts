@@ -79,7 +79,7 @@ containers:
         subPath: {{ .subPath }}
         {{- end }}
       {{- end }}
-      {{- if and $.isAgent (or .Values.containerLogs.enabled .Values.agentCollector.containerLogs.enabled) }}
+      {{- if and $.isAgent .Values.containerLogs.enabled }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
@@ -119,7 +119,7 @@ volumes:
     secret:
       secretName: {{ .secretName }}
   {{- end }}
-  {{- if and $.isAgent (or .Values.containerLogs.enabled .Values.agentCollector.containerLogs.enabled) }}
+  {{- if and $.isAgent .Values.containerLogs.enabled }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods

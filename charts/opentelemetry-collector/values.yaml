@@ -6,7 +6,6 @@ nameOverride: ""
 fullnameOverride: ""
 
 # Valid values are "daemonset" and "deployment".
-# If set, agentCollector and standaloneCollector are ignored.
 mode: ""
 
 config:
@@ -80,9 +79,6 @@ config:
           - jaeger
           - zipkin
 
-# Shared params for agentCollector daemonset and standaloneCollector deployment pods.
-# Can be overridden here or for any component independently using the same keys.
-
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
   repository: otel/opentelemetry-collector-contrib
@@ -140,15 +136,13 @@ tolerations: []
 affinity: {}
 
 # Allows for pod scheduler prioritisation
-# Can be overridden here or for agentCollector and standaloneCollector independently.
 priorityClassName: ""
 
 extraEnvs: []
 extraVolumes: []
 extraVolumeMounts: []
 
-# Configuration for ports, shared between agentCollector, standaloneCollector and service.
-# Can be overridden here or for agentCollector and standaloneCollector independently.
+# Configuration for ports
 ports:
   otlp:
     enabled: true
@@ -240,48 +234,6 @@ lifecycleHooks: {}
 #       - /test/sleep
 #       - "5"
 
-# DEPRECATED. See UPGRADING.md
-standaloneCollector:
-  enabled: false
-
-  replicaCount: 1
-
-  resources:
-    limits:
-      cpu: 1
-      memory: 2Gi
-
-  podAnnotations: {}
-
-  podLabels: {}
-
-  annotations: {}
-
-  # Configuration override that will be merged into the standalone collector default config
-  configOverride: {}
-
-# DEPRECATED. See UPGRADING.md
-agentCollector:
-  enabled: true
-
-  containerLogs:
-    enabled: false
-
-  resources:
-    limits:
-      cpu: 256m
-      memory: 512Mi
-
-  podAnnotations: {}
-
-  podLabels: {}
-
-  # Host networking requested for this pod. Use the host's network namespace.
-  hostNetwork: false
-
-  # Configuration override that will be merged into the agent's default config
-  configOverride: {}
-
 service:
   type: ClusterIP
   annotations: {}
@@ -325,13 +277,13 @@ serviceMonitor:
   extraLabels: {}
   #  release: kube-prometheus-stack
 
-# PodDisruptionBudget is used only if standaloneCollector enabled
+# PodDisruptionBudget is used only if deployment enabled
 podDisruptionBudget:
   enabled: false
 #   minAvailable: 2
 #   maxUnavailable: 1
 
-# autoscaling is used only if standaloneCollector enabled
+# autoscaling is used only if deployment enabled
 autoscaling:
   enabled: false
   minReplicas: 1

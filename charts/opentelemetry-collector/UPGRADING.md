@@ -1,5 +1,11 @@
 # Upgrade guidelines
 
+## 0.18.0 to 0.19.0
+
+[Remove agentCollector and standaloneCollector settings](TBD)
+
+The `agentCollector` and `standaloneCollector` config sections have been removed.  Upgrades/installs of chart 0.19.0 will fail if `agentCollector` or `standaloneCollector` are in the values.yaml.  See the [Migrate to mode](#migrate-to-mode) steps for instructions on how to replace `agentCollector` and `standaloneCollector` with `mode`.
+
 ## 0.13.0 to 0.14.0
 
 [Remove two-deployment mode](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/159)

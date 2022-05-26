@@ -1,4 +1,4 @@
-{{- if and .Values.serviceMonitor.enabled .Values.serviceMonitor.metricsEndpoints (or (eq .Values.mode "deployment") (.Values.standaloneCollector.enabled)) }}
+{{- if and .Values.serviceMonitor.enabled .Values.serviceMonitor.metricsEndpoints (eq .Values.mode "deployment") }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -12,7 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
-      component: standalone-collector
+      component: collector
   endpoints:
   {{- toYaml .Values.serviceMonitor.metricsEndpoints | nindent 2 }}
 {{- end }}

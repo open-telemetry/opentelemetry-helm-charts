@@ -1,4 +1,4 @@
-{{- if and (or .Values.standaloneCollector.enabled (eq .Values.mode "deployment")) .Values.ingress.enabled -}}
+{{- if and (eq .Values.mode "deployment") .Values.ingress.enabled -}}
 {{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
 {{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
 apiVersion: {{ include "ingress.apiVersion" . }}
@@ -7,7 +7,7 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    component: standalone-collector
+    component: collector
   {{- if .Values.ingress.annotations }}
   annotations:
     {{ toYaml .Values.ingress.annotations | nindent 4 }}
