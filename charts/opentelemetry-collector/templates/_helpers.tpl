@@ -112,8 +112,8 @@ Return if ingress is stable.
 {{- end -}}
 
 
-{{- define "opentelemetry-collector.daemonset-podAnnotations" -}}
-{{- if eq .Values.mode "daemonset" }}
+{{- define "opentelemetry-collector.podAnnotations" -}}
+{{- if .Values.mode }}
   {{- if .Values.podAnnotations }}
   {{- .Values.podAnnotations | toYaml }}
   {{- end }}
@@ -122,18 +122,8 @@ Return if ingress is stable.
 {{- end }}
 {{- end }}
 
-{{- define "opentelemetry-collector.deployment-podAnnotations" -}}
-{{- if eq .Values.mode "deployment" }}
-  {{- if .Values.podAnnotations }}
-  {{- .Values.podAnnotations | toYaml }}
-  {{- end }}
-{{- else if .Values.standaloneCollector.podAnnotations }}
-{{- .Values.standaloneCollector.podAnnotations | toYaml }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.daemonset-podLabels" -}}
-{{- if eq .Values.mode "daemonset" }}
+{{- define "opentelemetry-collector.podLabels" -}}
+{{- if .Values.mode }}
   {{- if .Values.podLabels }}
   {{- .Values.podLabels | toYaml }}
   {{- end }}
@@ -142,23 +132,14 @@ Return if ingress is stable.
 {{- end }}
 {{- end }}
 
-{{- define "opentelemetry-collector.deployment-podLabels" -}}
-{{- if eq .Values.mode "deployment" }}
-  {{- if .Values.podLabels }}
-  {{- .Values.podLabels | toYaml }}
-  {{- end }}
-{{- else if .Values.standaloneCollector.podLabels }}
-{{- .Values.standaloneCollector.podLabels | toYaml }}
-{{- end }}
-{{- end }}
-
 {{- define "opentelemetry-collector.annotations" -}}
-{{- if or .Values.annotations .Values.standaloneCollector.annotations -}}
+{{- if .Values.mode -}}
+  {{- if .Values.annotations -}}
 annotations:
-{{- if .Values.annotations }}
-{{- .Values.annotations | toYaml | nindent 2  }}
-{{- else }}
-{{- .Values.standaloneCollector.annotations | toYaml | nindent 2  }}
-{{- end }}
+  {{- .Values.annotations | toYaml | nindent 2 }}
+  {{- end }}
+{{- else if .Values.standaloneCollector.annotations -}}
+annotations:
+  {{- .Values.standaloneCollector.annotations | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
