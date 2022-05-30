@@ -219,6 +219,9 @@ service:
   port: {{ $port.servicePort }}
   targetPort: {{ $key }}
   protocol: {{ $port.protocol }}
+  {{- if $port.nodePort }}
+  nodePort: {{ $port.nodePort }}
+  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
