@@ -12,17 +12,39 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     component: standalone-collector
 spec:
-  type: ClusterIP
+  type: NodePort
   ports: 
     
+    - name: jaeger-compact
+      port: 6831
+      targetPort: jaeger-compact
+      protocol: UDP
+      nodePort: 6831
+    - name: jaeger-grpc
+      port: 14250
+      targetPort: jaeger-grpc
+      protocol: TCP
+      nodePort: 14250
+    - name: jaeger-thrift
+      port: 14268
+      targetPort: jaeger-thrift
+      protocol: TCP
+      nodePort: 14268
     - name: otlp
       port: 4317
       targetPort: otlp
       protocol: TCP
+      nodePort: 4317
     - name: otlp-http
       port: 4318
       targetPort: otlp-http
       protocol: TCP
+      nodePort: 4318
+    - name: zipkin
+      port: 9411
+      targetPort: zipkin
+      protocol: TCP
+      nodePort: 9411
   selector:
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
