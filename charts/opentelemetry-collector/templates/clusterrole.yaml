@@ -5,12 +5,7 @@ metadata:
   name: {{ include "opentelemetry-collector.clusterRoleName" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    {{- if or .Values.standaloneCollector.enabled (eq .Values.mode "deployment") -}}
-    app.kubernetes.io/component: standalone-collector
-    {{- else if or (and .Values.agentCollector.enabled (not (eq .Values.mode "deployment"))) (eq .Values.mode "daemonset") -}}
-    app.kubernetes.io/component: agent-collector
-    {{- end }}
-  {{- with .Values.clusterRole.annotations }}
+    {{- with .Values.clusterRole.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

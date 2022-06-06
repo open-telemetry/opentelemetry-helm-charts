@@ -5,7 +5,6 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    app.kubernetes.io/component: agent-collector
     {{- range $key, $value := .Values.serviceMonitor.extraLabels }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
@@ -13,7 +12,6 @@ spec:
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: standalone-collector
   endpoints:
   {{- toYaml .Values.serviceMonitor.metricsEndpoints | nindent 2 }}
 {{- end }}

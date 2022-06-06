@@ -5,12 +5,10 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}-agent
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    app.kubernetes.io/component: agent-collector
 spec:
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: agent-collector
   template:
     metadata:
       annotations:
@@ -18,7 +16,6 @@ spec:
         {{- include "opentelemetry-collector.daemonset-podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.labels" . | nindent 8 }}
-        app.kubernetes.io/component: agent-collector
         {{- include "opentelemetry-collector.daemonset-podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values) }}
