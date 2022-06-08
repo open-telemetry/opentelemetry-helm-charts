@@ -13,7 +13,7 @@ spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Value
 {{- end }}
 
 {{/*
-Merge user supplied top-level (not particular to standalone or agent) config into memory limiter config.
+Merge user supplied config into memory limiter config.
 */}}
 {{- define "opentelemetry-collector.baseConfig" -}}
 {{- $processorsConfig := get .Values.config "processors" }}
@@ -24,7 +24,7 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 {{- end }}
 
 {{/*
-Merge user supplied top-level (not particular to standalone or agent) config into memory ballast config.
+Merge user supplied config into memory ballast config.
 */}}
 {{- define "opentelemetry-collector.ballastConfig" -}}
 {{- $memoryBallastConfig := get .Values.config.extensions "memory_ballast" }}
@@ -38,36 +38,22 @@ Merge user supplied top-level (not particular to standalone or agent) config int
 Build config file for daemonset OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.daemonsetConfig" -}}
-{{- $values := deepCopy .Values.agentCollector | mustMergeOverwrite (deepCopy .Values) }}
-{{- if eq .Values.mode "daemonset" }}
-{{- $values = deepCopy .Values }}
-{{- end}}
+{{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml) $config }}
-{{- if eq .Values.mode "daemonset" }}
 {{- $config | toYaml }}
-{{- else }}
-{{- .Values.agentCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- end}}
 {{- end }}
 
 {{/*
 Build config file for deployment OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.deploymentConfig" -}}
-{{- $values := deepCopy .Values.standaloneCollector | mustMergeOverwrite (deepCopy .Values) }}
-{{- if eq .Values.mode "deployment" }}
-{{- $values = deepCopy .Values }}
-{{- end}}
+{{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- if eq .Values.mode "deployment" }}
 {{- $config | toYaml }}
-{{- else }}
-{{- .Values.standaloneCollector.configOverride | mustMergeOverwrite $config | toYaml }}
-{{- end}}
 {{- end }}
 
 {{/*
@@ -126,7 +112,7 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- end -}}
 
 {{- define "opentelemetry-collector.daemonset.containerLogsConfig" -}}
-{{- if or .Values.agentCollector.containerLogs.enabled .Values.containerLogs.enabled }}
+{{- if .Values.containerLogs.enabled }}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
@@ -207,12 +193,9 @@ service:
 {{- end }}
 {{- end }}
 
-{{/* Build the list of port for standalone service */}}
-{{- define "opentelemetry-collector.standalonePortsConfig" -}}
+{{/* Build the list of port for deployment service */}}
+{{- define "opentelemetry-collector.deploymentPortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
-{{- if and (.Values.standaloneCollector.ports) (not (eq .Values.mode "deployment")) }}
-{{- $ports = deepCopy .Values.standaloneCollector.ports | mustMergeOverwrite (deepCopy .Values.ports) }}
-{{- end }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
 - name: {{ $key }}

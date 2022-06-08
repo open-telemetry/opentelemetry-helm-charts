@@ -30,10 +30,9 @@ See [UPGRADING.md](UPGRADING.md).
 ### Default configuration
 
 By default this chart will deploy an OpenTelemetry Collector as daemonset with three pipelines (logs, metrics and traces)
-and logging exporter enabled by default. Besides daemonset (agent), it can be also installed as standalone deployment.
-Both modes can be enabled together, in that case logs, metrics and traces will be flowing from agents to standalone collectors.
+and logging exporter enabled by default. Besides daemonset (agent), it can be also installed as deployment.
 
-*Example*: Install collector as a standalone deployment, and do not run it as an agent.
+*Example*: Install collector as a deployment, and do not run it as an agent.
 
 ```yaml
 mode: deployment
@@ -115,7 +114,7 @@ extraHostPathMounts:
 The collector can be used to collect logs sent to standard output by Kubernetes containers.
 This feature is disabled by default. It has the following requirements:
 
-- It needs agent collector to be deployed, which means it will not work if only standalone collector is enabled.
+- It needs agent collector to be deployed.
 - It requires the [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version
 of the collector image.
 
