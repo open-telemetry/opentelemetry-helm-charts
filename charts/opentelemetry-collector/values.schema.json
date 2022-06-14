@@ -23,14 +23,74 @@
         ""
       ]
     },
+    "presets": {
+      "description": "Preset configuration.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "traces": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "hostMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "selfScraping": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "logs": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "containerLogs": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "config": {
-      "description": "Configuration that applies to both standalone and agent collector. Overwritable by standalone and agent specific configs.",
+      "description": "User's custom configuration.  Takes precedence over everything else.",
       "type": "object"
     },
     "image": {
-      "description": "Image use in both standalone and agent configs",
+      "description": "Image to use.",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "repository": {
           "type": "string"

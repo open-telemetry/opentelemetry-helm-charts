@@ -35,6 +35,20 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
+      {{- if .Values.presets.metrics.hostMetrics.enabled }}
+      - name: HOST_PROC
+        value: /hostfs/proc
+      - name: HOST_SYS
+        value: /hostfs/sys
+      - name: HOST_ETC
+        value: /hostfs/etc
+      - name: HOST_VAR
+        value: /hostfs/var
+      - name: HOST_RUN
+        value: /hostfs/run
+      - name: HOST_DEV
+        value: /hostfs/dev
+      {{- end }}
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
@@ -79,13 +93,20 @@ containers:
         subPath: {{ .subPath }}
         {{- end }}
       {{- end }}
-      {{- if and $.isAgent .Values.containerLogs.enabled }}
+      {{- if and $.isAgent .Values.presets.logs.enabled .Values.presets.logs.containerLogs.enabled }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
       - name: varlibdockercontainers
         mountPath: /var/lib/docker/containers
         readOnly: true
+      {{- end }}
+      {{- if .Values.presets.metrics.hostMetrics.enabled }}
+      - name: hostfs
+        hostPath: /
+        mountPath: /hostfs
+        readOnly: true
+        mountPropagation: HostToContainer
       {{- end }}
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
@@ -119,13 +140,20 @@ volumes:
     secret:
       secretName: {{ .secretName }}
   {{- end }}
-  {{- if and $.isAgent .Values.containerLogs.enabled }}
+  {{- if and $.isAgent .Values.presets.logs.enabled .Values.presets.logs.containerLogs.enabled }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
   - name: varlibdockercontainers
     hostPath:
       path: /var/lib/docker/containers
+  {{- end }}
+  {{- if .Values.presets.metrics.hostMetrics.enabled }}
+  - name: hostfs
+    hostPath: /
+    mountPath: /hostfs
+    readOnly: true
+    mountPropagation: HostToContainer
   {{- end }}
   {{- if .Values.extraVolumes }}
   {{- toYaml .Values.extraVolumes | nindent 2 }}
