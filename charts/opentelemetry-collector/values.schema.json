@@ -16,7 +16,7 @@
       "type": "string"
     },
     "mode": {
-      "type": ["string"],
+      "type": "string",
       "enum": [
         "daemonset",
         "deployment",
@@ -405,131 +405,6 @@
     "annotations": {
       "type": "object"
     },
-    "agentCollector": {
-      "description": "Configuration for OpenTelemetry Collector daemonset",
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "containerLogs": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "enabled"
-          ]
-        },
-        "resources": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "limits": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "type": [
-                    "string",
-                    "integer"
-                  ]
-                },
-                "memory": {
-                  "type": "string"
-                }
-              }
-            },
-            "requests": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "type": [
-                    "string",
-                    "integer"
-                  ]
-                },
-                "memory": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "podAnnotations": {
-          "type": "object"
-        },
-        "podLabels": {
-          "type": "object"
-        },
-        "hostNetwork": {
-          "type": "boolean"
-        },
-        "configOverride": {
-          "type": "object"
-        }
-      }
-    },
-    "standaloneCollector": {
-      "description": "Configuration for standalone OpenTelemetry Collector deployment",
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "replicaCount": {
-          "type": "integer"
-        },
-        "resources": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "limits": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "type": [
-                    "string",
-                    "integer"
-                  ]
-                },
-                "memory": {
-                  "type": "string"
-                }
-              }
-            },
-            "requests": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "type": [
-                    "string",
-                    "integer"
-                  ]
-                },
-                "memory": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "podAnnotations": {
-          "type": "object"
-        },
-        "annotations": {
-          "type": "object"
-        },
-        "configOverride": {
-          "type": "object"
-        }
-      }
-    },
     "service": {
       "type": "object",
       "additionalProperties": false,
@@ -654,42 +529,7 @@
       ]
     }
   },
-  "anyOf": [
-    {
-      "properties": {
-        "agentCollector": {
-          "properties": {
-            "enabled": {
-              "const": true
-            }
-          }
-        }
-      }
-    },
-    {
-      "properties": {
-        "standaloneCollector": {
-          "properties": {
-            "enabled": {
-              "const": true
-            }
-          }
-        }
-      }
-    },
-    {
-      "properties": {
-        "mode": {
-          "const": "deployment"
-        }
-      }
-    },
-    {
-      "properties": {
-        "mode": {
-          "const": "daemonset"
-        }
-      }
-    }
+  "required": [
+    "mode"
   ]
 }
