@@ -37,8 +37,11 @@ Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemet
 Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
 
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
 - [Tyler Helmuth](https://github.com/TylerHelmuth), New Relic
+
+Emeritus Maintainers
+
+- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
 
 Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md).
 
