@@ -23,8 +23,10 @@ spec:
       hostNetwork: {{ .Values.hostNetwork }}
       containers:
         - args:
-            - --metrics-addr=127.0.0.1:8080
+            - --metrics-addr=127.0.0.1:{{ .Values.manager.ports.metricsPort }}
             - --enable-leader-election
+            - --health-probe-addr=:{{ .Values.manager.ports.healthzPort }}
+            - --webhook-port={{ .Values.manager.ports.webhookPort }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
             {{- end }}
@@ -40,19 +42,19 @@ spec:
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
           name: manager
           ports:
-            - containerPort: 9443
+            - containerPort: {{ .Values.manager.ports.webhookPort }}
               name: webhook-server
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8081
+              port: {{ .Values.manager.ports.healthzPort }}
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             httpGet:
               path: /readyz
-              port: 8081
+              port: {{ .Values.manager.ports.healthzPort }}
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{ toYaml .Values.manager.resources | nindent 12 }}
@@ -63,14 +65,14 @@ spec:
               readOnly: true
           {{- end }}
         - args:
-            - --secure-listen-address=0.0.0.0:8443
-            - --upstream=http://127.0.0.1:8080/
+            - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
+            - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
             - --logtostderr=true
             - --v=0
           image: "{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
           name: kube-rbac-proxy
           ports:
-            - containerPort: 8443
+            - containerPort: {{ .Values.kubeRBACProxy.ports.proxyPort }}
               name: https
               protocol: TCP
           {{- with .Values.kubeRBACProxy.resources }}
