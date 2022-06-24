@@ -32,6 +32,11 @@ spec:
             {{- end }}
           command:
             - /manager
+          {{- if not (and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled) }}
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: false
+          {{- end }}
           {{- if .Values.manager.env }}
           env:
             {{- range $name, $value := .Values.manager.env  }}
