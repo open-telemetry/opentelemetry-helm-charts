@@ -32,14 +32,13 @@ spec:
             {{- end }}
           command:
             - /manager
-          {{- if not (and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled) }}
+          {{- if .Values.manager.env.enabled }}
           env:
+            {{- if not .Values.admissionWebhooks.enabled }}
             - name: ENABLE_WEBHOOKS
               value: false
-          {{- end }}
-          {{- if .Values.manager.env }}
-          env:
-            {{- range $name, $value := .Values.manager.env  }}
+            {{- end }}
+            {{- range $name, $value := .Values.manager.env.vars }}
             - name: {{ $name }}
               value: {{ $value | quote -}}
             {{- end }}
@@ -63,7 +62,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{ toYaml .Values.manager.resources | nindent 12 }}
-          {{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled }}
+          {{- if .Values.admissionWebhooks.enabled }}
           volumeMounts:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
@@ -94,7 +93,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.name" . }}-controller-manager
       terminationGracePeriodSeconds: 10
-      {{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.certManager.enabled }}
+      {{- if and .Values.admissionWebhooks.enabled }}
       volumes:
         - name: cert
           secret:
