@@ -32,7 +32,7 @@ spec:
             {{- end }}
           command:
             - /manager
-          {{- if .Values.manager.env.enabled }}
+          {{- if or (not .Values.admissionWebhooks.enabled) .Values.manager.env }}
           env:
             {{- if not .Values.admissionWebhooks.enabled }}
             - name: ENABLE_WEBHOOKS
