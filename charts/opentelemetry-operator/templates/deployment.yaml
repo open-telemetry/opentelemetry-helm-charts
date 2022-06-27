@@ -26,7 +26,9 @@ spec:
             - --metrics-addr=127.0.0.1:{{ .Values.manager.ports.metricsPort }}
             - --enable-leader-election
             - --health-probe-addr=:{{ .Values.manager.ports.healthzPort }}
+            {{- if .Values.admissionWebhooks.enabled }}
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
+            {{- end }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
             {{- end }}
@@ -46,9 +48,11 @@ spec:
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
           name: manager
           ports:
+            {{- if .Values.admissionWebhooks.enabled }}
             - containerPort: {{ .Values.manager.ports.webhookPort }}
               name: webhook-server
               protocol: TCP
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -93,7 +97,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.name" . }}-controller-manager
       terminationGracePeriodSeconds: 10
-      {{- if and .Values.admissionWebhooks.enabled }}
+      {{- if .Values.admissionWebhooks.enabled }}
       volumes:
         - name: cert
           secret:
