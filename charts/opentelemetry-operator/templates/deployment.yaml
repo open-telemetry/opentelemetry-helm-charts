@@ -23,7 +23,7 @@ spec:
       hostNetwork: {{ .Values.hostNetwork }}
       containers:
         - args:
-            - --metrics-addr=127.0.0.1:{{ .Values.manager.ports.metricsPort }}
+            - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
             - --enable-leader-election
             - --health-probe-addr=:{{ .Values.manager.ports.healthzPort }}
             {{- if .Values.admissionWebhooks.enabled }}
@@ -48,6 +48,9 @@ spec:
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
           name: manager
           ports:
+            - containerPort: {{ .Values.manager.ports.metricsPort }}
+              name: metrics
+              protocol: TCP
             {{- if .Values.admissionWebhooks.enabled }}
             - containerPort: {{ .Values.manager.ports.webhookPort }}
               name: webhook-server

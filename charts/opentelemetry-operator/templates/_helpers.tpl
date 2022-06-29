@@ -13,9 +13,20 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Common labels
+*/}}
+{{- define "opentelemetry-operator.labels" -}}
+helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
+{{ include "opentelemetry-operator.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "opentelemetry-operator.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "opentelemetry-operator.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
