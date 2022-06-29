@@ -23,7 +23,11 @@ spec:
       hostNetwork: {{ .Values.hostNetwork }}
       containers:
         - args:
+            {{- if .Values.manager.serviceMonitor.enabled }}
+            - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
+            {{- else}}
             - --metrics-addr=127.0.0.1:{{ .Values.manager.ports.metricsPort }}
+            {{- end }}
             {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
             {{- end }}
