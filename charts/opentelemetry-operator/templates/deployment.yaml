@@ -24,7 +24,9 @@ spec:
       containers:
         - args:
             - --metrics-addr=127.0.0.1:{{ .Values.manager.ports.metricsPort }}
+            {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
+            {{- end }}
             - --health-probe-addr=:{{ .Values.manager.ports.healthzPort }}
             {{- if .Values.admissionWebhooks.enabled }}
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
