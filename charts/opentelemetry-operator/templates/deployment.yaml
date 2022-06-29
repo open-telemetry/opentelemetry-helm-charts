@@ -53,6 +53,9 @@ spec:
           image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
           name: manager
           ports:
+            - containerPort: {{ .Values.manager.ports.metricsPort }}
+              name: metrics
+              protocol: TCP
             {{- if .Values.admissionWebhooks.enabled }}
             - containerPort: {{ .Values.manager.ports.webhookPort }}
               name: webhook-server
