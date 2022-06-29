@@ -29,4 +29,5 @@ Selector labels
 */}}
 {{- define "opentelemetry-operator.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "opentelemetry-operator.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
