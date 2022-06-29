@@ -32,6 +32,9 @@ spec:
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
             {{- end }}
+            {{-  if .Values.manager.extraArgs  }}
+            {{- .Values.manager.extraArgs | toYaml | nindent 12 }}
+            {{-  end  }}
           command:
             - /manager
           {{- if or (not .Values.admissionWebhooks.enabled) .Values.manager.env }}
