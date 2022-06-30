@@ -31,3 +31,14 @@ Selector labels
 app.kubernetes.io/name: {{ include "opentelemetry-operator.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "opentelemetry-operator.serviceAccountName" -}}
+{{- if .Values.manager.serviceAccount.create }}
+{{- default (include "opentelemetry-operator.name" .) .Values.manager.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.manager.serviceAccount.name }}
+{{- end }}
+{{- end }}
