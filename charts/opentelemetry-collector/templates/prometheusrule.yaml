@@ -48,14 +48,6 @@ spec:
       annotations:
         description: '{{`The {{ $labels.processor }} is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#data-loss'
-    - alert: ExporterDroppedSpans #metric not present in collector 0.54
-      expr: rate(otelcol_exporter_send_failed_spans[5m]) > 0
-      for: 2m
-      labels:
-        severity: critical
-      annotations:
-        description: '{{`The {{ $labels.exporter }} is dropping spans at a rate of {{ humanize $value }} per second `}}'
-        runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
     - alert: ExporterDroppedMetrics
       expr: rate(otelcol_exporter_send_failed_metric_points[5m]) > 0
       for: 2m
@@ -65,7 +57,7 @@ spec:
         description: '{{`The {{ $labels.exporter }} is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
     - alert: ExporterQueueSize
-      expr: otelcol_exporter_queue_size > 5000 # TODO: Define/Reuse queue_size (default = 5000)
+      expr: otelcol_exporter_queue_size > 5000
       for: 1m
       labels:
         severity: warning
