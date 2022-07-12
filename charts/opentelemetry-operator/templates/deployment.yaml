@@ -98,8 +98,9 @@ spec:
           {{- with .Values.kubeRBACProxy.resources }}
           resources: {{ toYaml . | nindent 12 }}
           {{- end }}
-      {{- if .Values.imagePullSecrets }}
-      imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity: {{ toYaml . | nindent 8 }}
