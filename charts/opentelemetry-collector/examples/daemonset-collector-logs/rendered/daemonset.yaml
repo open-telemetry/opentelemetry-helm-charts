@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: be28f8ffe0b6cc708b0659ea338a5a17afebf2cfe7a4370b2ffd2d5fdf239a25
+        checksum/config: bf5b985980158c72e129603a0ba387b4a4559fd2821a9faf1774ef5ff6ceeb12
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -81,8 +81,11 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 1
-              memory: 2Gi
+              cpu: 256m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
