@@ -1,5 +1,4 @@
-{{- if eq .Values.mode "deployment" -}}
-  {{- if not .Values.useExistingConfigMap -}}
+{{- if and (eq .Values.mode "deployment") (not .Values.useExistingConfigMap) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,5 +8,4 @@ metadata:
 data:
   relay: |
     {{- include "opentelemetry-collector.deploymentConfig" . | nindent 4 -}}
-  {{- end }}
 {{- end }}
