@@ -1,0 +1,29 @@
+---
+# Source: opentelemetry-collector/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-opentelemetry-collector
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.23.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.55.0"
+    app.kubernetes.io/managed-by: Helm
+    component: standalone-collector
+spec:
+  type: ClusterIP
+  ports: 
+    
+    - name: otlp
+      port: 4317
+      targetPort: otlp
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    component: standalone-collector

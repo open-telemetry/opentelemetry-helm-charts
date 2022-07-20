@@ -1,9 +1,18 @@
 # Upgrade guidelines
-## 0.22.1 to 1.0.0
+## 0.22.1 to 0.23.0
 
 [Reduce requested resources](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/273)
 
-Resource `limuts` have been reduced. Upgrades/installs of chart 1.0.0 will now use fewer resources. See the [Set resources](#set-resources) example to return the values to what they were before.
+Resource `limuts` have been reduced. Upgrades/installs of chart 1.0.0 will now use fewer resources. In order to set the resources back to what they where, you will need to override the `resources` section in the `values.yaml`.
+
+*Example*:
+
+```yaml
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+```
 
 ## 0.23.1 to 0.24.0
 
@@ -220,17 +229,4 @@ config:
           - otlp
       metrics: null
       logs: null
-```
-
-### Set resources:
-
-In order to set the resources back to what they where, you will need to override the `resources` section in the `values.yaml`.
-
-*Example*: Set resources back to what they were:
-
-```yaml
-resources:
-  limits:
-    cpu: 1
-    memory: 2Gi
 ```
