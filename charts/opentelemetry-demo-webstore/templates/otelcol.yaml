@@ -1,4 +1,38 @@
-{{- $config := set . "name" "otelcol" }}
+{{- define "otel-demo.otelcol.config" -}}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+exporters:
+  {{- if .Values.observability.jaeger.enabled }}
+  jaeger:
+    endpoint: "${JAEGER_ADDR}"
+    tls:
+      insecure: true
+  {{- end}}
+  logging:
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    traces:
+      receivers: 
+        - otlp
+      processors: 
+        - batch
+      exporters: 
+        - logging
+        {{- if .Values.observability.jaeger.enabled }}
+        - jaeger
+        {{- end}}
+{{- end }}
+
+{{- $ := set . "name" "otelcol" }}
+{{- $otelconfig := include "otel-demo.otelcol.config" .}}
+
 {{- if .Values.observability.otelcol.enabled -}}
 ---
 apiVersion: v1
@@ -9,37 +43,8 @@ metadata:
     {{- include "otel-demo.labels" . | nindent 4 }}
 data:
   otelcol-config.yml: |
-    config:
-      receivers:
-        otlp:
-          protocols:
-            grpc:
-            http:
-      exporters:
-        {{- if .Values.observability.jaeger.enabled }}
-        jaeger:
-          endpoint: "${JAEGER_ADDR}"
-          tls:
-            insecure: true
-        {{- end}}
-        logging:
 
-      processors:
-        batch:
-
-      service:
-        pipelines:
-          traces:
-            receivers: 
-              - otlp
-            processors: 
-              - batch
-            exporters: 
-              - logging
-              {{- if .Values.observability.jaeger.enabled }}
-              - jaeger
-              {{- end}}
-
+    {{- $otelconfig | nindent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,6 +60,7 @@ spec:
   template:
     metadata:
       labels:
+        checksum/otel_config: {{ sha256sum $otelconfig | trunc 63 }}
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
     spec:
       containers:
