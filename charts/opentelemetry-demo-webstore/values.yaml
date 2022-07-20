@@ -28,13 +28,13 @@ components:
     env:
     - name: ASPNETCORE_URLS
       value: http://*:8080
-    depends:
+    depends_on:
     - redis
 
   checkout-service:
     enabled: true
     servicePort: 8080
-    depends:
+    depends_on:
     - cart-service
     - currency-service
     - email-service
@@ -90,7 +90,7 @@ components:
   frontend:
     enabled: true
     servicePort: 8080
-    depends:
+    depends_on:
     - ad-service
     - cart-service
     - checkout-service
@@ -109,6 +109,8 @@ components:
       value: frontend:8080
     - name: USERS
       value: '10'
+    - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+      value: python
 
   payment-service:
     enabled: true
@@ -121,7 +123,7 @@ components:
   recommendation-service:
     enabled: true
     servicePort: 8080
-    depends:
+    depends_on:
     - product-catalog-service
     env:
     - name: OTEL_PYTHON_LOG_CORRELATION

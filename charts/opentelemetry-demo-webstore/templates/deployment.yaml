@@ -1,4 +1,4 @@
-{{- define "otel.demo.component" }}
+{{- define "otel.demo.deployment" }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,23 +25,11 @@ spec:
       containers:
         - name: {{ .name }}
           image: {{ .image | default (printf "%s:v%s-%s" .imageConfig.repository .Chart.AppVersion (.name | replace "-" "")) }}
-
           {{- if or .ports .servicePort}}
           ports:
-          {{- if .ports }}
-          {{- range $port := .ports }}
-          - containerPort: {{ $port.value }}
-            name: {{ $port.name}}
-          {{- end }}
-          {{- end }}
-
-          {{- if .servicePort }}
-          - containerPort: {{.servicePort}}
-            name: service
-          {{- end }}
+            {{- include "otel-demo.pod.ports" . | nindent 10 }}
           {{- end }}
           env:
-            {{- include "otel-demo.env" . | nindent 10 }}
-          
-          
+            {{- include "otel-demo.pod.env" . | nindent 10 }}
+           
 {{- end }}
