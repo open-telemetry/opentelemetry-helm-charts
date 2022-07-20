@@ -1,4 +1,9 @@
 # Upgrade guidelines
+## 0.22.1 to 1.0.0
+
+[Reduce requested resources](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/273)
+
+Resource `limuts` have been reduced. Upgrades/installs of chart 1.0.0 will now use fewer resources. See the [Set resources](#set-resources) example to return the values to what they were before.
 
 ## 0.23.1 to 0.24.0
 
@@ -78,7 +83,7 @@ See the [daemonset-and-deployment](examples/daemonset-and-deployment) example to
 
 ### Migrate to `mode`:
 
-The `agentCollector` and `standaloneCollector` sections in values.yaml have been deprecated. Instead there is a new field, `mode`, that determines if the collector is being installed as a daemonset or deployment.  
+The `agentCollector` and `standaloneCollector` sections in values.yaml have been deprecated. Instead there is a new field, `mode`, that determines if the collector is being installed as a daemonset or deployment.
 
 ```yaml
 # Valid values are "daemonset" and "deployment".
@@ -215,4 +220,17 @@ config:
           - otlp
       metrics: null
       logs: null
+```
+
+### Set resources:
+
+In order to set the resources back to what they where, you will need to override the `resources` section in the `values.yaml`.
+
+*Example*: Set resources back to what they were:
+
+```yaml
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
 ```
