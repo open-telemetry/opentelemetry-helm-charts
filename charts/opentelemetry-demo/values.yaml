@@ -1,0 +1,159 @@
+observability:
+  otelcol: 
+    enabled: true 
+    config: 
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+            http:
+      exporters:
+        jaeger:
+          endpoint: "${JAEGER_ADDR}"
+          tls:
+            insecure: true
+        logging:
+
+      processors:
+        batch:
+
+      service:
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [logging, jaeger]
+
+  jaeger:
+    enabled: true
+
+image:
+  repository: otel/demo
+  pullSecrets: []
+
+serviceAccount: ""
+
+components:
+  redis:
+    enabled: true
+    image: redis:alpine
+    ports:
+    - name: redis
+      value: 6379
+
+  ad-service:
+    enabled: true
+    servicePort: 8080
+
+  cart-service:
+    enabled: true
+    servicePort: 8080
+    env:
+    - name: ASPNETCORE_URLS
+      value: http://*:8080
+    depends:
+    - redis
+    
+
+  checkout-service:
+    enabled: true
+    servicePort: 8080
+    depends:
+    - cart-service
+    - currency-service
+    - email-service
+    - payment-service
+    - product-catalog-service
+    - shipping-service
+
+  currency-service:
+    enabled: true
+    servicePort: 8080
+    env:
+    - name: PORT
+      value: '8080'
+
+  email-service:
+    enabled: true
+    servicePort: 8080
+    env:
+    - name: APP_ENV
+      value: production
+    - name: PORT
+      value: '8080'
+
+  featureflag-service:
+    enabled: true
+    env:
+    - name: DATABASE_URL
+      value: ecto://ffs:ffs@ffs-postgres:5432/ffs
+    - name: GRPC_PORT
+      value: '50053'
+    - name: PORT
+      value: '50052'
+    ports:
+    - name: grpc
+      value: 50052
+    - name: http
+      value: 50053
+
+  ffs-postgres:
+    enabled: true
+    env:
+    - name: POSTGRES_DB
+      value: ffs
+    - name: POSTGRES_PASSWORD
+      value: ffs
+    - name: POSTGRES_USER
+      value: ffs
+    image: cimg/postgres:14.2
+    ports:
+    - name: postgres
+      value: 5432 
+
+  frontend:
+    enabled: true
+    servicePort: 8080
+    depends:
+    - ad-service
+    - cart-service
+    - checkout-service
+    - currency-service
+    - product-catalog-service
+    - recommendation-service
+    - shipping-service
+    env:
+    - name: FRONTEND_ADDR
+      value: :8080
+  
+  loadgenerator:
+    enabled: true
+    env:
+    - name: FRONTEND_ADDR
+      value: frontend:8080
+    - name: USERS
+      value: '10'
+  
+  payment-service:
+    enabled: true
+    servicePort: 8080
+
+  product-catalog-service:
+    enabled: true
+    servicePort: 8080
+
+  recommendation-service:
+    enabled: true
+    servicePort: 8080
+    depends:
+    - product-catalog-service
+    env:
+    - name: OTEL_PYTHON_LOG_CORRELATION
+      value: 'true'
+  
+  shipping-service:
+    enabled: true
+    servicePort: 8080
+    env:
+    - name: PORT 
+      value: '8080'

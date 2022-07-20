@@ -1,0 +1,47 @@
+{{- define "otel.demo.component" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "otel-demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otel-demo.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .imageConfig.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .imageConfig.pullSecrets | nindent 8}}
+      {{- end }}
+      {{- with .serviceAccountName }}
+      serviceAccountName: {{ .serviceAccountName}} 
+      {{- end }}
+      containers:
+        - name: {{ .name }}
+          image: {{ .image | default (printf "%s:v%s-%s" .imageConfig.repository .Chart.AppVersion (.name | replace "-" "")) }}
+
+          {{- if or .ports .servicePort}}
+          ports:
+          {{- if .ports }}
+          {{- range $port := .ports }}
+          - containerPort: {{ $port.value }}
+            name: {{ $port.name}}
+          {{- end }}
+          {{- end }}
+
+          {{- if .servicePort }}
+          - containerPort: {{.servicePort}}
+            name: service
+          {{- end }}
+          {{- end }}
+          env:
+            {{- include "otel-demo.env" . | nindent 10 }}
+          
+          
+{{- end }}
