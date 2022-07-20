@@ -9,7 +9,37 @@ metadata:
     {{- include "otel-demo.labels" . | nindent 4 }}
 data:
   otelcol-config.yml: |
-    {{ .Values.observability.otelcol.config | toYaml | nindent 4 }}
+    config:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+            http:
+      exporters:
+        {{- if .Values.observability.jaeger.enabled -}}
+        jaeger:
+          endpoint: "${JAEGER_ADDR}"
+          tls:
+            insecure: true
+        {{- end}}
+        logging:
+
+      processors:
+        batch:
+
+      service:
+        pipelines:
+          traces:
+            receivers: 
+              - otlp
+            processors: 
+              - batch
+            exporters: 
+              - logging
+              {{- if .Values.observability.jaeger.enabled -}}
+              - jaeger
+              {{- end}} 
+
 
 ---
 apiVersion: apps/v1
@@ -32,9 +62,11 @@ spec:
       - image: otel/opentelemetry-collector:0.55.0
         name: otel-col
         args: ["--config=/etc/otelcol-config.yml"]
+        {{- if .Values.observability.jaeger.enabled -}}
         env:
           - name: JAEGER_ADDR
             value: {{ include "otel-demo.name" . }}-jaeger:14250
+        {{- end }}
         ports:
           - containerPort: 4317
             protocol: TCP

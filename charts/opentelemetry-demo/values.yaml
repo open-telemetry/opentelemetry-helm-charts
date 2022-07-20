@@ -1,29 +1,6 @@
 observability:
   otelcol:
     enabled: true
-    config:
-      receivers:
-        otlp:
-          protocols:
-            grpc:
-            http:
-      exporters:
-        jaeger:
-          endpoint: "${JAEGER_ADDR}"
-          tls:
-            insecure: true
-        logging:
-
-      processors:
-        batch:
-
-      service:
-        pipelines:
-          traces:
-            receivers: [otlp]
-            processors: [batch]
-            exporters: [logging, jaeger]
-
   jaeger:
     enabled: true
 
