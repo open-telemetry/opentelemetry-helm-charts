@@ -3,12 +3,22 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
+  {{- if .Values.serviceMonitor.namespace }}
+  namespace: {{ .Values.serviceMonitor.namespace }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
     {{- range $key, $value := .Values.serviceMonitor.extraLabels }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
 spec:
+  {{- if .Values.serviceMonitor.namespaceSelector }}
+  namespaceSelector:
+    matchNames:
+    {{- range .Values.serviceMonitor.namespaceSelector }}
+    - {{ . }}
+    {{- end }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
