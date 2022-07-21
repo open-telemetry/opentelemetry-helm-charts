@@ -8,7 +8,7 @@ Get  Pod Env
 {{- end }}
 
 {{- if .observability.otelcol.enabled }} 
-- name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+- name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
 - name: OTEL_RESOURCE_ATTRIBUTES
   value: service.name={{ .name }}
