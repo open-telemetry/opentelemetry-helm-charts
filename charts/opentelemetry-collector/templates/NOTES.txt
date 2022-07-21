@@ -14,6 +14,6 @@
 {{ fail "[ERROR] 'mode' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
 {{ end }}
 
-{{- if and .Values.useExistingConfigMap (not (eq (toString .Values.config) "<nil>")) }}
-{{ fail "[ERROR] 'config' must be null when using 'useExistingConfigMap'." }}
+{{- if and (not .Values.configMap.create) (or (eq (toString .Values.extraVolumes) "<nil>") (eq (toString .Values.extraVolumeMounts) "<nil>") ) }}
+{{ fail "[WARNING] 'configMap' wil not be created, please provide your custom configs by unsing  'extraVolumes' or 'extraVolumeMounts'." }}
 {{ end }}
