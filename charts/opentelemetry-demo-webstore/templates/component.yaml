@@ -1,5 +1,5 @@
 {{ $serviceMapping := include "otel-demo.pod.serviceMapping" . | fromYaml}}
-
+{{ $depends := include "otel-demo.pod.dependsConfig" . | fromYaml }}
 {{- range $name, $config := .Values.components }}
     {{- $config := set . "name" $name }}
     {{- $config := set . "Release" $.Release }}
@@ -8,7 +8,7 @@
     {{- $config := set . "serviceAccount" $.Values.serviceAccount }}
     {{- $config := set . "observability" $.Values.observability }}
     {{- $config := set . "serviceMapping" $serviceMapping }}
-    {{- $config := set . "depends" (include "otel-demo.pod.dependsConfig" . | fromYaml) }}
+    {{- $config := set . "depends" $depends }}
 
     {{- if $config.enabled -}}
         {{- include "otel.demo.deployment" $config -}}
