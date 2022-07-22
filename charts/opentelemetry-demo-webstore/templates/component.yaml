@@ -1,12 +1,4 @@
-{{ $servicePortMap := default dict }}
-{{- range $name, $config := .Values.components }}
-    {{ if $config.ports }}
-        {{- $servicePortMap := set $servicePortMap  $name (get (index $config.ports 0 ) "value") }}
-    {{- end}}
-    {{ if $config.servicePort }}
-        {{- $servicePortMap := set $servicePortMap  $name $config.servicePort }}
-    {{- end}}
-{{- end }}
+{{ $serviceMapping := include "otel-demo.pod.serviceMapping" . | fromYaml}}
 
 {{- range $name, $config := .Values.components }}
     {{- $config := set . "name" $name }}
@@ -15,7 +7,8 @@
     {{- $config := set . "imageConfig" $.Values.image }}
     {{- $config := set . "serviceAccount" $.Values.serviceAccount }}
     {{- $config := set . "observability" $.Values.observability }}
-    {{- $config := set . "servicePortMap" $servicePortMap }}
+    {{- $config := set . "serviceMapping" $serviceMapping }}
+    {{- $config := set . "depends" (include "otel-demo.pod.dependsConfig" . | fromYaml) }}
 
     {{- if $config.enabled -}}
         {{- include "otel.demo.deployment" $config -}}

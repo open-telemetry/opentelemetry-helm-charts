@@ -28,19 +28,10 @@ components:
     env:
     - name: ASPNETCORE_URLS
       value: http://*:8080
-    depends_on:
-    - redis
 
   checkout-service:
     enabled: true
     servicePort: 8080
-    depends_on:
-    - cart-service
-    - currency-service
-    - email-service
-    - payment-service
-    - product-catalog-service
-    - shipping-service
 
   currency-service:
     enabled: true
@@ -90,22 +81,12 @@ components:
   frontend:
     enabled: true
     servicePort: 8080
-    depends_on:
-    - ad-service
-    - cart-service
-    - checkout-service
-    - currency-service
-    - product-catalog-service
-    - recommendation-service
-    - shipping-service
     env:
     - name: FRONTEND_ADDR
       value: :8080
 
   loadgenerator:
     enabled: true
-    depends_on:
-    - frontend
     env:
     - name: USERS
       value: '10'
@@ -123,8 +104,6 @@ components:
   recommendation-service:
     enabled: true
     servicePort: 8080
-    depends_on:
-    - product-catalog-service
     env:
     - name: OTEL_PYTHON_LOG_CORRELATION
       value: 'true'

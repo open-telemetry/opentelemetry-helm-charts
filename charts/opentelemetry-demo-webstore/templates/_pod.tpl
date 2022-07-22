@@ -1,7 +1,50 @@
 {{/*
-Get  Pod Env 
+Component Depends Config
+*/}}
+{{- define "otel-demo.pod.dependsConfig" -}}
+cart-service:
+  - redis
+checkout-service:
+  - cart-service
+  - currency-service
+  - email-service
+  - payment-service
+  - product-catalog-service
+  - shipping-service
+frontend:
+  - ad-service
+  - cart-service
+  - checkout-service
+  - currency-service
+  - product-catalog-service
+  - recommendation-service
+  - shipping-service
+loadgenerator:
+  - frontend
+recommendation-service:
+  - product-catalog-service
+{{- end}}
+
+
+{{/*
+Get Services Port Mapping
+*/}}
+{{- define "otel-demo.pod.serviceMapping" -}}
+{{ $servicePortMap := default dict }}
+{{- range $name, $config := .Values.components }}
+    {{- if $config.servicePort }}
+    {{ $name }}: {{ $config.servicePort }}
+    {{- else if $config.ports }}
+    {{ $name }}: {{ (get (index $config.ports 0 ) "value") }}
+    {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Get Pod Env 
 */}}
 {{- define "otel-demo.pod.env" -}}
+{{- $prefix := include "otel-demo.name" $ }}
 
 {{- if .env }}
 {{- toYaml .env }}
@@ -19,11 +62,10 @@ Get  Pod Env
   value: {{.servicePort | quote}} 
 {{- end }}
 
-{{- if .depends_on }}
-{{- $prefix := include "otel-demo.name" $ }}
-{{- range $depend := .depends_on }}
+{{- if hasKey $.depends .name }}
+{{- range $depend := get $.depends .name }}
 - name: {{ printf "%s_ADDR " $depend | upper | replace "-" "_" }}
-  value: {{ printf "%s-%s:%0.f" $prefix $depend (get $.servicePortMap $depend )}}
+  value: {{ printf "%s-%s:%0.f" $prefix $depend (get $.serviceMapping $depend )}}
 {{- end }}
 {{- end }}
 
