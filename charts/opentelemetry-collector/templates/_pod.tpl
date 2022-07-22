@@ -10,7 +10,9 @@ containers:
   - name: {{ .Chart.Name }}
     command:
       - /{{ .Values.command.name }}
+      {{- if .Values.configMap.create }}
       - --config=/conf/relay.yaml
+      {{- end }}
       {{- range .Values.command.extraArgs }}
       - {{ . }}
       {{- end }}
@@ -53,8 +55,10 @@ containers:
     resources:
       {{- toYaml .Values.resources | nindent 6 }}
     volumeMounts:
+      {{- if .Values.configMap.create }}
       - mountPath: /conf
         name: {{ .Chart.Name }}-configmap
+      {{- end }}
       {{- range .Values.extraConfigMapMounts }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
@@ -98,12 +102,14 @@ initContainers:
 priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
 volumes:
+  {{- if .Values.configMap.create }}
   - name: {{ .Chart.Name }}-configmap
     configMap:
       name: {{ include "opentelemetry-collector.fullname" . }}{{ .configmapSuffix }}
       items:
         - key: relay
           path: relay.yaml
+  {{- end }}
   {{- range .Values.extraConfigMapMounts }}
   - name: {{ .name }}
     configMap:
