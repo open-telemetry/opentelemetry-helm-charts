@@ -1,2 +1,22 @@
-1. Get the OTEL-DEMO Front UI by running these commands:
+=======================================================================================
+
+
+ ██████╗ ████████╗███████╗██╗         ██████╗ ███████╗███╗   ███╗ ██████╗ 
+██╔═══██╗╚══██╔══╝██╔════╝██║         ██╔══██╗██╔════╝████╗ ████║██╔═══██╗
+██║   ██║   ██║   █████╗  ██║         ██║  ██║█████╗  ██╔████╔██║██║   ██║
+██║   ██║   ██║   ██╔══╝  ██║         ██║  ██║██╔══╝  ██║╚██╔╝██║██║   ██║
+╚██████╔╝   ██║   ███████╗███████╗    ██████╔╝███████╗██║ ╚═╝ ██║╚██████╔╝
+ ╚═════╝    ╚═╝   ╚══════╝╚══════╝    ╚═════╝ ╚══════╝╚═╝     ╚═╝ ╚═════╝ 
+                                                                          
+
+- Front UI: http://localhost:8080
+  by running these commands:
      kubectl port-forward svc/{{ include "otel-demo.name" . }}-frontend 8080:8080
+      
+
+{{- if $.Values.observability.jaeger.enabled }}
+
+- Jaeger UI: http://localhost:16686
+  by running these commands:
+     kubectl port-forward svc/{{ include "otel-demo.name" . }}-jaeger 16686:16686
+{{- end }}
