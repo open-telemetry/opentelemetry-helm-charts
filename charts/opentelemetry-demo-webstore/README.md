@@ -1,6 +1,6 @@
-# OpenTelemetry Demo Webstore Helm Chart
+# OpenTelemetry Demo Helm Chart
 
-The helm chart installs [OpenTelemetry Demo Webstore](https://github.com/open-telemetry/opentelemetry-demo-webstore)
+The helm chart installs [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo)
 in kubernetes cluster.
 
 ## Prerequisites
@@ -18,5 +18,5 @@ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm
 To install the chart with the release name my-otel-demo, run the following command:
 
 ```console
-helm install my-otel-demo open-telemetry/opentelemetry-demo-webstore
+helm install my-otel-demo open-telemetry/opentelemetry-demo
 ```
