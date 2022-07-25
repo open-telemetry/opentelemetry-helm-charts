@@ -1,5 +1,5 @@
 # Upgrade guidelines
-## 0.22.1 to 0.23.0
+## 0.23.0 to 0.24.0
 
 [Reduce requested resources](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/273)
 

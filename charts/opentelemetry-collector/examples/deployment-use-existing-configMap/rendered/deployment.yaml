@@ -1,30 +1,32 @@
 ---
-# Source: opentelemetry-collector/templates/daemonset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   labels:
     helm.sh/chart: opentelemetry-collector-0.24.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.55.0"
+    app.kubernetes.io/version: "0.56.0"
     app.kubernetes.io/managed-by: Helm
+  
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: agent-collector
+      component: standalone-collector
   template:
     metadata:
       annotations:
-        checksum/config: 8dd1805d8d9c50cd7014c7da293561bd06cff9b8fa611ce96e2b3cefe42a3f2d
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: agent-collector
+        component: standalone-collector
         
     spec:
       
@@ -35,54 +37,36 @@ spec:
         - name: opentelemetry-collector
           command:
             - /otelcol-contrib
-            - --config=/conf/relay.yaml
+            - --config=/conf/config.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.55.0"
+          image: "otel/opentelemetry-collector-contrib:0.56.0"
           imagePullPolicy: IfNotPresent
           ports:
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
-              hostPort: 6831
             - name: jaeger-grpc
               containerPort: 14250
               protocol: TCP
-              hostPort: 14250
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
-              hostPort: 14268
             - name: otlp
               containerPort: 4317
               protocol: TCP
-              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP
-              hostPort: 4318
             - name: zipkin
               containerPort: 9411
               protocol: TCP
-              hostPort: 9411
           env:
             - name: MY_POD_IP
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: HOST_PROC
-              value: /hostfs/proc
-            - name: HOST_SYS
-              value: /hostfs/sys
-            - name: HOST_ETC
-              value: /hostfs/etc
-            - name: HOST_VAR
-              value: /hostfs/var
-            - name: HOST_RUN
-              value: /hostfs/run
-            - name: HOST_DEV
-              value: /hostfs/dev
           livenessProbe:
             httpGet:
               path: /
@@ -93,23 +77,16 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 256m
-              memory: 512Mi
+              cpu: 100m
+              memory: 200M
           volumeMounts:
-            - mountPath: /conf
-              name: opentelemetry-collector-configmap
-            - name: hostfs
-              mountPath: /hostfs
-              readOnly: true
-              mountPropagation: HostToContainer
+            - mountPath: /conf/config.yaml
+              name: custom-otelcol-configmap
       volumes:
-        - name: opentelemetry-collector-configmap
-          configMap:
-            name: example-opentelemetry-collector-agent
+        - configMap:
+            defaultMode: 420
             items:
-              - key: relay
-                path: relay.yaml
-        - name: hostfs
-          hostPath:
-            path: /
-      hostNetwork: false
+            - key: config
+              path: config.yaml
+            name: custom-otel-collector-config
+          name: custom-otelcol-configmap
