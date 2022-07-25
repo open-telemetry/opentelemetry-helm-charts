@@ -1,35 +1,3 @@
-{{- define "otel-demo.otelcol.config" -}}
-receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
-exporters:
-  {{- if .Values.observability.jaeger.enabled }}
-  jaeger:
-    endpoint: "${JAEGER_ADDR}"
-    tls:
-      insecure: true
-  {{- end}}
-  logging:
-
-processors:
-  batch:
-
-service:
-  pipelines:
-    traces:
-      receivers: 
-        - otlp
-      processors: 
-        - batch
-      exporters: 
-        - logging
-        {{- if .Values.observability.jaeger.enabled }}
-        - jaeger
-        {{- end}}
-{{- end }}
-
 {{- $ := set . "name" "otelcol" }}
 {{- $otelconfig := include "otel-demo.otelcol.config" .}}
 
