@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 92fea31a6087fa1c15b5da7631c2f968f2bedf086c3845c413aae2e069d0f479
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -37,17 +37,29 @@ spec:
         - name: opentelemetry-collector
           command:
             - /otelcol-contrib
-            - --config=/conf/relay.yaml
+            - --config=/conf/config.yaml
           securityContext:
             {}
           image: "otel/opentelemetry-collector-contrib:0.56.0"
           imagePullPolicy: IfNotPresent
           ports:
+            - name: jaeger-compact
+              containerPort: 6831
+              protocol: UDP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
             - name: otlp
               containerPort: 4317
               protocol: TCP
             - name: otlp-http
               containerPort: 4318
+              protocol: TCP
+            - name: zipkin
+              containerPort: 9411
               protocol: TCP
           env:
             - name: MY_POD_IP
@@ -65,15 +77,16 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 1
-              memory: 2Gi
+              cpu: 100m
+              memory: 200M
           volumeMounts:
-            - mountPath: /conf
-              name: opentelemetry-collector-configmap
+            - mountPath: /conf/config.yaml
+              name: custom-otelcol-configmap
       volumes:
-        - name: opentelemetry-collector-configmap
-          configMap:
-            name: example-opentelemetry-collector
+        - configMap:
+            defaultMode: 420
             items:
-              - key: relay
-                path: relay.yaml
+            - key: config
+              path: config.yaml
+            name: custom-otel-collector-config
+          name: custom-otelcol-configmap
