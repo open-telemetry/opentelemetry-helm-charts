@@ -33,9 +33,9 @@ Get Services Port Mapping
 {{ $servicePortMap := default dict }}
 {{- range $name, $config := .Values.components }}
     {{- if $config.servicePort }}
-    {{ $name }}: {{ $config.servicePort }}
+    {{ $name | kebabcase }}: {{ $config.servicePort }}
     {{- else if $config.ports }}
-    {{ $name }}: {{ (get (index $config.ports 0 ) "value") }}
+    {{ $name | kebabcase}}: {{ (get (index $config.ports 0 ) "value") }}
     {{- end }}
 {{- end }}
 {{- end }}
@@ -54,18 +54,20 @@ Get Pod Env
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
 - name: OTEL_RESOURCE_ATTRIBUTES
-  value: service.name={{ .name }}
+  value: service.name={{ .name | kebabcase }}
 {{- end }}
 
 {{- if .servicePort}}
-- name: {{ printf "%s_PORT " .name | upper | replace "-" "_" }}
+- name: {{ printf "%s_PORT" .name | snakecase | upper }}
   value: {{.servicePort | quote}} 
 {{- end }}
 
+# {{ $.depends }}
+# {{ .name }}
 {{- if hasKey $.depends .name }}
 {{- range $depend := get $.depends .name }}
-- name: {{ printf "%s_ADDR " $depend | upper | replace "-" "_" }}
-  value: {{ printf "%s-%s:%0.f" $prefix $depend (get $.serviceMapping $depend )}}
+- name: {{ printf "%s_ADDR" $depend | snakecase | upper }}
+  value: {{ printf "%s-%s:%0.f" $prefix ($depend | kebabcase) (get $.serviceMapping $depend )}}
 {{- end }}
 {{- end }}
 

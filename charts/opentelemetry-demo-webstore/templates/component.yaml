@@ -1,7 +1,7 @@
 {{ $serviceMapping := include "otel-demo.pod.serviceMapping" . | fromYaml}}
 {{ $depends := include "otel-demo.pod.dependsConfig" . | fromYaml }}
 {{- range $name, $config := .Values.components }}
-    {{- $config := set . "name" $name }}
+    {{- $config := set . "name" ($name | kebabcase) }}
     {{- $config := set . "Release" $.Release }}
     {{- $config := set . "Chart" $.Chart }}
     {{- $config := set . "imageConfig" $.Values.image }}
