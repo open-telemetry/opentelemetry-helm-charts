@@ -1,0 +1,24 @@
+name: Test Demo Chart
+
+on:
+  pull_request:
+    paths: 
+    - 'charts/opentelemetry-demo/**'
+    branches:
+      - main
+
+jobs:
+  collector-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "true"
+
+      - name: Run chart-testing (install)
+        run: ct install --charts charts/opentelemetry-demo
