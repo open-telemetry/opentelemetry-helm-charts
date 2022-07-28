@@ -42,7 +42,8 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml) $config }}
+{{- $config := include "opentelemetry-collector.daemonset.logsCollectionConfig" $data | fromYaml | mustMergeOverwrite $config }}
+{{- $config := include "opentelemetry-collector.daemonset.hostMetricsConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -111,13 +112,41 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- div (mul (include "opentelemetry-collector.convertMemToMib" .) 40) 100 }}
 {{- end -}}
 
-{{- define "opentelemetry-collector.daemonset.containerLogsConfig" -}}
-{{- if .Values.containerLogs.enabled }}
+{{- define "opentelemetry-collector.daemonset.hostMetricsConfig" -}}
+{{- if .Values.presets.hostMetrics.enabled }}
+receivers:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      memory:
+      network:
+      load:
+      paging:
+      processes:
+service:
+  pipelines:
+    metrics:
+      receivers:
+          - hostmetrics
+          - otlp
+          - prometheus
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.daemonset.logsCollectionConfig" -}}
+{{- if .Values.presets.logsCollection.enabled }}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
+    {{- if .Values.presets.logsCollection.includeCollectorLogs }}
+    exclude: []
+    {{- else }}
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
+    {{- end }}
     start_at: beginning
     include_file_path: true
     include_file_name: false

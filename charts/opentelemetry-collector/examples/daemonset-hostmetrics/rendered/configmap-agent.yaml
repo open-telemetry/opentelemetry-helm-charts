@@ -26,11 +26,16 @@ data:
         spike_limit_mib: 512
     receivers:
       hostmetrics:
+        collection_interval: 10s
         scrapers:
           cpu: null
           disk: null
+          filesystem: null
           load: null
           memory: null
+          network: null
+          paging: null
+          processes: null
       jaeger:
         protocols:
           grpc:
@@ -75,9 +80,9 @@ data:
           - memory_limiter
           - batch
           receivers:
-          - hostmestrics
           - otlp
           - prometheus
+          - hostmetrics
         traces:
           exporters:
           - logging
