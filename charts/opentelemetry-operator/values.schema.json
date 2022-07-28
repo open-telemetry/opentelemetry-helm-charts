@@ -1,0 +1,899 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "default": {},
+    "title": "Values",
+    "additionalProperties": false,
+    "required": [
+        "replicaCount",
+        "nameOverride",
+        "imagePullSecrets",
+        "manager",
+        "kubeRBACProxy",
+        "admissionWebhooks",
+        "role",
+        "clusterRole",
+        "affinity",
+        "tolerations",
+        "nodeSelector",
+        "hostNetwork"
+    ],
+    "properties": {
+        "enabled": {
+          "description": "Usually used when using Opentelemetry-operator as a subchart.",
+          "type": "boolean"
+        },
+        "global": {
+          "type": "object"
+        },
+        "replicaCount": {
+            "type": "integer",
+            "default": 0,
+            "title": "The replicaCount Schema",
+            "examples": [
+                1
+            ]
+        },
+        "nameOverride": {
+            "type": "string",
+            "default": "",
+            "title": "The nameOverride Schema",
+            "examples": [
+                ""
+            ]
+        },
+        "imagePullSecrets": {
+            "type": "array",
+            "default": [],
+            "title": "The imagePullSecrets Schema",
+            "items": {},
+            "examples": [
+                []
+            ]
+        },
+        "manager": {
+            "type": "object",
+            "default": {},
+            "title": "The manager Schema",
+            "required": [
+                "image",
+                "collectorImage",
+                "ports",
+                "resources",
+                "env",
+                "serviceAccount",
+                "serviceMonitor",
+                "prometheusRule",
+                "extraArgs",
+                "leaderElection"
+            ],
+            "properties": {
+                "image": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The image Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The repository Schema",
+                            "examples": [
+                                "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator"
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The tag Schema",
+                            "examples": [
+                                "v0.55.0"
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
+                        "tag": "v0.55.0"
+                    }]
+                },
+                "collectorImage": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The collectorImage Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "string",
+                            "title": "The repository Schema",
+                            "examples": [
+                                "0.56.0"
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "string",
+                            "title": "The tag Schema",
+                            "examples": [
+                                "0.56.0"
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "otel/opentelemetry-collector",
+                        "tag": "0.56.0"
+                    }]
+                },
+                "ports": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The ports Schema",
+                    "required": [
+                        "metricsPort",
+                        "webhookPort",
+                        "healthzPort"
+                    ],
+                    "properties": {
+                        "metricsPort": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The metricsPort Schema",
+                            "examples": [
+                                8080
+                            ]
+                        },
+                        "webhookPort": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The webhookPort Schema",
+                            "examples": [
+                                9443
+                            ]
+                        },
+                        "healthzPort": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The healthzPort Schema",
+                            "examples": [
+                                8081
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "metricsPort": 8080,
+                        "webhookPort": 9443,
+                        "healthzPort": 8081
+                    }]
+                },
+                "resources": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The resources Schema",
+                    "required": [
+                        "limits",
+                        "requests"
+                    ],
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The limits Schema",
+                            "required": [
+                                "cpu",
+                                "memory"
+                            ],
+                            "properties": {
+                                "cpu": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The cpu Schema",
+                                    "examples": [
+                                        "100m"
+                                    ]
+                                },
+                                "memory": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The memory Schema",
+                                    "examples": [
+                                        "128Mi"
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "cpu": "100m",
+                                "memory": "128Mi"
+                            }]
+                        },
+                        "requests": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The requests Schema",
+                            "required": [
+                                "cpu",
+                                "memory"
+                            ],
+                            "properties": {
+                                "cpu": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The cpu Schema",
+                                    "examples": [
+                                        "100m"
+                                    ]
+                                },
+                                "memory": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The memory Schema",
+                                    "examples": [
+                                        "64Mi"
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "cpu": "100m",
+                                "memory": "64Mi"
+                            }]
+                        }
+                    },
+                    "examples": [{
+                        "limits": {
+                            "cpu": "100m",
+                            "memory": "128Mi"
+                        },
+                        "requests": {
+                            "cpu": "100m",
+                            "memory": "64Mi"
+                        }
+                    }]
+                },
+                "env": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The env Schema",
+                    "examples": [
+                        null
+                    ]
+                },
+                "serviceAccount": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The serviceAccount Schema",
+                    "required": [
+                        "create"
+                    ],
+                    "properties": {
+                        "create": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The create Schema",
+                            "examples": [
+                                true
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "create": true
+                    }]
+                },
+                "serviceMonitor": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The serviceMonitor Schema",
+                    "required": [
+                        "enabled",
+                        "extraLabels",
+                        "metricsEndpoints"
+                    ],
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "extraLabels": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The extraLabels Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
+                        },
+                        "metricsEndpoints": {
+                            "type": "array",
+                            "default": [],
+                            "title": "The metricsEndpoints Schema",
+                            "items": {
+                                "type": "object",
+                                "default": {},
+                                "title": "A Schema",
+                                "required": [
+                                    "port"
+                                ],
+                                "properties": {
+                                    "port": {
+                                        "type": "string",
+                                        "default": "",
+                                        "title": "The port Schema",
+                                        "examples": [
+                                            "metrics"
+                                        ]
+                                    }
+                                },
+                                "examples": [{
+                                    "port": "metrics"
+                                }]
+                            },
+                            "examples": [
+                                [{
+                                    "port": "metrics"
+                                }]
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "enabled": false,
+                        "extraLabels": {},
+                        "metricsEndpoints": [{
+                            "port": "metrics"
+                        }]
+                    }]
+                },
+                "prometheusRule": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The prometheusRule Schema",
+                    "required": [
+                        "enabled",
+                        "groups",
+                        "defaultRules",
+                        "extraLabels"
+                    ],
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "groups": {
+                            "type": "array",
+                            "default": [],
+                            "title": "The groups Schema",
+                            "items": {},
+                            "examples": [
+                                []
+                            ]
+                        },
+                        "defaultRules": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The defaultRules Schema",
+                            "required": [
+                                "enabled"
+                            ],
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "default": false,
+                                    "title": "The enabled Schema",
+                                    "examples": [
+                                        false
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "enabled": false
+                            }]
+                        },
+                        "extraLabels": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The extraLabels Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
+                        }
+                    },
+                    "examples": [{
+                        "enabled": false,
+                        "groups": [],
+                        "defaultRules": {
+                            "enabled": false
+                        },
+                        "extraLabels": {}
+                    }]
+                },
+                "extraArgs": {
+                    "type": "array",
+                    "default": [],
+                    "title": "The extraArgs Schema",
+                    "items": {},
+                    "examples": [
+                        []
+                    ]
+                },
+                "leaderElection": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The leaderElection Schema",
+                    "required": [
+                        "enabled"
+                    ],
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                true
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "enabled": true
+                    }]
+                }
+            },
+            "examples": [{
+                "image": {
+                    "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
+                    "tag": "v0.55.0"
+                },
+                "collectorImage": {
+                    "repository": null,
+                    "tag": null
+                },
+                "ports": {
+                    "metricsPort": 8080,
+                    "webhookPort": 9443,
+                    "healthzPort": 8081
+                },
+                "resources": {
+                    "limits": {
+                        "cpu": "100m",
+                        "memory": "128Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "64Mi"
+                    }
+                },
+                "env": null,
+                "serviceAccount": {
+                    "create": true
+                },
+                "serviceMonitor": {
+                    "enabled": false,
+                    "extraLabels": {},
+                    "metricsEndpoints": [{
+                        "port": "metrics"
+                    }]
+                },
+                "prometheusRule": {
+                    "enabled": false,
+                    "groups": [],
+                    "defaultRules": {
+                        "enabled": false
+                    },
+                    "extraLabels": {}
+                },
+                "extraArgs": [],
+                "leaderElection": {
+                    "enabled": true
+                }
+            }]
+        },
+        "kubeRBACProxy": {
+            "type": "object",
+            "default": {},
+            "title": "The kubeRBACProxy Schema",
+            "required": [
+                "image",
+                "ports",
+                "resources"
+            ],
+            "properties": {
+                "image": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The image Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The repository Schema",
+                            "examples": [
+                                "gcr.io/kubebuilder/kube-rbac-proxy"
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The tag Schema",
+                            "examples": [
+                                "v0.11.0"
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "gcr.io/kubebuilder/kube-rbac-proxy",
+                        "tag": "v0.11.0"
+                    }]
+                },
+                "ports": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The ports Schema",
+                    "required": [
+                        "proxyPort"
+                    ],
+                    "properties": {
+                        "proxyPort": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The proxyPort Schema",
+                            "examples": [
+                                8443
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "proxyPort": 8443
+                    }]
+                },
+                "resources": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The resources Schema",
+                    "required": [
+                        "limits",
+                        "requests"
+                    ],
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The limits Schema",
+                            "required": [
+                                "cpu",
+                                "memory"
+                            ],
+                            "properties": {
+                                "cpu": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The cpu Schema",
+                                    "examples": [
+                                        "500m"
+                                    ]
+                                },
+                                "memory": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The memory Schema",
+                                    "examples": [
+                                        "128Mi"
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "cpu": "500m",
+                                "memory": "128Mi"
+                            }]
+                        },
+                        "requests": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The requests Schema",
+                            "required": [
+                                "cpu",
+                                "memory"
+                            ],
+                            "properties": {
+                                "cpu": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The cpu Schema",
+                                    "examples": [
+                                        "5m"
+                                    ]
+                                },
+                                "memory": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The memory Schema",
+                                    "examples": [
+                                        "64Mi"
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "cpu": "5m",
+                                "memory": "64Mi"
+                            }]
+                        }
+                    },
+                    "examples": [{
+                        "limits": {
+                            "cpu": "500m",
+                            "memory": "128Mi"
+                        },
+                        "requests": {
+                            "cpu": "5m",
+                            "memory": "64Mi"
+                        }
+                    }]
+                }
+            },
+            "examples": [{
+                "image": {
+                    "repository": "gcr.io/kubebuilder/kube-rbac-proxy",
+                    "tag": "v0.11.0"
+                },
+                "ports": {
+                    "proxyPort": 8443
+                },
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "128Mi"
+                    },
+                    "requests": {
+                        "cpu": "5m",
+                        "memory": "64Mi"
+                    }
+                }
+            }]
+        },
+        "admissionWebhooks": {
+            "type": "object",
+            "default": {},
+            "title": "The admissionWebhooks Schema",
+            "required": [
+                "failurePolicy",
+                "enabled",
+                "certManager"
+            ],
+            "properties": {
+                "failurePolicy": {
+                    "type": "string",
+                    "default": "",
+                    "title": "The failurePolicy Schema",
+                    "examples": [
+                        "Fail"
+                    ]
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The enabled Schema",
+                    "examples": [
+                        true
+                    ]
+                },
+                "certManager": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The certManager Schema",
+                    "required": [
+                        "enabled",
+                        "issuerRef"
+                    ],
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                true
+                            ]
+                        },
+                        "issuerRef": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The issuerRef Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
+                        }
+                    },
+                    "examples": [{
+                        "enabled": true,
+                        "issuerRef": {}
+                    }]
+                }
+            },
+            "examples": [{
+                "failurePolicy": "Fail",
+                "enabled": true,
+                "certManager": {
+                    "enabled": true,
+                    "issuerRef": {}
+                }
+            }]
+        },
+        "role": {
+            "type": "object",
+            "default": {},
+            "title": "The role Schema",
+            "required": [
+                "create"
+            ],
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The create Schema",
+                    "examples": [
+                        true
+                    ]
+                }
+            },
+            "examples": [{
+                "create": true
+            }]
+        },
+        "clusterRole": {
+            "type": "object",
+            "default": {},
+            "title": "The clusterRole Schema",
+            "required": [
+                "create"
+            ],
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The create Schema",
+                    "examples": [
+                        true
+                    ]
+                }
+            },
+            "examples": [{
+                "create": true
+            }]
+        },
+        "affinity": {
+            "type": "object",
+            "default": {},
+            "title": "The affinity Schema",
+            "required": [],
+            "properties": {},
+            "examples": [{}]
+        },
+        "tolerations": {
+            "type": "array",
+            "default": [],
+            "title": "The tolerations Schema",
+            "items": {},
+            "examples": [
+                []
+            ]
+        },
+        "nodeSelector": {
+            "type": "object",
+            "default": {},
+            "title": "The nodeSelector Schema",
+            "required": [],
+            "properties": {},
+            "examples": [{}]
+        },
+        "hostNetwork": {
+            "type": "boolean",
+            "default": false,
+            "title": "The hostNetwork Schema",
+            "examples": [
+                false
+            ]
+        }
+    },
+    "examples": [{
+        "replicaCount": 1,
+        "nameOverride": "",
+        "imagePullSecrets": [],
+        "manager": {
+            "image": {
+                "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
+                "tag": "v0.55.0"
+            },
+            "collectorImage": {
+                "repository": null,
+                "tag": null
+            },
+            "ports": {
+                "metricsPort": 8080,
+                "webhookPort": 9443,
+                "healthzPort": 8081
+            },
+            "resources": {
+                "limits": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                },
+                "requests": {
+                    "cpu": "100m",
+                    "memory": "64Mi"
+                }
+            },
+            "env": null,
+            "serviceAccount": {
+                "create": true
+            },
+            "serviceMonitor": {
+                "enabled": false,
+                "extraLabels": {},
+                "metricsEndpoints": [{
+                    "port": "metrics"
+                }]
+            },
+            "prometheusRule": {
+                "enabled": false,
+                "groups": [],
+                "defaultRules": {
+                    "enabled": false
+                },
+                "extraLabels": {}
+            },
+            "extraArgs": [],
+            "leaderElection": {
+                "enabled": true
+            }
+        },
+        "kubeRBACProxy": {
+            "image": {
+                "repository": "gcr.io/kubebuilder/kube-rbac-proxy",
+                "tag": "v0.11.0"
+            },
+            "ports": {
+                "proxyPort": 8443
+            },
+            "resources": {
+                "limits": {
+                    "cpu": "500m",
+                    "memory": "128Mi"
+                },
+                "requests": {
+                    "cpu": "5m",
+                    "memory": "64Mi"
+                }
+            }
+        },
+        "admissionWebhooks": {
+            "failurePolicy": "Fail",
+            "enabled": true,
+            "certManager": {
+                "enabled": true,
+                "issuerRef": {}
+            }
+        },
+        "role": {
+            "create": true
+        },
+        "clusterRole": {
+            "create": true
+        },
+        "affinity": {},
+        "tolerations": [],
+        "nodeSelector": {},
+        "hostNetwork": false
+    }]
+}
+
