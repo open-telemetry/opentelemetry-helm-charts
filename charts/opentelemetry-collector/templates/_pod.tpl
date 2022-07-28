@@ -103,7 +103,6 @@ containers:
       {{- end }}
       {{- if .Values.presets.metrics.hostMetrics.enabled }}
       - name: hostfs
-        hostPath: /
         mountPath: /hostfs
         readOnly: true
         mountPropagation: HostToContainer
@@ -150,10 +149,8 @@ volumes:
   {{- end }}
   {{- if .Values.presets.metrics.hostMetrics.enabled }}
   - name: hostfs
-    hostPath: /
-    mountPath: /hostfs
-    readOnly: true
-    mountPropagation: HostToContainer
+    hostPath: 
+      path: /
   {{- end }}
   {{- if .Values.extraVolumes }}
   {{- toYaml .Values.extraVolumes | nindent 2 }}

@@ -10,15 +10,38 @@ ports:
   zipkin:
     enabled: false
 
-config:
+customConfig:
+  exporters:
+      logging: {}
+  extensions:
+    health_check: {}
+    memory_ballast: {}
+  processors:
+    batch: {}
+    memory_limiter:
+      check_interval: 5s
+      limit_mib: 1638
+      spike_limit_mib: 512
   receivers:
-    jaeger: null
-    prometheus: null
-    zipkin: null
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
   service:
+    extensions:
+    - health_check
+    - memory_ballast
     pipelines:
       traces:
+        exporters:
+        - logging
+        processors:
+        - memory_limiter
+        - batch
         receivers:
-          - otlp
-      metrics: null
-      logs: null
+        - otlp
+    telemetry:
+      metrics:
+        address: 0.0.0.0:8888

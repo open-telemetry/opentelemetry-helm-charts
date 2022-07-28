@@ -7,6 +7,7 @@
 Generate preset base config.
 */}}
 {{- define "opentelemetry-collector.presets.baseConfig" -}}
+{{- if or .Values.presets.traces.enabled .Values.presets.metrics.enabled .Values.presets.logs.enabled }}
 exporters:
     logging: {}
 extensions:
@@ -20,119 +21,24 @@ extensions:
 processors:
     batch:  {}
     memory_limiter:
-      # check_interval is the time between measurements of memory usage.
       check_interval: 5s
-      # By default limit_mib is set to 80% of ".Values.resources.limits.memory"
       limit_mib: {{ include "opentelemetry-collector.getMemLimitMib" .Values.resources.limits.memory }}
-      # By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
       spike_limit_mib: {{ include "opentelemetry-collector.getMemSpikeLimitMib" .Values.resources.limits.memory }}
-service:
-  telemetry:
-    metrics:
-      address: 0.0.0.0:8888
-  extensions:
-    - health_check
-    - memory_ballast
-{{- end }}
-
-{{/*
-Generate preset traces config.
-*/}}
-{{- define "opentelemetry-collector.presets.tracesConfig" -}}
-{{- if .Values.presets.traces.enabled }}
-receivers:
-  jaeger:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:14250
-      thrift_http:
-        endpoint: 0.0.0.0:14268
-      thrift_compact:
-        endpoint: 0.0.0.0:6831
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
-  zipkin:
-    endpoint: 0.0.0.0:9411
-service:
-  pipelines:
-    traces:
-      exporters:
-        - logging
-      processors:
-        - memory_limiter
-        - batch
-      receivers:
-        - otlp
-        - jaeger
-        - zipkin
-{{- end }}
-{{- end }}
-
-{{/*
-Generate preset metrics config.
-*/}}
-{{- define "opentelemetry-collector.presets.metricsConfig" -}}
-{{- if .Values.presets.metrics.enabled }}
-receivers:
-  {{- if .Values.presets.metrics.hostMetrics.enabled }}
-  hostmetrics:
-    scrapers:
-      cpu:
-      load:
-      memory:
-      disk:
-  {{- end }}
-  prometheus:
-    config:
-      {{- if .Values.presets.metrics.selfScraping.enabled }}
-      scrape_configs:
-        - job_name: opentelemetry-collector
-          scrape_interval: 10s
-          static_configs:
-            - targets:
-                - ${MY_POD_IP}:8888
-      {{- end }}
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
-service:
-  pipelines:
-    metrics:
-      exporters:
-        - logging
-      processors:
-        - memory_limiter
-        - batch
-      receivers:
-        - otlp
-        - prometheus
-        {{- if .Values.presets.metrics.hostMetrics.enabled }}
-        - hostmetrics
-        {{- end }}
-{{- end }}
-{{- end }}
-
-{{/*
-Generate preset logs config.
-*/}}
-{{- define "opentelemetry-collector.presets.logsConfig" -}}
-{{- if .Values.presets.logs.enabled }}
 receivers:
   {{- if .Values.presets.logs.containerLogs.enabled }}
   filelog:
-    include: [ /var/log/pods/*/*/*.log ]
+    include: 
+    - /var/log/pods/*/*/*.log
+    {{- if .Values.presets.logs.containerLogs.includeCollectorLogs }}
+    exclude: []
+    {{- else }}
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
-    exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
+    exclude:
+    - /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log
+    {{- end }}
     start_at: beginning
-    include_file_path: true
     include_file_name: false
+    include_file_path: true
     operators:
       # Find out which format is used by kubernetes
       - type: router
@@ -196,7 +102,43 @@ receivers:
       - type: move
         from: attributes.log
         to: body
-{{- end }}
+  {{- end }}
+
+  {{- if .Values.presets.metrics.enabled }}
+  prometheus:
+    config:
+      {{- if .Values.presets.metrics.selfScraping.enabled }}
+      scrape_configs:
+        - job_name: opentelemetry-collector
+          scrape_interval: 10s
+          static_configs:
+            - targets:
+                - ${MY_POD_IP}:8888
+      {{- end }}
+  
+  {{- if .Values.presets.metrics.hostMetrics.enabled }}
+  hostmetrics:
+    scrapers:
+      cpu:
+      load:
+      memory:
+      disk:
+  {{- end }}
+  {{- end }}
+
+  {{- if .Values.presets.traces.enabled }}
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+      thrift_compact:
+        endpoint: 0.0.0.0:6831
+  zipkin:
+    endpoint: 0.0.0.0:9411
+  {{- end }}
+
   otlp:
     protocols:
       grpc:
@@ -204,7 +146,11 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
 service:
+  extensions:
+    - health_check
+    - memory_ballast
   pipelines:
+    {{- if .Values.presets.logs.enabled }}
     logs:
       exporters:
         - logging
@@ -216,36 +162,47 @@ service:
         {{- if or .Values.presets.logs.containerLogs.enabled }}
         - filelog
         {{- end }}
+    {{- end }}
+    {{- if .Values.presets.metrics.enabled }}
+    metrics:
+      exporters:
+        - logging
+      processors:
+        - memory_limiter
+        - batch
+      receivers:
+        - otlp
+        - prometheus
+        {{- if .Values.presets.metrics.hostMetrics.enabled }}
+        - hostmetrics
+        {{- end }}
+    {{- end }}
+    {{- if .Values.presets.traces.enabled }}
+    traces:
+      exporters:
+        - logging
+      processors:
+        - memory_limiter
+        - batch
+      receivers:
+        - otlp
+        - jaeger
+        - zipkin
+    {{- end }}
+  telemetry:
+    metrics:
+      address: 0.0.0.0:8888
 {{- end }}
 {{- end }}
 
 {{/*
-Build config file for daemonset OpenTelemetry Collector
+Build config file for OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.config" -}}
-{{- $values := deepCopy .Values }}
-{{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
-{{- $config := include "opentelemetry-collector.presets.baseConfig" $data | fromYaml }}
-{{- $config := include "opentelemetry-collector.presets.tracesConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.presets.metricsConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := include "opentelemetry-collector.presets.logsConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := mustMergeOverwrite $config .Values.config }}
-{{- include "opentelemetry-collector.removeNullValues" (get $config "receivers") }}
-{{- include "opentelemetry-collector.removeNullValues" (get $config "processors") }}
-{{- include "opentelemetry-collector.removeNullValues" (get $config "exporters") }}
-{{- include "opentelemetry-collector.removeNullValues" (get (get $config "service") "pipelines") }}
-{{- $config | toYaml }}
-{{- end }}
-
-{{/*
-Remove null values
-*/}}
-{{- define "opentelemetry-collector.removeNullValues" -}}
-{{- $dict := .}}
-{{- range $k, $v := (deepCopy .) }}
-  {{- if eq ($v | quote) "" }}
-   {{- $_ := unset $dict $k }}
-  {{- end }}
+{{- if .Values.customConfig }}
+{{- .Values.customConfig | toYaml }}
+{{- else }}
+{{- include "opentelemetry-collector.presets.baseConfig" . }}
 {{- end }}
 {{- end }}
 
