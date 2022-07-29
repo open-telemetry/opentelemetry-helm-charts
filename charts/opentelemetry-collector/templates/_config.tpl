@@ -1,3 +1,8 @@
+
+{{- define "opentelemetry-collector.var_dump" -}}
+{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
+{{- end -}}
+
 {{/*
 Default memory limiter configuration for OpenTelemetry Collector based on k8s resource limits.
 */}}
@@ -42,8 +47,15 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.logsCollectionConfig" $data | fromYaml) $config }}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.hostMetricsConfig" $data | fromYaml) $config }}
+
+{{- if .Values.presets.logsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+
+{{- if .Values.presets.hostMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+
 {{- $config | toYaml }}
 {{- end }}
 
@@ -54,6 +66,13 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+
+{{- if .Values.presets.hostMetrics.enabled }}
+{{- $config = mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" $data | fromYaml) $config }}
+{{- $newList := dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq))))}}
+{{- $config = mustMergeOverwrite $config $newList  }}
+{{- end }}
+
 {{- $config | toYaml }}
 {{- end }}
 
@@ -112,8 +131,14 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- div (mul (include "opentelemetry-collector.convertMemToMib" .) 40) 100 }}
 {{- end -}}
 
-{{- define "opentelemetry-collector.daemonset.hostMetricsConfig" -}}
-{{- if .Values.presets.hostMetrics.enabled }}
+{{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
+{{- $newList := dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" (append .config.service.pipelines.metrics.receivers "hostmetrics" | uniq))))}}
+{{- $config := mustMergeOverwrite $config $newList  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.hostMetricsConfig" -}}
 receivers:
   hostmetrics:
     collection_interval: 10s
@@ -126,18 +151,16 @@ receivers:
       load:
       paging:
       processes:
-service:
-  pipelines:
-    metrics:
-      receivers:
-          - hostmetrics
-          - otlp
-          - prometheus
-{{- end }}
 {{- end }}
 
-{{- define "opentelemetry-collector.daemonset.logsCollectionConfig" -}}
-{{- if .Values.presets.logsCollection.enabled }}
+{{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
+{{- $newList := dict "service" (dict "pipelines" (dict "logs" (dict "receivers" (append .config.service.pipelines.logs.receivers "filelog" | uniq))))}}
+{{- $config := mustMergeOverwrite $config $newList  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.logsCollectionConfig" -}}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
@@ -213,13 +236,6 @@ receivers:
       - type: move
         from: attributes.log
         to: body
-service:
-  pipelines:
-    logs:
-      receivers:
-        - filelog
-        - otlp
-{{- end }}
 {{- end }}
 
 {{/* Build the list of port for deployment service */}}
