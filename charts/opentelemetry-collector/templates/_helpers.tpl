@@ -6,6 +6,21 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Get component name
+*/}}
+{{- define "opentelemetry-collector.component" -}}
+{{- if eq .Values.mode "deployment" -}}
+component: standalone-collector
+{{- end -}}
+{{- if eq .Values.mode "daemonset" -}}
+component: agent-collector
+{{- end -}}
+{{- if eq .Values.mode "statefuleset" -}}
+component: stateful-collector
+{{- end -}}
+{{- end }}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
