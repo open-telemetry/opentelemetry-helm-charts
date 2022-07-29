@@ -47,15 +47,12 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-
 {{- $config | toYaml }}
 {{- end }}
 
@@ -66,13 +63,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-
 {{- if .Values.presets.hostMetrics.enabled }}
-{{- $config = mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" $data | fromYaml) $config }}
-{{- $newList := dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq))))}}
-{{- $config = mustMergeOverwrite $config $newList  }}
+{{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-
 {{- $config | toYaml }}
 {{- end }}
 

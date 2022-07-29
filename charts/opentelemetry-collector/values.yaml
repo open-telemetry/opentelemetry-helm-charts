@@ -10,19 +10,17 @@ mode: ""
 
 # Handles basic configuration of components that
 # also require k8s modifications to work correctly.
-# .Values.config CANNOT be used to modify any preset 
-# component configuration. If you require modifications 
-# to the components created by a preset, you cannot use 
+# .Values.config can be used to modify/add to a preset 
+# component configuration, but CANNOT be used to remove
+# preset configuration. If you require removal of any
+# sections of a preset configuration, you cannot use 
 # the preset. Instead, configure the component manually in 
-# .Values.config and use other fields supplied in the
+# .Values.config and use the other fields supplied in the
 # values.yaml to configure k8s as necessary.
 presets:
   # Configures the collector to collect logs.
   # Adds the filelog receiver to the logs pipeline
   # and adds the necessary volumes and volume mounts.
-  # If you modify congif.service.pipelines.logs.receivers
-  # in any way and enable this preset, you must add the
-  # filelog receiver to the logs pipeline yourself.
   # Only takes effect if mode = daemonset, otherwise ignored.
   logsCollection:
     enabled: false
@@ -30,9 +28,6 @@ presets:
   # Configures the collector to collect host metrics.
   # Adds the hostmetrics receiver to the metrics pipeline
   # and adds the necessary volumes and volume mounts.
-  # If you modify congif.service.pipelines.metrics.receivers
-  # in any way and enable this preset, you must add the
-  # hostmetrics receiver to the metrics pipeline yourself.
   hostMetrics:
     enabled: false
 
