@@ -126,8 +126,7 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
-{{- $newList := dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" (append .config.service.pipelines.metrics.receivers "hostmetrics" | uniq))))}}
-{{- $config := mustMergeOverwrite $config $newList  }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -148,8 +147,7 @@ receivers:
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
-{{- $newList := dict "service" (dict "pipelines" (dict "logs" (dict "receivers" (append .config.service.pipelines.logs.receivers "filelog" | uniq))))}}
-{{- $config := mustMergeOverwrite $config $newList  }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
