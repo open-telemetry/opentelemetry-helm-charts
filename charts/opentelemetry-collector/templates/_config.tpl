@@ -1,8 +1,3 @@
-
-{{- define "opentelemetry-collector.var_dump" -}}
-{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
-{{- end -}}
-
 {{/*
 Default memory limiter configuration for OpenTelemetry Collector based on k8s resource limits.
 */}}

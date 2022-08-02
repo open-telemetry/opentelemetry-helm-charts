@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.23.0 to 0.24.0
+## 0.23.1 to 0.24.0
 
 [Remove containerLogs in favor of presets.logsCollection]()
 
