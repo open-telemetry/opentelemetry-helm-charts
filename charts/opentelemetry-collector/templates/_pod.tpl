@@ -97,7 +97,7 @@ containers:
         subPath: {{ .subPath }}
         {{- end }}
       {{- end }}
-      {{- if .Values.presets.logsCollection.enabled }}
+      {{- if or .Values.containerLogs.enabled .Values.presets.logsCollection.enabled }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
@@ -145,7 +145,7 @@ volumes:
     secret:
       secretName: {{ .secretName }}
   {{- end }}
-  {{- if .Values.presets.logsCollection.enabled }}
+  {{- if or .Values.containerLogs.enabled .Values.presets.logsCollection.enabled }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods

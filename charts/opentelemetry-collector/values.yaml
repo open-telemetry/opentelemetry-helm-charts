@@ -21,12 +21,14 @@ presets:
   # Configures the collector to collect logs.
   # Adds the filelog receiver to the logs pipeline
   # and adds the necessary volumes and volume mounts.
+  # Best used with mode = daemonset.
   logsCollection:
     enabled: false
     includeCollectorLogs: false
   # Configures the collector to collect host metrics.
   # Adds the hostmetrics receiver to the metrics pipeline
   # and adds the necessary volumes and volume mounts.
+  # Best used with mode = daemonset.
   hostMetrics:
     enabled: false
 
@@ -216,6 +218,10 @@ ports:
     containerPort: 8888
     servicePort: 8888
     protocol: TCP
+
+# Deprecated.  Use presets.logsCollection instead.
+containerLogs:
+  enabled: false
 
 resources:
   limits:
