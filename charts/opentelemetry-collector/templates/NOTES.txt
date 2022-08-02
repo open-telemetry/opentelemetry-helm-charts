@@ -18,10 +18,6 @@
 [WARNING] "configMap" wil not be created and "config" will not take effect.
 {{ end }}
 
-{{- if (eq (toString .Values.secretMounts) "true") }}
-{{ fail "[ERROR] 'containerLogs' should not be used.  Use 'presets.logsCollection' instead. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions on how to migrate." }}
-{{ end }}
-
-{{- if and .Values.presets.logsCollection.enabled (not (eq .Values.mode "daemonset")) }}
-[WARNING] "presets.logsCollection.enabled" only takes effect if "mode" is set to "daemonset"
+{{- if not (eq (toString .Values.containerLogs) "<nil>") }}
+{{ fail "[ERROR] 'containerLogs' should not be used.  Use 'presets.logsCollection' instead. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md#0230-to-0240 for instructions on how to migrate." }}
 {{ end }}
