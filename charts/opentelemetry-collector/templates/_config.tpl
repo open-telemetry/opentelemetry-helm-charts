@@ -135,14 +135,11 @@ receivers:
   hostmetrics:
     collection_interval: 10s
     scrapers:
-      cpu:
-      disk:
-      filesystem:
-      memory:
-      network:
-      load:
-      paging:
-      processes:
+        cpu:
+        load:
+        memory:
+        disk:
+        network:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
