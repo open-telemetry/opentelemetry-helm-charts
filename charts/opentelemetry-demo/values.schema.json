@@ -14,6 +14,9 @@
         "observability": {
             "$ref": "#/definitions/Observability"
         },
+        "default": {
+            "$ref": "#/definitions/Default"
+        },
         "image": {
             "$ref": "#/definitions/Image"
         },
@@ -27,6 +30,7 @@
     "required": [
         "components",
         "image",
+        "default",
         "observability",
         "serviceAccount"
     ],
@@ -122,9 +126,22 @@
                     "type": "string"
                 },
                 "valueFrom": {
-                  "fieldRef": {
-                    "$ref": "#/definitions/FieldRef"
-                  }
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                      "configMapKeyRef": {
+                        "$ref": "#/definitions/ConfigMapKeyRef"
+                      },
+                      "fieldRef": {
+                        "$ref": "#/definitions/FieldRef"
+                      },
+                      "resourceFieldRef": {
+                        "$ref": "#/definitions/ResourceFieldRef"
+                      },
+                      "secretKeyRef": {
+                        "$ref": "#/definitions/SecretKeyRef"
+                      }
+                    }
                 }
             },
             "required": [
@@ -132,22 +149,93 @@
             ],
             "title": "Env"
         },
+        "Default": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "env": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Env"
+              }
+            }
+          },
+          "required": [
+            "env"
+          ],
+          "title": "Default"
+        },
+        "ConfigMapKeyRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "key"
+          ],
+          "title": "ConfigMapKeyRef"
+        },
         "FieldRef":{
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "apiVersion": {
+            "fieldPath": {
               "type": "string"
             },
-            "fieldPath": {
+            "apiVersion": {
               "type": "string"
             }
           },
           "required": [
-            "apiVersion",
             "fieldPath"
           ],
           "title": "FieldRef"
+        },
+        "ResourceFieldRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "resource": {
+              "type": "string"
+            },
+            "containerName": {
+              "type": "string"
+            },
+            "divisor": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "resource"
+          ],
+          "title": "ResourceFieldRef"
+        },
+        "SecretKeyRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "key"
+          ]
         },
         "Port": {
             "type": "object",

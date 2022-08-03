@@ -41,25 +41,29 @@ Get Services Port Mapping
 {{- end }}
 
 {{/*
-Get Pod Env 
+Get Pod Env
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- $prefix := include "otel-demo.name" $ }}
 
-{{- if .env }}
-{{- toYaml .env }}
+{{- if .default  }}
+{{- toYaml .default.env -}}
 {{- end }}
 
-{{- if .observability.otelcol.enabled }} 
+{{- if .env }}
+{{ toYaml .env }}
+{{- end }}
+
+{{- if .observability.otelcol.enabled }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
 - name: OTEL_RESOURCE_ATTRIBUTES
-  value: service.name={{ .name | kebabcase }}
+  value: service.name={{ .name | kebabcase }},k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_RESOURCE_ATTRIBUTES_NODE_NAME),k8s.pod.name=$(OTEL_RESOURCE_ATTRIBUTES_POD_NAME)
 {{- end }}
 
 {{- if .servicePort}}
 - name: {{ printf "%s_PORT" .name | snakecase | upper }}
-  value: {{.servicePort | quote}} 
+  value: {{.servicePort | quote}}
 {{- end }}
 
 # {{ $.depends }}
@@ -74,7 +78,7 @@ Get Pod Env
 {{- end }}
 
 {{/*
-Get Pod ports 
+Get Pod ports
 */}}
 {{- define "otel-demo.pod.ports" -}}
 {{- if .ports }}
