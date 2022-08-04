@@ -33,6 +33,9 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
 
 - [Alex](https://github.com/Allex1), Adobe
+
+Emeritus Approvers
+
 - [Naseem K. Ullah](https://github.com/naseemkullah), Transit
 
 Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
