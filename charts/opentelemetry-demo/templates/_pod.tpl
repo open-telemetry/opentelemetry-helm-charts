@@ -72,12 +72,6 @@ Get Pod Env
 {{- if .observability.otelcol.enabled }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
-- name: OTEL_RESOURCE_ATTRIBUTES
-{{- if .default.enabled  }}
-  value: service.name={{ .name | kebabcase }},k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_RESOURCE_ATTRIBUTES_NODE_NAME),k8s.pod.name=$(OTEL_RESOURCE_ATTRIBUTES_POD_NAME)
-{{- else }}
-  value: service.name={{ .name | kebabcase }}
-{{- end }}
 {{- end }}
 
 {{- if .servicePort}}
