@@ -47,10 +47,25 @@ Get Pod Env
 {{- $prefix := include "otel-demo.name" $ }}
 
 {{- if .default.enabled  }}
-{{- toYaml .default.env }}
-{{- end }}
-
 {{- if .env }}
+{{- $filteredDefaultEnv := list -}}
+{{- range $defaultEnvItem := $.default.env }}
+{{- $matched :=false }}
+{{- range $envItem := $.env }}
+{{- if eq $defaultEnvItem.name $envItem.name  }}
+{{- $matched = true }}
+{{- end }}
+{{- end }}
+{{- if eq $matched false }}
+{{- $filteredDefaultEnv = append $filteredDefaultEnv $defaultEnvItem -}}
+{{- end }}
+{{- end }}
+{{ toYaml $filteredDefaultEnv }}
+{{ toYaml .env }}
+{{- else }}
+{{ toYaml .default.env }}
+{{- end }}
+{{- else if .env }}
 {{ toYaml .env }}
 {{- end }}
 
