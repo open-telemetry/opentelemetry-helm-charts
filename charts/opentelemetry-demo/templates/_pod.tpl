@@ -48,20 +48,18 @@ Get Pod Env
 
 {{- if .default.enabled  }}
 {{- if .env }}
-{{- $filteredDefaultEnv := list -}}
+{{- $defaultEnvMap := dict }}
 {{- range $defaultEnvItem := $.default.env }}
-{{- $matched :=false }}
+{{- $defaultEnvMap = set $defaultEnvMap $defaultEnvItem.name $defaultEnvItem }}
+{{- end }}
+{{- $envMap := dict }}
 {{- range $envItem := $.env }}
-{{- if eq $defaultEnvItem.name $envItem.name  }}
-{{- $matched = true }}
+{{- $envMap := set $envMap $envItem.name $envItem }}
 {{- end }}
-{{- end }}
-{{- if eq $matched false }}
-{{- $filteredDefaultEnv = append $filteredDefaultEnv $defaultEnvItem -}}
-{{- end }}
-{{- end }}
-{{ toYaml $filteredDefaultEnv }}
-{{ toYaml .env }}
+{{- $mergedEnvMap := merge $envMap $defaultEnvMap }}
+{{- $otelResourceAttributesList := get $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | list }}
+{{ unset $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | values | toYaml }}
+{{ $otelResourceAttributesList | toYaml }}
 {{- else }}
 {{ toYaml .default.env }}
 {{- end }}
