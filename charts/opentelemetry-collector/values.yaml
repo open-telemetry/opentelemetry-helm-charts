@@ -6,7 +6,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 # Valid values are "daemonset" and "deployment".
-mode: ""
+mode: "deployment"
 
 # Handles basic configuration of components that
 # also require k8s modifications to work correctly.
@@ -284,6 +284,21 @@ ingress:
 #    - secretName: collector-tls
 #      hosts:
 #        - collector.example.com
+
+# Additional ingresses - only created if ingress.enabled is true
+extraIngresses: []
+#  - ingressClassName: nginx
+#    annotations: {}
+#    hosts:
+#      - host: collector.example.com
+#        paths:
+#          - path: /
+#            pathType: Prefix
+#            port: 4318
+#    tls:
+#      - secretName: collector-tls
+#        hosts:
+#          - collector.example.com
 
 podMonitor:
   # The pod monitor by default scrapes the metrics port.
