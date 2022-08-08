@@ -42,7 +42,12 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- $config := include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.daemonset.containerLogsConfig" $data | fromYaml) $config }}
+{{- if or .Values.containerLogs.enabled .Values.presets.logsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.hostMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -53,6 +58,12 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- if or .Values.containerLogs.enabled .Values.presets.logsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.hostMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -111,13 +122,40 @@ Get otel memory_limiter ballast_size_mib value based on 40% of resources.memory.
 {{- div (mul (include "opentelemetry-collector.convertMemToMib" .) 40) 100 }}
 {{- end -}}
 
-{{- define "opentelemetry-collector.daemonset.containerLogsConfig" -}}
-{{- if .Values.containerLogs.enabled }}
+{{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.hostMetricsConfig" -}}
+receivers:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+        cpu:
+        load:
+        memory:
+        disk:
+        network:
+{{- end }}
+
+{{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.logsCollectionConfig" -}}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
+    {{- if .Values.presets.logsCollection.includeCollectorLogs }}
+    exclude: []
+    {{- else }}
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
+    {{- end }}
     start_at: beginning
     include_file_path: true
     include_file_name: false
@@ -184,13 +222,6 @@ receivers:
       - type: move
         from: attributes.log
         to: body
-service:
-  pipelines:
-    logs:
-      receivers:
-        - filelog
-        - otlp
-{{- end }}
 {{- end }}
 
 {{/* Build the list of port for deployment service */}}

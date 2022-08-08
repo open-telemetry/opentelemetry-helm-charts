@@ -13,3 +13,11 @@
 {{- if and (not (eq .Values.mode "daemonset")) (not (eq .Values.mode "deployment")) }}
 {{ fail "[ERROR] 'mode' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
 {{ end }}
+
+{{- if not .Values.configMap.create }}
+[WARNING] "configMap" wil not be created and "config" will not take effect.
+{{ end }}
+
+{{- if not (eq (toString .Values.containerLogs) "<nil>") }}
+[WARNING] 'containerLogs' is deprecated.  Use 'presets.logsCollection' instead. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md#0231-to-0240 for instructions on how to migrate."
+{{ end }}
