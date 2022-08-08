@@ -1,9 +1,9 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "http://example.com/example.json",
     "type": "object",
     "default": {},
-    "title": "Values",
-    "additionalProperties": false,
+    "title": "Root Schema",
     "required": [
         "replicaCount",
         "nameOverride",
@@ -16,16 +16,10 @@
         "affinity",
         "tolerations",
         "nodeSelector",
-        "hostNetwork"
+        "hostNetwork",
+        "securityContext"
     ],
     "properties": {
-        "enabled": {
-          "description": "Usually used when using Opentelemetry-operator as a subchart.",
-          "type": "boolean"
-        },
-        "global": {
-          "type": "object"
-        },
         "replicaCount": {
             "type": "integer",
             "default": 0,
@@ -90,13 +84,13 @@
                             "default": "",
                             "title": "The tag Schema",
                             "examples": [
-                                "v0.55.0"
+                                "v0.56.0"
                             ]
                         }
                     },
                     "examples": [{
                         "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-                        "tag": "v0.55.0"
+                        "tag": "v0.56.0"
                     }]
                 },
                 "collectorImage": {
@@ -110,15 +104,15 @@
                     "properties": {
                         "repository": {
                             "type": "string",
-                            "default": "string",
+                            "default": "",
                             "title": "The repository Schema",
                             "examples": [
-                                "0.56.0"
+                                "otel/opentelemetry-collector"
                             ]
                         },
                         "tag": {
                             "type": "string",
-                            "default": "string",
+                            "default": "",
                             "title": "The tag Schema",
                             "examples": [
                                 "0.56.0"
@@ -258,9 +252,9 @@
                     "type": "object",
                     "default": {},
                     "title": "The env Schema",
-                    "examples": [
-                        null
-                    ]
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 },
                 "serviceAccount": {
                     "type": "object",
@@ -450,11 +444,11 @@
             "examples": [{
                 "image": {
                     "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-                    "tag": "v0.55.0"
+                    "tag": "v0.56.0"
                 },
                 "collectorImage": {
-                    "repository": null,
-                    "tag": null
+                    "repository": "otel/opentelemetry-collector",
+                    "tag": "0.56.0"
                 },
                 "ports": {
                     "metricsPort": 8080,
@@ -471,7 +465,7 @@
                         "memory": "64Mi"
                     }
                 },
-                "env": null,
+                "env": {},
                 "serviceAccount": {
                     "create": true
                 },
@@ -803,6 +797,57 @@
             "examples": [
                 false
             ]
+        },
+        "securityContext": {
+            "type": "object",
+            "default": {},
+            "title": "The securityContext Schema",
+            "required": [
+                "runAsGroup",
+                "runAsNonRoot",
+                "runAsUser",
+                "fsGroup"
+            ],
+            "properties": {
+                "runAsGroup": {
+                    "type": "integer",
+                    "default": 0,
+                    "title": "The runAsGroup Schema",
+                    "examples": [
+                        65534
+                    ]
+                },
+                "runAsNonRoot": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The runAsNonRoot Schema",
+                    "examples": [
+                        true
+                    ]
+                },
+                "runAsUser": {
+                    "type": "integer",
+                    "default": 0,
+                    "title": "The runAsUser Schema",
+                    "examples": [
+                        65534
+                    ]
+                },
+                "fsGroup": {
+                    "type": "integer",
+                    "default": 0,
+                    "title": "The fsGroup Schema",
+                    "examples": [
+                        65534
+                    ]
+                }
+            },
+            "examples": [{
+                "runAsGroup": 65534,
+                "runAsNonRoot": true,
+                "runAsUser": 65534,
+                "fsGroup": 65534
+            }]
         }
     },
     "examples": [{
@@ -812,11 +857,11 @@
         "manager": {
             "image": {
                 "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-                "tag": "v0.55.0"
+                "tag": "v0.56.0"
             },
             "collectorImage": {
-                "repository": null,
-                "tag": null
+                "repository": "otel/opentelemetry-collector",
+                "tag": "0.56.0"
             },
             "ports": {
                 "metricsPort": 8080,
@@ -833,7 +878,7 @@
                     "memory": "64Mi"
                 }
             },
-            "env": null,
+            "env": {},
             "serviceAccount": {
                 "create": true
             },
@@ -893,7 +938,12 @@
         "affinity": {},
         "tolerations": [],
         "nodeSelector": {},
-        "hostNetwork": false
+        "hostNetwork": false,
+        "securityContext": {
+            "runAsGroup": 65534,
+            "runAsNonRoot": true,
+            "runAsUser": 65534,
+            "fsGroup": 65534
+        }
     }]
 }
-
