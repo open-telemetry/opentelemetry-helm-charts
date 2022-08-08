@@ -33,12 +33,15 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
 
 - [Naseem K. Ullah](https://github.com/naseemkullah), Transit
-- [Tyler Helmuth](https://github.com/TylerHelmuth), New Relic
 
 Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
 
-- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
+- [Tyler Helmuth](https://github.com/TylerHelmuth), New Relic
+
+Emeritus Maintainers
+
+- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
 
 Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md).
 

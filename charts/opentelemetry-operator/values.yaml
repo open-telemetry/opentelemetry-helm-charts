@@ -8,15 +8,22 @@ replicaCount: 1
 ##
 nameOverride: ""
 
+## Reference one or more secrets to be used when pulling images from authenticated repositories.
+imagePullSecrets: []
+
 ## Provide OpenTelemetry Operator manager container image and resources.
 ##
 manager:
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
-    tag: v0.51.0
+    tag: v0.54.0
   collectorImage:
     repository:
     tag:
+  ports:
+    metricsPort: 8080
+    webhookPort: 9443
+    healthzPort: 8081
   resources:
     limits:
       cpu: 100m
@@ -28,12 +35,47 @@ manager:
   ## e.g ENV_VAR: env_value
   env:
 
+  # -- Create the manager ServiceAccount
+  serviceAccount:
+    create: true
+    # name: nameOverride
+
+  ## Enable ServiceMonitor for Prometheus metrics scrape
+  ##
+  serviceMonitor:
+    enabled: false
+    extraLabels: {}
+    metricsEndpoints:
+    - port: metrics
+
+  prometheusRule:
+    enabled: false
+    groups: []
+    # Create default rules for monitoring the manager
+    defaultRules:
+      enabled: false
+
+    # additional labels for the PrometheusRule
+    extraLabels: {}
+
+
+  ## List of additional cli arguments to configure the manager
+  ## for example: --target-allocator-image, --labels, etc.
+  extraArgs: []
+
+  ## Enable leader election mechanism for protecting against split brain if multiple operator pods/replicas are started.
+  ## See more at https://docs.openshift.com/container-platform/4.10/operators/operator_sdk/osdk-leader-election.html
+  leaderElection:
+    enabled: true
+
 ## Provide OpenTelemetry Operator kube-rbac-proxy container image.
 ##
 kubeRBACProxy:
   image:
     repository: gcr.io/kubebuilder/kube-rbac-proxy
-    tag: v0.8.0
+    tag: v0.11.0
+  ports:
+    proxyPort: 8443
   resources:
     limits:
       cpu: 500m
@@ -55,6 +97,16 @@ admissionWebhooks:
     issuerRef: {}
       # kind:
       # name:
+
+## Create the provided Roles and RoleBindings
+##
+role:
+  create: true
+
+## Create the provided ClusterRoles and ClusterRoleBindings
+##
+clusterRole:
+  create: true
 
 affinity: {}
 tolerations: []
