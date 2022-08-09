@@ -7,24 +7,23 @@ resources:
 
 ingress:
   enabled: true
+
   ingressClassName: nginx
-  annotations:
-    test.io/ingress: ingressA
   hosts:
-    - host: collector.example-a.com
+    - host: defaultcollector.example.com
       paths:
         - path: /
           pathType: Prefix
           port: 4318
 
-extraIngresses:
-  - name: additional
-    ingressClassName: nginx
-    annotations:
-      test.io/ingress: ingressB
-    hosts:
-      - host: collector.example-b.com
-        paths:
-          - path: /
-            pathType: Prefix
-            port: 4318
+  additionalIngresses:
+    - name: additional
+      ingressClassName: nginx
+      annotations:
+        test.io/collector: additional
+      hosts:
+        - host: additionalcollector.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+              port: 4318
