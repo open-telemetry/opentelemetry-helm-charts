@@ -19,13 +19,25 @@ ingress:
           port: 4318
 
   additionalIngresses:
-    - name: additional
-      ingressClassName: nginx
-      annotations:
-        test.io/collector: additional
+    - name: additional-basic
       hosts:
-        - host: additionalcollector.example.com
+        - host: additional-basic.example.com
           paths:
             - path: /
               pathType: Prefix
               port: 4318
+
+    - name: additional-advanced
+      ingressClassName: nginx
+      annotations:
+        test.io/ingress: additional-advanced
+      hosts:
+        - host: additional-advanced.example.com
+          paths:
+            - path: /
+              pathType: Exact
+              port: 4318
+      tls:
+        - secretName: somesecret
+          hosts:
+            - additional-advanced.example.com
