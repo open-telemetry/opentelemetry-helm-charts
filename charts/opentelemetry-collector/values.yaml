@@ -272,18 +272,36 @@ service:
 
 ingress:
   enabled: false
-  annotations: {}
-#  ingressClassName: nginx
-#  hosts:
-#    - host: collector.example.com
-#      paths:
-#        - path: /
-#          pathType: Prefix
-#          port: 4318
-#  tls:
-#    - secretName: collector-tls
-#      hosts:
-#        - collector.example.com
+  # annotations: {}
+  # ingressClassName: nginx
+  # hosts:
+  #   - host: collector.example.com
+  #     paths:
+  #       - path: /
+  #         pathType: Prefix
+  #         port: 4318
+  # tls:
+  #   - secretName: collector-tls
+  #     hosts:
+  #       - collector.example.com
+
+  # Additional ingresses - only created if ingress.enabled is true
+  # Useful for when differently annotated ingress services are required
+  # Each additional ingress needs key "name" set to something unique
+  additionalIngresses: []
+  # - name: cloudwatch
+  #   ingressClassName: nginx
+  #   annotations: {}
+  #   hosts:
+  #     - host: collector.example.com
+  #       paths:
+  #         - path: /
+  #           pathType: Prefix
+  #           port: 4318
+  #   tls:
+  #     - secretName: collector-tls
+  #       hosts:
+  #         - collector.example.com
 
 podMonitor:
   # The pod monitor by default scrapes the metrics port.
