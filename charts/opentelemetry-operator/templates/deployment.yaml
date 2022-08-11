@@ -111,7 +111,7 @@ spec:
       {{- with .Values.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ template "opentelemetry-operator.name" . }}-controller-manager
+      serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}-controller-manager
       terminationGracePeriodSeconds: 10
       {{- if .Values.admissionWebhooks.enabled }}
       volumes:
@@ -120,3 +120,5 @@ spec:
             defaultMode: 420
             secretName: {{ template "opentelemetry-operator.name" . }}-controller-manager-service-cert
       {{- end }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 8 }}
