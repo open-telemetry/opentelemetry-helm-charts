@@ -104,3 +104,12 @@ Get Pod ports
   name: service
 {{- end }}
 {{- end }}
+
+{{/*
+Get Pod Annotations
+*/}}
+{{- define "otel-demo.pod.annotations" -}}
+{{- if .podAnnotations }}
+{{ toYaml .podAnnotations}}
+{{- end }}
+{{- end }}
