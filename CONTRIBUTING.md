@@ -52,3 +52,7 @@ To generate the rendered files run:
 ```console
 make generate-examples
 ```
+
+### Chart-specific Contributing Guides
+
+- [opentelemetry-collector](./charts/opentelemetry-collector/CONTRIBUTING.md)
