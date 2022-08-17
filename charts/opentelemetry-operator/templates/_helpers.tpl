@@ -36,10 +36,15 @@ Common labels
 {{- define "opentelemetry-operator.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 {{ include "opentelemetry-operator.selectorLabels" . }}
+app.kubernetes.io/part-of: opentelemetry-operator
+app.kubernetes.io/component: operator
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.additionalLabels }}
+{{ toYaml .Values.additionalLabels }}
+{{- end }}
 {{- end }}
 
 {{/*
