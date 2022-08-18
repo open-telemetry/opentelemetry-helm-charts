@@ -14,13 +14,15 @@ spec:
     metadata:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- include "otel-demo.pod.annotations" . | nindent 8 }}
     spec:
       {{- if .imageConfig.pullSecrets }}
       imagePullSecrets:
         {{- toYaml .imageConfig.pullSecrets | nindent 8}}
       {{- end }}
       {{- with .serviceAccountName }}
-      serviceAccountName: {{ .serviceAccountName}} 
+      serviceAccountName: {{ .serviceAccountName}}
       {{- end }}
       containers:
         - name: {{ .name }}
@@ -31,9 +33,7 @@ spec:
           {{- end }}
           env:
             {{- include "otel-demo.pod.env" . | nindent 10 }}
-           
 {{- end }}
-
 {{- define "otel.demo.service" }}
 {{- if or .ports .servicePort}}
 ---
@@ -49,14 +49,14 @@ spec:
     {{- range $port := .ports }}
     - port: {{ $port.value }}
       name: {{ $port.name}}
-      targetPort: {{ $port.value }} 
+      targetPort: {{ $port.value }}
     {{- end }}
     {{- end }}
 
     {{- if .servicePort }}
     - port: {{.servicePort}}
       name: service
-      targetPort: {{ .servicePort }} 
+      targetPort: {{ .servicePort }}
     {{- end }}
   selector:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
@@ -84,11 +84,11 @@ processors:
 service:
   pipelines:
     traces:
-      receivers: 
+      receivers:
         - otlp
-      processors: 
+      processors:
         - batch
-      exporters: 
+      exporters:
         - logging
         {{- if .Values.observability.jaeger.enabled }}
         - jaeger

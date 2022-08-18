@@ -1,24 +1,30 @@
 {{- if and (eq .Values.mode "deployment") .Values.ingress.enabled -}}
 {{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
 {{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
-apiVersion: {{ include "ingress.apiVersion" . }}
+{{- $ingresses := prepend .Values.ingress.additionalIngresses .Values.ingress -}}
+{{- range $ingresses }}
+apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
 metadata:
-  name: {{ include "opentelemetry-collector.fullname" . }}
+  {{- if .name }}
+  name: {{ printf "%s-%s" (include "opentelemetry-collector.fullname" $) .name }}
+  {{- else }}
+  name: {{ include "opentelemetry-collector.fullname" $ }}
+  {{- end }}
   labels:
-    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+    {{- include "opentelemetry-collector.labels" $ | nindent 4 }}
     {{- include "opentelemetry-collector.component" . | nindent 4 }}
-  {{- if .Values.ingress.annotations }}
+  {{- if .annotations }}
   annotations:
-    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+    {{ toYaml .annotations | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.ingress.ingressClassName }}
-  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  {{- if .ingressClassName }}
+  ingressClassName: {{ .ingressClassName }}
   {{- end -}}
-  {{- if .Values.ingress.tls }}
+  {{- if .tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -29,7 +35,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -50,4 +56,6 @@ spec:
               {{- end }}
           {{- end }}
     {{- end }}
+---
+{{- end }}
 {{- end }}

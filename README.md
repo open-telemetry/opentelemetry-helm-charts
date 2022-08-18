@@ -32,6 +32,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
 
+- [Alex](https://github.com/Allex1), Adobe
+
+Emeritus Approvers:
+
 - [Naseem K. Ullah](https://github.com/naseemkullah), Transit
 
 Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
@@ -39,7 +43,7 @@ Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-tel
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
 - [Tyler Helmuth](https://github.com/TylerHelmuth), New Relic
 
-Emeritus Maintainers
+Emeritus Maintainers:
 
 - [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
 

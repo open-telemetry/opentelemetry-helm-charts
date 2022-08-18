@@ -47,6 +47,12 @@ jobs:
           sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.11.1/kubectl-kuttl_0.11.1_linux_x86_64
           sudo chmod +x /usr/local/bin/kubectl-kuttl
 
+      - name: Install metrics-server
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl patch deployment -n kube-system metrics-server --type "json" -p '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": --kubelet-insecure-tls}]'
+          kubectl wait --for=condition=available deployment/metrics-server -n kube-system  --timeout=5m
+
       - name: Install opentelemetry-operator chart
         run: |
           until kubectl get ns opentelemetry-operator-system 2>&1 | grep "namespaces \"opentelemetry-operator-system\" not found"; do sleep 1; done
@@ -55,4 +61,4 @@ jobs:
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
-        run:  kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/release/kuttl-test.yaml
+        run:  kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/kuttl-test.yaml

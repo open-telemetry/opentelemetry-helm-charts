@@ -41,25 +41,40 @@ Get Services Port Mapping
 {{- end }}
 
 {{/*
-Get Pod Env 
+Get Pod Env
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- $prefix := include "otel-demo.name" $ }}
 
+{{- if .default.enabled  }}
 {{- if .env }}
-{{- toYaml .env }}
+{{- $defaultEnvMap := dict }}
+{{- range $defaultEnvItem := $.default.env }}
+{{- $defaultEnvMap = set $defaultEnvMap $defaultEnvItem.name $defaultEnvItem }}
+{{- end }}
+{{- $envMap := dict }}
+{{- range $envItem := $.env }}
+{{- $envMap := set $envMap $envItem.name $envItem }}
+{{- end }}
+{{- $mergedEnvMap := merge $envMap $defaultEnvMap }}
+{{- $otelResourceAttributesList := get $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | list }}
+{{ unset $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | values | toYaml }}
+{{ $otelResourceAttributesList | toYaml }}
+{{- else }}
+{{ toYaml .default.env }}
+{{- end }}
+{{- else if .env }}
+{{ toYaml .env }}
 {{- end }}
 
-{{- if .observability.otelcol.enabled }} 
+{{- if .observability.otelcol.enabled }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
-- name: OTEL_RESOURCE_ATTRIBUTES
-  value: service.name={{ .name | kebabcase }}
 {{- end }}
 
 {{- if .servicePort}}
 - name: {{ printf "%s_PORT" .name | snakecase | upper }}
-  value: {{.servicePort | quote}} 
+  value: {{.servicePort | quote}}
 {{- end }}
 
 # {{ $.depends }}
@@ -74,7 +89,7 @@ Get Pod Env
 {{- end }}
 
 {{/*
-Get Pod ports 
+Get Pod ports
 */}}
 {{- define "otel-demo.pod.ports" -}}
 {{- if .ports }}
@@ -87,5 +102,14 @@ Get Pod ports
 {{- if .servicePort }}
 - containerPort: {{.servicePort}}
   name: service
+{{- end }}
+{{- end }}
+
+{{/*
+Get Pod Annotations
+*/}}
+{{- define "otel-demo.pod.annotations" -}}
+{{- if .podAnnotations }}
+{{ toYaml .podAnnotations}}
 {{- end }}
 {{- end }}

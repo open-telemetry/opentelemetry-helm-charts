@@ -4,6 +4,32 @@ observability:
   jaeger:
     enabled: true
 
+# if the enabled is true, the items in this object will apply to all components
+default:
+  enabled: true
+  env:
+    - name: OTEL_SERVICE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+    - name: OTEL_K8S_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: OTEL_K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
+    - name: OTEL_K8S_POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
 image:
   repository: otel/demo
   pullSecrets: []
@@ -21,17 +47,24 @@ components:
   adService:
     enabled: true
     servicePort: 8080
-
+    podAnnotations: {}
+    #  sidecar.opentelemetry.io/inject: "false"
+    #  instrumentation.opentelemetry.io/inject-java: "true"
   cartService:
     enabled: true
     servicePort: 8080
     env:
     - name: ASPNETCORE_URLS
       value: http://*:8080
+    podAnnotations: {}
+    #  sidecar.opentelemetry.io/inject: "false"
+    #  instrumentation.opentelemetry.io/inject-dotnet: "true"
 
   checkoutService:
     enabled: true
     servicePort: 8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   currencyService:
     enabled: true
@@ -39,6 +72,8 @@ components:
     env:
     - name: PORT
       value: '8080'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   emailService:
     enabled: true
@@ -48,6 +83,8 @@ components:
       value: production
     - name: PORT
       value: '8080'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   featureflagService:
     enabled: true
@@ -63,6 +100,8 @@ components:
       value: 50052
     - name: http
       value: 50053
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   ffsPostgres:
     enabled: true
@@ -77,6 +116,8 @@ components:
     ports:
     - name: postgres
       value: 5432
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   frontend:
     enabled: true
@@ -84,6 +125,8 @@ components:
     env:
     - name: FRONTEND_ADDR
       value: :8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   loadgenerator:
     enabled: true
@@ -92,14 +135,20 @@ components:
       value: '10'
     - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
       value: python
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-python: "true"
 
   paymentService:
     enabled: true
     servicePort: 8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-nodejs: "true"
 
   productCatalogService:
     enabled: true
     servicePort: 8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   recommendationService:
     enabled: true
@@ -107,6 +156,8 @@ components:
     env:
     - name: OTEL_PYTHON_LOG_CORRELATION
       value: 'true'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-python: "true"
 
   shippingService:
     enabled: true
@@ -114,3 +165,5 @@ components:
     env:
     - name: PORT
       value: '8080'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"

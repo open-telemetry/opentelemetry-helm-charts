@@ -8,6 +8,30 @@ fullnameOverride: ""
 # Valid values are "daemonset", "deployment", and "statefulset".
 mode: ""
 
+# Handles basic configuration of components that
+# also require k8s modifications to work correctly.
+# .Values.config can be used to modify/add to a preset
+# component configuration, but CANNOT be used to remove
+# preset configuration. If you require removal of any
+# sections of a preset configuration, you cannot use
+# the preset. Instead, configure the component manually in
+# .Values.config and use the other fields supplied in the
+# values.yaml to configure k8s as necessary.
+presets:
+  # Configures the collector to collect logs.
+  # Adds the filelog receiver to the logs pipeline
+  # and adds the necessary volumes and volume mounts.
+  # Best used with mode = daemonset.
+  logsCollection:
+    enabled: false
+    includeCollectorLogs: false
+  # Configures the collector to collect host metrics.
+  # Adds the hostmetrics receiver to the metrics pipeline
+  # and adds the necessary volumes and volume mounts.
+  # Best used with mode = daemonset.
+  hostMetrics:
+    enabled: false
+
 configMap:
   # Specifies whether a configMap should be created (true by default)
   create: true
@@ -16,6 +40,9 @@ config:
   exporters:
     logging: {}
   extensions:
+    # The health_check extension is mandatory for this chart.
+    # Without the health_check extension the collector will fail the readiness and liveliness probes.
+    # The health_check extension can be modified, but should never be removed.
     health_check: {}
     memory_ballast: {}
   processors:
@@ -192,6 +219,7 @@ ports:
     servicePort: 8888
     protocol: TCP
 
+# Deprecated.  Use presets.logsCollection instead.
 containerLogs:
   enabled: false
 
@@ -244,18 +272,36 @@ service:
 
 ingress:
   enabled: false
-  annotations: {}
-#  ingressClassName: nginx
-#  hosts:
-#    - host: collector.example.com
-#      paths:
-#        - path: /
-#          pathType: Prefix
-#          port: 4318
-#  tls:
-#    - secretName: collector-tls
-#      hosts:
-#        - collector.example.com
+  # annotations: {}
+  # ingressClassName: nginx
+  # hosts:
+  #   - host: collector.example.com
+  #     paths:
+  #       - path: /
+  #         pathType: Prefix
+  #         port: 4318
+  # tls:
+  #   - secretName: collector-tls
+  #     hosts:
+  #       - collector.example.com
+
+  # Additional ingresses - only created if ingress.enabled is true
+  # Useful for when differently annotated ingress services are required
+  # Each additional ingress needs key "name" set to something unique
+  additionalIngresses: []
+  # - name: cloudwatch
+  #   ingressClassName: nginx
+  #   annotations: {}
+  #   hosts:
+  #     - host: collector.example.com
+  #       paths:
+  #         - path: /
+  #           pathType: Prefix
+  #           port: 4318
+  #   tls:
+  #     - secretName: collector-tls
+  #       hosts:
+  #         - collector.example.com
 
 podMonitor:
   # The pod monitor by default scrapes the metrics port.
