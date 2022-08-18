@@ -5,21 +5,21 @@ kind: StatefulSet
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.23.0
+    helm.sh/chart: opentelemetry-collector-0.27.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.56.0"
+    app.kubernetes.io/version: "0.58.0"
     app.kubernetes.io/managed-by: Helm
   
 spec:
   serviceName: example-opentelemetry-collector
   podManagementPolicy: Parallel
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      
+      component: statefulset-collector
   template:
     metadata:
       annotations:
@@ -28,7 +28,7 @@ spec:
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        
+        component: statefulset-collector
         
     spec:
       
@@ -42,7 +42,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.56.0"
+          image: "otel/opentelemetry-collector-contrib:0.58.0"
           imagePullPolicy: IfNotPresent
           ports:
             - name: jaeger-compact
@@ -79,8 +79,8 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 1
-              memory: 2Gi
+              cpu: 100m
+              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap

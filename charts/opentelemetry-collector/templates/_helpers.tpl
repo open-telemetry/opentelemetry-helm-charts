@@ -15,8 +15,8 @@ component: standalone-collector
 {{- if eq .Values.mode "daemonset" -}}
 component: agent-collector
 {{- end -}}
-{{- if eq .Values.mode "statefuleset" -}}
-component: stateful-collector
+{{- if eq .Values.mode "statefulset" -}}
+component: statefulset-collector
 {{- end -}}
 {{- end }}
 
