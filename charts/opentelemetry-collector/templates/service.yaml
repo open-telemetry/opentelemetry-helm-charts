@@ -1,11 +1,11 @@
-{{- if eq .Values.mode "deployment" -}}
+{{- if or (eq .Values.mode "deployment") (eq .Values.mode "statefulset") -}}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    component: standalone-collector
+    {{- include "opentelemetry-collector.component" . | nindent 4 }}
   {{- if .Values.service.annotations }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
@@ -18,5 +18,5 @@ spec:
   ports: {{ include "opentelemetry-collector.deploymentPortsConfig" . | nindent 4 }}
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
-    component: standalone-collector
+    {{- include "opentelemetry-collector.component" . | nindent 4 }}
 {{- end }}
