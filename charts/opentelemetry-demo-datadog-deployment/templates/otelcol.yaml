@@ -54,7 +54,7 @@ spec:
         - name: otel-config-template
           mountPath: /workdir
       containers:
-      - image: otel/opentelemetry-collector-contrib:{{ $.Values.image.otel_col_version }}
+      - image: otel/opentelemetry-collector-contrib:{{ $.Values.image.otelcolversion }}
         name: otel-col
         resources:
           limits:
@@ -105,3 +105,87 @@ spec:
   selector:
       {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "otel-demo.name" . }}-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  - namespaces/status
+  - nodes
+  - nodes/spec
+  - pods
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - resourcequotas
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+    - autoscaling
+  resources:
+    - horizontalpodautoscalers
+  verbs:
+    - get
+    - list
+    - watch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: {{ include "otel-demo.name" . }}
+    service: {{ include "otel-demo.name" . }}
+  name: {{ include "otel-demo.name" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "otel-demo.name" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "otel-demo.name" . }}
+  namespace: otel
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otel-demo.name" . }}-role
+  apiGroup: rbac.authorization.k8s.io
+---

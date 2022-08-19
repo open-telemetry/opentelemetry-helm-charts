@@ -26,7 +26,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .name }}
-          image: {{ .image | default (printf "%s:v%s-%s" .imageConfig.repository .Chart.AppVersion (.name | replace "-" "" | lower)) }}
+          image: {{ .image | default (printf "%s:%s-%s" .imageConfig.repository .Chart.AppVersion (.name | replace "-" "" | lower)) }}
           {{- if or .ports .servicePort}}
           ports:
             {{- include "otel-demo.pod.ports" . | nindent 10 }}
