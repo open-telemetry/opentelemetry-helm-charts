@@ -1,0 +1,28 @@
+{{- if (and (eq .Values.mode "statefulset") (.Values.targetallocator.enabled)) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opentelemetry-targetallocator.fullname" . }}-targetallocator
+  labels:
+    {{- include "opentelemetry-targetallocator.labels" . | nindent 4 }}
+  {{- include "opentelemetry-collector.annotations" . | nindent 2 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opentelemetry-targetallocator
+      {{- include "opentelemetry-targetallocator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- include "opentelemetry-targetallocator.podAnnotations" . | nindent 8 }}
+      labels:
+        app.kubernetes.io/component: opentelemetry-targetallocator
+        {{- include "opentelemetry-targetallocator.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-targetallocator.podLabels" . | nindent 8 }}
+    spec:
+      {{- $podValues := deepCopy .Values }}
+      {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}
+      {{- include "opentelemetry-targetallocator.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
+
+{{- end }}

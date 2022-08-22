@@ -1,0 +1,277 @@
+---
+# Source: opentelemetry-collector/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: example-opentelemetry-collector
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: opentelemetry-collector/templates/targetallocator-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: example-opentelemetry-collector-targetallocator
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector-targetallocator
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: opentelemetry-collector/templates/configmap-statefulset.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-collector-statefulset
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  relay: |
+---
+# Source: opentelemetry-collector/templates/configmap-statefulset.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-collector-targetallocator
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector-targetallocator
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  targetallocator.yaml: |
+---
+# Source: opentelemetry-collector/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-opentelemetry-collector
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+    component: statefulset-collector
+spec:
+  type: ClusterIP
+  ports: 
+    
+    - name: jaeger-compact
+      port: 6831
+      targetPort: jaeger-compact
+      protocol: UDP
+    - name: jaeger-grpc
+      port: 14250
+      targetPort: jaeger-grpc
+      protocol: TCP
+    - name: jaeger-thrift
+      port: 14268
+      targetPort: jaeger-thrift
+      protocol: TCP
+    - name: otlp
+      port: 4317
+      targetPort: otlp
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+      protocol: TCP
+    - name: zipkin
+      port: 9411
+      targetPort: zipkin
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    component: statefulset-collector
+---
+# Source: opentelemetry-collector/templates/targetallocator-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-opentelemetry-collector-targetallocator
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector-targetallocator
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: opentelemetry-targetallocator
+spec:
+  type: NodePort
+  ports: 
+    
+    - name: targetallocation
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: opentelemetry-collector-targetallocator
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: opentelemetry-targetallocator
+---
+# Source: opentelemetry-collector/templates/targetallocator.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-opentelemetry-collector-targetallocator-targetallocator
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector-targetallocator
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+  
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opentelemetry-targetallocator
+      app.kubernetes.io/name: opentelemetry-collector-targetallocator
+      app.kubernetes.io/instance: example
+  template:
+    metadata:
+      annotations:
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        
+      labels:
+        app.kubernetes.io/component: opentelemetry-targetallocator
+        app.kubernetes.io/name: opentelemetry-collector-targetallocator
+        app.kubernetes.io/instance: example
+        
+    spec:
+      
+      serviceAccountName: example-opentelemetry-collector-targetallocator
+      securityContext:
+        {}
+      containers:
+        - name: opentelemetry-collector
+          securityContext:
+            {}
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.1.0"
+          imagePullPolicy: Always
+          ports:
+            - name: targetallocation
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: /conf
+              name: opentelemetry-collector-ta-configmap
+      volumes:
+        - name: opentelemetry-collector-configmap
+          configMap:
+            name: example-opentelemetry-collector-targetallocator
+            items:
+              - key: targetallocator.yaml
+                path: targetallocator.yaml
+---
+# Source: opentelemetry-collector/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: example-opentelemetry-collector
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.28.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.58.0"
+    app.kubernetes.io/managed-by: Helm
+  
+spec:
+  serviceName: example-opentelemetry-collector
+  podManagementPolicy: Parallel
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-collector
+      app.kubernetes.io/instance: example
+      component: statefulset-collector
+  template:
+    metadata:
+      annotations:
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        
+      labels:
+        app.kubernetes.io/name: opentelemetry-collector
+        app.kubernetes.io/instance: example
+        component: statefulset-collector
+        
+    spec:
+      
+      serviceAccountName: example-opentelemetry-collector
+      securityContext:
+        {}
+      containers:
+        - name: opentelemetry-collector
+          command:
+            - /otelcol-contrib
+            - --config=/conf/relay.yaml
+          securityContext:
+            {}
+          image: "otel/opentelemetry-collector-contrib:0.58.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: jaeger-compact
+              containerPort: 6831
+              protocol: UDP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
+            - name: otlp
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: zipkin
+              containerPort: 9411
+              protocol: TCP
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          resources:
+            limits:
+              cpu: 100m
+              memory: 200M
+          volumeMounts:
+            - mountPath: /conf
+              name: opentelemetry-collector-configmap
+      volumes:
+        - name: opentelemetry-collector-configmap
+          configMap:
+            name: example-opentelemetry-collector-statefulset
+            items:
+              - key: relay
+                path: relay.yaml

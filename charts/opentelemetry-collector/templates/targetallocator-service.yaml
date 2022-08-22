@@ -1,0 +1,22 @@
+{{- if (and (eq .Values.mode "statefulset") (.Values.targetallocator.enabled)) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opentelemetry-targetallocator.fullname" . }}
+  labels:
+    {{- include "opentelemetry-targetallocator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opentelemetry-targetallocator
+  {{- if .Values.targetallocator.service.annotations }}
+  annotations:
+    {{ toYaml .Values.targetallocator.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.targetallocator.service.type }}
+  {{- if .Values.targetallocator.service.clusterIP }}
+  clusterIP: {{ .Values.targetallocator.service.clusterIP }}
+  {{- end }}
+  ports: {{ include "opentelemetry-targetallocator.deploymentPortsConfig" . | nindent 4 }}
+  selector:
+    {{- include "opentelemetry-targetallocator.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: opentelemetry-targetallocator
+{{- end }}
