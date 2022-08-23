@@ -1,11 +1,17 @@
-{{- if eq .Values.mode "daemonset" -}}
+{{- if eq .Values.mode "statefulset" -}}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: StatefulSet
 metadata:
-  name: {{ include "opentelemetry-collector.fullname" . }}-agent
+  name: {{ include "opentelemetry-collector.fullname" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+  {{- include "opentelemetry-collector.annotations" . | nindent 2 }}
 spec:
+  serviceName: {{ include "opentelemetry-collector.fullname" . }}
+  podManagementPolicy: {{ .Values.statefulset.podManagementPolicy }}
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
@@ -13,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
@@ -21,10 +27,9 @@ spec:
         {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values }}
-      {{- $podData := dict "Values" $podValues "configmapSuffix" "-agent" "isAgent" true }}
+      {{- $podData := dict "Values" $podValues "configmapSuffix" "-statefulset" "isAgent" false }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
-      hostNetwork: {{ .Values.hostNetwork }}
-      {{- with .Values.dnsPolicy }}
-      dnsPolicy: {{ . }}
-      {{- end }}
+  {{- if .Values.statefulset.volumeClaimTemplates }}
+  {{- .Values.volumeClaimTemplates | toYaml | indent 2}}
+  {{- end }}
 {{- end }}
