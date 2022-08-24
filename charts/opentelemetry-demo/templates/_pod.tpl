@@ -54,7 +54,7 @@ Get Pod Env
 {{- end}}
 {{- end }}
 {{- if not $hasDatabaseUrl }}
-{{- $_ := set . "env" (append .env (dict "name" "DATABASE_URL" "value" (printf "ecto://ffs:ffs@%s-ffs-postgres:5432/ffs" $prefix)) | uniq) }}
+{{- $_ := set . "env" (append .env (dict "name" "DATABASE_URL" "value" (printf "ecto://ffs:ffs@%s-ffs-postgres:5432/ffs" $prefix))) }}
 {{- end}}
 {{- end }}
 
