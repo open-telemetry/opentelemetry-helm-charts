@@ -46,6 +46,18 @@ Get Pod Env
 {{- define "otel-demo.pod.env" -}}
 {{- $prefix := include "otel-demo.name" $ }}
 
+{{- if eq .name "featureflag-service" }}
+{{- $hasDatabaseUrl := false }}
+{{- range .env }}
+{{- if eq .name "DATABASE_URL" }}
+{{- $hasDatabaseUrl = true }}
+{{- end}}
+{{- end }}
+{{- if not $hasDatabaseUrl }}
+{{- $_ := set . "env" (append .env (dict "name" "DATABASE_URL" "value" (printf "ecto://ffs:ffs@%s-ffs-postgres:5432/ffs" $prefix))) }}
+{{- end}}
+{{- end }}
+
 {{- if .default.enabled  }}
 {{- if .env }}
 {{- $defaultEnvMap := dict }}
@@ -75,6 +87,11 @@ Get Pod Env
 {{- if .servicePort}}
 - name: {{ printf "%s_PORT" .name | snakecase | upper }}
   value: {{.servicePort | quote}}
+{{- end }}
+
+{{- if eq .name "product-catalog-service" }}
+- name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+  value: {{ (printf "%s-featureflag-service:%0.f" $prefix .servicePort ) }}
 {{- end }}
 
 # {{ $.depends }}
