@@ -1,11 +1,17 @@
 observability:
   otelcol:
     enabled: true
+  jaeger:
+    enabled: true
 
 # if the enabled is true, the items in this object will apply to all components
 default:
   enabled: true
   env:
+    - name: HOST_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
     - name: OTEL_SERVICE_NAME
       valueFrom:
         fieldRef:
@@ -31,7 +37,7 @@ default:
 
 image:
   repository: otel/demo
-  otelcolversion: 0.58.0
+  otelcolversion: 0.55.0
   pullSecrets: []
 
 serviceAccount: ""

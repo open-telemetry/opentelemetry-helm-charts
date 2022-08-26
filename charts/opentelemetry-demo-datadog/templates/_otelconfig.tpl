@@ -213,6 +213,9 @@ processors:
             new_label: dd_dupe_metric
             new_value: true
 service:
+  telemetry:
+    logs:
+        level: debug
   pipelines:
     metrics:
       receivers: [otlp,k8s_cluster,hostmetrics, prometheus]

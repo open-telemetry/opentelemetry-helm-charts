@@ -28,6 +28,9 @@
         },
         "apiKey": {
             "type": "string"
+        },
+        "deployMode": {
+            "type": "string"
         }
     },
     "required": [
@@ -35,7 +38,8 @@
         "image",
         "observability",
         "serviceAccount",
-        "apiKey"
+        "apiKey",
+        "deployMode"
     ],
     "definitions": {
         "Components": {
@@ -264,15 +268,15 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "otelcolversion": {
-                    "type": "string"
-                },
                 "repository": {
                     "type": "string"
                 },
                 "pullSecrets": {
                     "type": "array",
                     "items": {}
+                },
+                "otelcolversion": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -286,9 +290,13 @@
             "properties": {
                 "otelcol": {
                     "$ref": "#/definitions/ObservabilityProp"
+                },
+                "jaeger": {
+                    "$ref": "#/definitions/ObservabilityProp"
                 }
             },
             "required": [
+                "jaeger",
                 "otelcol"
             ],
             "title": "Observability"

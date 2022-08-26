@@ -1,0 +1,25 @@
+{{- $ := set . "name" "otelcol" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: otlp
+      port: 4317
+      protocol: TCP
+      targetPort: 4317
+    - name: otlphttp
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
+    - name: metric
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+  selector:
+      {{- include "otel-demo.selectorLabels" . | nindent 4 }}
+---
