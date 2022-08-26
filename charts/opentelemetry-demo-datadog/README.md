@@ -17,7 +17,7 @@ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm
 
 To install the chart with the release name my-otel-demo, run the following command:
 
-We can install open telemetry collector either as gateway or daemonset. Please create API key from datadog .
+We can install open telemetry collector either as deployment or daemonset. Please create API key from datadog .
 
 ```console
 helm install my-otel-demo open-telemetry/opentelemetry-demo-datadog --set apiKey=XXX --set deployMode='daemonset'
