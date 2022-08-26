@@ -1,0 +1,26 @@
+mode: deployment
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
+
+configMap:
+  create: false
+
+command:
+  name: otelcol-contrib
+  extraArgs: ["--config=/conf/config.yaml"]
+
+extraVolumes:
+  - name: custom-otelcol-configmap
+    configMap:
+      name: custom-otel-collector-config
+      items:
+        - key: config
+          path: config.yaml
+      defaultMode: 420
+extraVolumeMounts:
+  - name: custom-otelcol-configmap
+    mountPath: /conf/config.yaml
+

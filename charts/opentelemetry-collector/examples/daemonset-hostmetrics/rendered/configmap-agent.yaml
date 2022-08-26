@@ -5,10 +5,10 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.24.0
+    helm.sh/chart: opentelemetry-collector-0.29.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.55.0"
+    app.kubernetes.io/version: "0.58.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
@@ -26,11 +26,13 @@ data:
         spike_limit_mib: 128
     receivers:
       hostmetrics:
+        collection_interval: 10s
         scrapers:
           cpu: null
           disk: null
           load: null
           memory: null
+          network: null
       jaeger:
         protocols:
           grpc:
@@ -75,9 +77,9 @@ data:
           - memory_limiter
           - batch
           receivers:
-          - hostmestrics
           - otlp
           - prometheus
+          - hostmetrics
         traces:
           exporters:
           - logging

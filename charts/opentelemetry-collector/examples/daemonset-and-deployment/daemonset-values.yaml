@@ -1,0 +1,28 @@
+mode: daemonset
+
+config:
+  exporters:
+    otlp:
+      endpoint: example-opentelemetry-collector:4317
+      tls:
+        insecure: true
+  service:
+    pipelines:
+      logs:
+        exporters:
+         - otlp
+         - logging
+      metrics:
+        exporters:
+         - otlp
+         - logging
+      traces:
+        exporters:
+         - otlp
+         - logging
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
+
