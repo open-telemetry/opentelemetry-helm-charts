@@ -15,7 +15,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
-        {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-collector.labels" . | nindent 8 }}
         {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
     spec:
       {{- $podValues := deepCopy .Values }}
