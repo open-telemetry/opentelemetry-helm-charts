@@ -1,0 +1,12 @@
+{{- $otelconfig := include "otel-demo.otelcol.config" .}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-demo.name" . }}-{{ .name }}-config
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+data:
+  otelcol-config.yml: |
+    {{- $otelconfig | nindent 4 }}
+---

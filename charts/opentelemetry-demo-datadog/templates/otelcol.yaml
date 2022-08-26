@@ -1,0 +1,85 @@
+{{- $ := set . "name" "otelcol" }}
+{{- $otelconfig := include "otel-demo.otelcol.config" .}}
+
+{{- if .Values.observability.otelcol.enabled -}}
+---
+apiVersion: apps/v1
+{{- if eq .Values.deployMode "gateway" }}
+kind: Deployment
+{{- end }}
+
+{{- if eq .Values.deployMode "daemonset" }}
+kind: DaemonSet
+{{- end }}
+metadata:
+  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+spec:
+  {{- if eq .Values.deployMode "gateway" }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "otel-demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        checksum/otel_config: {{ sha256sum $otelconfig | trunc 63 }}
+        {{- include "otel-demo.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccount: {{ include "otel-demo.name" . }}
+      initContainers:
+      - name: init-config
+        image: dibi/envsubst
+        env:
+          - name: DD_API_KEY
+            valueFrom:
+              secretKeyRef:
+                key:  datadog_api_key
+                name: {{ include "otel-demo.name" . }}-{{ .name }}-dd-secret
+        volumeMounts:
+        - name: config
+          mountPath: /processed
+        - name: otel-config-template
+          mountPath: /workdir
+      containers:
+      - image: otel/opentelemetry-collector-contrib:{{ $.Values.image.otelcolversion }}
+        name: otel-col
+        resources:
+          limits:
+            cpu: 2
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 400Mi
+        args:
+          - "--config=/processed/otelcol-config.yml"
+        ports:
+         {{- if eq .Values.deployMode "daemonset" }}
+          - containerPort: 4317
+            hostPort: 4317
+            protocol: TCP
+          - containerPort: 4318
+            hostPort: 4318
+            protocol: TCP
+          {{- end }}
+         {{- if eq .Values.deployMode "gateway" }}
+          - containerPort: 4317
+            protocol: TCP
+          - containerPort: 4318
+            protocol: TCP
+          {{- end }}
+          - containerPort: 8888
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /processed
+            name: config
+      volumes:
+        - configMap:
+            name: {{ include "otel-demo.name" . }}-{{.name}}-config
+          name: otel-config-template
+        - name: config
+          emptyDir : {}
+---
+{{- end }}
