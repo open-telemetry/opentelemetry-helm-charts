@@ -1,5 +1,20 @@
 # Upgrade guidelines
 
+## 0.28.0 to 0.29.0
+
+[Reduce requested resources](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/273)
+
+Resource `limits` have been reduced. Upgrades/installs of chart 0.29.0 will now use fewer resources. In order to set the resources back to what they were, you will need to override the `resources` section in the `values.yaml`.
+
+*Example*:
+
+```yaml
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+```
+
 ## 0.23.1 to 0.24.0
 
 [Remove containerLogs in favor of presets.logsCollection]()
@@ -78,7 +93,7 @@ See the [daemonset-and-deployment](examples/daemonset-and-deployment) example to
 
 ### Migrate to `mode`:
 
-The `agentCollector` and `standaloneCollector` sections in values.yaml have been deprecated. Instead there is a new field, `mode`, that determines if the collector is being installed as a daemonset or deployment.  
+The `agentCollector` and `standaloneCollector` sections in values.yaml have been deprecated. Instead there is a new field, `mode`, that determines if the collector is being installed as a daemonset or deployment.
 
 ```yaml
 # Valid values are "daemonset" and "deployment".
