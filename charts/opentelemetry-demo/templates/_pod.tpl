@@ -58,24 +58,11 @@ Get Pod Env
 {{- end}}
 {{- end }}
 
-{{- if .default.enabled  }}
+{{- if .default.env.enabled  }}
+{{ toYaml .default.values.env }}
+{{- end }}
+
 {{- if .env }}
-{{- $defaultEnvMap := dict }}
-{{- range $defaultEnvItem := $.default.env }}
-{{- $defaultEnvMap = set $defaultEnvMap $defaultEnvItem.name $defaultEnvItem }}
-{{- end }}
-{{- $envMap := dict }}
-{{- range $envItem := $.env }}
-{{- $envMap := set $envMap $envItem.name $envItem }}
-{{- end }}
-{{- $mergedEnvMap := merge $envMap $defaultEnvMap }}
-{{- $otelResourceAttributesList := get $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | list }}
-{{ unset $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | values | toYaml }}
-{{ $otelResourceAttributesList | toYaml }}
-{{- else }}
-{{ toYaml .default.env }}
-{{- end }}
-{{- else if .env }}
 {{ toYaml .env }}
 {{- end }}
 
