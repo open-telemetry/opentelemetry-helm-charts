@@ -5,7 +5,7 @@ kind: Service
 metadata:
   name: example-ad-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: ad-service
@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: example-cart-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: cart-service
@@ -49,7 +49,7 @@ kind: Service
 metadata:
   name: example-checkout-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: checkout-service
@@ -71,7 +71,7 @@ kind: Service
 metadata:
   name: example-currency-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: currency-service
@@ -93,7 +93,7 @@ kind: Service
 metadata:
   name: example-email-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: email-service
@@ -115,7 +115,7 @@ kind: Service
 metadata:
   name: example-featureflag-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: featureflag-service
@@ -140,7 +140,7 @@ kind: Service
 metadata:
   name: example-ffs-postgres
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: ffs-postgres
@@ -162,7 +162,7 @@ kind: Service
 metadata:
   name: example-frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: frontend
@@ -184,7 +184,7 @@ kind: Service
 metadata:
   name: example-payment-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: payment-service
@@ -206,7 +206,7 @@ kind: Service
 metadata:
   name: example-product-catalog-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: product-catalog-service
@@ -228,7 +228,7 @@ kind: Service
 metadata:
   name: example-recommendation-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: recommendation-service
@@ -250,7 +250,7 @@ kind: Service
 metadata:
   name: example-redis
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: redis
@@ -272,7 +272,7 @@ kind: Service
 metadata:
   name: example-shipping-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: shipping-service
@@ -294,7 +294,7 @@ kind: Deployment
 metadata:
   name: example-ad-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: ad-service
@@ -360,7 +360,7 @@ kind: Deployment
 metadata:
   name: example-cart-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: cart-service
@@ -390,13 +390,6 @@ spec:
             name: service
           env:
           
-          - name: ASPNETCORE_URLS
-            value: http://*:8080
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -407,11 +400,18 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
+          - name: ASPNETCORE_URLS
+            value: http://*:8080
           - name: OTEL_K8S_NODE_NAME
             valueFrom:
               fieldRef:
                 apiVersion: v1
                 fieldPath: spec.nodeName
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -430,7 +430,7 @@ kind: Deployment
 metadata:
   name: example-checkout-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: checkout-service
@@ -508,7 +508,7 @@ kind: Deployment
 metadata:
   name: example-currency-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: currency-service
@@ -538,8 +538,11 @@ spec:
             name: service
           env:
           
-          - name: PORT
-            value: "8080"
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
           - name: OTEL_K8S_NAMESPACE
             valueFrom:
               fieldRef:
@@ -555,11 +558,8 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.name
-          - name: OTEL_SERVICE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: PORT
+            value: "8080"
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -576,7 +576,7 @@ kind: Deployment
 metadata:
   name: example-email-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: email-service
@@ -606,15 +606,6 @@ spec:
             name: service
           env:
           
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
-          - name: APP_ENV
-            value: production
-          - name: PORT
-            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -630,6 +621,15 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: spec.nodeName
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: APP_ENV
+            value: production
+          - name: PORT
+            value: "8080"
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -646,7 +646,7 @@ kind: Deployment
 metadata:
   name: example-featureflag-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: featureflag-service
@@ -683,17 +683,17 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
           - name: GRPC_PORT
             value: "50053"
           - name: PORT
             value: "50052"
           - name: DATABASE_URL
             value: ecto://ffs:ffs@example-ffs-postgres:5432/ffs
-          - name: OTEL_K8S_NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
           - name: OTEL_K8S_NODE_NAME
             valueFrom:
               fieldRef:
@@ -718,7 +718,7 @@ kind: Deployment
 metadata:
   name: example-ffs-postgres
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: ffs-postgres
@@ -748,6 +748,10 @@ spec:
             name: postgres
           env:
           
+          - name: POSTGRES_PASSWORD
+            value: ffs
+          - name: POSTGRES_USER
+            value: ffs
           - name: OTEL_K8S_NAMESPACE
             valueFrom:
               fieldRef:
@@ -763,17 +767,13 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.name
-          - name: POSTGRES_DB
-            value: ffs
-          - name: POSTGRES_PASSWORD
-            value: ffs
-          - name: POSTGRES_USER
-            value: ffs
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: POSTGRES_DB
+            value: ffs
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -788,7 +788,7 @@ kind: Deployment
 metadata:
   name: example-frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: frontend
@@ -818,13 +818,6 @@ spec:
             name: service
           env:
           
-          - name: FRONTEND_ADDR
-            value: :8080
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -835,11 +828,18 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
+          - name: FRONTEND_ADDR
+            value: :8080
           - name: OTEL_K8S_NODE_NAME
             valueFrom:
               fieldRef:
                 apiVersion: v1
                 fieldPath: spec.nodeName
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -870,7 +870,7 @@ kind: Deployment
 metadata:
   name: example-loadgenerator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: loadgenerator
@@ -896,16 +896,10 @@ spec:
           image: otel/demo:v0.3.4-alpha-loadgenerator
           env:
           
-          - name: OTEL_K8S_NODE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: spec.nodeName
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
+          - name: USERS
+            value: "10"
+          - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+            value: python
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -916,10 +910,16 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
-          - name: USERS
-            value: "10"
-          - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-            value: python
+          - name: OTEL_K8S_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -936,7 +936,7 @@ kind: Deployment
 metadata:
   name: example-payment-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: payment-service
@@ -1002,7 +1002,7 @@ kind: Deployment
 metadata:
   name: example-product-catalog-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: product-catalog-service
@@ -1070,7 +1070,7 @@ kind: Deployment
 metadata:
   name: example-recommendation-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: recommendation-service
@@ -1100,6 +1100,13 @@ spec:
             name: service
           env:
           
+          - name: OTEL_PYTHON_LOG_CORRELATION
+            value: "true"
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
           - name: OTEL_K8S_NAMESPACE
             valueFrom:
               fieldRef:
@@ -1115,13 +1122,6 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.name
-          - name: OTEL_PYTHON_LOG_CORRELATION
-            value: "true"
-          - name: OTEL_SERVICE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.labels['app.kubernetes.io/component']
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -1140,7 +1140,7 @@ kind: Deployment
 metadata:
   name: example-redis
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: redis
@@ -1204,7 +1204,7 @@ kind: Deployment
 metadata:
   name: example-shipping-service
   labels:
-    helm.sh/chart: opentelemetry-demo-0.2.1
+    helm.sh/chart: opentelemetry-demo-0.2.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: shipping-service
@@ -1234,13 +1234,6 @@ spec:
             name: service
           env:
           
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
-          - name: PORT
-            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1256,6 +1249,13 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: spec.nodeName
+          - name: PORT
+            value: "8080"
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
