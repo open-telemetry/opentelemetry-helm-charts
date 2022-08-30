@@ -78,7 +78,7 @@ Get Pod Env
 
 {{- if eq .name "product-catalog-service" }}
 - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-  value: {{ (printf "%s-featureflag-service:%0.f" $prefix .servicePort ) }}
+  value: {{ (printf "%s-featureflag-service:50031" $prefix ) }}
 {{- end }}
 
 # {{ $.depends }}
@@ -106,14 +106,5 @@ Get Pod ports
 {{- if .servicePort }}
 - containerPort: {{.servicePort}}
   name: service
-{{- end }}
-{{- end }}
-
-{{/*
-Get Pod Annotations
-*/}}
-{{- define "otel-demo.pod.annotations" -}}
-{{- if .podAnnotations }}
-{{ toYaml .podAnnotations}}
 {{- end }}
 {{- end }}
