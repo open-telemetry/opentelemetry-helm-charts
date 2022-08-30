@@ -85,10 +85,16 @@ Get Pod Env
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://$(HOST_IP):4317
 {{- end }}
-{{- if eq .deployMode "gateway" }}
+{{- if not .useOperator }}
+{{- if eq .deployMode "deployment" }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
 {{- end }}
+{{- else }}
+- name: OTEL_EXPORTER_OTLP_ENDPOINT
+  value: http://{{ include "otel-demo.name" . }}-collector:4317
+{{- end }}
+
 {{- end }}
 
 {{- if .servicePort}}

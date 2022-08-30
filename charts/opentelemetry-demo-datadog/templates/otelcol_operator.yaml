@@ -1,0 +1,24 @@
+{{- $otelconfig := include "otel-demo.otelcol.config" .}}
+{{- if .Values.useOperator -}}
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ include "otel-demo.name" . }}
+spec:
+  mode: {{ $.Values.deployMode }}
+  {{- if eq .Values.deployMode "daemonset" }}
+  hostNetwork: true
+  {{- end }}
+  image: otel/opentelemetry-collector-contrib:{{ $.Values.image.otelcolversion }}
+  serviceAccount: {{ include "otel-demo.name" . }}
+  env:
+    - name: DD_API_KEY
+      valueFrom:
+        secretKeyRef:
+          key:  datadog_api_key
+          name: {{ include "otel-demo.name" . }}-{{ .name }}-dd-secret
+  config: |
+  {{- $otelconfig | nindent 4 }}
+---
+{{- end }}
