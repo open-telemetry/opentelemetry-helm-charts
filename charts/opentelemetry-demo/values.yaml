@@ -93,15 +93,15 @@ components:
     # If a different url is desired, set DATABASE_URL here.
     # - name: DATABASE_URL
     #   value:
-    - name: GRPC_PORT
+    - name: FEATURE_FLAG_GRPC_SERVICE_PORT
       value: '50053'
-    - name: PORT
-      value: '50052'
+    - name: FEATURE_FLAG_SERVICE_PORT
+      value: '8081'
     ports:
     - name: grpc
-      value: 50052
-    - name: http
       value: 50053
+    - name: http
+      value: 8081
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -132,9 +132,18 @@ components:
 
   loadgenerator:
     enabled: true
+    servicePort: 8089
     env:
-    - name: USERS
+    - name: LOCUST_WEB_PORT
+      value: '8089'
+    - name: LOCUST_USERS
       value: '10'
+    - name: LOCUST_HOST
+      value: http://${FRONTEND_ADDR}
+    - name: LOCUST_HEADLESS
+      value: 'false'
+    - name: LOCUST_AUTOSTART
+      value: 'true'
     - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
       value: python
     podAnnotations: {}

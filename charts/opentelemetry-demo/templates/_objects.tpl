@@ -14,8 +14,10 @@ spec:
     metadata:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
+      {{- if .podAnnotations }}
       annotations:
-        {{- include "otel-demo.pod.annotations" . | nindent 8 }}
+        {{- toYaml .podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       {{- if .imageConfig.pullSecrets }}
       imagePullSecrets:
