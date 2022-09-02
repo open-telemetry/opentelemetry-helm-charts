@@ -9,3 +9,4 @@ Here is a collection of common configurations for the OpenTelemetry collector.  
 - [Add component (hostmetrics)](daemonset-hostmetrics)
 
 The manifests are rendered using the `helm template` command and the specific example folder's values.yaml.
+

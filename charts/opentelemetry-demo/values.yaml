@@ -47,17 +47,24 @@ components:
   adService:
     enabled: true
     servicePort: 8080
-
+    podAnnotations: {}
+    #  sidecar.opentelemetry.io/inject: "false"
+    #  instrumentation.opentelemetry.io/inject-java: "true"
   cartService:
     enabled: true
     servicePort: 8080
     env:
     - name: ASPNETCORE_URLS
       value: http://*:8080
+    podAnnotations: {}
+    #  sidecar.opentelemetry.io/inject: "false"
+    #  instrumentation.opentelemetry.io/inject-dotnet: "true"
 
   checkoutService:
     enabled: true
     servicePort: 8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   currencyService:
     enabled: true
@@ -65,6 +72,8 @@ components:
     env:
     - name: PORT
       value: '8080'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   emailService:
     enabled: true
@@ -74,21 +83,27 @@ components:
       value: production
     - name: PORT
       value: '8080'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   featureflagService:
     enabled: true
     env:
-    - name: DATABASE_URL
-      value: ecto://ffs:ffs@ffs-postgres:5432/ffs
-    - name: GRPC_PORT
+    # DATABASE_URL will be automatically added to use the enabled ffsPostgres component.
+    # If a different url is desired, set DATABASE_URL here.
+    # - name: DATABASE_URL
+    #   value:
+    - name: FEATURE_FLAG_GRPC_SERVICE_PORT
       value: '50053'
-    - name: PORT
-      value: '50052'
+    - name: FEATURE_FLAG_SERVICE_PORT
+      value: '8081'
     ports:
     - name: grpc
-      value: 50052
-    - name: http
       value: 50053
+    - name: http
+      value: 8081
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   ffsPostgres:
     enabled: true
@@ -103,6 +118,8 @@ components:
     ports:
     - name: postgres
       value: 5432
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   frontend:
     enabled: true
@@ -110,22 +127,39 @@ components:
     env:
     - name: FRONTEND_ADDR
       value: :8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   loadgenerator:
     enabled: true
+    servicePort: 8089
     env:
-    - name: USERS
+    - name: LOCUST_WEB_PORT
+      value: '8089'
+    - name: LOCUST_USERS
       value: '10'
+    - name: LOCUST_HOST
+      value: http://${FRONTEND_ADDR}
+    - name: LOCUST_HEADLESS
+      value: 'false'
+    - name: LOCUST_AUTOSTART
+      value: 'true'
     - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
       value: python
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-python: "true"
 
   paymentService:
     enabled: true
     servicePort: 8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-nodejs: "true"
 
   productCatalogService:
     enabled: true
     servicePort: 8080
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   recommendationService:
     enabled: true
@@ -133,6 +167,8 @@ components:
     env:
     - name: OTEL_PYTHON_LOG_CORRELATION
       value: 'true'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-python: "true"
 
   shippingService:
     enabled: true
@@ -140,3 +176,5 @@ components:
     env:
     - name: PORT
       value: '8080'
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"
