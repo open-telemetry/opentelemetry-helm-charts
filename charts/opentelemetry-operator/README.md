@@ -18,34 +18,7 @@ certificate that the API server is configured to trust. There are three ways for
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
-  - The last way is to manually modify the secret where the TLS certificate is stored. Make sure you set `admissionWebhooks.certManager.enabled` to `false` first.
-    - Create the namespace for the OpenTelemetry Operator and the secret
-      ```console
-      $ kubectl create namespace opentelemetry-operator-system
-      ```
-    - Config the TLS certificate using `kubectl create` command
-      ```console
-      $ kubectl create secret tls opentelemetry-operator-controller-manager-service-cert \
-          --cert=path/to/cert/file \
-          --key=path/to/key/file \
-          -n opentelemetry-operator-system
-      ```
-      You can also do this by applying the secret configuration.
-      ```console
-      $ kubectl apply -f - <<EOF
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: opentelemetry-operator-controller-manager-service-cert
-        namespace: opentelemetry-operator-system
-      type: kubernetes.io/tls
-      data:
-        tls.crt: |
-            # your signed cert
-        tls.key: |
-            # your private key
-      EOF
-      ```
+  - The last way is to use self-signed certificate by configuring the `admissionWebhooks.certManager.enabled` to `false`.
 
 ## Add Repository
 
