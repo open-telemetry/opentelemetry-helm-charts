@@ -8,10 +8,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
+    {{ if .Values.kubeRBACProxy.enabled }}
     - name: https
       port: {{ .Values.kubeRBACProxy.ports.proxyPort }}
       protocol: TCP
       targetPort: https
+    {{- end }}
     - name: metrics
       port: {{ .Values.manager.ports.metricsPort }}
       protocol: TCP
