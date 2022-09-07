@@ -1,7 +1,7 @@
 {{- if and (.Values.admissionWebhooks.enabled) (not .Values.admissionWebhooks.certManager.enabled) }}
 {{- $altNames := list ( printf "%s.%s" "opentelemetry-operator-webhook-service" .Release.Namespace ) ( printf "%s.%s.svc" "opentelemetry-operator-webhook-service" .Release.Namespace ) -}}
 {{- $ca := genCA "opentelemetry-operator-operator-ca" 365 -}}
-{{- $cert := genSignedCert (include "insight-agent.fullname" .) nil $altNames 365 $ca -}}
+{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca -}}
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/tls
