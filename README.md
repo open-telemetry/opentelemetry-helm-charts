@@ -32,7 +32,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
 
-- [Alex](https://github.com/Allex1), Adobe
+- [Alex Birca](https://github.com/Allex1), Adobe
 
 Emeritus Approvers:
 
