@@ -60,9 +60,6 @@ containers:
         value: {{ tpl $item.value $ | quote }}
     {{- end }}
   {{- end }}
-
-
-
     {{- if .Values.lifecycleHooks }}
     lifecycle:
       {{- toYaml .Values.lifecycleHooks | nindent 6 }}
