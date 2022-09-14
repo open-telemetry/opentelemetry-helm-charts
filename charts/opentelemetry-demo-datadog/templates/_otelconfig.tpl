@@ -55,7 +55,7 @@ processors:
   resourcedetection:
     # ensures host.name and other important resource tags
     # get picked up
-    detectors: [system, env]
+    detectors: [gcp, ecs, ec2, azure, system]
     timeout: 5s
     override: false
   # adds various tags related to k8s
