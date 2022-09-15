@@ -69,7 +69,7 @@ Note: Consider that dependent variables need to be declared before the reference
 {{- end }}
 
 {{- if .useDefault.env  }}
-{{ toYaml .default.values.env }}
+{{ toYaml .defaultValues.env }}
 {{- end }}
 
 {{- if .env }}
