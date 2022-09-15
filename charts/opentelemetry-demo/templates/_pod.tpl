@@ -58,7 +58,7 @@ Get Pod Env
 {{- end}}
 {{- end }}
 
-{{- if .default.env.enabled  }}
+{{- if .useDefault.env  }}
 {{ toYaml .default.values.env }}
 {{- end }}
 

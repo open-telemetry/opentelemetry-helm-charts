@@ -38,9 +38,8 @@ serviceAccount: ""
 components:
   redis:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     image: redis:alpine
     ports:
     - name: redis
@@ -48,18 +47,16 @@ components:
 
   adService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     podAnnotations: {}
     #  sidecar.opentelemetry.io/inject: "false"
     #  instrumentation.opentelemetry.io/inject-java: "true"
   cartService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     env:
     - name: ASPNETCORE_URLS
@@ -70,18 +67,16 @@ components:
 
   checkoutService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   currencyService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     env:
     - name: PORT
@@ -91,9 +86,8 @@ components:
 
   emailService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     env:
     - name: APP_ENV
@@ -105,9 +99,8 @@ components:
 
   featureflagService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     env:
     # DATABASE_URL will be automatically added to use the enabled ffsPostgres component.
     # If a different url is desired, set DATABASE_URL here.
@@ -127,9 +120,8 @@ components:
 
   ffsPostgres:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     env:
     - name: POSTGRES_DB
       value: ffs
@@ -146,9 +138,8 @@ components:
 
   frontend:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     env:
     - name: FRONTEND_ADDR
@@ -158,9 +149,8 @@ components:
 
   loadgenerator:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8089
     env:
     - name: LOCUST_WEB_PORT
@@ -180,27 +170,24 @@ components:
 
   paymentService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-nodejs: "true"
 
   productCatalogService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   recommendationService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     env:
     - name: OTEL_PYTHON_LOG_CORRELATION
@@ -210,9 +197,8 @@ components:
 
   shippingService:
     enabled: true
-    default:
-      env:
-        enabled: true
+    useDefault:
+      env: true
     servicePort: 8080
     env:
     - name: PORT
