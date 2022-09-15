@@ -46,11 +46,8 @@ Note: Consider that dependent variables need to be declared before the reference
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- $prefix := include "otel-demo.name" $ }}
-
-# {{ $.depends }}
-# {{ .name }}
-{{- if hasKey $.depends .name }}
-{{- range $depend := get $.depends .name }}
+{{- if .depends }}
+{{- range $depend := .depends }}
 - name: {{ printf "%s_ADDR" $depend | snakecase | upper }}
   value: {{ printf "%s-%s:%0.f" $prefix ($depend | kebabcase) (get $.serviceMapping $depend )}}
 {{- end }}
