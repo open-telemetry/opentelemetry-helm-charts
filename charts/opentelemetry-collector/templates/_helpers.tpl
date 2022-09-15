@@ -156,3 +156,15 @@ Return the appropriate apiVersion for podDisruptionBudget.
     {{- print "policy/v1beta1" -}}
   {{- end -}}
 {{- end -}}
+
+
+{{/*
+Check if logs collection is enabled via deprecated "containerLogs" or "preset.logsCollection"
+*/}}
+{{- define "opentelemetry-collector.logsCollectionEnabled" }}
+  {{- if eq (toString .Values.containerLogs) "<nil>" }}
+    {{- print .Values.presets.logsCollection.enabled }}
+  {{- else }}
+    {{- print .Values.containerLogs.enabled }}
+  {{- end }}
+{{- end -}}
