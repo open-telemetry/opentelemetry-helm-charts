@@ -61,10 +61,6 @@ Exclude email service and treat differently because the addr. for the email serv
 {{- end }}
 {{- end }}
 
-
-
-
-
 {{- if eq .name "featureflag-service" }}
 {{- $hasDatabaseUrl := false }}
 {{- range .env }}
