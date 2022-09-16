@@ -18,7 +18,7 @@ certificate that the API server is configured to trust. There are three ways for
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can also provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
-  - The last way is to use self-signed certificate by configuring the `admissionWebhooks.certManager.enabled` to `false`.
+  - The last way is to use self-signed certificate by configuring the `admissionWebhooks.certManager.enabled` to `false`. helm will creat self-signd cert and secret for you.
 
 ## Add Repository
 
