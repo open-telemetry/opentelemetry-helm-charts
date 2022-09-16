@@ -46,10 +46,18 @@ Note: Consider that dependent variables need to be declared before the reference
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- $prefix := include "otel-demo.name" $ }}
+{{/*
+Exclude email service and treat differently because the addr. for the email service needs to contain the http:// protocol prefix.
+*/}}
 {{- if .depends }}
-{{- range $depend := .depends }}
+{{- range $depend := (without .depends "email-service") }}
 - name: {{ printf "%s_ADDR" $depend | snakecase | upper }}
   value: {{ printf "%s-%s:%0.f" $prefix ($depend | kebabcase) (get $.serviceMapping $depend )}}
+{{- end }}
+
+{{- if has "email-service" .depends }}
+- name: {{ printf "EMAIL_SERVICE_ADDR" }}
+  value: {{ printf "http://%s-email-service:%0.f" $prefix (get $.serviceMapping "email-service" )}}
 {{- end }}
 {{- end }}
 
