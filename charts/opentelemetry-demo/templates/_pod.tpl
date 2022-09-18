@@ -73,14 +73,6 @@ Exclude email service and treat differently because the addr. for the email serv
 {{- end}}
 {{- end }}
 
-{{- if hasKey $.depends .name }}
-{{- range $depend := get $.depends .name }}
-- name: {{ printf "%s_ADDR" $depend | snakecase | upper }}
-  value: {{ printf "%s-%s:%0.f" $prefix ($depend | kebabcase) (get $.serviceMapping $depend )}}
-{{- end }}
-{{- end }}
-
-
 {{- if .default.enabled  }}
 {{- if .env }}
 {{- $defaultEnvMap := dict }}
