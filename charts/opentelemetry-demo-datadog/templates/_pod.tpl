@@ -42,13 +42,25 @@ Get Services Port Mapping
 
 {{/*
 Get Pod Env
+Note: Consider that dependent variables need to be declared before the referenced env varibale.
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- $prefix := include "otel-demo.name" $ }}
+{{/*
+Exclude email service and treat differently because the addr. for the email service needs to contain the http:// protocol prefix.
+*/}}
+{{- if .depends }}
+{{- range $depend := (without .depends "email-service") }}
+- name: {{ printf "%s_ADDR" $depend | snakecase | upper }}
+  value: {{ printf "%s-%s:%0.f" $prefix ($depend | kebabcase) (get $.serviceMapping $depend )}}
+{{- end }}
 
-{{- if eq .name "loadgenerator" }}
-{{- $_ := set . "env" (append .env (dict "name" "LOCUST_HOST" "value" (printf "http://%s-frontend:8080" $prefix))) }}
-{{- end}}
+{{- if has "email-service" .depends }}
+- name: {{ printf "EMAIL_SERVICE_ADDR" }}
+  value: {{ printf "http://%s-email-service:%0.f" $prefix (get $.serviceMapping "email-service" )}}
+{{- end }}
+{{- end }}
+
 {{- if eq .name "featureflag-service" }}
 {{- $hasDatabaseUrl := false }}
 {{- range .env }}
@@ -107,15 +119,6 @@ Get Pod Env
 {{- if eq .name "product-catalog-service" }}
 - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
   value: {{ (printf "%s-featureflag-service:50031" $prefix ) }}
-{{- end }}
-
-# {{ $.depends }}
-# {{ .name }}
-{{- if hasKey $.depends .name }}
-{{- range $depend := get $.depends .name }}
-- name: {{ printf "%s_ADDR" $depend | snakecase | upper }}
-  value: {{ printf "%s-%s:%0.f" $prefix ($depend | kebabcase) (get $.serviceMapping $depend )}}
-{{- end }}
 {{- end }}
 
 {{- end }}
