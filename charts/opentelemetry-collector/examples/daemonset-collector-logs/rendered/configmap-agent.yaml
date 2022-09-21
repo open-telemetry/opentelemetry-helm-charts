@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.31.2
+    helm.sh/chart: opentelemetry-collector-0.31.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.60.0"
@@ -64,7 +64,7 @@ data:
           type: json_parser
         - id: extract_metadata_from_filepath
           parse_from: attributes["log.file.path"]
-          regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
+          regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
           type: regex_parser
         - from: attributes.stream
           to: attributes["log.iostream"]

@@ -197,7 +197,7 @@ receivers:
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
+        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
         parse_from: attributes["log.file.path"]
       # Rename attributes
       - type: move
