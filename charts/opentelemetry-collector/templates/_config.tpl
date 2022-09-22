@@ -246,7 +246,7 @@ receivers:
 {{- if $port.enabled }}
 - name: {{ $key }}
   port: {{ $port.servicePort }}
-  targetPort: {{ $key }}
+  targetPort: {{ $port.servicePort }}
   protocol: {{ $port.protocol }}
 {{- end }}
 {{- end }}
