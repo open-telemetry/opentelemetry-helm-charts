@@ -3,6 +3,27 @@ observability:
     enabled: true
   jaeger:
     enabled: true
+  additionalConfig:
+    enabled: false
+    values:
+      exporters:
+        otlp/2: 
+            endpoint: "sample.endpoint"
+            headers: 
+              sample-header: "foo"
+      service:
+        pipelines:
+          traces/2:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlp/2]
+          metrics/2:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlp/2]
+
+
+
 
 # if the enabled is true, the items in this object will apply to all components
 default:

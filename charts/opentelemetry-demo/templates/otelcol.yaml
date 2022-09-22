@@ -1,5 +1,6 @@
 {{- $ := set . "name" "otelcol" }}
 {{- $otelconfig := include "otel-demo.otelcol.config" .}}
+{{- $otelconfigextras := include "otel-demo.otelcol.extras.config" .}}
 
 {{- if .Values.observability.otelcol.enabled -}}
 ---
@@ -13,6 +14,17 @@ data:
   otelcol-config.yml: |
 
     {{- $otelconfig | nindent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-demo.name" . }}-{{ .name }}-extras-config
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+data:
+  otelcol-extras-config.yml: |
+
+    {{- $otelconfigextras | nindent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,7 +46,7 @@ spec:
       containers:
       - image: otel/opentelemetry-collector:0.55.0
         name: otel-col
-        args: ["--config=/etc/otelcol-config.yml"]
+        args: ["--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-extras-config.yml"]
         {{- if .Values.observability.jaeger.enabled }}
         env:
           - name: JAEGER_ADDR
@@ -51,10 +63,16 @@ spec:
           - mountPath: /etc/otelcol-config.yml
             name: otel-config 
             subPath: otelcol-config.yml
+          - mountPath: /etc/otelcol-extras-config.yml
+            name: otel-extras-config
+            subPath: otelcol-extras-config.yml
       volumes:
         - configMap:
             name: {{ include "otel-demo.name" . }}-{{.name}}-config
-          name: otel-config 
+          name: otel-config
+        - configMap:
+            name: {{ include "otel-demo.name" . }}-{{.name}}-extras-config
+          name: otel-extras-config
 ---
 apiVersion: v1
 kind: Service

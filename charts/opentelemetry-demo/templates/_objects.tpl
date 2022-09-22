@@ -96,3 +96,9 @@ service:
         - jaeger
         {{- end}}
 {{- end }}
+
+{{- define "otel-demo.otelcol.extras.config" -}}
+{{- if .Values.observability.additionalConfig.enabled }}
+{{ toYaml .Values.observability.additionalConfig.values }}
+{{- end }}
+{{- end }}
