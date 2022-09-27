@@ -1,6 +1,35 @@
 observability:
+  # Configuration for the demo's OpenTelemetry Collector
   otelcol:
     enabled: true
+    image:
+      repository: otel/opentelemetry-collector-contrib
+      tag: 0.60.0
+    config:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+      exporters:
+        logging: {}
+      processors:
+        batch: {}
+      service:
+        pipelines:
+          traces:
+            receivers:
+              - otlp
+            processors:
+              - batch
+            exporters:
+              - logging
+
+  # Configuration for the demo's Jaeger backend.
+  # When enabled, the demo will deploy a Jaeger instance and
+  # update the collector to export traces to it.
   jaeger:
     enabled: true
 
@@ -12,7 +41,7 @@ default:
       valueFrom:
         fieldRef:
           apiVersion: v1
-          fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+          fieldPath: "metadata.labels['app.kubernetes.io/component']"
     - name: OTEL_K8S_NAMESPACE
       valueFrom:
         fieldRef:
@@ -41,8 +70,8 @@ components:
     enabled: true
     image: redis:alpine
     ports:
-    - name: redis
-      value: 6379
+      - name: redis
+        value: 6379
 
   adService:
     enabled: true
@@ -54,8 +83,8 @@ components:
     enabled: true
     servicePort: 8080
     env:
-    - name: ASPNETCORE_URLS
-      value: http://*:8080
+      - name: ASPNETCORE_URLS
+        value: http://*:8080
     podAnnotations: {}
     #  sidecar.opentelemetry.io/inject: "false"
     #  instrumentation.opentelemetry.io/inject-dotnet: "true"
@@ -70,8 +99,8 @@ components:
     enabled: true
     servicePort: 8080
     env:
-    - name: PORT
-      value: '8080'
+      - name: PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -79,45 +108,45 @@ components:
     enabled: true
     servicePort: 8080
     env:
-    - name: APP_ENV
-      value: production
-    - name: PORT
-      value: '8080'
+      - name: APP_ENV
+        value: production
+      - name: PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   featureflagService:
     enabled: true
     env:
-    # DATABASE_URL will be automatically added to use the enabled ffsPostgres component.
-    # If a different url is desired, set DATABASE_URL here.
-    # - name: DATABASE_URL
-    #   value:
-    - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-      value: '50053'
-    - name: FEATURE_FLAG_SERVICE_PORT
-      value: '8081'
+      # DATABASE_URL will be automatically added to use the enabled ffsPostgres component.
+      # If a different url is desired, set DATABASE_URL here.
+      # - name: DATABASE_URL
+      #   value:
+      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+        value: "50053"
+      - name: FEATURE_FLAG_SERVICE_PORT
+        value: "8081"
     ports:
-    - name: grpc
-      value: 50053
-    - name: http
-      value: 8081
+      - name: grpc
+        value: 50053
+      - name: http
+        value: 8081
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
   ffsPostgres:
     enabled: true
     env:
-    - name: POSTGRES_DB
-      value: ffs
-    - name: POSTGRES_PASSWORD
-      value: ffs
-    - name: POSTGRES_USER
-      value: ffs
+      - name: POSTGRES_DB
+        value: ffs
+      - name: POSTGRES_PASSWORD
+        value: ffs
+      - name: POSTGRES_USER
+        value: ffs
     image: cimg/postgres:14.2
     ports:
-    - name: postgres
-      value: 5432
+      - name: postgres
+        value: 5432
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -125,8 +154,8 @@ components:
     enabled: true
     servicePort: 8080
     env:
-    - name: FRONTEND_ADDR
-      value: :8080
+      - name: FRONTEND_ADDR
+        value: :8080
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -134,18 +163,18 @@ components:
     enabled: true
     servicePort: 8089
     env:
-    - name: LOCUST_WEB_PORT
-      value: '8089'
-    - name: LOCUST_USERS
-      value: '10'
-    - name: LOCUST_HOST
-      value: 'http://$(FRONTEND_ADDR)'
-    - name: LOCUST_HEADLESS
-      value: 'false'
-    - name: LOCUST_AUTOSTART
-      value: 'true'
-    - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-      value: python
+      - name: LOCUST_WEB_PORT
+        value: "8089"
+      - name: LOCUST_USERS
+        value: "10"
+      - name: LOCUST_HOST
+        value: "http://$(FRONTEND_ADDR)"
+      - name: LOCUST_HEADLESS
+        value: "false"
+      - name: LOCUST_AUTOSTART
+        value: "true"
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-python: "true"
 
@@ -165,10 +194,10 @@ components:
     enabled: true
     servicePort: 8080
     env:
-    - name: OTEL_PYTHON_LOG_CORRELATION
-      value: 'true'
-    - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-      value: python
+      - name: OTEL_PYTHON_LOG_CORRELATION
+        value: "true"
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-python: "true"
 
@@ -176,7 +205,7 @@ components:
     enabled: true
     servicePort: 8080
     env:
-    - name: PORT
-      value: '8080'
+      - name: PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"

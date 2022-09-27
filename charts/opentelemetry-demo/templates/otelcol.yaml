@@ -1,12 +1,10 @@
-{{- $ := set . "name" "otelcol" }}
 {{- $otelconfig := include "otel-demo.otelcol.config" .}}
-
 {{- if .Values.observability.otelcol.enabled -}}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "otel-demo.name" . }}-{{ .name }}-config
+  name: {{ include "otel-demo.name" . }}-otelcol-config
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 data:
@@ -17,7 +15,7 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  name: {{ include "otel-demo.name" . }}-otelcol
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
@@ -32,7 +30,7 @@ spec:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-      - image: otel/opentelemetry-collector:0.55.0
+      - image: {{ .Values.observability.otelcol.image.repository }}:{{ .Values.observability.otelcol.image.tag }}
         name: otel-col
         args: ["--config=/etc/otelcol-config.yml"]
         {{- if .Values.observability.jaeger.enabled }}
@@ -53,13 +51,13 @@ spec:
             subPath: otelcol-config.yml
       volumes:
         - configMap:
-            name: {{ include "otel-demo.name" . }}-{{.name}}-config
+            name: {{ include "otel-demo.name" . }}-otelcol-config
           name: otel-config 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  name: {{ include "otel-demo.name" . }}-otelcol
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:

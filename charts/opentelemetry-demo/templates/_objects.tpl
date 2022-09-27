@@ -65,34 +65,28 @@ spec:
 {{- end}}
 {{- end}}
 
+{{- define "opentelemetry-collector.var_dump" -}}
+{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
+{{- end -}}
+
 {{- define "otel-demo.otelcol.config" -}}
-receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
+{{- $config := deepCopy .Values.observability.otelcol.config }}
+{{- if .Values.observability.jaeger.enabled }}
+{{- $config = (include "opentelemetry-demo.applyJaegerConfig" $config | fromYaml) }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-demo.applyJaegerConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.jaegerConfig" . | fromYaml) . }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "jaeger" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.jaegerConfig" -}}
 exporters:
-  {{- if .Values.observability.jaeger.enabled }}
   jaeger:
     endpoint: "${JAEGER_ADDR}"
     tls:
       insecure: true
-  {{- end}}
-  logging:
-
-processors:
-  batch:
-
-service:
-  pipelines:
-    traces:
-      receivers:
-        - otlp
-      processors:
-        - batch
-      exporters:
-        - logging
-        {{- if .Values.observability.jaeger.enabled }}
-        - jaeger
-        {{- end}}
 {{- end }}

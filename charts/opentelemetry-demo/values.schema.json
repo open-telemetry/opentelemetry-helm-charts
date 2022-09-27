@@ -1,307 +1,331 @@
 {
-    "$schema": "http://json-schema.org/schema#",
-    "type": "object",
-    "title": "Values",
-    "additionalProperties": false,
-    "properties": {
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "title": "Values",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "description": "Usually used when using Opentelemetry-demo as a subchart.",
+      "type": "boolean"
+    },
+    "global": {
+      "type": "object"
+    },
+    "observability": {
+      "$ref": "#/definitions/Observability"
+    },
+    "default": {
+      "$ref": "#/definitions/Default"
+    },
+    "image": {
+      "$ref": "#/definitions/Image"
+    },
+    "serviceAccount": {
+      "type": "string"
+    },
+    "components": {
+      "$ref": "#/definitions/Components"
+    }
+  },
+  "required": [
+    "components",
+    "image",
+    "observability",
+    "serviceAccount"
+  ],
+  "definitions": {
+    "Components": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "redis": {
+          "$ref": "#/definitions/Service"
+        },
+        "adService": {
+          "$ref": "#/definitions/Service"
+        },
+        "cartService": {
+          "$ref": "#/definitions/Service"
+        },
+        "checkoutService": {
+          "$ref": "#/definitions/Service"
+        },
+        "currencyService": {
+          "$ref": "#/definitions/Service"
+        },
+        "emailService": {
+          "$ref": "#/definitions/Service"
+        },
+        "featureflagService": {
+          "$ref": "#/definitions/Service"
+        },
+        "ffsPostgres": {
+          "$ref": "#/definitions/Service"
+        },
+        "frontend": {
+          "$ref": "#/definitions/Service"
+        },
+        "loadgenerator": {
+          "$ref": "#/definitions/Service"
+        },
+        "paymentService": {
+          "$ref": "#/definitions/Service"
+        },
+        "productCatalogService": {
+          "$ref": "#/definitions/Service"
+        },
+        "recommendationService": {
+          "$ref": "#/definitions/Service"
+        },
+        "shippingService": {
+          "$ref": "#/definitions/Service"
+        }
+      },
+      "title": "Components"
+    },
+    "Service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
         "enabled": {
-          "description": "Usually used when using Opentelemetry-demo as a subchart.",
           "type": "boolean"
         },
-        "global": {
-          "type": "object"
+        "servicePort": {
+          "type": "integer"
         },
-        "observability": {
-            "$ref": "#/definitions/Observability"
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          }
         },
-        "default": {
-            "$ref": "#/definitions/Default"
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Port"
+          }
         },
         "image": {
-            "$ref": "#/definitions/Image"
+          "type": "string"
         },
-        "serviceAccount": {
-            "type": "string"
-        },
-        "components": {
-            "$ref": "#/definitions/Components"
+        "podAnnotations": {
+          "type": "object"
         }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "Service"
     },
-    "required": [
-        "components",
-        "image",
-        "observability",
-        "serviceAccount"
-    ],
-    "definitions": {
-        "Components": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "redis": {
-                    "$ref": "#/definitions/Service"
-                },
-                "adService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "cartService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "checkoutService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "currencyService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "emailService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "featureflagService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "ffsPostgres": {
-                    "$ref": "#/definitions/Service"
-                },
-                "frontend": {
-                    "$ref": "#/definitions/Service"
-                },
-                "loadgenerator": {
-                    "$ref": "#/definitions/Service"
-                },
-                "paymentService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "productCatalogService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "recommendationService": {
-                    "$ref": "#/definitions/Service"
-                },
-                "shippingService": {
-                    "$ref": "#/definitions/Service"
-                }
-            },
-            "title": "Components"
+    "Env": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
         },
-        "Service": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "servicePort": {
-                    "type": "integer"
-                },
-                "env": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Env"
-                    }
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Port"
-                    }
-                },
-                "image": {
-                    "type": "string"
-                },
-                "podAnnotations": {
-                  "type": "object"
-                }
-            },
-            "required": [
-                "enabled"
-             ],
-            "title": "Service"
+        "value": {
+          "type": "string"
         },
-        "Env": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                },
-                "valueFrom": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                      "configMapKeyRef": {
-                        "$ref": "#/definitions/ConfigMapKeyRef"
-                      },
-                      "fieldRef": {
-                        "$ref": "#/definitions/FieldRef"
-                      },
-                      "resourceFieldRef": {
-                        "$ref": "#/definitions/ResourceFieldRef"
-                      },
-                      "secretKeyRef": {
-                        "$ref": "#/definitions/SecretKeyRef"
-                      }
-                    }
-                }
+        "valueFrom": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "configMapKeyRef": {
+              "$ref": "#/definitions/ConfigMapKeyRef"
             },
-            "required": [
-                "name"
-            ],
-            "title": "Env"
+            "fieldRef": {
+              "$ref": "#/definitions/FieldRef"
+            },
+            "resourceFieldRef": {
+              "$ref": "#/definitions/ResourceFieldRef"
+            },
+            "secretKeyRef": {
+              "$ref": "#/definitions/SecretKeyRef"
+            }
+          }
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Env"
+    },
+    "Default": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
         },
-        "Default": {
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          }
+        }
+      },
+      "title": "Default"
+    },
+    "ConfigMapKeyRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "ConfigMapKeyRef"
+    },
+    "FieldRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fieldPath": {
+          "type": "string"
+        },
+        "apiVersion": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fieldPath"
+      ],
+      "title": "FieldRef"
+    },
+    "ResourceFieldRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resource": {
+          "type": "string"
+        },
+        "containerName": {
+          "type": "string"
+        },
+        "divisor": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource"
+      ],
+      "title": "ResourceFieldRef"
+    },
+    "SecretKeyRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    },
+    "Port": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "Port"
+    },
+    "Image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "pullSecrets": {
+          "type": "array",
+          "items": {}
+        }
+      },
+      "required": [
+        "repository"
+      ],
+      "title": "Image"
+    },
+    "Observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "otelcol": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "enabled": {
               "type": "boolean"
             },
-            "env": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Env"
+            "image": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                }
               }
-            }
-          },
-          "title": "Default"
-        },
-        "ConfigMapKeyRef": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "key": {
-              "type": "string"
             },
-            "name": {
-              "type": "string"
-            },
-            "optional": {
-              "type": "boolean"
+            "config": {
+              "type": "object"
             }
           },
           "required": [
-            "key"
-          ],
-          "title": "ConfigMapKeyRef"
-        },
-        "FieldRef":{
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "fieldPath": {
-              "type": "string"
-            },
-            "apiVersion": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "fieldPath"
-          ],
-          "title": "FieldRef"
-        },
-        "ResourceFieldRef": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "resource": {
-              "type": "string"
-            },
-            "containerName": {
-              "type": "string"
-            },
-            "divisor": {
-              "type": "integer"
-            }
-          },
-          "required": [
-            "resource"
-          ],
-          "title": "ResourceFieldRef"
-        },
-        "SecretKeyRef": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "key": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "optional": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "key"
+            "enabled"
           ]
         },
-        "Port": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "name",
-                "value"
-            ],
-            "title": "Port"
-        },
-        "Image": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "repository": {
-                    "type": "string"
-                },
-                "pullSecrets": {
-                    "type": "array",
-                    "items": {}
-                }
-            },
-            "required": [
-                "repository"
-            ],
-            "title": "Image"
-        },
-        "Observability": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "otelcol": {
-                    "$ref": "#/definitions/ObservabilityProp"
-                },
-                "jaeger": {
-                    "$ref": "#/definitions/ObservabilityProp"
-                }
-            },
-            "required": [
-                "jaeger",
-                "otelcol"
-            ],
-            "title": "Observability"
-        },
-        "ObservabilityProp": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "enabled"
-            ],
-            "title": "ObservabilityProp"
+        "jaeger": {
+          "$ref": "#/definitions/ObservabilityProp"
         }
+      },
+      "required": [
+        "jaeger",
+        "otelcol"
+      ],
+      "title": "Observability"
+    },
+    "ObservabilityProp": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "ObservabilityProp"
     }
+  }
 }
