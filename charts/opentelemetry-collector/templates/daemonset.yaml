@@ -10,6 +10,14 @@ spec:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
       {{- include "opentelemetry-collector.component" . | nindent 6 }}
+  updateStrategy:
+    {{- if eq .Values.rollout.strategy "RollingUpdate" }}
+    {{- with .Values.rollout.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
+    type: {{ .Values.rollout.strategy }}
   template:
     metadata:
       annotations:

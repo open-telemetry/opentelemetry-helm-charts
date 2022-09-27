@@ -1,5 +1,17 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "$defs": {
+    "intOrString": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    }
+  },
   "type": "object",
   "title": "Values",
   "additionalProperties": false,
@@ -697,6 +709,34 @@
       },
       "required": [
         "enabled"
+      ]
+    },
+    "rollout": {
+      "type": "object",
+      "properties": {
+        "rollingUpdate": {
+          "type": "object",
+          "properties": {
+            "maxSurge": {
+              "$ref": "#/$defs/intOrString"
+            },
+            "maxUnavailable": {
+              "$ref": "#/$defs/intOrString"
+            }
+          }
+        },
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "OnDelete",
+            "Recreate",
+            "RollingUpdate"
+          ],
+          "default": "RollingUpdate"
+        }
+      },
+      "required": [
+        "strategy"
       ]
     },
     "prometheusRule": {

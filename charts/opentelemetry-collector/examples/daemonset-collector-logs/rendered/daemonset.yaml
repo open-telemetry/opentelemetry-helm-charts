@@ -5,7 +5,7 @@ kind: DaemonSet
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.32.0
+    helm.sh/chart: opentelemetry-collector-0.33.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.60.0"
@@ -16,10 +16,12 @@ spec:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
       component: agent-collector
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: deeab8986a6fad6691b799bfe664e5af92ca1ecbceb3a267eb997535a960f19c
+        checksum/config: 42f05d8cc887d69cfb71b74d4c1c7cda40ab2276a806774032f2daad97c9094f
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
