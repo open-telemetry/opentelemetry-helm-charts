@@ -190,16 +190,6 @@ opentelemetry-collector:
   command:
     name: otelcol
   config:
-    receivers:
-      jaeger: null
-      otlp:
-        protocols:
-          grpc:
-            endpoint: 0.0.0.0:4317
-          http:
-            endpoint: 0.0.0.0:4318
-      prometheus: null
-      zipkin: null
     exporters:
       jaeger:
         endpoint: "${JAEGER_ADDR}"
@@ -207,22 +197,7 @@ opentelemetry-collector:
           insecure: true
     service:
       pipelines:
-        logs: null
-        metrics: null
         traces:
-          receivers:
-            - otlp
           exporters:
             - logging
             - jaeger
-  ports:
-    jaeger-compact:
-      enabled: false
-    jaeger-thrift:
-      enabled: false
-    jaeger-grpc:
-      enabled: false
-    zipkin:
-      enabled: false
-    metrics:
-      enabled: true
