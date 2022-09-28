@@ -81,7 +81,7 @@ Create the name of the service account to use
 Create the name of the clusterRole to use
 */}}
 {{- define "opentelemetry-collector.clusterRoleName" -}}
-{{- if .Values.clusterRole.create }}
+{{- if or (.Values.clusterRole.create) (.Values.presets.eventsCollection.enabled) -}}
 {{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.name }}
 {{- else }}
 {{- default "default" .Values.clusterRole.name }}
@@ -92,7 +92,7 @@ Create the name of the clusterRole to use
 Create the name of the clusterRoleBinding to use
 */}}
 {{- define "opentelemetry-collector.clusterRoleBindingName" -}}
-{{- if .Values.clusterRole.create }}
+{{- if or (.Values.clusterRole.create) (.Values.presets.eventsCollection.enabled) -}}
 {{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- else }}
 {{- default "default" .Values.clusterRole.clusterRoleBinding.name }}

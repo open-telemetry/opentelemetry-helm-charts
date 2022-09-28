@@ -138,6 +138,25 @@ config:
           - otlphttp
 ```
 
+### Configuration for Kubernetes events
+
+The collector can be used to collect Kubernetes Events as logs.
+This feature is disabled by default. It has the following requirements:
+
+- It requires the [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version
+of the collector image.
+
+To enable this feature, set the  `presets.eventsCollection.enabled` property to `true`.
+Here is an example `values.yaml`:
+
+```yaml
+mode: daemonset
+
+presets:
+  eventsCollection:
+    enabled: true
+```
+
 ### CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.

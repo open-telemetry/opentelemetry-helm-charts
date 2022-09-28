@@ -48,6 +48,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.eventsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyEventsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -63,6 +66,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.eventsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyEventsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -138,6 +144,18 @@ receivers:
         memory:
         disk:
         network:
+{{- end }}
+
+{{- define "opentelemetry-collector.applyEventsCollectionConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.eventsCollectionConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8s_events" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.eventsCollectionConfig" -}}
+receivers:
+  k8s_events:
+    auth_type: serviceAccount
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}

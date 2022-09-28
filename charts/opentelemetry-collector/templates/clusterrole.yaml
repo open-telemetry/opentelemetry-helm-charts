@@ -1,4 +1,4 @@
-{{- if .Values.clusterRole.create -}}
+{{- if or (.Values.clusterRole.create) (.Values.presets.eventsCollection.enabled) -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -9,5 +9,66 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-rules: {{ toYaml .Values.clusterRole.rules | nindent 2 -}}
+rules:
+  {{- if .Values.clusterRole.create -}}
+  {{ toYaml .Values.clusterRole.rules | nindent 2 -}}
+  {{- end }}
+  {{- if .Values.presets.eventsCollection.enabled}}
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    - namespaces
+    - namespaces/status
+    - nodes
+    - nodes/spec
+    - pods
+    - pods/status
+    - replicationcontrollers
+    - replicationcontrollers/status
+    - resourcequotas
+    - services
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - apps
+    resources:
+    - daemonsets
+    - deployments
+    - replicasets
+    - statefulsets
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - extensions
+    resources:
+    - daemonsets
+    - deployments
+    - replicasets
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - batch
+    resources:
+    - jobs
+    - cronjobs
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+  {{- end }}
 {{- end }}
