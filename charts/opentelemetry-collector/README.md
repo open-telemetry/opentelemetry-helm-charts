@@ -150,7 +150,7 @@ To enable this feature, set the  `presets.eventsCollection.enabled` property to 
 Here is an example `values.yaml`:
 
 ```yaml
-mode: daemonset
+mode: deployment
 
 presets:
   eventsCollection:
