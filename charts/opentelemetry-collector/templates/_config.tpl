@@ -48,7 +48,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- $config | toYaml }}
+{{- tpl (toYaml $config) . }}
 {{- end }}
 
 {{/*
@@ -64,7 +64,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- $config | toYaml }}
+{{- tpl (toYaml $config) . }}
 {{- end }}
 
 {{/*
