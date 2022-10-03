@@ -4,7 +4,7 @@
 
 [config supports templating](TBD)
 
-The chart now supports templating in `.Values.config`.  If you are currently using any `{{ }}` syntax in `.Values.yaml` it will now be rendered.  To escape existing instances of `{{`, use `{{ "{{" }}`. To escape existing instances of `}}` `{{ "}}" }}`.
+The chart now supports templating in `.Values.config`.  If you are currently using any `{{ }}` syntax in `.Values.yaml` it will now be rendered.  To escape existing instances of `{{ }}`, use ``` {{` <original content> `}} ```.  For example, `{{ REDACTED_EMAIL }}` becomes ``` {{` {{ REDACTED_EMAIL }} `}} ```.
 
 ## 0.28.0 to 0.29.0
 
