@@ -1,5 +1,11 @@
 # Upgrade guidelines
 
+## 0.34.0 to 0.34.0
+
+[config supports templating](TBD)
+
+The chart now supports templating in `.Values.config`.  If you are currently using any `{{ }}` syntax in `.Values.yaml` it will now be rendered.  To escape existing instances of `{{ }}`, use ``` {{` <original content> `}} ```.  For example, `{{ REDACTED_EMAIL }}` becomes ``` {{` {{ REDACTED_EMAIL }} `}} ```.
+
 ## 0.28.0 to 0.29.0
 
 [Reduce requested resources](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/273)
