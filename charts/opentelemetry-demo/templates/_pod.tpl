@@ -106,7 +106,7 @@ Exclude email service and treat differently because the addr. for the email serv
 
 {{- if eq .name "product-catalog-service" }}
 - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-  value: {{ (printf "%s-featureflag-service:50031" $prefix ) }}
+  value: {{ (printf "%s-featureflag-service:50053" $prefix ) }}
 {{- end }}
 
 {{- end }}
