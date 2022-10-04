@@ -180,3 +180,19 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
+
+opentelemetry-collector:
+  nameOverride: otelcol
+  mode: deployment
+  config:
+    exporters:
+      jaeger:
+        endpoint: "{{ .Release.Name }}-jaeger:14250"
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          exporters:
+            - logging
+            - jaeger
