@@ -180,3 +180,18 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
+
+  quoteService:
+    enabled: true
+    servicePort: 8080
+    env:
+      - name: OTEL_TRACES_SAMPLER
+        value: "parentbased_always_on"
+      - name: OTEL_TRACES_EXPORTER
+        value: "otlp"
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: "grpc"
+      - name: OTEL_PHP_TRACES_PROCESSOR
+        value: "simple"
+    podAnnotations: {}
+    #  instrumentation.opentelemetry.io/inject-sdk: "true"

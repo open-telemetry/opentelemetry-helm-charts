@@ -23,6 +23,8 @@ loadgenerator:
   - frontend
 recommendation-service:
   - product-catalog-service
+shipping-service:
+  - quote-service
 {{- end}}
 
 
@@ -97,6 +99,10 @@ Exclude email service and treat differently because the addr. for the email serv
 {{- if .observability.otelcol.enabled }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
+{{- if eq .name "shipping-service" }}
+- name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+  value: http://{{ include "otel-demo.name" . }}-otelcol:4317
+{{- end }}
 {{- end }}
 
 {{- if .servicePort}}
