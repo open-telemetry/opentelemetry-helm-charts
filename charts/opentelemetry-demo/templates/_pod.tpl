@@ -73,24 +73,11 @@ Exclude email service and treat differently because the addr. for the email serv
 {{- end}}
 {{- end }}
 
-{{- if .default.enabled  }}
+{{- if .useDefault.env  }}
+{{ toYaml .defaultValues.env }}
+{{- end }}
+
 {{- if .env }}
-{{- $defaultEnvMap := dict }}
-{{- range $defaultEnvItem := $.default.env }}
-{{- $defaultEnvMap = set $defaultEnvMap $defaultEnvItem.name $defaultEnvItem }}
-{{- end }}
-{{- $envMap := dict }}
-{{- range $envItem := $.env }}
-{{- $envMap := set $envMap $envItem.name $envItem }}
-{{- end }}
-{{- $mergedEnvMap := merge $envMap $defaultEnvMap }}
-{{- $otelResourceAttributesList := get $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | list }}
-{{ unset $mergedEnvMap "OTEL_RESOURCE_ATTRIBUTES" | values | toYaml }}
-{{ $otelResourceAttributesList | toYaml }}
-{{- else }}
-{{ toYaml .default.env }}
-{{- end }}
-{{- else if .env }}
 {{ toYaml .env }}
 {{- end }}
 
