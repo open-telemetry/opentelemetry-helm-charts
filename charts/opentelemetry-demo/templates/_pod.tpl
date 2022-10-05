@@ -93,6 +93,10 @@ Exclude email service and treat differently because the addr. for the email serv
 - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
 {{- end }}
+{{- if eq .name "email-service" }}
+- name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+  value: http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces
+{{- end }}
 {{- end }}
 
 {{- if .servicePort}}
