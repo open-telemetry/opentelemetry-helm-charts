@@ -64,35 +64,3 @@ spec:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end}}
 {{- end}}
-
-{{- define "otel-demo.otelcol.config" -}}
-receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
-exporters:
-  {{- if .Values.observability.jaeger.enabled }}
-  jaeger:
-    endpoint: "${JAEGER_ADDR}"
-    tls:
-      insecure: true
-  {{- end}}
-  logging:
-
-processors:
-  batch:
-
-service:
-  pipelines:
-    traces:
-      receivers:
-        - otlp
-      processors:
-        - batch
-      exporters:
-        - logging
-        {{- if .Values.observability.jaeger.enabled }}
-        - jaeger
-        {{- end}}
-{{- end }}

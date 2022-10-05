@@ -82,8 +82,17 @@ Exclude email service and treat differently because the addr. for the email serv
 {{- end }}
 
 {{- if .observability.otelcol.enabled }}
+{{- if eq .name "quote-service" }}
+- name: OTEL_EXPORTER_OTLP_ENDPOINT
+  value: {{ include "otel-demo.name" . }}-otelcol:4317
+{{- else }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://{{ include "otel-demo.name" . }}-otelcol:4317
+{{- end }}
+{{- if eq .name "shipping-service" }}
+- name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+  value: http://{{ include "otel-demo.name" . }}-otelcol:4317
+{{- end }}
 {{- end }}
 
 {{- if .servicePort}}
@@ -93,7 +102,12 @@ Exclude email service and treat differently because the addr. for the email serv
 
 {{- if eq .name "product-catalog-service" }}
 - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-  value: {{ (printf "%s-featureflag-service:50031" $prefix ) }}
+  value: {{ (printf "%s-featureflag-service:50053" $prefix ) }}
+{{- end }}
+
+{{- if eq .name "shipping-service" }}
+- name: QUOTE_SERVICE_ADDR
+  value: {{ (printf "http://%s-quote-service:8080" $prefix ) }}
 {{- end }}
 
 {{- end }}

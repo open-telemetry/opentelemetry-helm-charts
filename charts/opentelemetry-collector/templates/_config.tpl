@@ -48,7 +48,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- $config | toYaml }}
+{{- tpl (toYaml $config) . }}
 {{- end }}
 
 {{/*
@@ -64,7 +64,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- $config | toYaml }}
+{{- tpl (toYaml $config) . }}
 {{- end }}
 
 {{/*
@@ -197,27 +197,42 @@ receivers:
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
+        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
         parse_from: attributes["log.file.path"]
       # Rename attributes
       - type: move
         from: attributes.stream
         to: attributes["log.iostream"]
-      - type: move
+      - type: copy
         from: attributes.container_name
         to: attributes["k8s.container.name"]
       - type: move
+        from: attributes.container_name
+        to: resource["k8s.container.name"]
+      - type: copy
         from: attributes.namespace
         to: attributes["k8s.namespace.name"]
       - type: move
+        from: attributes.namespace
+        to: resource["k8s.namespace.name"]
+      - type: copy
         from: attributes.pod_name
         to: attributes["k8s.pod.name"]
       - type: move
+        from: attributes.pod_name
+        to: resource["k8s.pod.name"]
+      - type: copy
         from: attributes.restart_count
         to: attributes["k8s.container.restart_count"]
       - type: move
+        from: attributes.restart_count
+        to: resource["k8s.container.restart_count"]
+      - type: copy
         from: attributes.uid
         to: attributes["k8s.pod.uid"]
+      - type: move
+        from: attributes.uid
+        to: resource["k8s.pod.uid"]
       # Clean up log body
       - type: move
         from: attributes.log
@@ -231,7 +246,7 @@ receivers:
 {{- if $port.enabled }}
 - name: {{ $key }}
   port: {{ $port.servicePort }}
-  targetPort: {{ $key }}
+  targetPort: {{ $port.servicePort }}
   protocol: {{ $port.protocol }}
 {{- end }}
 {{- end }}

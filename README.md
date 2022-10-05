@@ -41,7 +41,7 @@ Emeritus Approvers:
 Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
 
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Tyler Helmuth](https://github.com/TylerHelmuth), New Relic
+- [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
 
 Emeritus Maintainers:
 

@@ -5,10 +5,10 @@ kind: StatefulSet
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.31.1
+    helm.sh/chart: opentelemetry-collector-0.35.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.60.0"
+    app.kubernetes.io/version: "0.61.0"
     app.kubernetes.io/managed-by: Helm
   
 spec:
@@ -20,6 +20,8 @@ spec:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
       component: statefulset-collector
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -42,7 +44,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.60.0"
+          image: "otel/opentelemetry-collector-contrib:0.61.0"
           imagePullPolicy: IfNotPresent
           ports:
             - name: jaeger-compact
