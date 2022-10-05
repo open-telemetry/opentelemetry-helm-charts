@@ -50,9 +50,15 @@ components:
     useDefault:
       env: true
     servicePort: 8080
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: AD_SERVICE_PORT
+        value: "8080"
     podAnnotations: {}
     #  sidecar.opentelemetry.io/inject: "false"
     #  instrumentation.opentelemetry.io/inject-java: "true"
+
   cartService:
     enabled: true
     useDefault:
@@ -61,6 +67,12 @@ components:
     env:
       - name: ASPNETCORE_URLS
         value: http://*:8080
+      - name: REDIS_ADDR
+        value: '{{ include "otel-demo.name" . }}-redis:6379'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: CART_SERVICE_PORT
+        value: "8080"
     podAnnotations: {}
     #  sidecar.opentelemetry.io/inject: "false"
     #  instrumentation.opentelemetry.io/inject-dotnet: "true"
@@ -70,6 +82,23 @@ components:
     useDefault:
       env: true
     servicePort: 8080
+    env:
+      - name: CART_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-cart-service:8080'
+      - name: CURRENCY_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-currency-service:8080'
+      - name: PAYMENT_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-payment-service:8080'
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
+      - name: SHIPPING_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-shipping-service:8080'
+      - name: EMAIL_SERVICE_ADDR
+        value: 'http://{{ include "otel-demo.name" . }}-email-service:8080'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: CHECKOUT_SERVICE_PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -80,6 +109,10 @@ components:
     servicePort: 8080
     env:
       - name: PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: CURRENCY_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
@@ -94,6 +127,12 @@ components:
         value: production
       - name: PORT
         value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
+      - name: EMAIL_SERVICE_PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -102,16 +141,16 @@ components:
     useDefault:
       env: true
     env:
-      # DATABASE_URL will be automatically added to use the enabled ffsPostgres component.
-      # If a different url is desired, set DATABASE_URL here.
-      # - name: DATABASE_URL
-      #   value:
       - name: FEATURE_FLAG_GRPC_SERVICE_PORT
         value: "50053"
       - name: FEATURE_FLAG_SERVICE_PORT
         value: "8081"
       - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
         value: grpc
+      - name: DATABASE_URL
+        value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffs-postgres:5432/ffs'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
     ports:
       - name: grpc
         value: 50053
@@ -131,6 +170,8 @@ components:
         value: ffs
       - name: POSTGRES_USER
         value: ffs
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
     image: cimg/postgres:14.2
     ports:
       - name: postgres
@@ -146,6 +187,24 @@ components:
     env:
       - name: FRONTEND_ADDR
         value: :8080
+      - name: AD_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-ad-service:8080'
+      - name: CART_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-cart-service:8080'
+      - name: CHECKOUT_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-checkout-service:8080'
+      - name: CURRENCY_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-currency-service:8080'
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
+      - name: RECOMMENDATION_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-recommendation-service:8080'
+      - name: SHIPPING_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-shipping-service:8080'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: FRONTEND_PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -155,6 +214,8 @@ components:
       env: true
     servicePort: 8089
     env:
+      - name: FRONTEND_ADDR
+        value: '{{ include "otel-demo.name" . }}-frontend:8080'
       - name: LOCUST_WEB_PORT
         value: "8089"
       - name: LOCUST_USERS
@@ -167,6 +228,10 @@ components:
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: LOADGENERATOR_PORT
+        value: "8089"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-python: "true"
 
@@ -175,6 +240,11 @@ components:
     useDefault:
       env: true
     servicePort: 8080
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: PAYMENT_SERVICE_PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-nodejs: "true"
 
@@ -183,6 +253,13 @@ components:
     useDefault:
       env: true
     servicePort: 8080
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: PRODUCT_CATALOG_SERVICE_PORT
+        value: "8080"
+      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-featureflag-service:50053'
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -196,6 +273,12 @@ components:
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: RECOMMENDATION_SERVICE_PORT
+        value: "8080"
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-python: "true"
 
@@ -207,6 +290,14 @@ components:
     env:
       - name: PORT
         value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: SHIPPING_SERVICE_PORT
+        value: "8080"
+      - name: QUOTE_SERVICE_ADDR
+        value: 'http://{{ include "otel-demo.name" . }}-quote-service:8080'
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -224,6 +315,10 @@ components:
         value: "grpc"
       - name: OTEL_PHP_TRACES_PROCESSOR
         value: "simple"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: QUOTE_SERVICE_PORT
+        value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
 
@@ -234,7 +329,7 @@ opentelemetry-collector:
   config:
     exporters:
       jaeger:
-        endpoint: "{{ .Release.Name }}-jaeger:14250"
+        endpoint: '{{ include "opentelemetry-collector.fullname" . }}-jaeger:14250'
         tls:
           insecure: true
     service:
