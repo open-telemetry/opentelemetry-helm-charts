@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .name }}
-          image: "{{ .imageOverride.repository | default .defaultValues.image.repository }}:{{ .imageOverride.tag | default .defaultValues.image.tag | default .Chart.AppVersion }}"
+          image: '{{ .imageOverride.repository | default .defaultValues.image.repository }}:{{ .imageOverride.tag | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (.name | replace "-" "" | lower)) }}'
           imagePullPolicy: {{ .imageOverride.pullPolicy | default .defaultValues.image.pullPolicy }}
           {{- if or .ports .servicePort}}
           ports:
