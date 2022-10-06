@@ -17,9 +17,6 @@
     "default": {
       "$ref": "#/definitions/Default"
     },
-    "image": {
-      "$ref": "#/definitions/Image"
-    },
     "serviceAccount": {
       "type": "string"
     },
@@ -32,7 +29,6 @@
   },
   "required": [
     "components",
-    "image",
     "observability",
     "serviceAccount"
   ],
@@ -124,8 +120,8 @@
             "$ref": "#/definitions/Port"
           }
         },
-        "image": {
-          "type": "string"
+        "imageOverride": {
+          "$ref": "#/definitions/Image"
         },
         "podAnnotations": {
           "type": "object"
@@ -183,8 +179,14 @@
           "items": {
             "$ref": "#/definitions/Env"
           }
+        },
+        "image": {
+          "$ref": "#/definitions/Image"
         }
       },
+      "required": [
+        "image"
+      ],
       "title": "Default"
     },
     "ConfigMapKeyRef": {
@@ -276,32 +278,31 @@
       ],
       "title": "Port"
     },
-    "Image": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "repository": {
-          "type": "string"
-        },
-        "pullSecrets": {
-          "type": "array",
-          "items": {}
-        }
-      },
-      "required": [
-        "repository"
-      ],
-      "title": "Image"
-    },
     "Observability": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "otelcol": {
-          "$ref": "#/definitions/ObservabilityProp"
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
         },
         "jaeger": {
-          "$ref": "#/definitions/ObservabilityProp"
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "image": {
+              "$ref": "#/definitions/Image"
+            }
+          }
+          
         }
       },
       "required": [
@@ -310,18 +311,25 @@
       ],
       "title": "Observability"
     },
-    "ObservabilityProp": {
+    "Image": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "enabled": {
-          "type": "boolean"
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string"
+        },
+        "pullSecrets": {
+          "type": "array",
+          "items": {}
         }
       },
-      "required": [
-        "enabled"
-      ],
-      "title": "ObservabilityProp"
+      "title": "Image"
     }
   }
 }

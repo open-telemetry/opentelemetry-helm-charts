@@ -1,8 +1,15 @@
 observability:
+  # collector settings are configured in the opentelemetry-collector section.
   otelcol:
     enabled: true
   jaeger:
     enabled: true
+    image:
+      repository: jaegertracing/all-in-one
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: "latest"
+      pullPolicy: IfNotPresent
+      pullSecrets: []
 
 default:
   env:
@@ -28,10 +35,12 @@ default:
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-
-image:
-  repository: otel/demo
-  pullSecrets: []
+  image:
+    repository: otel/demo
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
 
 serviceAccount: ""
 
@@ -40,7 +49,10 @@ components:
     enabled: true
     useDefault:
       env: true
-    image: redis:alpine
+    # Options to override the default image settings.
+    imageOverride:
+      repository: "redis"
+      tag: "alpine"
     ports:
       - name: redis
         value: 6379
@@ -49,6 +61,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -63,6 +76,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: ASPNETCORE_URLS
@@ -81,6 +95,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: CART_SERVICE_ADDR
@@ -106,6 +121,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: PORT
@@ -121,6 +137,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: APP_ENV
@@ -140,6 +157,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     env:
       - name: FEATURE_FLAG_GRPC_SERVICE_PORT
         value: "50053"
@@ -163,6 +181,9 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: 
+      repository: "cimg/postgres"
+      tag: "14.2"
     env:
       - name: POSTGRES_DB
         value: ffs
@@ -172,7 +193,6 @@ components:
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-    image: cimg/postgres:14.2
     ports:
       - name: postgres
         value: 5432
@@ -183,6 +203,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: FRONTEND_ADDR
@@ -212,6 +233,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8089
     env:
       - name: FRONTEND_ADDR
@@ -239,6 +261,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -252,6 +275,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -267,6 +291,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: OTEL_PYTHON_LOG_CORRELATION
@@ -286,6 +311,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: PORT
@@ -305,6 +331,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    imageOverride: {}
     servicePort: 8080
     env:
       - name: OTEL_TRACES_SAMPLER
