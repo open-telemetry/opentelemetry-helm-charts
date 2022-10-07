@@ -1,5 +1,5 @@
 {{- $config := set . "name" "jaeger" }}
-{{- if $.Values.observability.jaeger.enabled -}}
+{{- if .Values.observability.jaeger.enabled -}}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -21,7 +21,7 @@ spec:
       - env:
         - name: COLLECTOR_ZIPKIN_HTTP_PORT
           value: "9411"
-        image: jaegertracing/all-in-one
+        image: "{{ .Values.observability.jaeger.image.repository }}:{{ .Values.observability.jaeger.image.tag }}"
         name: jaeger
         ports:
           - containerPort: 5775
