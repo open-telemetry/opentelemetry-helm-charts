@@ -26,6 +26,10 @@ spec:
       {{- with .serviceAccountName }}
       serviceAccountName: {{ .serviceAccountName}}
       {{- end }}
+      {{- if .nodeSelector }}
+      nodeSelector:
+        {{- toYaml .nodeSelector | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .name }}
           image: '{{ .imageOverride.repository | default .defaultValues.image.repository }}:{{ .imageOverride.tag | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
