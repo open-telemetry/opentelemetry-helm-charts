@@ -85,7 +85,7 @@ kubeRBACProxy:
       memory: 64Mi
 
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
-##
+## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
 admissionWebhooks:
   failurePolicy: Fail
   enabled: true
@@ -105,6 +105,11 @@ admissionWebhooks:
     issuerRef: {}
       # kind:
       # name:
+
+## BYO webhooks and certificate while disabling chart ones. Do not enable together with admissionWebhooks.
+customAdmissionWebhooks:
+  enabled: false
+  secretName: ""
 
 ## Create the provided Roles and RoleBindings
 ##

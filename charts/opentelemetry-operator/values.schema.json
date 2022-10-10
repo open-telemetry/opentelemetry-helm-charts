@@ -11,6 +11,7 @@
         "manager",
         "kubeRBACProxy",
         "admissionWebhooks",
+        "customAdmissionWebhooks",
         "role",
         "clusterRole",
         "affinity",
@@ -772,6 +773,37 @@
                 }
             }]
         },
+        "customAdmissionWebhooks": {
+            "type": "object",
+            "default": {},
+            "title": "The customAdmissionWebhooks Schema",
+            "required": [
+                "enabled",
+                "secretName"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The enabled Schema",
+                    "examples": [
+                        false
+                    ]
+                },
+                "secretName": {
+                    "type": "string",
+                    "default": "",
+                    "title": "The secretName Schema",
+                    "examples": [
+                        ""
+                    ]
+                }
+            },
+            "examples": [{
+                "enabled": false,
+                "secretName": ""
+            }]
+        },
         "role": {
             "type": "object",
             "default": {},
@@ -1025,6 +1057,10 @@
                 "enabled": true,
                 "issuerRef": {}
             }
+        },
+        "customAdmissionWebhooks": {
+            "enabled": false,
+            "secretName": ""
         },
         "role": {
             "create": true
