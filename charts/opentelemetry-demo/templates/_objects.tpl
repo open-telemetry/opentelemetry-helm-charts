@@ -26,8 +26,6 @@ spec:
       {{- with .serviceAccountName }}
       serviceAccountName: {{ .serviceAccountName}}
       {{- end }}
-      
-      {{- if .schedulingRules }}
       {{- if .schedulingRules.nodeSelector }}
       nodeSelector:
         {{- toYaml .schedulingRules.nodeSelector | nindent 8 }}
@@ -39,7 +37,6 @@ spec:
       {{- if .schedulingRules.tolerations }}
       tolerations:
         {{ toYaml .schedulingRules.tolerations | nindent 8 }}
-      {{- end }}
       {{- end }}
       containers:
         - name: {{ .name }}
