@@ -17,7 +17,8 @@
         "tolerations",
         "nodeSelector",
         "hostNetwork",
-        "securityContext"
+        "securityContext",
+        "testFramework"
     ],
     "properties": {
         "replicaCount": {
@@ -858,6 +859,53 @@
                 "runAsUser": 65534,
                 "fsGroup": 65534
             }]
+        },
+        "testFramework": {
+            "type": "object",
+            "default": {},
+            "title": "The testFramework Schema",
+            "required": [
+                "image"
+            ],
+            "properties": {
+                "image": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The image Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The repository Schema",
+                            "examples": [
+                                "busybox"
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The tag Schema",
+                            "examples": [
+                                "latest"
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "busybox",
+                        "tag": "latest"
+                    }]
+                }
+            },
+            "examples": [{
+                "image": {
+                    "repository": "busybox",
+                    "tag": "latest"
+                }
+            }]
         }
     },
     "examples": [{
@@ -955,6 +1003,12 @@
             "runAsNonRoot": true,
             "runAsUser": 65534,
             "fsGroup": 65534
+        },
+        "testFramework": {
+            "image": {
+                "repository": "busybox",
+                "tag": "latest"
+            }
         }
     }]
 }
