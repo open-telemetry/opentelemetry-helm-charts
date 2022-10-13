@@ -693,6 +693,41 @@
                         true
                     ]
                 },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "default": 10,
+                    "title": "The timeoutSeconds Schema",
+                    "examples": [
+                      10
+                    ]
+                },
+                "namespaceSelector": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The namespaceSelector Schema",
+                    "examples": [{
+                        "matchExpressions": [
+                            {
+                                "key": "runlevel",
+                                "operator": "NotIn",
+                                "values": [
+                                    "0",
+                                    "1"
+                                ]
+                            }
+                        ]
+                    }]
+                },
+                "objectSelector": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The objectSelector Schema",
+                    "examples": [{
+                        "matchLabels": {
+                            "foo": "bar"
+                        }
+                    }]
+                },
                 "certManager": {
                     "type": "object",
                     "default": {},
@@ -728,6 +763,9 @@
             "examples": [{
                 "failurePolicy": "Fail",
                 "enabled": true,
+                "timeoutSeconds": 10,
+                "namespaceSelector": {},
+                "objectSelector": {},
                 "certManager": {
                     "enabled": true,
                     "issuerRef": {}

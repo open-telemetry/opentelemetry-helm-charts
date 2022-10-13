@@ -34,6 +34,14 @@ webhooks:
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Fail
     name: minstrumentation.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
     - apiGroups:
         - opentelemetry.io
@@ -45,6 +53,7 @@ webhooks:
       resources:
         - instrumentations
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
   - admissionReviewVersions:
       - v1
     clientConfig:
@@ -55,6 +64,14 @@ webhooks:
         path: /mutate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: mopentelemetrycollector.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
       - apiGroups:
           - opentelemetry.io
@@ -66,6 +83,7 @@ webhooks:
         resources:
           - opentelemetrycollectors
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
   - admissionReviewVersions:
       - v1
     clientConfig:
@@ -76,6 +94,14 @@ webhooks:
         path: /mutate-v1-pod
     failurePolicy: Ignore
     name: mpod.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
       - apiGroups:
           - ""
@@ -87,6 +113,7 @@ webhooks:
         resources:
           - pods
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -107,6 +134,14 @@ webhooks:
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Fail
     name: vinstrumentationcreateupdate.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
     - apiGroups:
         - opentelemetry.io
@@ -118,6 +153,7 @@ webhooks:
       resources:
         - instrumentations
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
   - admissionReviewVersions:
       - v1
     clientConfig:
@@ -128,6 +164,14 @@ webhooks:
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Ignore
     name: vinstrumentationdelete.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
       - apiGroups:
           - opentelemetry.io
@@ -138,6 +182,7 @@ webhooks:
         resources:
           - instrumentations
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
   - admissionReviewVersions:
       - v1
     clientConfig:
@@ -148,6 +193,14 @@ webhooks:
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vopentelemetrycollectorcreateupdate.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
       - apiGroups:
           - opentelemetry.io
@@ -159,6 +212,7 @@ webhooks:
         resources:
           - opentelemetrycollectors
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
   - admissionReviewVersions:
       - v1
     clientConfig:
@@ -169,6 +223,14 @@ webhooks:
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Ignore
     name: vopentelemetrycollectordelete.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
       - apiGroups:
           - opentelemetry.io
@@ -179,4 +241,5 @@ webhooks:
         resources:
           - opentelemetrycollectors
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
 {{- end }}
