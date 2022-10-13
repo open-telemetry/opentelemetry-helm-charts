@@ -4,7 +4,7 @@ Note: Consider that dependent variables need to be declared before the reference
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- if .useDefault.env  }}
-{{ toYaml .defaultValues.env }}
+{{ tpl (toYaml .defaultValues.env) . }}
 {{- end }}
 {{- if .env }}
 {{ tpl (toYaml .env) . }}

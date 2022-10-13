@@ -34,3 +34,19 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: {{ .name}}
 {{- end}}
 {{- end }}
+
+{{- define "otel-demo.otelExporterOTLPGRPCEndpoint" -}}
+{{- if .observability.otelExporterOTLPGRPCEndpoint }}
+{{- .observability.otelExporterOTLPGRPCEndpoint }}
+{{- else -}}
+http://{{- include "otel-demo.name" . }}-otelcol:4317
+{{- end }}
+{{- end }}
+
+{{- define "otel-demo.otelExporterOTLPHTTPEndpoint" -}}
+{{- if .observability.otelExporterOTLPHTTPEndpoint }}
+{{- .observability.otelExporterOTLPHTTPEndpoint }}
+{{- else -}}
+http://{{- include "otel-demo.name" . }}-otelcol:4318
+{{- end }}
+{{- end }}
