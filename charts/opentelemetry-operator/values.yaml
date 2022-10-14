@@ -33,7 +33,8 @@ manager:
       memory: 64Mi
   ## Adds additional environment variables
   ## e.g ENV_VAR: env_value
-  env: {}
+  env:
+    ENABLE_WEBHOOKS: "true"
 
   # -- Create the manager ServiceAccount
   serviceAccount:
@@ -87,8 +88,9 @@ kubeRBACProxy:
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
 ## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
 admissionWebhooks:
+  create: true
   failurePolicy: Fail
-  enabled: true
+  secretName: ""
 
   ## Customize webhook timeout duration
   timeoutSeconds: 10
@@ -105,11 +107,6 @@ admissionWebhooks:
     issuerRef: {}
       # kind:
       # name:
-
-## BYO webhooks and certificate while disabling chart ones. Do not enable together with admissionWebhooks.
-customAdmissionWebhooks:
-  enabled: false
-  secretName: ""
 
 ## Create the provided Roles and RoleBindings
 ##
