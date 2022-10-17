@@ -139,13 +139,6 @@ Return if ingress is stable.
 {{- end }}
 {{- end }}
 
-{{- define "opentelemetry-collector.annotations" -}}
-{{- if and (eq .Values.mode "deployment") .Values.annotations }}
-annotations:
-  {{- .Values.annotations | toYaml | nindent 2  }}
-{{- end }}
-{{- end }}
-
 {{/*
 Return the appropriate apiVersion for podDisruptionBudget.
 */}}
