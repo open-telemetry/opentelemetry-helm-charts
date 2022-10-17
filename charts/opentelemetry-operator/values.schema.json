@@ -18,7 +18,8 @@
         "nodeSelector",
         "hostNetwork",
         "securityContext",
-        "testFramework"
+        "testFramework",
+        "priorityClassName"
     ],
     "properties": {
         "replicaCount": {
@@ -116,13 +117,13 @@
                             "default": "",
                             "title": "The tag Schema",
                             "examples": [
-                                "0.60.0"
+                                "0.62.1"
                             ]
                         }
                     },
                     "examples": [{
                         "repository": "otel/opentelemetry-collector",
-                        "tag": "0.60.0"
+                        "tag": "0.62.1"
                     }]
                 },
                 "ports": {
@@ -253,9 +254,22 @@
                     "type": "object",
                     "default": {},
                     "title": "The env Schema",
-                    "required": [],
-                    "properties": {},
-                    "examples": [{}]
+                    "required": [
+                        "ENABLE_WEBHOOKS"
+                    ],
+                    "properties": {
+                        "ENABLE_WEBHOOKS": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The ENABLE_WEBHOOKS Schema",
+                            "examples": [
+                                "true"
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "ENABLE_WEBHOOKS": "true"
+                    }]
                 },
                 "serviceAccount": {
                     "type": "object",
@@ -449,7 +463,7 @@
                 },
                 "collectorImage": {
                     "repository": "otel/opentelemetry-collector",
-                    "tag": "0.60.0"
+                    "tag": "0.62.1"
                 },
                 "ports": {
                     "metricsPort": 8080,
@@ -466,7 +480,9 @@
                         "memory": "64Mi"
                     }
                 },
-                "env": {},
+                "env": {
+                    "ENABLE_WEBHOOKS": "true"
+                },
                 "serviceAccount": {
                     "create": true
                 },
@@ -672,11 +688,23 @@
             "default": {},
             "title": "The admissionWebhooks Schema",
             "required": [
+                "create",
                 "failurePolicy",
-                "enabled",
+                "secretName",
+                "timeoutSeconds",
+                "namespaceSelector",
+                "objectSelector",
                 "certManager"
             ],
             "properties": {
+                "create": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The create Schema",
+                    "examples": [
+                        true
+                    ]
+                },
                 "failurePolicy": {
                     "type": "string",
                     "default": "",
@@ -685,48 +713,37 @@
                         "Fail"
                     ]
                 },
-                "enabled": {
-                    "type": "boolean",
-                    "default": false,
-                    "title": "The enabled Schema",
+                "secretName": {
+                    "type": "string",
+                    "default": "",
+                    "title": "The secretName Schema",
                     "examples": [
-                        true
+                        ""
                     ]
                 },
                 "timeoutSeconds": {
                     "type": "integer",
-                    "default": 10,
+                    "default": 0,
                     "title": "The timeoutSeconds Schema",
                     "examples": [
-                      10
+                        10
                     ]
                 },
                 "namespaceSelector": {
                     "type": "object",
                     "default": {},
                     "title": "The namespaceSelector Schema",
-                    "examples": [{
-                        "matchExpressions": [
-                            {
-                                "key": "runlevel",
-                                "operator": "NotIn",
-                                "values": [
-                                    "0",
-                                    "1"
-                                ]
-                            }
-                        ]
-                    }]
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 },
                 "objectSelector": {
                     "type": "object",
                     "default": {},
                     "title": "The objectSelector Schema",
-                    "examples": [{
-                        "matchLabels": {
-                            "foo": "bar"
-                        }
-                    }]
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 },
                 "certManager": {
                     "type": "object",
@@ -761,8 +778,9 @@
                 }
             },
             "examples": [{
+                "create": true,
                 "failurePolicy": "Fail",
-                "enabled": true,
+                "secretName": "",
                 "timeoutSeconds": 10,
                 "namespaceSelector": {},
                 "objectSelector": {},
@@ -845,6 +863,15 @@
             "title": "The hostNetwork Schema",
             "examples": [
                 false
+            ]
+        },
+        "priorityClassName": {
+            "type": "string",
+            "default": "",
+            "title": "The priorityClassName Schema",
+            "examples": [
+                "system-node-critical",
+                "system-cluster-critical"
             ]
         },
         "securityContext": {
@@ -957,7 +984,7 @@
             },
             "collectorImage": {
                 "repository": "otel/opentelemetry-collector",
-                "tag": "0.60.0"
+                "tag": "0.62.1"
             },
             "ports": {
                 "metricsPort": 8080,
@@ -974,7 +1001,9 @@
                     "memory": "64Mi"
                 }
             },
-            "env": {},
+            "env": {
+                "ENABLE_WEBHOOKS": "true"
+            },
             "serviceAccount": {
                 "create": true
             },
@@ -1019,8 +1048,12 @@
             }
         },
         "admissionWebhooks": {
+            "create": true,
             "failurePolicy": "Fail",
-            "enabled": true,
+            "secretName": "",
+            "timeoutSeconds": 10,
+            "namespaceSelector": {},
+            "objectSelector": {},
             "certManager": {
                 "enabled": true,
                 "issuerRef": {}
@@ -1036,6 +1069,7 @@
         "tolerations": [],
         "nodeSelector": {},
         "hostNetwork": false,
+        "priorityClassName": "",
         "securityContext": {
             "runAsGroup": 65534,
             "runAsNonRoot": true,

@@ -1,0 +1,100 @@
+---
+# Source: opentelemetry-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: opentelemetry-operator
+    control-plane: controller-manager
+  name: opentelemetry-operator-controller-manager
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-operator
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        app.kubernetes.io/name: opentelemetry-operator
+        control-plane: controller-manager
+    spec:
+      hostNetwork: false
+      containers:
+        - args:
+            - --metrics-addr=0.0.0.0:8080
+            - --enable-leader-election
+            - --health-probe-addr=:8081
+            - --webhook-port=9443
+            - --collector-image=otel/opentelemetry-collector:0.62.1
+          command:
+            - /manager
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: "true"
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.60.0"
+          name: manager
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources: 
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+        
+        - args:
+            - --secure-listen-address=0.0.0.0:8443
+            - --upstream=http://127.0.0.1:8080/
+            - --logtostderr=true
+            - --v=0
+          image: "gcr.io/kubebuilder/kube-rbac-proxy:v0.11.0"
+          name: kube-rbac-proxy
+          ports:
+            - containerPort: 8443
+              name: https
+              protocol: TCP
+          resources: 
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 5m
+              memory: 64Mi
+      serviceAccountName: opentelemetry-operator-controller-manager
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: opentelemetry-operator-controller-manager-service-cert
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534

@@ -19,7 +19,7 @@ manager:
     tag: v0.60.0
   collectorImage:
     repository: otel/opentelemetry-collector
-    tag: 0.60.0
+    tag: 0.62.1
   ports:
     metricsPort: 8080
     webhookPort: 9443
@@ -33,7 +33,8 @@ manager:
       memory: 64Mi
   ## Adds additional environment variables
   ## e.g ENV_VAR: env_value
-  env: {}
+  env:
+    ENABLE_WEBHOOKS: "true"
 
   # -- Create the manager ServiceAccount
   serviceAccount:
@@ -85,10 +86,11 @@ kubeRBACProxy:
       memory: 64Mi
 
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
-##
+## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
 admissionWebhooks:
+  create: true
   failurePolicy: Fail
-  enabled: true
+  secretName: ""
 
   ## Customize webhook timeout duration
   timeoutSeconds: 10
@@ -120,6 +122,9 @@ affinity: {}
 tolerations: []
 nodeSelector: {}
 hostNetwork: false
+
+# Allows for pod scheduler prioritisation
+priorityClassName: ""
 
 ## SecurityContext holds pod-level security attributes and common container settings.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/

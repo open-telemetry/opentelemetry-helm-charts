@@ -22,7 +22,7 @@ spec:
     app.kubernetes.io/name: opentelemetry-operator
     control-plane: controller-manager
 
-{{- if .Values.admissionWebhooks.enabled }}
+{{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
 ---
 apiVersion: v1
 kind: Service

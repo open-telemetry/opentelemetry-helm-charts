@@ -5,6 +5,10 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}-agent
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
