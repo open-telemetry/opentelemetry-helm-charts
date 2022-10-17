@@ -26,6 +26,18 @@ The chart can be used to install [OpenTelemetry Collector](https://github.com/op
 in a Kubernetes cluster. More detailed documentation can be found in
 [OpenTelemetry Collector chart directory](./charts/opentelemetry-collector).
 
+### OpenTelemetry Demo
+
+The chart can be used to install [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo)
+in a Kubernetes cluster. More detailed documentation can be found in
+[OpenTelemetry Demo chart directory](./charts/opentelemetry-demo).
+
+### OpenTelemetry Operator
+
+The chart can be used to install [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator)
+in a Kubernetes cluster. More detailed documentation can be found in
+[OpenTelemetry Operator chart directory](./charts/opentelemetry-operator).
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
