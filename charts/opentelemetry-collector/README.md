@@ -138,6 +138,23 @@ config:
           - otlphttp
 ```
 
+### Configuration for Kubernetes attributes processor
+
+The collector can be configured to add Kubernetes metadata to logs, metrics and traces.
+
+This feature is disabled by default. It has the following requirements:
+
+- It requires [k8sattributesprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) processor to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version of the collector image.
+
+To enable this feature, set the  `presets.kubernetesAttributes.enabled` property to `true`.
+Here is an example `values.yaml`:
+
+```yaml
+mode: daemonset
+presets:
+  kubernetesAttributes:
+    enabled: true
+```
 ### CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
