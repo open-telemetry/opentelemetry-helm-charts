@@ -42,6 +42,10 @@ default:
     tag: ""
     pullPolicy: IfNotPresent
     pullSecrets: []
+  schedulingRules:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
 
 serviceAccount: ""
 
@@ -57,16 +61,14 @@ components:
     ports:
       - name: redis
         value: 6379
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+    schedulingRules: {}
 
   adService:
     enabled: true
     useDefault:
       env: true
     imageOverride: {}
+    schedulingRules: {}
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -74,18 +76,13 @@ components:
       - name: AD_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  sidecar.opentelemetry.io/inject: "false"
-    #  instrumentation.opentelemetry.io/inject-java: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   cartService:
     enabled: true
     useDefault:
       env: true
     imageOverride: {}
+    schedulingRules: {}
     servicePort: 8080
     env:
       - name: ASPNETCORE_URLS
@@ -99,17 +96,17 @@ components:
     podAnnotations: {}
     #  sidecar.opentelemetry.io/inject: "false"
     #  instrumentation.opentelemetry.io/inject-dotnet: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+
+
 
 
   checkoutService:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
+    schedulingRules: {}
     servicePort: 8080
     env:
       - name: CART_SERVICE_ADDR
@@ -130,15 +127,12 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   currencyService:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -159,6 +153,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -183,6 +178,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     env:
       - name: FEATURE_FLAG_GRPC_SERVICE_PORT
@@ -211,6 +207,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride:
       repository: "cimg/postgres"
       tag: "14.2"
@@ -237,6 +234,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -271,6 +269,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8089
     env:
@@ -303,6 +302,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -321,6 +321,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -341,6 +342,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -365,6 +367,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -389,6 +392,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
     servicePort: 8080
     env:
@@ -406,10 +410,7 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+    schedulingRules: {}
 
 
 opentelemetry-collector:
