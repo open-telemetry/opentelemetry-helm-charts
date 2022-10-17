@@ -21,6 +21,9 @@ spec:
         control-plane: controller-manager
     spec:
       hostNetwork: {{ .Values.hostNetwork }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
       containers:
         - args:
             - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
