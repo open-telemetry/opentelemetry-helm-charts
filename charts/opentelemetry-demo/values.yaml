@@ -61,14 +61,21 @@ components:
     ports:
       - name: redis
         value: 6379
-    schedulingRules: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
 
   adService:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
-    schedulingRules: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -76,13 +83,19 @@ components:
       - name: AD_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-
+    #  sidecar.opentelemetry.io/inject: "false"
+    #  instrumentation.opentelemetry.io/inject-java: "true"
+    
   cartService:
     enabled: true
     useDefault:
       env: true
+
     imageOverride: {}
-    schedulingRules: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: ASPNETCORE_URLS
@@ -103,7 +116,10 @@ components:
       env: true
 
     imageOverride: {}
-    schedulingRules: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: CART_SERVICE_ADDR
@@ -131,6 +147,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: PORT
@@ -141,10 +161,7 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+
 
   emailService:
     enabled: true
@@ -152,6 +169,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: APP_ENV
@@ -166,10 +187,6 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   featureflagService:
     enabled: true
@@ -177,6 +194,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     env:
       - name: FEATURE_FLAG_GRPC_SERVICE_PORT
         value: "50053"
@@ -195,10 +216,7 @@ components:
         value: 8081
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+
 
   ffsPostgres:
     enabled: true
@@ -208,6 +226,10 @@ components:
     imageOverride:
       repository: "postgres"
       tag: "14"
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     env:
       - name: POSTGRES_DB
         value: ffs
@@ -222,10 +244,7 @@ components:
         value: 5432
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+
 
   frontend:
     enabled: true
@@ -233,6 +252,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: FRONTEND_ADDR
@@ -257,10 +280,6 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   loadgenerator:
     enabled: true
@@ -268,6 +287,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8089
     env:
       - name: FRONTEND_ADDR
@@ -290,10 +313,6 @@ components:
         value: "8089"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-python: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   paymentService:
     enabled: true
@@ -301,6 +320,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -309,10 +332,6 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-nodejs: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   productCatalogService:
     enabled: true
@@ -320,6 +339,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -330,10 +353,6 @@ components:
         value: '{{ include "otel-demo.name" . }}-featureflag-service:50053'
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   recommendationService:
     enabled: true
@@ -341,6 +360,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: OTEL_PYTHON_LOG_CORRELATION
@@ -355,10 +378,6 @@ components:
         value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-python: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   shippingService:
     enabled: true
@@ -366,6 +385,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: PORT
@@ -380,10 +403,6 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-quote-service:8080'
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   quoteService:
     enabled: true
@@ -391,6 +410,10 @@ components:
       env: true
 
     imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
     servicePort: 8080
     env:
       - name: OTEL_TRACES_SAMPLER
@@ -407,7 +430,6 @@ components:
         value: "8080"
     podAnnotations: {}
     #  instrumentation.opentelemetry.io/inject-sdk: "true"
-    schedulingRules: {}
 
 opentelemetry-collector:
   nameOverride: otelcol
