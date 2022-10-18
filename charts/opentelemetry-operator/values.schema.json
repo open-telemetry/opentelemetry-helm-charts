@@ -18,7 +18,8 @@
         "nodeSelector",
         "hostNetwork",
         "securityContext",
-        "testFramework"
+        "testFramework",
+        "priorityClassName"
     ],
     "properties": {
         "replicaCount": {
@@ -116,13 +117,13 @@
                             "default": "",
                             "title": "The tag Schema",
                             "examples": [
-                                "0.60.0"
+                                "0.62.1"
                             ]
                         }
                     },
                     "examples": [{
                         "repository": "otel/opentelemetry-collector",
-                        "tag": "0.60.0"
+                        "tag": "0.62.1"
                     }]
                 },
                 "ports": {
@@ -462,7 +463,7 @@
                 },
                 "collectorImage": {
                     "repository": "otel/opentelemetry-collector",
-                    "tag": "0.60.0"
+                    "tag": "0.62.1"
                 },
                 "ports": {
                     "metricsPort": 8080,
@@ -864,6 +865,15 @@
                 false
             ]
         },
+        "priorityClassName": {
+            "type": "string",
+            "default": "",
+            "title": "The priorityClassName Schema",
+            "examples": [
+                "system-node-critical",
+                "system-cluster-critical"
+            ]
+        },
         "securityContext": {
             "type": "object",
             "default": {},
@@ -974,7 +984,7 @@
             },
             "collectorImage": {
                 "repository": "otel/opentelemetry-collector",
-                "tag": "0.60.0"
+                "tag": "0.62.1"
             },
             "ports": {
                 "metricsPort": 8080,
@@ -1059,6 +1069,7 @@
         "tolerations": [],
         "nodeSelector": {},
         "hostNetwork": false,
+        "priorityClassName": "",
         "securityContext": {
             "runAsGroup": 65534,
             "runAsNonRoot": true,
