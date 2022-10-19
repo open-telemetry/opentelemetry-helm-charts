@@ -54,6 +54,7 @@ components:
     imageOverride:
       repository: "redis"
       tag: "alpine"
+    serviceType: ClusterIP
     ports:
       - name: redis
         value: 6379
@@ -63,6 +64,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -78,6 +80,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: ASPNETCORE_URLS
@@ -97,6 +100,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: CART_SERVICE_ADDR
@@ -123,6 +127,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: PORT
@@ -139,6 +144,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: APP_ENV
@@ -170,6 +176,7 @@ components:
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffs-postgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    serviceType: ClusterIP
     ports:
       - name: grpc
         value: 50053
@@ -194,6 +201,7 @@ components:
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    serviceType: ClusterIP
     ports:
       - name: postgres
         value: 5432
@@ -205,6 +213,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: FRONTEND_ADDR
@@ -235,6 +244,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8089
     env:
       - name: FRONTEND_ADDR
@@ -263,6 +273,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -277,6 +288,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -293,6 +305,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_PYTHON_LOG_CORRELATION
@@ -313,6 +326,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: PORT
@@ -333,6 +347,7 @@ components:
     useDefault:
       env: true
     imageOverride: {}
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_TRACES_SAMPLER
@@ -354,6 +369,8 @@ components:
 opentelemetry-collector:
   nameOverride: otelcol
   mode: deployment
+  service:
+    type: ClusterIP
   config:
     exporters:
       jaeger:
