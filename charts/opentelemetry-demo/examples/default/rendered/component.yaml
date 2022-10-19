@@ -138,12 +138,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: example-ffs_postgres
+  name: example-ffspostgres
   labels:
     helm.sh/chart: opentelemetry-demo-0.8.0
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
-    app.kubernetes.io/component: ffs_postgres
+    app.kubernetes.io/component: ffspostgres
     app.kubernetes.io/version: "0.6.0-beta"
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -154,7 +154,7 @@ spec:
   selector:
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
-    app.kubernetes.io/component: ffs_postgres
+    app.kubernetes.io/component: ffspostgres
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: v1
@@ -732,7 +732,7 @@ spec:
           - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
             value: grpc
           - name: DATABASE_URL
-            value: ecto://ffs:ffs@example-ffs_postgres:5432/ffs
+            value: ecto://ffs:ffs@example-ffspostgres:5432/ffs
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://example-otelcol:4317
 ---
@@ -740,12 +740,12 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-ffs_postgres
+  name: example-ffspostgres
   labels:
     helm.sh/chart: opentelemetry-demo-0.8.0
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
-    app.kubernetes.io/component: ffs_postgres
+    app.kubernetes.io/component: ffspostgres
     app.kubernetes.io/version: "0.6.0-beta"
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -753,16 +753,16 @@ spec:
     matchLabels:
       app.kubernetes.io/name: example
       app.kubernetes.io/instance: example
-      app.kubernetes.io/component: ffs_postgres
+      app.kubernetes.io/component: ffspostgres
   template:
     metadata:
       labels:
         app.kubernetes.io/name: example
         app.kubernetes.io/instance: example
-        app.kubernetes.io/component: ffs_postgres
+        app.kubernetes.io/component: ffspostgres
     spec:
       containers:
-        - name: ffs_postgres
+        - name: ffspostgres
           image: 'postgres:14'
           imagePullPolicy: IfNotPresent
           ports:
