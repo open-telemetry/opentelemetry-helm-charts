@@ -125,6 +125,9 @@
         },
         "podAnnotations": {
           "type": "object"
+        },
+        "resources": {
+          "$ref": "#/definitions/ContainerResources"
         }
       },
       "required": [
@@ -300,9 +303,12 @@
             },
             "image": {
               "$ref": "#/definitions/Image"
+            },
+            "resources": {
+              "$ref": "#/definitions/ContainerResources"
             }
           }
-          
+
         }
       },
       "required": [
@@ -330,6 +336,28 @@
         }
       },
       "title": "Image"
+    },
+    "ContainerResources": {
+      "type": "object",
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/ContainerResourceDef"
+        },
+        "requests": {
+          "$ref": "#/definitions/ContainerResourceDef"
+        }
+      }
+    },
+    "ContainerResourceDef": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "string"
+        },
+        "memory": {
+          "type": "string"
+        }
+      }
     }
   }
 }
