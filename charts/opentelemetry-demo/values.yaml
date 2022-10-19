@@ -10,6 +10,7 @@ observability:
       tag: "latest"
       pullPolicy: IfNotPresent
       pullSecrets: []
+    args: ["--memory.max-traces", "10000"]
     resources:
       limits:
         memory: 275Mi
@@ -108,17 +109,17 @@ components:
     servicePort: 8080
     env:
       - name: CART_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-cart-service:8080'
+        value: '{{ include "otel-demo.name" . }}-cartservice:8080'
       - name: CURRENCY_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-currency-service:8080'
+        value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
       - name: PAYMENT_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-payment-service:8080'
+        value: '{{ include "otel-demo.name" . }}-paymentservice:8080'
       - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
       - name: SHIPPING_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-shipping-service:8080'
+        value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
       - name: EMAIL_SERVICE_ADDR
-        value: 'http://{{ include "otel-demo.name" . }}-email-service:8080'
+        value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CHECKOUT_SERVICE_PORT
@@ -181,7 +182,7 @@ components:
       - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
         value: grpc
       - name: DATABASE_URL
-        value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffs-postgres:5432/ffs'
+        value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
     ports:
@@ -228,19 +229,19 @@ components:
       - name: FRONTEND_ADDR
         value: :8080
       - name: AD_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-ad-service:8080'
+        value: '{{ include "otel-demo.name" . }}-adservice:8080'
       - name: CART_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-cart-service:8080'
+        value: '{{ include "otel-demo.name" . }}-cartservice:8080'
       - name: CHECKOUT_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-checkout-service:8080'
+        value: '{{ include "otel-demo.name" . }}-checkoutservice:8080'
       - name: CURRENCY_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-currency-service:8080'
+        value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
       - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
       - name: RECOMMENDATION_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-recommendation-service:8080'
+        value: '{{ include "otel-demo.name" . }}-recommendationservice:8080'
       - name: SHIPPING_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-shipping-service:8080'
+        value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: FRONTEND_PORT
@@ -308,7 +309,7 @@ components:
       - name: PRODUCT_CATALOG_SERVICE_PORT
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflag-service:50053'
+        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
     podAnnotations: {}
     resources:
       limits:
@@ -330,7 +331,7 @@ components:
       - name: RECOMMENDATION_SERVICE_PORT
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-product-catalog-service:8080'
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
     podAnnotations: {}
     resources:
       limits:
@@ -352,7 +353,7 @@ components:
       - name: SHIPPING_SERVICE_PORT
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
-        value: 'http://{{ include "otel-demo.name" . }}-quote-service:8080'
+        value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
     podAnnotations: {}
     resources:
       limits:
@@ -391,8 +392,8 @@ opentelemetry-collector:
       memory: 100Mi
   config:
     exporters:
-      jaeger:
-        endpoint: '{{ .Release.Name }}-jaeger:14250'
+      otlp:
+        endpoint: '{{ .Release.Name }}-jaeger:4317'
         tls:
           insecure: true
     service:
@@ -400,4 +401,4 @@ opentelemetry-collector:
         traces:
           exporters:
             - logging
-            - jaeger
+            - otlp
