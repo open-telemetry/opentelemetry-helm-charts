@@ -126,8 +126,14 @@
         "imageOverride": {
           "$ref": "#/definitions/Image"
         },
+        "schedulingRules": {
+          "$ref": "#/definitions/SchedulingRules"
+        },
         "podAnnotations": {
           "type": "object"
+        },
+        "resources": {
+          "$ref": "#/definitions/ContainerResources"
         }
       },
       "required": [
@@ -185,10 +191,14 @@
         },
         "image": {
           "$ref": "#/definitions/Image"
+        },
+        "schedulingRules": {
+          "$ref": "#/definitions/SchedulingRules"
         }
       },
       "required": [
-        "image"
+        "image",
+        "schedulingRules"
       ],
       "title": "Default"
     },
@@ -304,11 +314,17 @@
             "image": {
               "$ref": "#/definitions/Image"
             },
+            "args": {
+              "type": "array",
+              "items": {}
+            },
+            "resources": {
+              "$ref": "#/definitions/ContainerResources"
+            },
             "serviceType": {
               "type": "string"
             }
           }
-
         }
       },
       "required": [
@@ -336,6 +352,45 @@
         }
       },
       "title": "Image"
+    },
+    "ContainerResources": {
+      "type": "object",
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/ContainerResourceDef"
+        },
+        "requests": {
+          "$ref": "#/definitions/ContainerResourceDef"
+        }
+      }
+    },
+    "ContainerResourceDef": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "string"
+        },
+        "memory": {
+          "type": "string"
+        }
+      }
+    },
+    "SchedulingRules": {
+      "title": "SchedulingRules",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nodeSelector": {
+          "type": "object"
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "tolerations": {
+          "type": "array",
+          "items": {}
+        }
+      }
     }
   }
 }

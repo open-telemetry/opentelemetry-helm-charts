@@ -26,6 +26,20 @@ spec:
       {{- with .serviceAccountName }}
       serviceAccountName: {{ .serviceAccountName}}
       {{- end }}
+      {{- if .schedulingRules }}
+      {{- if or .defaultValues.schedulingRules.nodeSelector .schedulingRules.nodeSelector}}
+      nodeSelector:
+        {{- .schedulingRules.nodeSelector | default .defaultValues.schedulingRules.nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if or .defaultValues.schedulingRules.affinity .schedulingRules.affinity}}
+      affinity:
+        {{ toYaml .schedulingRules.affinity | default .defaultValues.schedulingRules.affinity | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if or .defaultValues.schedulingRules.tolerations .schedulingRules.tolerations}}
+      tolerations:
+        {{ toYaml .schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- end }}
       containers:
         - name: {{ .name }}
           image: '{{ .imageOverride.repository | default .defaultValues.image.repository }}:{{ .imageOverride.tag | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
@@ -36,6 +50,8 @@ spec:
           {{- end }}
           env:
             {{- include "otel-demo.pod.env" . | nindent 10 }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
 {{- end }}
 {{- define "otel.demo.service" }}
 {{- if or .ports .servicePort}}
