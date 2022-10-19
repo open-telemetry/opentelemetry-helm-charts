@@ -5,13 +5,14 @@ kind: Service
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: opentelemetry-demo-0.7.1
+    helm.sh/chart: opentelemetry-demo-0.9.1
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: jaeger
     app.kubernetes.io/version: "0.6.0-beta"
     app.kubernetes.io/managed-by: Helm
 spec:
+  type: ClusterIP
   ports:
     - name: frontend
       port: 16686
@@ -32,7 +33,7 @@ kind: Deployment
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: opentelemetry-demo-0.7.1
+    helm.sh/chart: opentelemetry-demo-0.9.1
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: jaeger
@@ -69,7 +70,7 @@ spec:
             protocol: TCP
           - containerPort: 16686
             protocol: TCP
-          - containerPort: 14268 
+          - containerPort: 14268
             protocol: TCP
           - containerPort: 9411
             protocol: TCP
