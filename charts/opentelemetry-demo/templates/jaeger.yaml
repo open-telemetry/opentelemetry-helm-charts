@@ -18,28 +18,21 @@ spec:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-      - env:
-        - name: COLLECTOR_ZIPKIN_HTTP_PORT
-          value: "9411"
-        image: "{{ .Values.observability.jaeger.image.repository }}:{{ .Values.observability.jaeger.image.tag }}"
-        name: jaeger
-        ports:
-          - containerPort: 5775
-            protocol: UDP
-          - containerPort: 6831
-            protocol: UDP
-          - containerPort: 6832
-            protocol: UDP
-          - containerPort: 5778
-            protocol: TCP
-          - containerPort: 16686
-            protocol: TCP
-          - containerPort: 14268 
-            protocol: TCP
-          - containerPort: 9411
-            protocol: TCP
-          - containerPort: 14250
-            protocol: TCP
+        - name: jaeger
+          image: "{{ .Values.observability.jaeger.image.repository }}:{{ .Values.observability.jaeger.image.tag }}"
+          args:
+            {{- range $arg := .Values.observability.jaeger.args }}
+            - "{{ $arg }}"
+            {{- end }}
+          env:
+            - name: COLLECTOR_OTLP_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 4317
+              protocol: TCP
+            - containerPort: 16686
+              protocol: TCP
+
 ---
 apiVersion: v1
 kind: Service
@@ -54,9 +47,9 @@ spec:
       protocol: TCP
       targetPort: 16686
     - name: collector
-      port: 14250
+      port: 4317
       protocol: TCP
-      targetPort: 14250
+      targetPort: 4317
   selector:
       {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end }}
