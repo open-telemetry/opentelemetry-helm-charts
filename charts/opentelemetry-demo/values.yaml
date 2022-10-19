@@ -10,6 +10,7 @@ observability:
       tag: "latest"
       pullPolicy: IfNotPresent
       pullSecrets: []
+    args: ["--memory.max-traces", "10000"]
 
 default:
   env:
@@ -356,8 +357,8 @@ opentelemetry-collector:
   mode: deployment
   config:
     exporters:
-      jaeger:
-        endpoint: '{{ .Release.Name }}-jaeger:14250'
+      otlp:
+        endpoint: '{{ .Release.Name }}-jaeger:4317'
         tls:
           insecure: true
     service:
@@ -365,4 +366,4 @@ opentelemetry-collector:
         traces:
           exporters:
             - logging
-            - jaeger
+            - otlp
