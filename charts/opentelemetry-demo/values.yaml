@@ -11,6 +11,9 @@ observability:
       pullPolicy: IfNotPresent
       pullSecrets: []
     args: ["--memory.max-traces", "10000"]
+    resources:
+      limits:
+        memory: 275Mi
 
 default:
   env:
@@ -62,6 +65,9 @@ components:
     ports:
       - name: redis
         value: 6379
+    resources:
+      limits:
+        memory: 20Mi
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -84,8 +90,10 @@ components:
       - name: AD_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  sidecar.opentelemetry.io/inject: "false"
-    #  instrumentation.opentelemetry.io/inject-java: "true"
+    resources:
+      limits:
+        memory: 300Mi
+
   cartService:
     enabled: true
     useDefault:
@@ -107,8 +115,9 @@ components:
       - name: CART_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  sidecar.opentelemetry.io/inject: "false"
-    #  instrumentation.opentelemetry.io/inject-dotnet: "true"
+    resources:
+      limits:
+        memory: 160Mi
 
   checkoutService:
     enabled: true
@@ -139,7 +148,9 @@ components:
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 20Mi
 
   currencyService:
     enabled: true
@@ -160,7 +171,9 @@ components:
       - name: CURRENCY_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 20Mi
 
 
   emailService:
@@ -186,7 +199,9 @@ components:
       - name: EMAIL_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 100Mi
 
   featureflagService:
     enabled: true
@@ -215,7 +230,9 @@ components:
       - name: http
         value: 8081
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 160Mi
 
 
   ffsPostgres:
@@ -243,7 +260,9 @@ components:
       - name: postgres
         value: 5432
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 120Mi
 
 
   frontend:
@@ -279,7 +298,9 @@ components:
       - name: FRONTEND_PORT
         value: "8080"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 200Mi
 
   loadgenerator:
     enabled: true
@@ -312,7 +333,9 @@ components:
       - name: LOADGENERATOR_PORT
         value: "8089"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-python: "true"
+    resources:
+      limits:
+        memory: 120Mi
 
   paymentService:
     enabled: true
@@ -331,7 +354,9 @@ components:
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-nodejs: "true"
+    resources:
+      limits:
+        memory: 70Mi
 
   productCatalogService:
     enabled: true
@@ -352,7 +377,9 @@ components:
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 20Mi
 
   recommendationService:
     enabled: true
@@ -377,7 +404,9 @@ components:
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-python: "true"
+    resources:
+      limits:
+        memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
 
   shippingService:
     enabled: true
@@ -402,7 +431,9 @@ components:
       - name: QUOTE_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 20Mi
 
   quoteService:
     enabled: true
@@ -429,11 +460,16 @@ components:
       - name: QUOTE_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
-    #  instrumentation.opentelemetry.io/inject-sdk: "true"
+    resources:
+      limits:
+        memory: 30Mi
 
 opentelemetry-collector:
   nameOverride: otelcol
   mode: deployment
+  resources:
+    limits:
+      memory: 100Mi
   config:
     exporters:
       otlp:

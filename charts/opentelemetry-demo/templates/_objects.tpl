@@ -50,6 +50,8 @@ spec:
           {{- end }}
           env:
             {{- include "otel-demo.pod.env" . | nindent 10 }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
 {{- end }}
 {{- define "otel.demo.service" }}
 {{- if or .ports .servicePort}}
