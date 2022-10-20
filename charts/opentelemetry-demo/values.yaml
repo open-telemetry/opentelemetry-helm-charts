@@ -471,6 +471,15 @@ opentelemetry-collector:
     limits:
       memory: 100Mi
   config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
     exporters:
       otlp:
         endpoint: '{{ .Release.Name }}-jaeger:4317'
