@@ -209,33 +209,18 @@ receivers:
       - type: move
         from: attributes.stream
         to: attributes["log.iostream"]
-      - type: copy
-        from: attributes.container_name
-        to: attributes["k8s.container.name"]
       - type: move
         from: attributes.container_name
         to: resource["k8s.container.name"]
-      - type: copy
-        from: attributes.namespace
-        to: attributes["k8s.namespace.name"]
       - type: move
         from: attributes.namespace
         to: resource["k8s.namespace.name"]
-      - type: copy
-        from: attributes.pod_name
-        to: attributes["k8s.pod.name"]
       - type: move
         from: attributes.pod_name
         to: resource["k8s.pod.name"]
-      - type: copy
-        from: attributes.restart_count
-        to: attributes["k8s.container.restart_count"]
       - type: move
         from: attributes.restart_count
         to: resource["k8s.container.restart_count"]
-      - type: copy
-        from: attributes.uid
-        to: attributes["k8s.pod.uid"]
       - type: move
         from: attributes.uid
         to: resource["k8s.pod.uid"]
