@@ -14,6 +14,7 @@ observability:
     resources:
       limits:
         memory: 275Mi
+    serviceType: "ClusterIP"
 
 default:
   env:
@@ -58,6 +59,7 @@ components:
     enabled: true
     useDefault:
       env: true
+
     # Options to override the default image settings.
     imageOverride:
       repository: "redis"
@@ -79,6 +81,7 @@ components:
       env: true
 
     imageOverride: {}
+    serviceType: ClusterIP
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -100,6 +103,7 @@ components:
       env: true
 
     imageOverride: {}
+    serviceType: ClusterIP
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -125,6 +129,7 @@ components:
       env: true
 
     imageOverride: {}
+    serviceType: ClusterIP
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -162,6 +167,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: PORT
@@ -182,6 +188,7 @@ components:
       env: true
 
     imageOverride: {}
+    serviceType: ClusterIP
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -224,6 +231,7 @@ components:
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    serviceType: ClusterIP
     ports:
       - name: grpc
         value: 50053
@@ -256,6 +264,7 @@ components:
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    serviceType: ClusterIP
     ports:
       - name: postgres
         value: 5432
@@ -275,6 +284,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: FRONTEND_ADDR
@@ -312,6 +322,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8089
     env:
       - name: FRONTEND_ADDR
@@ -347,6 +358,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -368,6 +380,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -391,6 +404,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_PYTHON_LOG_CORRELATION
@@ -418,6 +432,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: PORT
@@ -445,6 +460,7 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_TRACES_SAMPLER
@@ -470,6 +486,8 @@ opentelemetry-collector:
   resources:
     limits:
       memory: 100Mi
+  service:
+    type: ClusterIP
   config:
     exporters:
       otlp:

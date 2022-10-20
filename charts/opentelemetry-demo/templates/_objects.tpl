@@ -63,6 +63,7 @@ metadata:
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
+  type: {{.serviceType}}
   ports:
     {{- if .ports }}
     {{- range $port := .ports }}
