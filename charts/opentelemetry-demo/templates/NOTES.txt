@@ -1,18 +1,18 @@
 =======================================================================================
 
 
- ██████╗ ████████╗███████╗██╗         ██████╗ ███████╗███╗   ███╗ ██████╗ 
+ ██████╗ ████████╗███████╗██╗         ██████╗ ███████╗███╗   ███╗ ██████╗
 ██╔═══██╗╚══██╔══╝██╔════╝██║         ██╔══██╗██╔════╝████╗ ████║██╔═══██╗
 ██║   ██║   ██║   █████╗  ██║         ██║  ██║█████╗  ██╔████╔██║██║   ██║
 ██║   ██║   ██║   ██╔══╝  ██║         ██║  ██║██╔══╝  ██║╚██╔╝██║██║   ██║
 ╚██████╔╝   ██║   ███████╗███████╗    ██████╔╝███████╗██║ ╚═╝ ██║╚██████╔╝
- ╚═════╝    ╚═╝   ╚══════╝╚══════╝    ╚═════╝ ╚══════╝╚═╝     ╚═╝ ╚═════╝ 
-                                                                          
+ ╚═════╝    ╚═╝   ╚══════╝╚══════╝    ╚═════╝ ╚══════╝╚═╝     ╚═╝ ╚═════╝
+
 
 - Frontend UI: http://localhost:8080
   by running these commands:
      kubectl port-forward svc/{{ include "otel-demo.name" . }}-frontend 8080:8080
-      
+
 
 {{- if $.Values.observability.jaeger.enabled }}
 
@@ -21,6 +21,14 @@
      kubectl port-forward svc/{{ include "otel-demo.name" . }}-jaeger 16686:16686
 {{- end }}
 
-- Locust UI: http://localhost:8089
+- Locust (load generator) UI: http://localhost:8089
   by running these commands:
       kubectl port-forward svc/{{ include "otel-demo.name" . }}-loadgenerator 8089:8089
+
+- Feature Flag Service UI: http://localhost:8081
+  by running these commands:
+      kubectl port-forward svc/{{ include "otel-demo.name" . }}-featureflagservice 8081:8081
+
+- OpenTelemetry Collector OTLP/HTTP receiver (required for browser spans to be emitted):
+  by running these commands:
+      kubectl port-forward svc/{{ include "otel-demo.name" . }}-otelcol 4318:4318
