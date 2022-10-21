@@ -1,20 +1,18 @@
 ---
-# Source: opentelemetry-demo/charts/grafana/templates/dashboards-json-configmap.yaml
+# Source: opentelemetry-demo/templates/grafana-dashbords.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-grafana-dashboards-default
-  namespace: default
+  name: example-grafana-dashboards
   labels:
-    helm.sh/chart: grafana-6.42.2
-    app.kubernetes.io/name: grafana
+    helm.sh/chart: opentelemetry-demo-0.10.0
+    app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "9.2.0"
+    app.kubernetes.io/component: jaeger
+    app.kubernetes.io/version: "0.6.1-beta"
     app.kubernetes.io/managed-by: Helm
-    dashboard-provider: default
 data:
-  opentelemetry-collector.json:
-    |-
+  opentelemetry-collector.json: |
       {
         "__inputs": [
           {

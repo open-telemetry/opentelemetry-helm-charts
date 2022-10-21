@@ -26,8 +26,8 @@ spec:
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: example
       annotations:
-        checksum/config: 7202a64d87e1224e643648961737e4a59918bcf90a7bd0e51ca3f5d430c3b15a
-        checksum/dashboards-json-config: a88b34e693c646919c45f756bdc1f0a2a78b1448e2b9fc8a26f01e9456179f23
+        checksum/config: a2c5d5d89db45f12208c34b830357542d6fca2195269462599082023bf25ffde
+        checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/secret: fe3e6a98bc5a653cb07ae3c34aadffc8997b5056ca0749f3e7dca826817ca791
     spec:      
@@ -37,19 +37,6 @@ spec:
         fsGroup: 472
         runAsGroup: 472
         runAsUser: 472
-      initContainers:
-        - name: download-dashboards
-          image: "curlimages/curl:7.85.0"
-          imagePullPolicy: IfNotPresent
-          command: ["/bin/sh"]
-          args: [ "-c", "mkdir -p /var/lib/grafana/dashboards/default && /bin/sh -x /etc/grafana/download_dashboards.sh" ]
-          env:
-          volumeMounts:
-            - name: config
-              mountPath: "/etc/grafana/download_dashboards.sh"
-              subPath: download_dashboards.sh
-            - name: storage
-              mountPath: "/var/lib/grafana"
       enableServiceLinks: true
       containers:
         - name: grafana
@@ -62,8 +49,7 @@ spec:
             - name: storage
               mountPath: "/var/lib/grafana"
             - name: dashboards-default
-              mountPath: "/var/lib/grafana/dashboards/default/opentelemetry-collector.json"
-              subPath: "opentelemetry-collector.json"
+              mountPath: "/var/lib/grafana/dashboards/default"
             - name: config
               mountPath: "/etc/grafana/provisioning/datasources/datasources.yaml"
               subPath: "datasources.yaml"
@@ -108,8 +94,9 @@ spec:
         - name: config
           configMap:
             name: example-grafana
+          
         - name: dashboards-default
           configMap:
-            name: example-grafana-dashboards-default
+            name: example-grafana-dashboards
         - name: storage
           emptyDir: {}
