@@ -34,6 +34,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "opentelemetry-operator.labels" -}}
+control-plane: controller-manager
 helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 {{ include "opentelemetry-operator.selectorLabels" . }}
 {{- if .Chart.AppVersion }}

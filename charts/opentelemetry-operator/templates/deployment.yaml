@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
-    control-plane: controller-manager
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager
   namespace: {{ .Release.Namespace }}
 spec:
