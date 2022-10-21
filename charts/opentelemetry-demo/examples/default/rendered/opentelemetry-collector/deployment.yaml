@@ -23,8 +23,10 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 03ae28054f184189b8d061c21691f51d1dcefd78533dc6bdc8ba3f57b6184652
-        
+        checksum/config: b805fcd3d72eeb4ff0cfa53eab9f4db61e4a1d93b293fc0dd64f7c4e3ba5af83
+        opentelemetry_community_demo: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/scrape: "true"
       labels:
         app.kubernetes.io/name: otelcol
         app.kubernetes.io/instance: example
@@ -54,11 +56,17 @@ spec:
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
             - name: otlp
               containerPort: 4317
               protocol: TCP
             - name: otlp-http
               containerPort: 4318
+              protocol: TCP
+            - name: prometheus
+              containerPort: 9464
               protocol: TCP
             - name: zipkin
               containerPort: 9411

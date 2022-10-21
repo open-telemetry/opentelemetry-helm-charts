@@ -18,6 +18,8 @@ data:
         endpoint: 'example-jaeger:4317'
         tls:
           insecure: true
+      prometheus:
+        endpoint: 0.0.0.0:9464
     extensions:
       health_check: {}
       memory_ballast: {}
@@ -27,6 +29,8 @@ data:
         check_interval: 5s
         limit_mib: 80
         spike_limit_mib: 25
+      spanmetrics:
+        metrics_exporter: prometheus
     receivers:
       jaeger:
         protocols:
@@ -46,14 +50,18 @@ data:
               - http://*
               - https://*
             endpoint: 0.0.0.0:4318
+      otlp/spanmetrics:
+        protocols:
+          grpc:
+            endpoint: localhost:65535
       prometheus:
         config:
           scrape_configs:
-          - job_name: opentelemetry-collector
-            scrape_interval: 10s
+          - job_name: otel-collector
+            scrape_interval: 5s
             static_configs:
             - targets:
-              - ${MY_POD_IP}:8888
+              - 0.0.0.0:8888
       zipkin:
         endpoint: 0.0.0.0:9411
     service:
@@ -71,24 +79,29 @@ data:
           - otlp
         metrics:
           exporters:
+          - prometheus
           - logging
           processors:
-          - memory_limiter
           - batch
           receivers:
           - otlp
           - prometheus
+        metrics/spanmetrics:
+          exporters:
+          - prometheus
+          - logging
+          receivers:
+          - otlp/spanmetrics
         traces:
           exporters:
-          - logging
           - otlp
+          - logging
           processors:
-          - memory_limiter
+          - spanmetrics
           - batch
           receivers:
           - otlp
-          - jaeger
-          - zipkin
       telemetry:
         metrics:
           address: 0.0.0.0:8888
+          level: detailed
