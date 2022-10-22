@@ -307,10 +307,43 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: FRONTEND_PORT
         value: "8080"
+      - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://localhost:4318/v1/tracesbreakit       # This expects users to use `kubectl port-forward ...` to expose
     podAnnotations: {}
     resources:
       limits:
         memory: 200Mi
+
+
+  frontendProxy:
+    enabled: true
+    useDefault:
+      env: true
+
+    imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+    serviceType: ClusterIP
+    servicePort: 8080
+    env:
+      - name: FRONTEND_PORT
+        value: "8080"
+      - name: FRONTEND_HOST
+        value: '{{ include "otel-demo.name" . }}-frontend'
+      - name: FEATURE_FLAG_SERVICE_PORT
+        value: "8081"
+      - name: FEATURE_FLAG_SERVICE_HOST
+        value: '{{ include "otel-demo.name" . }}-featureflagservice'
+      - name: ENVOY_PORT
+        value: "8080"
+      - name: ENVOY_UID
+        value: "0"
+    podAnnotations: {}
+    resources:
+      limits:
+        memory: 20Mi
 
   loadgenerator:
     enabled: true
