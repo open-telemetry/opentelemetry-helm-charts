@@ -10,11 +10,15 @@ observability:
       tag: "latest"
       pullPolicy: IfNotPresent
       pullSecrets: []
-    args: ["--memory.max-traces", "10000"]
+    args: ["--memory.max-traces", "10000", "--query.base-path", "/jaeger/ui"]
     resources:
       limits:
         memory: 275Mi
     serviceType: "ClusterIP"
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
 
 default:
   env:
@@ -308,7 +312,7 @@ components:
       - name: FRONTEND_PORT
         value: "8080"
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://localhost:4318/v1/tracesbreakit       # This expects users to use `kubectl port-forward ...` to expose
+        value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
     podAnnotations: {}
     resources:
       limits:
@@ -336,6 +340,18 @@ components:
         value: "8081"
       - name: FEATURE_FLAG_SERVICE_HOST
         value: '{{ include "otel-demo.name" . }}-featureflagservice'
+      - name: LOCUST_WEB_PORT
+        value: "8089"
+      - name: LOCUST_WEB_HOST
+        value: '{{ include "otel-demo.name" . }}-loadgenerator'
+      - name: GRAFANA_SERVICE_PORT
+        value: "3000"
+      - name: GRAFANA_SERVICE_HOST
+        value: '{{ include "otel-demo.name" . }}-grafana'
+      - name: JAEGER_SERVICE_PORT
+        value: "16686"
+      - name: JAEGER_SERVICE_HOST
+        value: '{{ include "otel-demo.name" . }}-jaeger'
       - name: ENVOY_PORT
         value: "8080"
       - name: ENVOY_UID
@@ -523,6 +539,18 @@ opentelemetry-collector:
       memory: 100Mi
   service:
     type: ClusterIP
+  ports:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+      containerPort: 9464
+      servicePort: 9464
+      protocol: TCP
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9464"
+    opentelemetry_community_demo: "true"
   config:
     receivers:
       otlp:
@@ -533,14 +561,123 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
+      otlp/spanmetrics:
+        protocols:
+          grpc:
+            endpoint: "localhost:65535"
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'otel-collector'
+              scrape_interval: 5s
+              static_configs:
+                - targets: ['0.0.0.0:8888']
+
     exporters:
       otlp:
-        endpoint: '{{ .Release.Name }}-jaeger:4317'
+        endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
         tls:
           insecure: true
+      logging:
+      prometheus:
+        endpoint: '0.0.0.0:9464'
+
+    processors:
+      batch:
+      spanmetrics:
+        metrics_exporter: prometheus
+
     service:
+      telemetry:
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
       pipelines:
         traces:
-          exporters:
-            - logging
-            - otlp
+          receivers: [otlp]
+          processors: [spanmetrics, batch]
+          exporters: [otlp, logging]
+        metrics:
+          receivers: [otlp, prometheus]
+          processors: [batch]
+          exporters: [prometheus, logging]
+        metrics/spanmetrics:
+          receivers: [otlp/spanmetrics]
+          exporters: [prometheus, logging]
+
+prometheus:
+  alertmanager:
+    enabled: false
+  configmapReload:
+    prometheus:
+      enabled: false
+  kubeStateMetrics:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  pushgateway:
+    enabled: false
+
+  server:
+    global:
+      scrape_interval: 5s
+      scrape_timeout: 3s
+      evaluation_interval: 30s
+    service:
+      servicePort: 9090
+
+  serverFiles:
+    prometheus.yml:
+      scrape_configs:
+        - job_name: 'opentelemetry-community-demo'
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+              action: keep
+              regex: true
+
+grafana:
+  grafana.ini:
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Admin
+    server:
+      domain: localhost
+      # root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
+      root_url: http://localhost:8080/grafana/
+      serve_from_sub_path: true
+  adminPassword: admin
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          uid: webstore-metrics
+          type: prometheus
+          url: 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090'
+          editable: true
+          isDefault: true
+        - name: Jaeger
+          uid: webstore-traces
+          type: jaeger
+          url: 'http://{{ include "otel-demo.name" . }}-jaeger/jaeger/ui:16686'
+          editable: true
+          isDefault: false
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
