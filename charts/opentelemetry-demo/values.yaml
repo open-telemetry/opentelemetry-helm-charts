@@ -18,27 +18,27 @@ observability:
 
 default:
   env:
-    - name: OTEL_SERVICE_NAME
+    OTEL_SERVICE_NAME:
       valueFrom:
         fieldRef:
           apiVersion: v1
           fieldPath: "metadata.labels['app.kubernetes.io/component']"
-    - name: OTEL_K8S_NAMESPACE
+    OTEL_K8S_NAMESPACE:
       valueFrom:
         fieldRef:
           apiVersion: v1
           fieldPath: metadata.namespace
-    - name: OTEL_K8S_NODE_NAME
+    OTEL_K8S_NODE_NAME:
       valueFrom:
         fieldRef:
           apiVersion: v1
           fieldPath: spec.nodeName
-    - name: OTEL_K8S_POD_NAME
+    OTEL_K8S_POD_NAME:
       valueFrom:
         fieldRef:
           apiVersion: v1
           fieldPath: metadata.name
-    - name: OTEL_RESOURCE_ATTRIBUTES
+    OTEL_RESOURCE_ATTRIBUTES:
       value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
   image:
     repository: otel/demo
@@ -88,9 +88,9 @@ components:
       tolerations: []
     servicePort: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: AD_SERVICE_PORT
+      AD_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -110,13 +110,13 @@ components:
       tolerations: []
     servicePort: 8080
     env:
-      - name: ASPNETCORE_URLS
+      ASPNETCORE_URLS:
         value: http://*:8080
-      - name: REDIS_ADDR
+      REDIS_ADDR:
         value: '{{ include "otel-demo.name" . }}-redis:6379'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: CART_SERVICE_PORT
+      CART_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -136,21 +136,21 @@ components:
       tolerations: []
     servicePort: 8080
     env:
-      - name: CART_SERVICE_ADDR
+      CART_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
-      - name: CURRENCY_SERVICE_ADDR
+      CURRENCY_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
-      - name: PAYMENT_SERVICE_ADDR
+      PAYMENT_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-paymentservice:8080'
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
+      PRODUCT_CATALOG_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
-      - name: SHIPPING_SERVICE_ADDR
+      SHIPPING_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
-      - name: EMAIL_SERVICE_ADDR
+      EMAIL_SERVICE_ADDR:
         value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: CHECKOUT_SERVICE_PORT
+      CHECKOUT_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -170,11 +170,11 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: PORT
+      PORT:
         value: "8080"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: CURRENCY_SERVICE_PORT
+      CURRENCY_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -195,15 +195,15 @@ components:
       tolerations: []
     servicePort: 8080
     env:
-      - name: APP_ENV
+      APP_ENV:
         value: production
-      - name: PORT
+      PORT:
         value: "8080"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
-      - name: EMAIL_SERVICE_PORT
+      EMAIL_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -221,15 +221,15 @@ components:
       affinity: {}
       tolerations: []
     env:
-      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+      FEATURE_FLAG_GRPC_SERVICE_PORT:
         value: "50053"
-      - name: FEATURE_FLAG_SERVICE_PORT
+      FEATURE_FLAG_SERVICE_PORT:
         value: "8081"
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL:
         value: grpc
-      - name: DATABASE_URL
+      DATABASE_URL:
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
     serviceType: ClusterIP
     ports:
@@ -256,13 +256,13 @@ components:
       affinity: {}
       tolerations: []
     env:
-      - name: POSTGRES_DB
+      POSTGRES_DB:
         value: ffs
-      - name: POSTGRES_PASSWORD
+      POSTGRES_PASSWORD:
         value: ffs
-      - name: POSTGRES_USER
+      POSTGRES_USER:
         value: ffs
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
     serviceType: ClusterIP
     ports:
@@ -287,25 +287,25 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: FRONTEND_ADDR
+      FRONTEND_ADDR:
         value: :8080
-      - name: AD_SERVICE_ADDR
+      AD_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-adservice:8080'
-      - name: CART_SERVICE_ADDR
+      CART_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
-      - name: CHECKOUT_SERVICE_ADDR
+      CHECKOUT_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-checkoutservice:8080'
-      - name: CURRENCY_SERVICE_ADDR
+      CURRENCY_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
+      PRODUCT_CATALOG_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
-      - name: RECOMMENDATION_SERVICE_ADDR
+      RECOMMENDATION_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-recommendationservice:8080'
-      - name: SHIPPING_SERVICE_ADDR
+      SHIPPING_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: FRONTEND_PORT
+      FRONTEND_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -325,23 +325,23 @@ components:
     serviceType: ClusterIP
     servicePort: 8089
     env:
-      - name: FRONTEND_ADDR
+      FRONTEND_ADDR:
         value: '{{ include "otel-demo.name" . }}-frontend:8080'
-      - name: LOCUST_WEB_PORT
+      LOCUST_WEB_PORT:
         value: "8089"
-      - name: LOCUST_USERS
+      LOCUST_USERS:
         value: "10"
-      - name: LOCUST_HOST
+      LOCUST_HOST:
         value: "http://$(FRONTEND_ADDR)"
-      - name: LOCUST_HEADLESS
+      LOCUST_HEADLESS:
         value: "false"
-      - name: LOCUST_AUTOSTART
+      LOCUST_AUTOSTART:
         value: "true"
-      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION:
         value: python
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: LOADGENERATOR_PORT
+      LOADGENERATOR_PORT:
         value: "8089"
     podAnnotations: {}
     resources:
@@ -361,9 +361,9 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: PAYMENT_SERVICE_PORT
+      PAYMENT_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:
@@ -383,11 +383,11 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: PRODUCT_CATALOG_SERVICE_PORT
+      PRODUCT_CATALOG_SERVICE_PORT:
         value: "8080"
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+      FEATURE_FLAG_GRPC_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
     podAnnotations: {}
     resources:
@@ -407,17 +407,17 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: OTEL_PYTHON_LOG_CORRELATION
+      OTEL_PYTHON_LOG_CORRELATION:
         value: "true"
-      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION:
         value: python
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+      FEATURE_FLAG_GRPC_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
-      - name: RECOMMENDATION_SERVICE_PORT
+      RECOMMENDATION_SERVICE_PORT:
         value: "8080"
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
+      PRODUCT_CATALOG_SERVICE_ADDR:
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
     podAnnotations: {}
     resources:
@@ -437,15 +437,15 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: PORT
+      PORT:
         value: "8080"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: SHIPPING_SERVICE_PORT
+      SHIPPING_SERVICE_PORT:
         value: "8080"
-      - name: QUOTE_SERVICE_ADDR
+      QUOTE_SERVICE_ADDR:
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
     podAnnotations: {}
     resources:
@@ -465,17 +465,17 @@ components:
     serviceType: ClusterIP
     servicePort: 8080
     env:
-      - name: OTEL_TRACES_SAMPLER
+      OTEL_TRACES_SAMPLER:
         value: "parentbased_always_on"
-      - name: OTEL_TRACES_EXPORTER
+      OTEL_TRACES_EXPORTER:
         value: "otlp"
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL:
         value: "grpc"
-      - name: OTEL_PHP_TRACES_PROCESSOR
+      OTEL_PHP_TRACES_PROCESSOR:
         value: "simple"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_OTLP_ENDPOINT:
         value: '{{ include "otel-demo.name" . }}-otelcol:4317'
-      - name: QUOTE_SERVICE_PORT
+      QUOTE_SERVICE_PORT:
         value: "8080"
     podAnnotations: {}
     resources:

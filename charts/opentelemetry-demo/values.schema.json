@@ -112,10 +112,7 @@
           "type": "integer"
         },
         "env": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Env"
-          }
+          "$ref": "#/definitions/Env"
         },
         "ports": {
           "type": "array",
@@ -145,35 +142,45 @@
     "Env": {
       "type": "object",
       "additionalProperties": false,
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "valueFrom": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "configMapKeyRef": {
-              "$ref": "#/definitions/ConfigMapKeyRef"
+      "patternProperties": {
+        "^.+": {
+          "oneOf" : [
+            {
+              "type" : "object",
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              }
             },
-            "fieldRef": {
-              "$ref": "#/definitions/FieldRef"
-            },
-            "resourceFieldRef": {
-              "$ref": "#/definitions/ResourceFieldRef"
-            },
-            "secretKeyRef": {
-              "$ref": "#/definitions/SecretKeyRef"
+            {
+              "type" : "object",
+              "additionalProperties": false,
+              "properties": {
+                "valueFrom": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "configMapKeyRef": {
+                      "$ref": "#/definitions/ConfigMapKeyRef"
+                    },
+                    "fieldRef": {
+                      "$ref": "#/definitions/FieldRef"
+                    },
+                    "resourceFieldRef": {
+                      "$ref": "#/definitions/ResourceFieldRef"
+                    },
+                    "secretKeyRef": {
+                      "$ref": "#/definitions/SecretKeyRef"
+                    }
+                  }
+                }
+              }
             }
-          }
+          ]
         }
       },
-      "required": [
-        "name"
-      ],
       "title": "Env"
     },
     "Default": {
@@ -184,10 +191,7 @@
           "type": "boolean"
         },
         "env": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Env"
-          }
+          "$ref": "#/definitions/Env"
         },
         "image": {
           "$ref": "#/definitions/Image"

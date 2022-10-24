@@ -3,11 +3,21 @@ Get Pod Env
 Note: Consider that dependent variables need to be declared before the referenced env varibale.
 */}}
 {{- define "otel-demo.pod.env" -}}
-{{- if .useDefault.env  }}
-{{ toYaml .defaultValues.env }}
+{{- if .useDefault.env }}
+{{- range $key, $value := .defaultValues.env }}
+{{- if $value }}
+- name: "{{ tpl $key $ }}"
+{{ tpl (toYaml $value) $ | indent 2 }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- if .env }}
-{{ tpl (toYaml .env) . }}
+{{- range $key, $value := .env }}
+{{- if $value }}
+- name: "{{ tpl $key $ }}"
+{{ tpl (toYaml $value) $ | indent 2 }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 
