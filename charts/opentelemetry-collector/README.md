@@ -155,6 +155,28 @@ presets:
   kubernetesAttributes:
     enabled: true
 ```
+
+# Configuration for Kubernetes Cluster Metrics
+
+The collector can be configured to collects cluster-level metrics from the Kubernetes API server. A single instance of this receiver can be used to monitor a cluster.
+
+This feature is disabled by default. It has the following requirements:
+
+- It requires [k8sclusterreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version of the collector image.
+- It requires statefulset or deployment mode with a signle replica.
+
+To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
+
+Here is an example `values.yaml`:
+
+```yaml
+mode: deployment
+replicaCount: 1
+presets:
+  clusterMetrics:
+    enabled: true
+```
+
 ### CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
