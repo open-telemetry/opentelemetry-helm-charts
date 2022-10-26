@@ -35,4 +35,9 @@ rules:
     resources: ["horizontalpodautoscalers"]
     verbs: ["get", "list", "watch"]
   {{- end}}
+  {{- if .Values.presets.kubeletMetrics.enabled}}
+  - apiGroups: [""]
+    resources: ["nodes/stats"]
+    verbs: ["get", "watch", "list"]
+  {{- end }}
 {{- end }}
