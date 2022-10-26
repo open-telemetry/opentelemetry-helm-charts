@@ -29,8 +29,10 @@ Selector labels
 */}}
 {{- define "otel-demo.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "otel-demo.name" . }}
+application: {{ include "otel-demo.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .name }}
 app.kubernetes.io/component: {{ .name}}
+service: {{ .name }}
 {{- end}}
 {{- end }}

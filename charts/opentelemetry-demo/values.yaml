@@ -1,9 +1,15 @@
+
+wavefront:
+  #token: "YourToken goes here"
+  #url: "https://<Your URL goes here>..wavefront.com/api/"
+  # Also set name of cluster line 55
+
 observability:
   # collector settings are configured in the opentelemetry-collector section.
   otelcol:
-    enabled: true
+    enabled: false
   jaeger:
-    enabled: true
+    enabled: false
     image:
       repository: jaegertracing/all-in-one
       # Overrides the image tag whose default is the chart appVersion.
@@ -15,9 +21,16 @@ observability:
       limits:
         memory: 275Mi
     serviceType: "ClusterIP"
+  aoa_logs:
+    enabled: true
 
 default:
   env:
+    - name: OTEL_APPLICATION_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: 'metadata.labels[''application'']'
     - name: OTEL_SERVICE_NAME
       valueFrom:
         fieldRef:
@@ -39,12 +52,12 @@ default:
           apiVersion: v1
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+      value: cluster=<YourClusterName>,service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),application=$(OTEL_APPLICATION_NAME)
   image:
     repository: otel/demo
     # Overrides the image tag whose default is the chart appVersion.
     # The service's name will be applied to the end of this value.
-    tag: ""
+    tag: "1.0.0"
     pullPolicy: IfNotPresent
     pullSecrets: []
   schedulingRules:
@@ -95,7 +108,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 300Mi
+        memory: 400Mi
 
   cartService:
     enabled: true
@@ -121,7 +134,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 160Mi
+        memory: 300Mi
 
   checkoutService:
     enabled: true
@@ -155,7 +168,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 20Mi
+        memory: 50Mi
 
   currencyService:
     enabled: true
@@ -179,7 +192,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 20Mi
+        memory: 100Mi
 
 
   emailService:
@@ -208,7 +221,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 100Mi
+        memory: 200Mi
 
   featureflagService:
     enabled: true
@@ -240,7 +253,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 160Mi
+        memory: 820Mi
 
 
   ffsPostgres:
@@ -310,7 +323,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 200Mi
+        memory: 800Mi
 
   loadgenerator:
     enabled: true
@@ -368,7 +381,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 70Mi
+        memory: 300Mi
 
   productCatalogService:
     enabled: true
@@ -392,7 +405,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 20Mi
+        memory: 40Mi
 
   recommendationService:
     enabled: true
@@ -467,7 +480,7 @@ components:
     env:
       - name: OTEL_TRACES_SAMPLER
         value: "parentbased_always_on"
-      - name: OTEL_TRACES_EXPORTER
+        #      - name: OTEL_TRACES_EXPORTER
         value: "otlp"
       - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
         value: "grpc"
@@ -480,7 +493,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 30Mi
+        memory: 80Mi
 
 opentelemetry-collector:
   nameOverride: otelcol

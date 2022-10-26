@@ -24,7 +24,13 @@
       "$ref": "#/definitions/Components"
     },
     "opentelemetry-collector": {
-      "type": "object"
+      "type": "object",
+      "tag": {
+          "type": "string"
+       }
+    },
+    "wavefront": {
+      "$ref": "#/definitions/Wavefront"
     }
   },
   "required": [
@@ -325,7 +331,11 @@
               "type": "string"
             }
           }
-        }
+        },
+	"aoa_logs": {
+           "$ref": "#/definitions/ObservabilityProp"
+	  }
+
       },
       "required": [
         "jaeger",
@@ -391,6 +401,31 @@
           "items": {}
         }
       }
+    },
+    "ObservabilityProp": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "enabled": {
+                "type": "boolean"
+            }
+        },
+        "required": [
+            "enabled"
+        ],
+        "title": "ObservabilityProp"
+    },
+    "Wavefront": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "title": "wavefront"
     }
   }
 }

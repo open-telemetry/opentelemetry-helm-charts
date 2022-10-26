@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: fluentd
+  name: fluentd-wf-logging
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluentd-clusterrole
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces"
+      - "pods"
+    verbs:
+      - "list"
+      - "get"
+      - "watch"
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluentd-clusterrole
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fluentd-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: fluentd-wf-logging
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-wf-logging
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-wf-logging
+    app: fluentd-wf-logging
+    version: v1
+    kubernetes.io/cluster-service: "true"
+spec:
+ selector:
+   matchLabels:
+     name: fluentd-wf-logging
+ template:
+   metadata:
+     labels:
+       name: fluentd-wf-logging
+       app: fluentd-wf-logging
+       version: v1
+       kubernetes.io/cluster-service: "true"
+   spec:
+     serviceAccount: fluentd-wf-logging
+     serviceAccountName: fluentd-wf-logging
+     tolerations:
+     - key: node-role.kubernetes.io/master
+       effect: NoSchedule
+     containers:
+     - name: fluentd-wf
+       image: docker.io/vmware/log-intelligence-fluentd
+       command: ["fluentd"]
+       env:
+       - name:  MY_NODE_NAME
+         valueFrom:
+           fieldRef:
+             fieldPath: spec.nodeName
+       - name: FLUENTD_ARGS
+         value: --no-supervisor -q
+       resources:
+         limits:
+           memory: 500Mi
+         requests:
+           cpu: 100m
+           memory: 200Mi
+       volumeMounts:
+       - name: varlog
+         mountPath: /var/log
+       - name: varlogcontainers
+         mountPath: /var/log/containers
+       - name: varlibdockercontainers
+         mountPath: /var/lib/docker/containers
+         readOnly: true
+       - name: config-volume
+         mountPath: /etc/fluent
+     volumes:
+     - name: varlog
+       hostPath:
+         path: /var/log
+     - name: varlogcontainers
+       hostPath:
+         path: /var/log/containers
+     - name: varlibdockercontainers
+       hostPath:
+         path: /var/lib/docker/containers
+     - name: config-volume
+       configMap:
+         name: fluentdconfigmap
+     - name: wf-fluent-volume
+       emptyDir: {}
+     - name: var-logs
+       emptyDir: {}

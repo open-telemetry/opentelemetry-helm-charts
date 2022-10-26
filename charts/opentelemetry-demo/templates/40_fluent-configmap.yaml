@@ -1,0 +1,174 @@
+{{ define "config"}}
+{
+<label @FLUENT_LOG>
+  <match fluent.**>
+    @type null
+  </match>
+</label>   
+
+<source>
+  # tail payments separately so we can select ONLY the lines we want
+  @id in_tail_payments_logs
+  @type tail
+  path /var/log/containers/payments-*
+  pos_file /var/log/fluentd-containers-payments.log.pos
+  tag raw.payments.*
+  read_from_head true
+  <parse>
+    @type multi_format
+    <pattern>
+      format /^(?<time>.+) (?<stream>stdout|stderr) .*\"fields"\:\{(?<log>.*)\"\}/
+      # " this line to fix vscode highlighting
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      # spans
+      format /^(?<time>.+) (?<stream>stdout|stderr) F Finished span:(?<log>.*)/
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+  </parse>
+</source>
+
+<source>
+  # tail all the other containers
+  @id in_tail_container_logs
+  @type tail
+  # tail all containers
+  path /var/log/containers/*
+  # except for these
+  exclude_path ["/var/log/containers/fluentd*", 
+               "/var/log/containers/delivery-*",
+               "/var/log/containers/packaging-*",
+               "/var/log/containers/printing-*",
+               "/var/log/containers/styling-*",
+               "/var/log/containers/*wavefront-proxy*",
+               "/var/log/containers/*wavefront-collector*"]
+  pos_file /var/log/fluentd-containers.log.pos
+  tag raw.kubernetes.*
+  read_from_head true
+  <parse>
+    @type multi_format
+    <pattern>
+      format json
+      time_key time
+      time_type string
+      time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+      keep_time_key false
+    </pattern>
+    <pattern>
+      # for logs that are similiar to CLF
+      format /^.*(?<log>(POST|GET) \/[A-z/]* [^ ]* [^ ]* [^ ]*)/
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      #demo-shop frontend
+      format /^(?<time>.+) (?<stream>stdout|stderr) F.*(?<log>"(curr.new|currency).*"severity":"[A-z]{1,5}")/
+      # " this line to fix vscode highlighting
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      #demo-shop frontend
+      format /^(?<time>.+) (?<stream>stdout|stderr) F.*(?<log>"http.req.id.*"severity":"[A-z]{1,5}")/
+      # " this line to fix vscode highlighting
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      # demo shop shipping
+      format /^(?<time>.+) (?<stream>stdout|stderr) F {(?<log>"message.*"severity":"[a-z]{1,5}")/
+      # " this line to fix vscode highlighting
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      # demo-shop that puts trace_id in logs e.g. currency-service
+      format /^(?<time>.+) (?<stream>stdout|stderr) F .*(?<log>"trace_id".*"message":".*")/
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      # demo-shop recommendation service
+      format /^(?<time>.+) (?<stream>stdout|stderr) F.*(?<log>"levelname.*message".*")/
+      # " this line to fix vscode highlighting
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+    <pattern>
+      # catch all
+      format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+      time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+      keep_time_key false
+    </pattern>
+   </parse>
+</source>
+
+<filter **>
+  # Enrich logs with kubernetes metadata
+  @type kubernetes_metadata
+  @id filter_kube_metadata
+  skip_labels false
+  skip_container_metadata false
+  skip_namespace_metadata true
+  # skip_master_url true
+  skip_master_url false
+</filter>
+
+# not needed - filtering on input
+# <filter **>
+#   @type grep
+#   <and>
+#     # Exclude hyperlogs proxy and fluentd logs
+#     <exclude>
+#       key $.kubernetes.container_name
+#       pattern /^[a-zA-Z0-9\-]*wavefront-proxy$|^fluentd-wf-logging$/
+#     </exclude>
+#   </and>
+# </filter>
+
+<filter **>
+  @type record_transformer
+  enable_ruby
+  <record>
+    application "${record.dig('kubernetes', 'labels', 'application')? record.dig('kubernetes', 'labels', 'application') : 'none'}"
+    service "${record.dig('kubernetes', 'labels', 'service')? record.dig('kubernetes', 'labels', 'service') : 'none'}"
+    shard "${record.dig('kubernetes', 'labels', 'shard')? record.dig('kubernetes', 'labels', 'shard') : 'none'}"
+    version "${record.dig('kubernetes', 'labels', 'version')? record.dig('kubernetes', 'labels', 'version') : 'none'}"
+    container "${record.dig('kubernetes', 'container_name')? record.dig('kubernetes', 'container_name') : 'none'}"
+    namespace "${record.dig('kubernetes', 'namespace_name')? record.dig('kubernetes', 'namespace_name') : 'none'}"
+    # timestamp ${time.to_datetime().strftime('%Q')}
+  </record>
+  remove_keys kubernetes, docker
+</filter>
+
+<match **>
+  @type copy
+  # <store>
+  #   @type stdout
+  # </store>
+  <store>
+    @type http
+    #    endpoint http://{{.Release.Name}}-wavefront-proxy.{{.Release.Namespace}}.svc.cluster.local:2878/logs/json_array?f=logs_json_arr
+    endpoint http://{{.Release.Name}}-otelcol.{{.Release.Namespace}}.svc.cluster.local:2878/logs/json_array?f=logs_json_arr
+    open_timeout 2
+    json_array true
+    <buffer>
+      flush_interval 1s
+    </buffer>
+  </store> 
+</match>
+
+}
+{{ end }}
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentdconfigmap
+  namespace: kube-system
+data:
+  fluent.conf: {{ (include "config" .) | trim | quote }}

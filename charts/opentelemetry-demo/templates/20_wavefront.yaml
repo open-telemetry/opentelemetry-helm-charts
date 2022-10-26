@@ -1,0 +1,88 @@
+# Need to change YOUR_CLUSTER and YOUR_API_TOKEN accordingly
+
+apiVersion: apps/v1
+# Kubernetes versions after 1.9.0 should use apps/v1
+# Kubernetes version 1.8.x should use apps/v1beta2
+# Kubernetes versions before 1.8.0 should use apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name  }}
+    service: {{ include "otel-demo.name" . }}-otelcol
+    #    service: {{ .Release.Name   }}-wavefront-proxy
+    #  name: {{ .Release.Name   }}-wavefront-proxy
+  name: {{ include "otel-demo.name" . }}-otelcol
+  namespace: {{ .Release.Namespace   }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name  }}
+      #      service: {{ .Release.Name   }}-wavefront-proxy
+      service: {{ include "otel-demo.name" . }}-otelcol
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name  }}
+        #        service: {{ .Release.Name   }}-wavefront-proxy
+        service: {{ include "otel-demo.name" . }}-otelcol
+    spec:
+      containers:
+        #      - name: {{ .Release.Name   }}-wavefront-proxy
+      - name: {{ include "otel-demo.name" . }}-otelcol
+        image: projects.registry.vmware.com/tanzu_observability/proxy:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: WAVEFRONT_URL
+          value: {{ .Values.wavefront.url }}
+        - name: WAVEFRONT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: wf-token
+              key: token
+        # Uncomment the below lines to consume Zipkin/Istio traces
+        - name: WAVEFRONT_PROXY_ARGS
+          value: --customTracingListenerPorts 30001 --customMessageTags log --pushListenerPorts 2878 --otlpGrpcListenerPorts 4317 --otlpHttpListenerPorts 4318
+        ports:
+        - containerPort: 2878
+          protocol: TCP
+        # Uncomment the below lines to consume traces
+        - containerPort: 4317
+          protocol: TCP
+        - containerPort: 4318
+          protocol: TCP
+        - containerPort: 30001
+          protocol: TCP
+        securityContext:
+          privileged: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  #  name: {{ .Release.Name   }}-wavefront-proxy
+  name: {{ include "otel-demo.name" . }}-otelcol
+  namespace: {{ .Release.Namespace   }}
+  labels:
+    app: {{ .Release.Name  }}
+    #    service: {{ .Release.Name   }}-wavefront-proxy
+    service: {{ include "otel-demo.name" . }}-otelcol
+spec:
+  ports:
+  - name: wavefront
+    port: 2878
+    targetPort: 2878
+    protocol: TCP
+  - name: http
+    port: 30001
+    targetPort: 30001
+  - name: otlp
+    port: 4317
+    targetPort: 4317
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+    protocol: TCP
+  selector:
+    app: {{ .Release.Name  }}
+    #service: {{ .Release.Name   }}-wavefront-proxy
+    service: {{ include "otel-demo.name" . }}-otelcol
