@@ -500,6 +500,8 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
+    processors:
+      batch: {}
     exporters:
       otlp:
         endpoint: '{{ .Release.Name }}-jaeger:4317'
@@ -508,6 +510,10 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
+          receivers:
+            - otlp
+          processors:
+            - batch
           exporters:
             - logging
             - otlp
