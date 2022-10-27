@@ -1,7 +1,7 @@
 # OpenTelemetry Demo Helm Chart
 
 The helm chart installs [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo)
-in kubernetes cluster.
+in kubernetes cluster and sends traces and logs to a VMware Aria Operations for Applications tenant
 
 ## Prerequisites
 
@@ -15,10 +15,13 @@ Add OpenTelemetry Helm repository:
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 ```
 Download this chart from: https://github.com/dambott/opentelemetry-helm-charts
+
 Edit the values.yaml to add your Aria Applications token and url and set the k8s cluster name on line 55
 
 Run:
+```console
 helm dependency build
+```
 To install the chart with the release name my-otel-demo, run the following command:
 
 ```console
