@@ -20,6 +20,9 @@ spec:
         app.kubernetes.io/name: opentelemetry-operator
         control-plane: controller-manager
     spec:
+      {{- with .Values.dnsConfig }}
+      dnsConfig: {{ . }}
+      {{- end }}
       hostNetwork: {{ .Values.hostNetwork }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
