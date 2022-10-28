@@ -13,7 +13,7 @@ metadata:
 data:
   relay: |
     exporters:
-      logging: {}
+      otlp: {}
     extensions:
       health_check: {}
       memory_ballast:
@@ -33,14 +33,6 @@ data:
           load: null
           memory: null
           network: null
-      jaeger:
-        protocols:
-          grpc:
-            endpoint: 0.0.0.0:14250
-          thrift_compact:
-            endpoint: 0.0.0.0:6831
-          thrift_http:
-            endpoint: 0.0.0.0:14268
       otlp:
         protocols:
           grpc:
@@ -55,24 +47,14 @@ data:
             static_configs:
             - targets:
               - ${MY_POD_IP}:8888
-      zipkin:
-        endpoint: 0.0.0.0:9411
     service:
       extensions:
       - health_check
       - memory_ballast
       pipelines:
-        logs:
-          exporters:
-          - logging
-          processors:
-          - memory_limiter
-          - batch
-          receivers:
-          - otlp
         metrics:
           exporters:
-          - logging
+          - otlp
           processors:
           - memory_limiter
           - batch
@@ -80,16 +62,8 @@ data:
           - otlp
           - prometheus
           - hostmetrics
-        traces:
-          exporters:
-          - logging
-          processors:
-          - memory_limiter
-          - batch
-          receivers:
-          - otlp
-          - jaeger
-          - zipkin
       telemetry:
+        logs:
+          level: info
         metrics:
           address: 0.0.0.0:8888

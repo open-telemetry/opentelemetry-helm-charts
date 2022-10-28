@@ -13,7 +13,7 @@ metadata:
 data:
   relay: |
     exporters:
-      logging: {}
+      otlp: {}
     extensions:
       health_check: {}
       memory_ballast: {}
@@ -24,25 +24,25 @@ data:
         limit_mib: 409
         spike_limit_mib: 128
     receivers:
+      jaeger: null
       otlp:
         protocols:
           grpc:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
+      zipkin: null
     service:
       extensions:
       - health_check
       - memory_ballast
       pipelines:
+        logs: null
         traces:
-          exporters:
-          - logging
-          processors:
-          - memory_limiter
-          - batch
           receivers:
           - otlp
       telemetry:
+        logs:
+          level: info
         metrics:
           address: 0.0.0.0:8888
