@@ -53,7 +53,7 @@ configMap:
 # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
 config:
   exporters:
-    logging: {}
+    otlp: {}
   extensions:
     # The health_check extension is mandatory for this chart.
     # Without the health_check extension the collector will fail the readiness and liveliness probes.
@@ -65,20 +65,23 @@ config:
     # If set to null, will be overridden with values based on k8s resource limits
     memory_limiter: null
   receivers:
-    jaeger:
-      protocols:
-        grpc:
-          endpoint: 0.0.0.0:14250
-        thrift_http:
-          endpoint: 0.0.0.0:14268
-        thrift_compact:
-          endpoint: 0.0.0.0:6831
+    # Uncomment the below block to enable Jaeger receiver
+    # jaeger:
+    #   protocols:
+    #     grpc:
+    #       endpoint: 0.0.0.0:14250
+    #     thrift_http:
+    #       endpoint: 0.0.0.0:14268
+    #     thrift_compact:
+    #       endpoint: 0.0.0.0:6831
+    # Comment the below block to disable Open telemetry receiver
     otlp:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
         http:
           endpoint: 0.0.0.0:4318
+    # Comment the below block to disable Prometheus scraper
     prometheus:
       config:
         scrape_configs:
@@ -87,43 +90,49 @@ config:
             static_configs:
               - targets:
                   - ${MY_POD_IP}:8888
-    zipkin:
-      endpoint: 0.0.0.0:9411
+    # Uncomment below block to enable Zipkin receiver
+    # zipkin:
+    #   endpoint: 0.0.0.0:9411
   service:
     telemetry:
       metrics:
         address: 0.0.0.0:8888
+      # Change level to debug for enabling debugging
+      logs: 
+        level: "info"
     extensions:
       - health_check
       - memory_ballast
     pipelines:
-      logs:
-        exporters:
-          - logging
-        processors:
-          - memory_limiter
-          - batch
-        receivers:
-          - otlp
+      # Uncomment below block to enable log collection
+      # logs:
+      #   exporters:
+      #     - logging
+      #   processors:
+      #     - memory_limiter
+      #     - batch
+      #   receivers:
+      #     - otlp
       metrics:
         exporters:
-          - logging
+          - otlp
         processors:
           - memory_limiter
           - batch
         receivers:
           - otlp
           - prometheus
-      traces:
-        exporters:
-          - logging
-        processors:
-          - memory_limiter
-          - batch
-        receivers:
-          - otlp
-          - jaeger
-          - zipkin
+      # Modify below block to enable and customize tracing pipeline
+      # traces:
+      #   exporters:
+      #     - logging
+      #   processors:
+      #     - memory_limiter
+      #     - batch
+      #   receivers:
+      #     - otlp
+      #     - jaeger
+      #     - zipkin
 
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
