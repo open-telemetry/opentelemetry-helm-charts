@@ -156,7 +156,7 @@ presets:
     enabled: true
 ```
 
-# Configuration for Kubernetes Cluster Metrics
+### Configuration for Kubernetes Cluster Metrics
 
 The collector can be configured to collects cluster-level metrics from the Kubernetes API server. A single instance of this receiver can be used to monitor a cluster.
 
@@ -174,6 +174,24 @@ mode: deployment
 replicaCount: 1
 presets:
   clusterMetrics:
+    enabled: true
+```
+
+### Configuration for retrieving Kubelet metrics
+
+The collector can be configured to collect Kubelet metrics.
+
+This feature is disabled by default. It has the following requirements:
+
+- It requires [kubeletstats](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver) receiver to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) version of the collector image.
+
+To enable this feature, set the  `presets.kubeletMetrics.enabled` property to `true`.
+Here is an example `values.yaml`:
+
+```yaml
+mode: daemonset
+presets:
+  kubeletMetrics:
     enabled: true
 ```
 

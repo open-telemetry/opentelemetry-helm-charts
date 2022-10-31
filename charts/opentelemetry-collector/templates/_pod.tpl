@@ -51,6 +51,12 @@ containers:
       - name: HOST_DEV
         value: /hostfs/dev
       {{- end }}
+      {{- if .Values.presets.kubeletMetrics.enabled }}
+      - name: K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      {{- end }}
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
