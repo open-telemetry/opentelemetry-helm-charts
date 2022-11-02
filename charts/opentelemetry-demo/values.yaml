@@ -533,28 +533,21 @@ opentelemetry-collector:
         endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
         tls:
           insecure: true
-      logging:
       prometheus:
         endpoint: '0.0.0.0:9464'
 
     processors:
-      batch:
       spanmetrics:
         metrics_exporter: prometheus
 
     service:
-      telemetry:
-        metrics:
-          level: detailed
-          address: 0.0.0.0:8888
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [spanmetrics, batch]
+          processors: [memory_limiter, spanmetrics, batch]
           exporters: [otlp, logging]
         metrics:
           receivers: [otlp, prometheus]
-          processors: [batch]
           exporters: [prometheus, logging]
         metrics/spanmetrics:
           receivers: [otlp/spanmetrics]
