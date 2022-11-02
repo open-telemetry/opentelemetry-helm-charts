@@ -57,11 +57,11 @@ data:
       prometheus:
         config:
           scrape_configs:
-          - job_name: otel-collector
-            scrape_interval: 5s
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
             static_configs:
             - targets:
-              - 0.0.0.0:8888
+              - ${MY_POD_IP}:8888
       zipkin:
         endpoint: 0.0.0.0:9411
     service:
@@ -106,6 +106,8 @@ data:
           - batch
           receivers:
           - otlp
+          - jaeger
+          - zipkin
       telemetry:
         metrics:
           address: 0.0.0.0:8888
