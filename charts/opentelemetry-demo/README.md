@@ -23,6 +23,7 @@ Also edit templates/40_fluent-configmap.yaml line 142 to set the cluster_name to
 To install the chart with the release name my-otel-demo, run the following command:
 
 ```console
+cd charts/opentelemetry-demo
 kubectl create namespace my-otel-demo
 helm install --namespace my-otel-demo my-otel-demo .
 ```
