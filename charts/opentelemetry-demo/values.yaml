@@ -15,6 +15,10 @@ observability:
       limits:
         memory: 275Mi
     serviceType: "ClusterIP"
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
 
 default:
   env:
@@ -490,6 +494,18 @@ opentelemetry-collector:
       memory: 100Mi
   service:
     type: ClusterIP
+  ports:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+      containerPort: 9464
+      servicePort: 9464
+      protocol: TCP
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9464"
+    opentelemetry_community_demo: "true"
   config:
     receivers:
       otlp:
@@ -500,14 +516,95 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
+
     exporters:
       otlp:
-        endpoint: '{{ .Release.Name }}-jaeger:4317'
+        endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
         tls:
           insecure: true
+      prometheus:
+        endpoint: '0.0.0.0:9464'
+
+    processors:
+      spanmetrics:
+        metrics_exporter: prometheus
+
     service:
       pipelines:
         traces:
-          exporters:
-            - logging
-            - otlp
+          processors: [memory_limiter, spanmetrics, batch]
+          exporters: [otlp, logging]
+        metrics:
+          exporters: [prometheus, logging]
+
+prometheus:
+  alertmanager:
+    enabled: false
+  configmapReload:
+    prometheus:
+      enabled: false
+  kubeStateMetrics:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  pushgateway:
+    enabled: false
+
+  server:
+    global:
+      scrape_interval: 5s
+      scrape_timeout: 3s
+      evaluation_interval: 30s
+    service:
+      servicePort: 9090
+
+  serverFiles:
+    prometheus.yml:
+      scrape_configs:
+        - job_name: 'opentelemetry-community-demo'
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+              action: keep
+              regex: true
+
+grafana:
+  grafana.ini:
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Admin
+  adminPassword: admin
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          uid: webstore-metrics
+          type: prometheus
+          url: 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090'
+          editable: true
+          isDefault: true
+        - name: Jaeger
+          uid: webstore-traces
+          type: jaeger
+          url: 'http://{{ include "otel-demo.name" . }}-jaeger:16686'
+          editable: true
+          isDefault: false
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
