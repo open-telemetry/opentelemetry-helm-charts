@@ -5,10 +5,10 @@ kind: ConfigMap
 metadata:
   name: example-otelcol
   labels:
-    helm.sh/chart: opentelemetry-collector-0.35.0
+    helm.sh/chart: opentelemetry-collector-0.38.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.61.0"
+    app.kubernetes.io/version: "0.63.1"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
@@ -18,6 +18,8 @@ data:
         endpoint: 'example-jaeger:4317'
         tls:
           insecure: true
+      prometheus:
+        endpoint: 0.0.0.0:9464
     extensions:
       health_check: {}
       memory_ballast: {}
@@ -27,6 +29,8 @@ data:
         check_interval: 5s
         limit_mib: 80
         spike_limit_mib: 25
+      spanmetrics:
+        metrics_exporter: prometheus
     receivers:
       jaeger:
         protocols:
@@ -71,6 +75,7 @@ data:
           - otlp
         metrics:
           exporters:
+          - prometheus
           - logging
           processors:
           - memory_limiter
@@ -80,10 +85,11 @@ data:
           - prometheus
         traces:
           exporters:
-          - logging
           - otlp
+          - logging
           processors:
           - memory_limiter
+          - spanmetrics
           - batch
           receivers:
           - otlp

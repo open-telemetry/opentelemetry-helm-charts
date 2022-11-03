@@ -561,48 +561,25 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
-      otlp/spanmetrics:
-        protocols:
-          grpc:
-            endpoint: "localhost:65535"
-      prometheus:
-        config:
-          scrape_configs:
-            - job_name: 'otel-collector'
-              scrape_interval: 5s
-              static_configs:
-                - targets: ['0.0.0.0:8888']
 
     exporters:
       otlp:
         endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
         tls:
           insecure: true
-      logging:
       prometheus:
         endpoint: '0.0.0.0:9464'
 
     processors:
-      batch:
       spanmetrics:
         metrics_exporter: prometheus
 
     service:
-      telemetry:
-        metrics:
-          level: detailed
-          address: 0.0.0.0:8888
       pipelines:
         traces:
-          receivers: [otlp]
-          processors: [spanmetrics, batch]
+          processors: [memory_limiter, spanmetrics, batch]
           exporters: [otlp, logging]
         metrics:
-          receivers: [otlp, prometheus]
-          processors: [batch]
-          exporters: [prometheus, logging]
-        metrics/spanmetrics:
-          receivers: [otlp/spanmetrics]
           exporters: [prometheus, logging]
 
 prometheus:
@@ -645,11 +622,6 @@ grafana:
       enabled: true
       org_name: Main Org.
       org_role: Admin
-    server:
-      domain: localhost
-      # root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
-      root_url: http://localhost:8080/grafana/
-      serve_from_sub_path: true
   adminPassword: admin
   datasources:
     datasources.yaml:
@@ -664,7 +636,7 @@ grafana:
         - name: Jaeger
           uid: webstore-traces
           type: jaeger
-          url: 'http://{{ include "otel-demo.name" . }}-jaeger/jaeger/ui:16686'
+          url: 'http://{{ include "otel-demo.name" . }}-jaeger:16686'
           editable: true
           isDefault: false
   dashboardProviders:
