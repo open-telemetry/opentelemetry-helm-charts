@@ -50,10 +50,6 @@ data:
               - http://*
               - https://*
             endpoint: 0.0.0.0:4318
-      otlp/spanmetrics:
-        protocols:
-          grpc:
-            endpoint: localhost:65535
       prometheus:
         config:
           scrape_configs:
@@ -87,15 +83,6 @@ data:
           receivers:
           - otlp
           - prometheus
-        metrics/spanmetrics:
-          exporters:
-          - prometheus
-          - logging
-          processors:
-          - memory_limiter
-          - batch
-          receivers:
-          - otlp/spanmetrics
         traces:
           exporters:
           - otlp

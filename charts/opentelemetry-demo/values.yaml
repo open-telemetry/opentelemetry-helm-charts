@@ -516,10 +516,6 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
-      otlp/spanmetrics:
-        protocols:
-          grpc:
-            endpoint: "localhost:65535"
 
     exporters:
       otlp:
@@ -539,10 +535,6 @@ opentelemetry-collector:
           processors: [memory_limiter, spanmetrics, batch]
           exporters: [otlp, logging]
         metrics:
-          exporters: [prometheus, logging]
-        metrics/spanmetrics:
-          receivers: [otlp/spanmetrics]
-          processors: [memory_limiter, batch]
           exporters: [prometheus, logging]
 
 prometheus:
