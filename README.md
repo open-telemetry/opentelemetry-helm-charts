@@ -45,6 +45,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
 
 - [Alex Birca](https://github.com/Allex1), Adobe
+- [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 
 Emeritus Approvers:
 
