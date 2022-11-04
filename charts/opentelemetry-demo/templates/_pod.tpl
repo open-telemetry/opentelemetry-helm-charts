@@ -6,7 +6,7 @@ Note: Consider that dependent variables need to be declared before the reference
 {{- if .useDefault.env  }}
 {{ include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides "Template" $.Template) }}
 {{- end }}
-{{- if .env  }}
+{{- if .env }}
 {{ include "otel-demo.envOverriden" . }}
 {{- end }}
 {{- end }}
