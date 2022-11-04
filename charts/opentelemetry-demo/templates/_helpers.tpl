@@ -35,3 +35,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: {{ .name}}
 {{- end}}
 {{- end }}
+
+{{- define "otel-demo.envOverriden" -}}
+{{- $mergedEnvs := list }}
+{{- $envOverrides := default (list) .envOverrides }}
+
+{{- range .env }}
+{{-   $currentEnv := . }}
+{{-   $hasOverride := false }}
+{{-   range $envOverrides }}
+{{-     if eq $currentEnv.name .name }}
+{{-       $mergedEnvs = append $mergedEnvs . }}
+{{-       $envOverrides = without $envOverrides . }}
+{{-       $hasOverride = true }}
+{{-     end }}
+{{-   end }}
+{{-   if not $hasOverride }}
+{{-     $mergedEnvs = append $mergedEnvs $currentEnv }}
+{{-   end }}
+{{- end }}
+{{- $mergedEnvs = concat $mergedEnvs $envOverrides }}
+{{- tpl (toYaml $mergedEnvs) . }}
+{{- end }}

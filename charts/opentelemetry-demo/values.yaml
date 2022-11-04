@@ -21,6 +21,7 @@ observability:
     enabled: true
 
 default:
+  # list of environment variables applied to all components
   env:
     - name: OTEL_SERVICE_NAME
       valueFrom:
@@ -44,6 +45,11 @@ default:
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+  # list of environment variables which get applied to all components additional to the list provided with the "env" section.
+  # Use this section to override or add environment variables selectively 
+  envOverrides: []
+  #  - name: OTEL_K8S_NODE_NAME
+  #    value: "someConstantValue"
   image:
     repository: otel/demo
     # Overrides the image tag whose default is the chart appVersion.
@@ -96,6 +102,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: AD_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -122,6 +129,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CART_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -156,6 +164,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -180,6 +189,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CURRENCY_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -209,6 +219,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
       - name: EMAIL_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -235,6 +246,7 @@ components:
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    envOverrides: []
     serviceType: ClusterIP
     ports:
       - name: grpc
@@ -268,6 +280,7 @@ components:
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    envOverrides: []
     serviceType: ClusterIP
     ports:
       - name: postgres
@@ -313,6 +326,7 @@ components:
         value: "8080"
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -392,6 +406,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: LOADGENERATOR_PORT
         value: "8089"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -414,6 +429,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -438,6 +454,7 @@ components:
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -468,6 +485,7 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -496,6 +514,7 @@ components:
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -526,6 +545,7 @@ components:
         value: '{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: QUOTE_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
