@@ -155,6 +155,7 @@ receivers:
         load:
         memory:
         disk:
+        filesystem:
         network:
 {{- end }}
 
