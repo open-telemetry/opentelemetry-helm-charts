@@ -5,11 +5,12 @@ kind: Service
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: opentelemetry-demo-0.9.6
+    helm.sh/chart: opentelemetry-demo-0.11.1
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: jaeger
-    app.kubernetes.io/version: "0.6.1-beta"
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
@@ -33,11 +34,12 @@ kind: Deployment
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: opentelemetry-demo-0.9.6
+    helm.sh/chart: opentelemetry-demo-0.11.1
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: jaeger
-    app.kubernetes.io/version: "0.6.1-beta"
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -59,6 +61,8 @@ spec:
           args:
             - "--memory.max-traces"
             - "10000"
+            - "--query.base-path"
+            - "/jaeger/ui"
           env:
             - name: COLLECTOR_OTLP_ENABLED
               value: "true"

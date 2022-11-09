@@ -2,13 +2,13 @@ name: Test Demo Chart
 
 on:
   pull_request:
-    paths: 
+    paths:
     - 'charts/opentelemetry-demo/**'
     branches:
       - main
 
 jobs:
-  collector-test:
+  demo-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,4 +21,4 @@ jobs:
           create-kind-cluster: "true"
 
       - name: Run chart-testing (install)
-        run: ct install --charts charts/opentelemetry-demo --chart-repos opentelemetry-collector=https://open-telemetry.github.io/opentelemetry-helm-charts 
+        run: ct install --charts charts/opentelemetry-demo --chart-repos opentelemetry-collector=https://open-telemetry.github.io/opentelemetry-helm-charts,prometheus=https://prometheus-community.github.io/helm-charts,grafana=https://grafana.github.io/helm-charts

@@ -1,13 +1,13 @@
 {{/*
 Get Pod Env
-Note: Consider that dependent variables need to be declared before the referenced env varibale.
+Note: Consider that dependent variables need to be declared before the referenced env variable.
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- if .useDefault.env  }}
-{{ toYaml .defaultValues.env }}
+{{ include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides "Template" $.Template) }}
 {{- end }}
 {{- if .env }}
-{{ tpl (toYaml .env) . }}
+{{ include "otel-demo.envOverriden" . }}
 {{- end }}
 {{- end }}
 

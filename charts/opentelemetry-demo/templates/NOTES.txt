@@ -9,26 +9,17 @@
  ╚═════╝    ╚═╝   ╚══════╝╚══════╝    ╚═════╝ ╚══════╝╚═╝     ╚═╝ ╚═════╝
 
 
-- Frontend UI: http://localhost:8080
+- All services are available via the Frontend proxy: http://localhost:8080
   by running these commands:
-     kubectl port-forward svc/{{ include "otel-demo.name" . }}-frontend 8080:8080
+     kubectl port-forward svc/{{ include "otel-demo.name" . }}-frontendproxy 8080:8080
 
-
-{{- if $.Values.observability.jaeger.enabled }}
-
-- Jaeger UI: http://localhost:16686
-  by running these commands:
-     kubectl port-forward svc/{{ include "otel-demo.name" . }}-jaeger 16686:16686
-{{- end }}
-
-- Locust (load generator) UI: http://localhost:8089
-  by running these commands:
-      kubectl port-forward svc/{{ include "otel-demo.name" . }}-loadgenerator 8089:8089
-
-- Feature Flag Service UI: http://localhost:8081
-  by running these commands:
-      kubectl port-forward svc/{{ include "otel-demo.name" . }}-featureflagservice 8081:8081
+  The following services are available at these paths once the proxy is exposed:
+  Webstore             http://localhost:8080/
+  Grafana              http://localhost:8080/grafana/
+  Feature Flags UI     http://localhost:8080/feature/
+  Load Generator UI    http://localhsot:8080/loadgen/
+  Jaeger UI            http://localhost:8080/jaeger/ui/
 
 - OpenTelemetry Collector OTLP/HTTP receiver (required for browser spans to be emitted):
   by running these commands:
-      kubectl port-forward svc/{{ include "otel-demo.name" . }}-otelcol 4318:4318
+     kubectl port-forward svc/{{ include "otel-demo.name" . }}-otelcol 4318:4318

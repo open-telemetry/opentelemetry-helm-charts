@@ -18,7 +18,7 @@ manager:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
     tag: v0.61.0
   collectorImage:
-    repository: otel/opentelemetry-collector
+    repository: otel/opentelemetry-collector-contrib
     tag: 0.62.1
   ports:
     metricsPort: 8080
@@ -39,6 +39,7 @@ manager:
   # -- Create the manager ServiceAccount
   serviceAccount:
     create: true
+    annotations: {}
     # name: nameOverride
 
   ## Enable ServiceMonitor for Prometheus metrics scrape
@@ -47,6 +48,8 @@ manager:
     extraLabels: {}
     metricsEndpoints:
     - port: metrics
+
+  podAnnotations: {}
 
   prometheusRule:
     enabled: false
