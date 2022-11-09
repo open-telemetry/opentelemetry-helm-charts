@@ -39,7 +39,8 @@ spec:
       dnsPolicy: {{ . }}
       {{- end }}
       {{- with .Values.dnsConfig }}
-      dnsConfig: {{ . }}
+      dnsConfig: 
+        {{ toYaml .annotations | nindent 4 }}
       {{- end }}
       {{- $podValues := deepCopy .Values }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}

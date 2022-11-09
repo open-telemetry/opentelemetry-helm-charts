@@ -37,9 +37,11 @@ spec:
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
       hostNetwork: {{ .Values.hostNetwork }}
       {{- with .Values.dnsPolicy }}
-      dnsPolicy: {{ . }}
+      dnsPolicy: 
+        {{ toYaml . | nindent 4 }}
       {{- end }}
       {{- with .Values.dnsConfig }}
-      dnsConfig: {{ . }}
+      dnsConfig: 
+        {{ toYaml .annotations | nindent 4 }}
       {{- end }}
 {{- end }}
