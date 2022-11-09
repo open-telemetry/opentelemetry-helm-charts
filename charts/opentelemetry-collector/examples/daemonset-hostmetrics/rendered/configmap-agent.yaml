@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.38.2
+    helm.sh/chart: opentelemetry-collector-0.38.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.63.1"
@@ -15,7 +15,8 @@ data:
     exporters:
       logging: {}
     extensions:
-      health_check: {}
+      health_check:
+        endpoint: '0.0.0.0:13134'
       memory_ballast:
         size_mib: "204"
     processors:
