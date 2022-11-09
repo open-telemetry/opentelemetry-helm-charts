@@ -5,12 +5,11 @@ kind: Deployment
 metadata:
   name: example-otelcol
   labels:
-    helm.sh/chart: opentelemetry-collector-0.35.0
+    helm.sh/chart: opentelemetry-collector-0.38.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.61.0"
+    app.kubernetes.io/version: "0.63.1"
     app.kubernetes.io/managed-by: Helm
-  
 spec:
   replicas: 1
   selector:
@@ -23,8 +22,10 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 03ae28054f184189b8d061c21691f51d1dcefd78533dc6bdc8ba3f57b6184652
-        
+        checksum/config: f3e13a432d9a9b9234d72ccbed7697ddf50f16a90691dc70c178abc64568e96d
+        opentelemetry_community_demo: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/scrape: "true"
       labels:
         app.kubernetes.io/name: otelcol
         app.kubernetes.io/instance: example
@@ -42,7 +43,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.61.0"
+          image: "otel/opentelemetry-collector-contrib:0.63.1"
           imagePullPolicy: IfNotPresent
           ports:
             - name: jaeger-compact
@@ -54,11 +55,17 @@ spec:
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
             - name: otlp
               containerPort: 4317
               protocol: TCP
             - name: otlp-http
               containerPort: 4318
+              protocol: TCP
+            - name: prometheus
+              containerPort: 9464
               protocol: TCP
             - name: zipkin
               containerPort: 9411

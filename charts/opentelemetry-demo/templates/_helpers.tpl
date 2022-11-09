@@ -21,6 +21,7 @@ helm.sh/chart: {{ include "otel-demo.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
+app.kubernetes.io/part-of: opentelemetry-demo
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -33,4 +34,26 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .name }}
 app.kubernetes.io/component: {{ .name}}
 {{- end}}
+{{- end }}
+
+{{- define "otel-demo.envOverriden" -}}
+{{- $mergedEnvs := list }}
+{{- $envOverrides := default (list) .envOverrides }}
+
+{{- range .env }}
+{{-   $currentEnv := . }}
+{{-   $hasOverride := false }}
+{{-   range $envOverrides }}
+{{-     if eq $currentEnv.name .name }}
+{{-       $mergedEnvs = append $mergedEnvs . }}
+{{-       $envOverrides = without $envOverrides . }}
+{{-       $hasOverride = true }}
+{{-     end }}
+{{-   end }}
+{{-   if not $hasOverride }}
+{{-     $mergedEnvs = append $mergedEnvs $currentEnv }}
+{{-   end }}
+{{- end }}
+{{- $mergedEnvs = concat $mergedEnvs $envOverrides }}
+{{- tpl (toYaml $mergedEnvs) . }}
 {{- end }}

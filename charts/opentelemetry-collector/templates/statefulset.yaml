@@ -34,6 +34,7 @@ spec:
       {{- $podValues := deepCopy .Values }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "-statefulset" "isAgent" false }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
+      hostNetwork: {{ .Values.hostNetwork }}
   {{- with .Values.statefulset.volumeClaimTemplates }}
   volumeClaimTemplates:
   {{- toYaml . | nindent 2 }}

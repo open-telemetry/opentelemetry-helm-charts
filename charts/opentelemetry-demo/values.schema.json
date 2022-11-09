@@ -25,6 +25,12 @@
     },
     "opentelemetry-collector": {
       "type": "object"
+    },
+    "prometheus": {
+      "type": "object"
+    },
+    "grafana": {
+      "type": "object"
     }
   },
   "required": [
@@ -62,6 +68,9 @@
           "$ref": "#/definitions/Service"
         },
         "frontend": {
+          "$ref": "#/definitions/Service"
+        },
+        "frontendProxy": {
           "$ref": "#/definitions/Service"
         },
         "loadgenerator": {
@@ -112,6 +121,12 @@
           "type": "integer"
         },
         "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          }
+        },
+        "envOverrides": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Env"
@@ -184,6 +199,12 @@
           "type": "boolean"
         },
         "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          }
+        },
+        "envOverrides": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Env"
@@ -323,6 +344,24 @@
             },
             "serviceType": {
               "type": "string"
+            }
+          }
+        },
+        "prometheus": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        },
+        "grafana": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
             }
           }
         }

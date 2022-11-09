@@ -10,13 +10,18 @@ observability:
       tag: "latest"
       pullPolicy: IfNotPresent
       pullSecrets: []
-    args: ["--memory.max-traces", "10000"]
+    args: ["--memory.max-traces", "10000", "--query.base-path", "/jaeger/ui"]
     resources:
       limits:
         memory: 275Mi
     serviceType: "ClusterIP"
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
 
 default:
+  # list of environment variables applied to all components
   env:
     - name: OTEL_SERVICE_NAME
       valueFrom:
@@ -40,6 +45,10 @@ default:
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+  # Allows overriding and additions to .Values.default.env
+  envOverrides: []
+  #  - name: OTEL_K8S_NODE_NAME
+  #    value: "someConstantValue"
   image:
     repository: otel/demo
     # Overrides the image tag whose default is the chart appVersion.
@@ -92,6 +101,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: AD_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -118,6 +128,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CART_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -152,6 +163,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -176,6 +188,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CURRENCY_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -205,6 +218,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
       - name: EMAIL_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -231,6 +245,7 @@ components:
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    envOverrides: []
     serviceType: ClusterIP
     ports:
       - name: grpc
@@ -264,6 +279,7 @@ components:
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+    envOverrides: []
     serviceType: ClusterIP
     ports:
       - name: postgres
@@ -307,10 +323,56 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: FRONTEND_PORT
         value: "8080"
+      - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
         memory: 200Mi
+
+
+  frontendProxy:
+    enabled: true
+    useDefault:
+      env: true
+
+    imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+    serviceType: ClusterIP
+    servicePort: 8080
+    env:
+      - name: FRONTEND_PORT
+        value: "8080"
+      - name: FRONTEND_HOST
+        value: '{{ include "otel-demo.name" . }}-frontend'
+      - name: FEATURE_FLAG_SERVICE_PORT
+        value: "8081"
+      - name: FEATURE_FLAG_SERVICE_HOST
+        value: '{{ include "otel-demo.name" . }}-featureflagservice'
+      - name: LOCUST_WEB_PORT
+        value: "8089"
+      - name: LOCUST_WEB_HOST
+        value: '{{ include "otel-demo.name" . }}-loadgenerator'
+      - name: GRAFANA_SERVICE_PORT
+        value: "80"
+      - name: GRAFANA_SERVICE_HOST
+        value: '{{ include "otel-demo.name" . }}-grafana'
+      - name: JAEGER_SERVICE_PORT
+        value: "16686"
+      - name: JAEGER_SERVICE_HOST
+        value: '{{ include "otel-demo.name" . }}-jaeger'
+      - name: ENVOY_PORT
+        value: "8080"
+      - name: ENVOY_UID
+        value: "0"
+    podAnnotations: {}
+    resources:
+      limits:
+        memory: 20Mi
 
   loadgenerator:
     enabled: true
@@ -343,6 +405,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: LOADGENERATOR_PORT
         value: "8089"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -365,6 +428,7 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -389,6 +453,7 @@ components:
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -419,6 +484,7 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -447,6 +513,7 @@ components:
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -477,6 +544,7 @@ components:
         value: '{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: QUOTE_SERVICE_PORT
         value: "8080"
+    envOverrides: []
     podAnnotations: {}
     resources:
       limits:
@@ -490,6 +558,18 @@ opentelemetry-collector:
       memory: 100Mi
   service:
     type: ClusterIP
+  ports:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+      containerPort: 9464
+      servicePort: 9464
+      protocol: TCP
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9464"
+    opentelemetry_community_demo: "true"
   config:
     receivers:
       otlp:
@@ -500,14 +580,98 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
+
     exporters:
       otlp:
-        endpoint: '{{ .Release.Name }}-jaeger:4317'
+        endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
         tls:
           insecure: true
+      prometheus:
+        endpoint: '0.0.0.0:9464'
+
+    processors:
+      spanmetrics:
+        metrics_exporter: prometheus
+
     service:
       pipelines:
         traces:
-          exporters:
-            - logging
-            - otlp
+          processors: [memory_limiter, spanmetrics, batch]
+          exporters: [otlp, logging]
+        metrics:
+          exporters: [prometheus, logging]
+
+prometheus:
+  alertmanager:
+    enabled: false
+  configmapReload:
+    prometheus:
+      enabled: false
+  kubeStateMetrics:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  pushgateway:
+    enabled: false
+
+  server:
+    global:
+      scrape_interval: 5s
+      scrape_timeout: 3s
+      evaluation_interval: 30s
+    service:
+      servicePort: 9090
+
+  serverFiles:
+    prometheus.yml:
+      scrape_configs:
+        - job_name: 'opentelemetry-community-demo'
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+              action: keep
+              regex: true
+
+grafana:
+  grafana.ini:
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Admin
+    server:
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
+      serve_from_sub_path: true
+  adminPassword: admin
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          uid: webstore-metrics
+          type: prometheus
+          url: 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090'
+          editable: true
+          isDefault: true
+        - name: Jaeger
+          uid: webstore-traces
+          type: jaeger
+          url: 'http://{{ include "otel-demo.name" . }}-jaeger:16686'
+          editable: true
+          isDefault: false
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: '{{ include "otel-demo.name" . }}-grafana-dashboards'

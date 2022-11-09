@@ -5,10 +5,10 @@ kind: Service
 metadata:
   name: example-otelcol
   labels:
-    helm.sh/chart: opentelemetry-collector-0.35.0
+    helm.sh/chart: opentelemetry-collector-0.38.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.61.0"
+    app.kubernetes.io/version: "0.63.1"
     app.kubernetes.io/managed-by: Helm
     component: standalone-collector
 spec:
@@ -27,6 +27,10 @@ spec:
       port: 14268
       targetPort: 14268
       protocol: TCP
+    - name: metrics
+      port: 8888
+      targetPort: 8888
+      protocol: TCP
     - name: otlp
       port: 4317
       targetPort: 4317
@@ -34,6 +38,10 @@ spec:
     - name: otlp-http
       port: 4318
       targetPort: 4318
+      protocol: TCP
+    - name: prometheus
+      port: 9464
+      targetPort: 9464
       protocol: TCP
     - name: zipkin
       port: 9411
