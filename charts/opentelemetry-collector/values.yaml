@@ -6,7 +6,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 # Valid values are "daemonset", "deployment", and "statefulset".
-mode: ""
+mode: "daemonset"
 
 # Handles basic configuration of components that
 # also require k8s modifications to work correctly.
@@ -53,7 +53,10 @@ presets:
 configMap:
   # Specifies whether a configMap should be created (true by default)
   create: true
-
+healthCheck:
+  port: 13134
+  url: "0.0.0.0"
+healthCheckUrl: "{{.d.url}}:{{.d.port}}"
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
 # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
@@ -64,7 +67,8 @@ config:
     # The health_check extension is mandatory for this chart.
     # Without the health_check extension the collector will fail the readiness and liveliness probes.
     # The health_check extension can be modified, but should never be removed.
-    health_check: {}
+    # URL is templatized to allow multiple chart deployments to exist in a single cluster
+    health_check: {"endpoint": "{{ tpl .Values.healthCheckUrl (dict \"d\" .Values.healthCheck \"Template\" $.Template) }}"}
     memory_ballast: {}
   processors:
     batch: {}

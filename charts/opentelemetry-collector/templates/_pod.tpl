@@ -58,7 +58,7 @@ containers:
             fieldPath: spec.nodeName
       {{- end }}
       {{- with .Values.extraEnvs }}
-      {{- . | toYaml | nindent 6 }}
+        {{- . | toYaml | nindent 6 }}
       {{- end }}
     {{- if .Values.lifecycleHooks }}
     lifecycle:
@@ -67,11 +67,11 @@ containers:
     livenessProbe:
       httpGet:
         path: /
-        port: 13133
+        port: {{ .Values.healthCheck.port }}
     readinessProbe:
       httpGet:
         path: /
-        port: 13133
+        port: {{ .Values.healthCheck.port }}
     resources:
       {{- toYaml .Values.resources | nindent 6 }}
     volumeMounts:
