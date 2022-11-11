@@ -156,6 +156,13 @@ receivers:
         memory:
         disk:
         filesystem:
+          exclude_mount_points:
+            mount_points:
+            - /snap/*
+            - /boot/*
+            - /var/lib/kubelet/pods/*
+            - /var/lib/kubelet/plugins/*
+            match_type: regexp
         network:
 {{- end }}
 
