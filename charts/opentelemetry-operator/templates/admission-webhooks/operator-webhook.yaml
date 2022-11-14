@@ -11,7 +11,7 @@ metadata:
     "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-  name: opentelemetry-operator-controller-manager-service-cert
+  name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.name" .)) .Values.admissionWebhooks.secretName }}
   namespace: {{ .Release.Namespace }}
 data:
   tls.crt: {{ $cert.Cert | b64enc }}
