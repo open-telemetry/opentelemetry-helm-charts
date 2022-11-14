@@ -17,7 +17,7 @@ spec:
     kind: Issuer
     name: {{ template "opentelemetry-operator.name" . }}-selfsigned-issuer
     {{- end }}
-  secretName: {{ template "opentelemetry-operator.name" . }}-controller-manager-service-cert
+  secretName: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.name" .)) .Values.admissionWebhooks.secretName }}
   subject:
     organizationalUnits:
       - {{ template "opentelemetry-operator.name" . }}
