@@ -86,6 +86,9 @@ spec:
             - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
             - --logtostderr=true
             - --v=0
+            {{-  if .Values.kubeRBACProxy.extraArgs  }}
+            {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
+            {{-  end  }}
           image: "{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
           name: kube-rbac-proxy
           ports:
