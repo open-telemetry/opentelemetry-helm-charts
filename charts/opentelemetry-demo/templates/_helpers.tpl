@@ -59,8 +59,8 @@ app.kubernetes.io/component: {{ .name}}
 {{- end }}
 
 {{- define "otel-demo.schedulingRules" -}}
-{{- if .schedulingRules -}}
-{{- if or .defaultValues.schedulingRules.nodeSelector .schedulingRules.nodeSelector -}}
+{{- if .schedulingRules }}
+{{- if or .defaultValues.schedulingRules.nodeSelector .schedulingRules.nodeSelector }}
 nodeSelector:
   {{- .schedulingRules.nodeSelector | default .defaultValues.schedulingRules.nodeSelector | toYaml | nindent 2 }}
 {{- end }}

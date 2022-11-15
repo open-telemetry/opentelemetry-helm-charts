@@ -26,7 +26,7 @@ spec:
       {{- with .serviceAccountName }}
       serviceAccountName: {{ .serviceAccountName}}
       {{- end }}
-      {{- include "otel-demo.schedulingRules" . | nindent 6 }}
+      {{- include "otel-demo.schedulingRules" . | indent 6 }}
       containers:
         - name: {{ .name }}
           image: '{{ .imageOverride.repository | default .defaultValues.image.repository }}:{{ .imageOverride.tag | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
