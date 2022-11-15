@@ -57,3 +57,20 @@ app.kubernetes.io/component: {{ .name}}
 {{- $mergedEnvs = concat $mergedEnvs $envOverrides }}
 {{- tpl (toYaml $mergedEnvs) . }}
 {{- end }}
+
+{{- define "otel-demo.schedulingRules" -}}
+{{- if .schedulingRules -}}
+{{- if or .defaultValues.schedulingRules.nodeSelector .schedulingRules.nodeSelector -}}
+nodeSelector:
+  {{- .schedulingRules.nodeSelector | default .defaultValues.schedulingRules.nodeSelector | toYaml | nindent 2 }}
+{{- end }}
+{{- if or .defaultValues.schedulingRules.affinity .schedulingRules.affinity}}
+affinity:
+  {{ toYaml .schedulingRules.affinity | default .defaultValues.schedulingRules.affinity | toYaml | nindent 2 }}
+{{- end }}
+{{- if or .defaultValues.schedulingRules.tolerations .schedulingRules.tolerations}}
+tolerations:
+  {{ toYaml .schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
