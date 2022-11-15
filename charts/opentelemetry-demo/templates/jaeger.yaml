@@ -1,4 +1,6 @@
 {{- $config := set . "name" "jaeger" }}
+{{- $config := set . "defaultValues" .Values.default }}
+{{- $config := set . "schedulingRules" .Values.observability.jaeger.schedulingRules }}
 {{- if .Values.observability.jaeger.enabled -}}
 ---
 apiVersion: apps/v1
@@ -17,6 +19,7 @@ spec:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
     spec:
+      {{- include "otel-demo.schedulingRules" $config | nindent 6 }}
       containers:
         - name: jaeger
           image: "{{ .Values.observability.jaeger.image.repository }}:{{ .Values.observability.jaeger.image.tag }}"
