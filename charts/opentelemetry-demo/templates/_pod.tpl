@@ -3,11 +3,11 @@ Get Pod Env
 Note: Consider that dependent variables need to be declared before the referenced env variable.
 */}}
 {{- define "otel-demo.pod.env" -}}
-{{- if .useDefault.env  }}
-{{ include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides "Template" $.Template) }}
-{{- end }}
 {{- if .env }}
 {{ include "otel-demo.envOverriden" . }}
+{{- end }}
+{{- if .useDefault.env  }}
+{{ include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides "Template" $.Template) }}
 {{- end }}
 {{- end }}
 

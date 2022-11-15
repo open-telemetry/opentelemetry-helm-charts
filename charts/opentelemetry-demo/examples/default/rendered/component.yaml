@@ -5,7 +5,7 @@ kind: Service
 metadata:
   name: example-adservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: adservice
@@ -29,7 +29,7 @@ kind: Service
 metadata:
   name: example-cartservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: cartservice
@@ -53,7 +53,7 @@ kind: Service
 metadata:
   name: example-checkoutservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: checkoutservice
@@ -77,7 +77,7 @@ kind: Service
 metadata:
   name: example-currencyservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: currencyservice
@@ -101,7 +101,7 @@ kind: Service
 metadata:
   name: example-emailservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: emailservice
@@ -125,7 +125,7 @@ kind: Service
 metadata:
   name: example-featureflagservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: featureflagservice
@@ -152,7 +152,7 @@ kind: Service
 metadata:
   name: example-ffspostgres
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: ffspostgres
@@ -176,7 +176,7 @@ kind: Service
 metadata:
   name: example-frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: frontend
@@ -200,7 +200,7 @@ kind: Service
 metadata:
   name: example-frontendproxy
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: frontendproxy
@@ -224,7 +224,7 @@ kind: Service
 metadata:
   name: example-loadgenerator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: loadgenerator
@@ -248,7 +248,7 @@ kind: Service
 metadata:
   name: example-paymentservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: paymentservice
@@ -272,7 +272,7 @@ kind: Service
 metadata:
   name: example-productcatalogservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: productcatalogservice
@@ -296,7 +296,7 @@ kind: Service
 metadata:
   name: example-quoteservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: quoteservice
@@ -320,7 +320,7 @@ kind: Service
 metadata:
   name: example-recommendationservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: recommendationservice
@@ -344,7 +344,7 @@ kind: Service
 metadata:
   name: example-redis
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: redis
@@ -368,7 +368,7 @@ kind: Service
 metadata:
   name: example-shippingservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: shippingservice
@@ -392,7 +392,7 @@ kind: Deployment
 metadata:
   name: example-adservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: adservice
@@ -422,6 +422,10 @@ spec:
             name: service
           env:
           
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: AD_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -444,10 +448,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: AD_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 300Mi
@@ -458,7 +458,7 @@ kind: Deployment
 metadata:
   name: example-cartservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: cartservice
@@ -488,6 +488,14 @@ spec:
             name: service
           env:
           
+          - name: ASPNETCORE_URLS
+            value: http://*:8080
+          - name: REDIS_ADDR
+            value: 'example-redis:6379'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: CART_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -510,14 +518,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: ASPNETCORE_URLS
-            value: http://*:8080
-          - name: REDIS_ADDR
-            value: 'example-redis:6379'
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: CART_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 160Mi
@@ -528,7 +528,7 @@ kind: Deployment
 metadata:
   name: example-checkoutservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: checkoutservice
@@ -558,6 +558,22 @@ spec:
             name: service
           env:
           
+          - name: CART_SERVICE_ADDR
+            value: 'example-cartservice:8080'
+          - name: CURRENCY_SERVICE_ADDR
+            value: 'example-currencyservice:8080'
+          - name: PAYMENT_SERVICE_ADDR
+            value: 'example-paymentservice:8080'
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: 'example-productcatalogservice:8080'
+          - name: SHIPPING_SERVICE_ADDR
+            value: 'example-shippingservice:8080'
+          - name: EMAIL_SERVICE_ADDR
+            value: http://example-emailservice:8080
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: CHECKOUT_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -580,22 +596,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: CART_SERVICE_ADDR
-            value: 'example-cartservice:8080'
-          - name: CURRENCY_SERVICE_ADDR
-            value: 'example-currencyservice:8080'
-          - name: PAYMENT_SERVICE_ADDR
-            value: 'example-paymentservice:8080'
-          - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: 'example-productcatalogservice:8080'
-          - name: SHIPPING_SERVICE_ADDR
-            value: 'example-shippingservice:8080'
-          - name: EMAIL_SERVICE_ADDR
-            value: http://example-emailservice:8080
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: CHECKOUT_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 20Mi
@@ -606,7 +606,7 @@ kind: Deployment
 metadata:
   name: example-currencyservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: currencyservice
@@ -636,6 +636,12 @@ spec:
             name: service
           env:
           
+          - name: PORT
+            value: "8080"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: CURRENCY_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -658,12 +664,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: PORT
-            value: "8080"
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: CURRENCY_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 20Mi
@@ -674,7 +674,7 @@ kind: Deployment
 metadata:
   name: example-emailservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: emailservice
@@ -704,6 +704,16 @@ spec:
             name: service
           env:
           
+          - name: APP_ENV
+            value: production
+          - name: PORT
+            value: "8080"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+            value: http://example-otelcol:4318/v1/traces
+          - name: EMAIL_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -726,16 +736,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: APP_ENV
-            value: production
-          - name: PORT
-            value: "8080"
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://example-otelcol:4318/v1/traces
-          - name: EMAIL_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 100Mi
@@ -746,7 +746,7 @@ kind: Deployment
 metadata:
   name: example-featureflagservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: featureflagservice
@@ -778,6 +778,16 @@ spec:
             name: http
           env:
           
+          - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+            value: "50053"
+          - name: FEATURE_FLAG_SERVICE_PORT
+            value: "8081"
+          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+            value: grpc
+          - name: DATABASE_URL
+            value: ecto://ffs:ffs@example-ffspostgres:5432/ffs
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -800,16 +810,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-            value: "50053"
-          - name: FEATURE_FLAG_SERVICE_PORT
-            value: "8081"
-          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-            value: grpc
-          - name: DATABASE_URL
-            value: ecto://ffs:ffs@example-ffspostgres:5432/ffs
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
           resources:
             limits:
               memory: 160Mi
@@ -820,7 +820,7 @@ kind: Deployment
 metadata:
   name: example-ffspostgres
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: ffspostgres
@@ -850,6 +850,14 @@ spec:
             name: postgres
           env:
           
+          - name: POSTGRES_DB
+            value: ffs
+          - name: POSTGRES_PASSWORD
+            value: ffs
+          - name: POSTGRES_USER
+            value: ffs
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -872,14 +880,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: POSTGRES_DB
-            value: ffs
-          - name: POSTGRES_PASSWORD
-            value: ffs
-          - name: POSTGRES_USER
-            value: ffs
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
           resources:
             limits:
               memory: 120Mi
@@ -890,7 +890,7 @@ kind: Deployment
 metadata:
   name: example-frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: frontend
@@ -920,28 +920,6 @@ spec:
             name: service
           env:
           
-          - name: OTEL_SERVICE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.labels['app.kubernetes.io/component']
-          - name: OTEL_K8S_NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
-          - name: OTEL_K8S_NODE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: spec.nodeName
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
-          - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: FRONTEND_ADDR
             value: :8080
           - name: AD_SERVICE_ADDR
@@ -964,6 +942,28 @@ spec:
             value: "8080"
           - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
             value: http://localhost:4318/v1/traces
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: OTEL_K8S_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
             limits:
               memory: 200Mi
@@ -974,7 +974,7 @@ kind: Deployment
 metadata:
   name: example-frontendproxy
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: frontendproxy
@@ -1004,28 +1004,6 @@ spec:
             name: service
           env:
           
-          - name: OTEL_SERVICE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.labels['app.kubernetes.io/component']
-          - name: OTEL_K8S_NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
-          - name: OTEL_K8S_NODE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: spec.nodeName
-          - name: OTEL_K8S_POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
-          - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           - name: FRONTEND_PORT
             value: "8080"
           - name: FRONTEND_HOST
@@ -1050,6 +1028,28 @@ spec:
             value: "8080"
           - name: ENVOY_UID
             value: "0"
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: OTEL_K8S_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: OTEL_K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
             limits:
               memory: 20Mi
@@ -1060,7 +1060,7 @@ kind: Deployment
 metadata:
   name: example-loadgenerator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: loadgenerator
@@ -1090,6 +1090,24 @@ spec:
             name: service
           env:
           
+          - name: FRONTEND_ADDR
+            value: 'example-frontend:8080'
+          - name: LOCUST_WEB_PORT
+            value: "8089"
+          - name: LOCUST_USERS
+            value: "10"
+          - name: LOCUST_HOST
+            value: http://$(FRONTEND_ADDR)
+          - name: LOCUST_HEADLESS
+            value: "false"
+          - name: LOCUST_AUTOSTART
+            value: "true"
+          - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+            value: python
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: LOADGENERATOR_PORT
+            value: "8089"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1112,24 +1130,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: FRONTEND_ADDR
-            value: 'example-frontend:8080'
-          - name: LOCUST_WEB_PORT
-            value: "8089"
-          - name: LOCUST_USERS
-            value: "10"
-          - name: LOCUST_HOST
-            value: http://$(FRONTEND_ADDR)
-          - name: LOCUST_HEADLESS
-            value: "false"
-          - name: LOCUST_AUTOSTART
-            value: "true"
-          - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-            value: python
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: LOADGENERATOR_PORT
-            value: "8089"
           resources:
             limits:
               memory: 120Mi
@@ -1140,7 +1140,7 @@ kind: Deployment
 metadata:
   name: example-paymentservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: paymentservice
@@ -1170,6 +1170,10 @@ spec:
             name: service
           env:
           
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: PAYMENT_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1192,10 +1196,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: PAYMENT_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 70Mi
@@ -1206,7 +1206,7 @@ kind: Deployment
 metadata:
   name: example-productcatalogservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: productcatalogservice
@@ -1236,6 +1236,12 @@ spec:
             name: service
           env:
           
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: PRODUCT_CATALOG_SERVICE_PORT
+            value: "8080"
+          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+            value: 'example-featureflagservice:50053'
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1258,12 +1264,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: PRODUCT_CATALOG_SERVICE_PORT
-            value: "8080"
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
           resources:
             limits:
               memory: 20Mi
@@ -1274,7 +1274,7 @@ kind: Deployment
 metadata:
   name: example-quoteservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: quoteservice
@@ -1304,6 +1304,18 @@ spec:
             name: service
           env:
           
+          - name: OTEL_TRACES_SAMPLER
+            value: parentbased_always_on
+          - name: OTEL_TRACES_EXPORTER
+            value: otlp
+          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+            value: grpc
+          - name: OTEL_PHP_TRACES_PROCESSOR
+            value: simple
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: 'example-otelcol:4317'
+          - name: QUOTE_SERVICE_PORT
+            value: "8080"
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1326,18 +1338,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: OTEL_TRACES_SAMPLER
-            value: parentbased_always_on
-          - name: OTEL_TRACES_EXPORTER
-            value: otlp
-          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-            value: grpc
-          - name: OTEL_PHP_TRACES_PROCESSOR
-            value: simple
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: 'example-otelcol:4317'
-          - name: QUOTE_SERVICE_PORT
-            value: "8080"
           resources:
             limits:
               memory: 30Mi
@@ -1348,7 +1348,7 @@ kind: Deployment
 metadata:
   name: example-recommendationservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: recommendationservice
@@ -1378,6 +1378,18 @@ spec:
             name: service
           env:
           
+          - name: OTEL_PYTHON_LOG_CORRELATION
+            value: "true"
+          - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+            value: python
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+            value: 'example-featureflagservice:50053'
+          - name: RECOMMENDATION_SERVICE_PORT
+            value: "8080"
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: 'example-productcatalogservice:8080'
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1400,18 +1412,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: OTEL_PYTHON_LOG_CORRELATION
-            value: "true"
-          - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-            value: python
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
-          - name: RECOMMENDATION_SERVICE_PORT
-            value: "8080"
-          - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: 'example-productcatalogservice:8080'
           resources:
             limits:
               memory: 500Mi
@@ -1422,7 +1422,7 @@ kind: Deployment
 metadata:
   name: example-redis
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: redis
@@ -1484,7 +1484,7 @@ kind: Deployment
 metadata:
   name: example-shippingservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.11.1
+    helm.sh/chart: opentelemetry-demo-0.11.2
     app.kubernetes.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: shippingservice
@@ -1514,6 +1514,16 @@ spec:
             name: service
           env:
           
+          - name: PORT
+            value: "8080"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+            value: http://example-otelcol:4317
+          - name: SHIPPING_SERVICE_PORT
+            value: "8080"
+          - name: QUOTE_SERVICE_ADDR
+            value: http://example-quoteservice:8080
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1536,16 +1546,6 @@ spec:
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
-          - name: PORT
-            value: "8080"
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://example-otelcol:4317
-          - name: SHIPPING_SERVICE_PORT
-            value: "8080"
-          - name: QUOTE_SERVICE_ADDR
-            value: http://example-quoteservice:8080
           resources:
             limits:
               memory: 20Mi
