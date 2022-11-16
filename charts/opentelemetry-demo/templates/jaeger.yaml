@@ -1,6 +1,4 @@
 {{- $config := set . "name" "jaeger" }}
-{{- $config := set . "defaultValues" .Values.default }}
-{{- $config := set . "schedulingRules" .Values.observability.jaeger.schedulingRules }}
 {{- if .Values.observability.jaeger.enabled -}}
 ---
 apiVersion: apps/v1
@@ -19,7 +17,19 @@ spec:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
     spec:
-      {{- include "otel-demo.schedulingRules" $config | indent 6 }}
+      {{- $schedulingRules := .Values.observability.jaeger.schedulingRules -}}
+      {{- if and $schedulingRules $schedulingRules.nodeSelector }}
+      nodeSelector:
+        {{- $schedulingRules.nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if and $schedulingRules $schedulingRules.affinity }}
+      affinity:
+        {{- $schedulingRules.affinity | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if and $schedulingRules $schedulingRules.tolerations }}
+      tolerations:
+        {{- $schedulingRules.tolerations | toYaml | nindent 8 }}
+      {{- end }}
       containers:
         - name: jaeger
           image: "{{ .Values.observability.jaeger.image.repository }}:{{ .Values.observability.jaeger.image.tag }}"
