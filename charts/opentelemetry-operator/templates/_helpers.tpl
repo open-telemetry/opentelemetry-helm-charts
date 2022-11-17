@@ -66,3 +66,9 @@ Create the name of the service account to use
 {{- .Values.manager.podAnnotations | toYaml }}
 {{- end }}
 {{- end }}
+
+{{- define "opentelemetry-operator.podLabels" -}}
+{{- if .Values.manager.podLabels }}
+{{- .Values.manager.podLabels | toYaml }}
+{{- end }}
+{{- end }}

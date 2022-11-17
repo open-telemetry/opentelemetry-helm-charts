@@ -4,7 +4,8 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-manager-role
 rules:
   - apiGroups:
@@ -177,7 +178,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-metrics-reader
 rules:
   - nonResourceURLs:
@@ -189,7 +191,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-proxy-role
 rules:
   - apiGroups:

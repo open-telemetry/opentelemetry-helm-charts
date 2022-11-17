@@ -5,7 +5,8 @@ metadata:
   name: "{{ include "opentelemetry-operator.name" . }}-cert-manager-test-connection"
   namespace: {{ .Release.Namespace }}
   labels:
-    control-plane: controller-manager
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
   annotations:
     "helm.sh/hook": test
 spec:

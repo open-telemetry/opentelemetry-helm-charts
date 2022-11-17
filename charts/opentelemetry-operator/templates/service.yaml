@@ -3,12 +3,12 @@ kind: Service
 metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-    control-plane: controller-manager
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager-metrics-service
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
-    {{ if .Values.kubeRBACProxy.enabled }}
+    {{- if .Values.kubeRBACProxy.enabled }}
     - name: https
       port: {{ .Values.kubeRBACProxy.ports.proxyPort }}
       protocol: TCP
@@ -19,8 +19,8 @@ spec:
       protocol: TCP
       targetPort: metrics
   selector:
-    app.kubernetes.io/name: opentelemetry-operator
-    control-plane: controller-manager
+      {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: controller-manager
 
 {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
 ---
@@ -28,7 +28,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-webhook-service
   namespace: {{ .Release.Namespace }}
 spec:
@@ -37,6 +38,6 @@ spec:
       protocol: TCP
       targetPort: webhook-server
   selector:
-    app.kubernetes.io/name: opentelemetry-operator
-    control-plane: controller-manager
+      {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: controller-manager
 {{- end }}
