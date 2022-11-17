@@ -4,8 +4,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    helm.sh/chart: opentelemetry-operator-0.18.3
     app.kubernetes.io/name: opentelemetry-operator
-    control-plane: controller-manager
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.63.1"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: controller-manager
   name: opentelemetry-operator-controller-manager
   namespace: default
 spec:
@@ -13,7 +17,8 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-operator
-      control-plane: controller-manager
+      app.kubernetes.io/instance: example
+      app.kubernetes.io/component: controller-manager
   template:
     metadata:
       annotations:
@@ -21,7 +26,9 @@ spec:
         
       labels:
         app.kubernetes.io/name: opentelemetry-operator
-        control-plane: controller-manager
+        app.kubernetes.io/instance: example
+        
+        app.kubernetes.io/component: controller-manager
     spec:
       hostNetwork: false
       containers:
