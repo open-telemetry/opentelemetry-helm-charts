@@ -35,14 +35,14 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ```console
 $ helm install \
-  my-opentelemetry-operator open-telemetry/opentelemetry-operator
+  opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
 $ helm install --namespace opentelemetry-operator-system \
-  my-opentelemetry-operator open-telemetry/opentelemetry-operator
+  opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
@@ -52,7 +52,7 @@ _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documen
 The following command uninstalls the chart whose release name is my-opentelemetry-operator.
 
 ```console
-$ helm uninstall my-opentelemetry-operator
+$ helm uninstall opentelemetry-operator
 ```
 
 _See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) for command documentation._

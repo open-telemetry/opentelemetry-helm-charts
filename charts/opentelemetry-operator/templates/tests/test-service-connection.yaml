@@ -6,6 +6,7 @@ metadata:
   name: "{{ include "opentelemetry-operator.name" . }}-controller-manager-metrics-test-connection"
   namespace: {{ .Release.Namespace }}
   labels:
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     control-plane: controller-manager
   annotations:
     "helm.sh/hook": test
@@ -38,6 +39,7 @@ metadata:
   name: "{{ include "opentelemetry-operator.name" . }}-webhook-test-connection"
   namespace: {{ .Release.Namespace }}
   labels:
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     control-plane: controller-manager
   annotations:
     "helm.sh/hook": test
