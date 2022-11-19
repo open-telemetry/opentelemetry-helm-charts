@@ -28,8 +28,8 @@ Merge user supplied config into memory ballast config.
 */}}
 {{- define "opentelemetry-collector.ballastConfig" -}}
 {{- $memoryBallastConfig := get .Values.config.extensions "memory_ballast" }}
-{{- if or (not $memoryBallastConfig) (not $memoryBallastConfig.size_percentage) }}
-{{-   $_ := set $memoryBallastConfig "size_percentage" 40 }}
+{{- if or (not $memoryBallastConfig) (not $memoryBallastConfig.size_in_percentage) }}
+{{-   $_ := set $memoryBallastConfig "size_in_percentage" 40 }}
 {{- end }}
 {{- .Values.config | toYaml }}
 {{- end }}
