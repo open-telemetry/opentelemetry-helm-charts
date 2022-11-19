@@ -271,9 +271,15 @@ receivers:
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
+{{- if $config.service.pipelines.logs }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
+{{- end }}
+{{- if $config.service.pipelines.metrics }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
+{{- end }}
+{{- if $config.service.pipelines.traces }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
