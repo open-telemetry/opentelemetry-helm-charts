@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/name: opentelemetry-operator
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     control-plane: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager
   namespace: {{ .Release.Namespace }}
@@ -10,7 +10,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: opentelemetry-operator
+      {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
       control-plane: controller-manager
   template:
     metadata:
@@ -18,7 +18,7 @@ spec:
         kubectl.kubernetes.io/default-container: manager
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
       labels:
-        app.kubernetes.io/name: opentelemetry-operator
+        {{- include "opentelemetry-operator.labels" . | nindent 8 }}
         control-plane: controller-manager
     spec:
       hostNetwork: {{ .Values.hostNetwork }}
