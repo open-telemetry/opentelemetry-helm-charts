@@ -20,13 +20,6 @@ Merge user supplied config into memory limiter config.
 {{- if not $processorsConfig.memory_limiter }}
 {{-   $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
 {{- end }}
-{{- .Values.config | toYaml }}
-{{- end }}
-
-{{/*
-Merge user supplied config into memory ballast config.
-*/}}
-{{- define "opentelemetry-collector.ballastConfig" -}}
 {{- $memoryBallastConfig := get .Values.config.extensions "memory_ballast" }}
 {{- if or (not $memoryBallastConfig) (not $memoryBallastConfig.size_in_percentage) }}
 {{-   $_ := set $memoryBallastConfig "size_in_percentage" 40 }}
@@ -41,7 +34,6 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- $config = include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -67,7 +59,6 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- $config = include "opentelemetry-collector.ballastConfig" $data | fromYaml | mustMergeOverwrite $config }}
 {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
