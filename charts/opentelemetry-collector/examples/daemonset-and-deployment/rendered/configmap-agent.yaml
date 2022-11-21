@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.39.2
+    helm.sh/chart: opentelemetry-collector-0.39.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.64.1"
@@ -21,13 +21,13 @@ data:
     extensions:
       health_check: {}
       memory_ballast:
-        size_mib: "78"
+        size_in_percentage: 40
     processors:
       batch: {}
       memory_limiter:
         check_interval: 5s
-        limit_mib: 156
-        spike_limit_mib: 48
+        limit_percentage: 80
+        spike_limit_percentage: 25
     receivers:
       jaeger:
         protocols:
