@@ -40,6 +40,9 @@ spec:
           env:
             - name: COLLECTOR_OTLP_ENABLED
               value: "true"
+            {{- if .Values.observability.jaeger.env -}}
+            {{ .Values.observability.jaeger.env | toYaml | nindent 12 }}
+            {{- end }}
           ports:
             - containerPort: 4317
               protocol: TCP
