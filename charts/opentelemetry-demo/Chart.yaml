@@ -1,7 +1,7 @@
 apiVersion: v2
 type: application
 name: opentelemetry-demo
-version: 0.12.3
+version: 0.13.0
 description: opentelemetry demo helm chart
 home: https://opentelemetry.io/
 sources:
@@ -14,14 +14,18 @@ icon: https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png
 appVersion: "1.1.0"
 dependencies:
   - name: opentelemetry-collector
-    version: 0.39.1
+    version: 0.40.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
     condition: observability.otelcol.enabled
+  - name: jaeger
+    version: 0.64.2
+    repository: https://jaegertracing.github.io/helm-charts
+    condition: observability.jaeger.enabled
   - name: prometheus
-    version: 15.16.1
+    version: 17.0.2
     repository: https://prometheus-community.github.io/helm-charts
     condition: observability.prometheus.enabled
   - name: grafana
-    version: 6.42.2
+    version: 6.44.8
     repository: https://grafana.github.io/helm-charts
     condition: observability.grafana.enabled
