@@ -55,5 +55,5 @@ app.kubernetes.io/component: {{ .name}}
 {{-   end }}
 {{- end }}
 {{- $mergedEnvs = concat $mergedEnvs $envOverrides }}
-{{- tpl (toYaml $mergedEnvs) . }}
+{{- mustToJson $mergedEnvs }}
 {{- end }}
