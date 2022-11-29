@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-    control-plane: controller-manager
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager
   namespace: {{ .Release.Namespace }}
 spec:
@@ -11,15 +11,16 @@ spec:
   selector:
     matchLabels:
       {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
-      control-plane: controller-manager
+      app.kubernetes.io/component: controller-manager
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
       labels:
-        {{- include "opentelemetry-operator.labels" . | nindent 8 }}
-        control-plane: controller-manager
+        {{- include "opentelemetry-operator.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-operator.podLabels" . | nindent 8 }}
+        app.kubernetes.io/component: controller-manager
     spec:
       hostNetwork: {{ .Values.hostNetwork }}
       {{- if .Values.priorityClassName }}
@@ -111,6 +112,9 @@ spec:
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{ toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}-controller-manager
       terminationGracePeriodSeconds: 10
