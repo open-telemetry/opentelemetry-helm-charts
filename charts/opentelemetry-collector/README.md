@@ -27,13 +27,13 @@ See [UPGRADING.md](UPGRADING.md).
 
 ## Security Considerations
 
-OpenTelemetry Collector recommends to bind receivers' servers to addresses that limit connections to authorized users. This is typically not needed in containerized environments, although Open Telemetry Collector logs the following:
+OpenTelemetry Collector recommends to bind receivers' servers to addresses that limit connections to authorized users. This is typically not needed in containerized environments, although the Open Telemetry Collector logs the following:
 ```
 Using the 0.0.0.0 address exposes this server to every network interface, which may facilitate Denial of Service attacks
 ```
 More info is available in the [Security Best Practices docummentation](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/security-best-practices.md#safeguards-against-denial-of-service-attacks)
 
-Some care must be taken when using `hostNetwork: true`, as then OpenTelemetry Collector will listen on all the address in the host network namespace.
+Some care must be taken when using `hostNetwork: true`, as then OpenTelemetry Collector will listen on all the addresses in the host network namespace.
 
 ## Configuration
 
