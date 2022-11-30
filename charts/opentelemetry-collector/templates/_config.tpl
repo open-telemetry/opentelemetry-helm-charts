@@ -93,6 +93,9 @@ receivers:
         memory:
         disk:
         filesystem:
+        {{- if .Values.presets.hostMetrics.filesystem }}
+        {{- toYaml .Values.presets.hostMetrics.filesystem | nindent 10 }}
+        {{- end }}
         network:
 {{- end }}
 
