@@ -261,6 +261,20 @@ replicaCount: 1
 
 annotations: {}
 
+# List of extra sidecars to add
+extraContainers: []
+# extraContainers:
+#   - name: test
+#     command:
+#       - cp
+#     args:
+#       - /bin/sleep
+#       - /test/sleep
+#     image: busybox:latest
+#     volumeMounts:
+#       - name: test
+#         mountPath: /test
+
 # List of init container specs, e.g. for copying a binary to be executed as a lifecycle hook.
 initContainers: []
 # initContainers:
@@ -326,8 +340,8 @@ podMonitor:
   # The metrics port needs to be enabled as well.
   enabled: false
   metricsEndpoints:
-  - port: metrics
-    # interval: 15s
+    - port: metrics
+      # interval: 15s
 
   # additional labels for the PodMonitor
   extraLabels: {}
@@ -338,8 +352,8 @@ serviceMonitor:
   # The metrics port needs to be enabled as well.
   enabled: false
   metricsEndpoints:
-  - port: metrics
-    # interval: 15s
+    - port: metrics
+      # interval: 15s
 
   # additional labels for the ServiceMonitor
   extraLabels: {}
@@ -361,9 +375,9 @@ autoscaling:
 
 rollout:
   rollingUpdate: {}
-    # When 'mode: daemonset', maxSurge cannot be used when hostPort is set for any of the ports
-    # maxSurge: 25%
-    # maxUnavailable: 0
+  # When 'mode: daemonset', maxSurge cannot be used when hostPort is set for any of the ports
+  # maxSurge: 25%
+  # maxUnavailable: 0
   strategy: RollingUpdate
 
 prometheusRule:
