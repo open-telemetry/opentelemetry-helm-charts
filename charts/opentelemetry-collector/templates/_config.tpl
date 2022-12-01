@@ -250,7 +250,7 @@ processors:
 {{- if $port.enabled }}
 - name: {{ $key }}
   port: {{ $port.servicePort }}
-  targetPort: {{ $port.servicePort }}
+  targetPort: {{ $port.containerPort }}
   protocol: {{ $port.protocol }}
 {{- end }}
 {{- end }}
