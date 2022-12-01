@@ -125,10 +125,18 @@ receivers:
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
+{{- if .Values.Values.presets.logsCollection.storeCheckpoints}}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "file_storage" | uniq)  }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.logsCollectionConfig" -}}
+{{- if .Values.presets.logsCollection.storeCheckpoints }}
+extensions:
+  file_storage:
+    directory: /var/lib/otelcol
+{{- end }}
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
@@ -139,6 +147,9 @@ receivers:
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ .Chart.Name }}/*.log ]
     {{- end }}
     start_at: beginning
+    {{- if .Values.presets.logsCollection.storeCheckpoints}}
+    storage: file_storage
+    {{- end }}
     include_file_path: true
     include_file_name: false
     operators:
