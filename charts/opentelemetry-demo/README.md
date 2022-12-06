@@ -146,7 +146,7 @@ parameters by default. The overriden parameters are specified below.
 |--------------------------------------|------------------------------------------------|-----------------------------------------------------------|
 | `alertmanager.enabled`               | Install the alertmanager                       | `false`                                                   |
 | `configmapReload.prometheus.enabled` | Install the configmap-reload container         | `false`                                                   |
-| `kubeStateMetrics.enabled`           | Install the kube-state-metrics sub-chart       | `false`                                                   |
+| `kube-state-metrics.enabled`         | Install the kube-state-metrics sub-chart       | `false`                                                   |
 | `prometheus-node-exporter.enabled`   | Install the Prometheus Node Exporter sub-chart | `false`                                                   |
 | `prometheus-pushgateway.enabled`     | Install the Prometheus Push Gateway sub-chart  | `false`                                                   |
 | `server.global.scrape_interval`      | How frequently to scrape targets by default    | `5s`                                                      |
