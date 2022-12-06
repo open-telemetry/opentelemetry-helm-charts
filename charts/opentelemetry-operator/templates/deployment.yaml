@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-    control-plane: controller-manager
+    app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.name" . }}-controller-manager
   namespace: {{ .Release.Namespace }}
 spec:
@@ -11,15 +11,16 @@ spec:
   selector:
     matchLabels:
       {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
-      control-plane: controller-manager
+      app.kubernetes.io/component: controller-manager
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
       labels:
-        {{- include "opentelemetry-operator.labels" . | nindent 8 }}
-        control-plane: controller-manager
+        {{- include "opentelemetry-operator.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-operator.podLabels" . | nindent 8 }}
+        app.kubernetes.io/component: controller-manager
     spec:
       hostNetwork: {{ .Values.hostNetwork }}
       {{- if .Values.priorityClassName }}
@@ -37,6 +38,21 @@ spec:
             {{- end }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
+            {{- end }}
+            {{- if and .Values.manager.targetAllocatorImage.repository .Values.manager.targetAllocatorImage.tag }}
+            - --target-allocator-image={{ .Values.manager.targetAllocatorImage.repository }}:{{ .Values.manager.targetAllocatorImage.tag }}
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.java.repository .Values.manager.autoInstrumentationImage.java.tag }}
+            - --auto-instrumentation-java-image={{ .Values.manager.autoInstrumentationImage.java.repository }}:{{ .Values.manager.autoInstrumentationImage.java.tag }}
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.nodejs.repository .Values.manager.autoInstrumentationImage.nodejs.tag }}
+            - --auto-instrumentation-nodejs-image={{ .Values.manager.autoInstrumentationImage.nodejs.repository }}:{{ .Values.manager.autoInstrumentationImage.nodejs.tag }}
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.python.repository .Values.manager.autoInstrumentationImage.python.tag }}
+            - --auto-instrumentation-python-image={{ .Values.manager.autoInstrumentationImage.python.repository }}:{{ .Values.manager.autoInstrumentationImage.python.tag }}
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
+            - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
             {{- .Values.manager.extraArgs | toYaml | nindent 12 }}
@@ -111,6 +127,9 @@ spec:
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{ toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}-controller-manager
       terminationGracePeriodSeconds: 10

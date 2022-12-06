@@ -17,7 +17,12 @@ containers:
       - {{ . }}
       {{- end }}
     securityContext:
+      {{- if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
+      runAsUser: 0
+      runAsGroup: 0
+      {{- else -}}
       {{- toYaml .Values.securityContext | nindent 6 }}
+      {{- end }}
     image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     ports:
@@ -110,6 +115,10 @@ containers:
       - name: varlibdockercontainers
         mountPath: /var/lib/docker/containers
         readOnly: true
+      {{- if .Values.presets.logsCollection.storeCheckpoints}}
+      - name: varlibotelcol
+        mountPath: /var/lib/otelcol
+      {{- end }}
       {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
       - name: hostfs
@@ -120,6 +129,9 @@ containers:
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
+{{- with .Values.extraContainers }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
 {{- if .Values.initContainers }}
 initContainers:
   {{- toYaml .Values.initContainers | nindent 2 }}
@@ -155,6 +167,12 @@ volumes:
   - name: varlogpods
     hostPath:
       path: /var/log/pods
+  {{- if .Values.presets.logsCollection.storeCheckpoints}}
+  - name: varlibotelcol
+    hostPath:
+      path: /var/lib/otelcol
+      type: DirectoryOrCreate
+  {{- end }}
   - name: varlibdockercontainers
     hostPath:
       path: /var/lib/docker/containers
