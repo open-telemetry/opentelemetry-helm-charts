@@ -11,6 +11,7 @@ metadata:
     "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
   name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.name" .)) .Values.admissionWebhooks.secretName }}
   namespace: {{ .Release.Namespace }}
 data:
@@ -22,6 +23,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
   name: {{ template "opentelemetry-operator.name" . }}-mutating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
@@ -122,6 +124,7 @@ metadata:
     cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
   name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:

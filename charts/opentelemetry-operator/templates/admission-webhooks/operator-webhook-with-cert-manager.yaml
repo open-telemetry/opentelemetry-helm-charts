@@ -6,6 +6,7 @@ metadata:
     cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
   name: {{ template "opentelemetry-operator.name" . }}-mutating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
@@ -94,6 +95,7 @@ metadata:
     cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
   name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
