@@ -1,4 +1,4 @@
-{{- define "otel.demo.deployment" }}
+{{- define "otel-demo.deployment" }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -53,7 +53,8 @@ spec:
           resources:
             {{- .resources | toYaml | nindent 12 }}
 {{- end }}
-{{- define "otel.demo.service" }}
+
+{{- define "otel-demo.service" }}
 {{- if or .ports .servicePort}}
 ---
 apiVersion: v1
@@ -82,3 +83,65 @@ spec:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end}}
 {{- end}}
+
+{{- define "otel-demo.ingress" }}
+{{- if and .ingress.enabled (or .ports .servicePort) }}
+{{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
+{{- $ingresses := prepend .Values.ingress.additionalIngresses .Values.ingress -}}
+{{- range $ingresses }}
+---
+apiVersion: {{ include "ingress.apiVersion" $ }}
+kind: Ingress
+metadata:
+  {{- if .name }}
+  name: {{include "otel-demo.name" $ }}-{{ $.name }}-{{ .name }}
+  {{- else }}
+  name: {{include "otel-demo.name" $ }}-{{ $.name }}
+  {{- end }}
+  labels:
+    {{- include "otel-demo.labels" $ | nindent 4 }}
+  {{- if .annotations }}
+  annotations:
+    {{ toYaml .annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .ingressClassName }}
+  ingressClassName: {{ .ingressClassName }}
+  {{- end -}}
+  {{- if .tls }}
+  tls:
+    {{- range .tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- with .secretName }}
+      secretName: {{ . }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if $ingressSupportsPathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if $ingressApiIsStable }}
+              service:
+                name: {{ include "otel-demo.name" $ }}-{{ $.name }}
+                port:
+                  number: {{ .port }}
+              {{- else }}
+              serviceName: {{ include "otel-demo.name" $ }}-{{ $.name }}
+              servicePort: {{ .port }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}
