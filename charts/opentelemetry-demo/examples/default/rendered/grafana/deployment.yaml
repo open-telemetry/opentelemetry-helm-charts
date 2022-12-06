@@ -6,10 +6,10 @@ metadata:
   name: example-grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-6.42.2
+    helm.sh/chart: grafana-6.45.1
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "9.2.0"
+    app.kubernetes.io/version: "9.3.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -26,11 +26,12 @@ spec:
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: example
       annotations:
-        checksum/config: c2e8477af534e32217d99c32fe8186c312aa46a035ba7b97049be0b6f35f9204
+        checksum/config: d34a53d88e69493d9950fad6743fa7909f1e723a5d6b24a1cb883b11fe125ddb
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/secret: fe3e6a98bc5a653cb07ae3c34aadffc8997b5056ca0749f3e7dca826817ca791
-    spec:      
+        checksum/secret: 56c8f19bee63edb0c1c3dc5756c76c15a08bf866566798e53bc47bdedeb1e17c
+    spec:
+      
       serviceAccountName: example-grafana
       automountServiceAccountToken: true
       securityContext:
@@ -40,7 +41,7 @@ spec:
       enableServiceLinks: true
       containers:
         - name: grafana
-          image: "grafana/grafana:9.2.0"
+          image: "grafana/grafana:9.3.0"
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
@@ -94,7 +95,6 @@ spec:
         - name: config
           configMap:
             name: example-grafana
-          
         - name: dashboards-default
           configMap:
             name: example-grafana-dashboards
