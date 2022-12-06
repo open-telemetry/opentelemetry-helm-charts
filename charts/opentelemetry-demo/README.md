@@ -74,11 +74,18 @@ component.
 | `imageOverride.tag`            | Tag of the image for this component                                                      | Defaults to the overall default image tag                     |
 | `imageOverride.pullPolicy`     | Image pull policy for this component                                                     | `IfNotPresent`                                                |
 | `imageOverride.pullSecrets`    | Image pull secrets for this component                                                    | `[]`                                                          |
-| `servicePort`                  | Service port used for this component                                                     | `nil`                                                         |
-| `ports`                        | Array of ports to open for deployment and service of this component                      | `[]`                                                          |
 | `env`                          | Array of environment variables added to this component                                   | Each component will have its own set of environment variables |
 | `envOverrides`                 | Used to override individual environment variables without re-specifying the entire array | `[]`                                                          |
 | `resources`                    | CPU/Memory resource requests/limits	                                                     | Each component will have a default memory limit set           |
+| `servicePort`                  | Service port used for this component                                                     | `nil`                                                         |
+| `serviceType`                  | Service type used for this component                                                     | `nil`                                                         |
+| `ports`                        | Array of ports to open for deployment and service of this component                      | `[]`                                                          |
+| `ingress.enabled`              | Create an Ingress for this component                                                     | `false`                                                       |
+| `ingress.annotations`          | Annotations to add to Ingress                                                            | `{}`                                                          |
+| `ingress.ingressClassName`     | IngressClassName to use for Ingress                                                      | `nil`                                                         |
+| `ingress.hosts`                | Hosts to use for Ingress                                                                 | `[]`                                                          |
+| `ingress.tls`                  | TLS configuration to use for Ingress                                                     | `[]`                                                          |
+| `ingress.additionalIngresses`  | Additional Ingresses. Useful for differently annotated ingresses. Must include a `name`. | `[]`                                                          |
 | `schedulingRules.nodeSelector` | Node labels for pod assignment                                                           | `{}`                                                          |
 | `schedulingRules.affinity`     | Man of node/pod affinities                                                               | `{}`                                                          |
 | `schedulingRules.tolerations`  | Tolerations for pod assignment                                                           | `[]`                                                          |
