@@ -20,6 +20,22 @@ manager:
   collectorImage:
     repository: otel/opentelemetry-collector-contrib
     tag: 0.64.1
+  targetAllocatorImage:
+    repository: ""
+    tag: ""
+  autoInstrumentationImage:
+    java:
+      repository: ""
+      tag: ""
+    nodejs:
+      repository: ""
+      tag: ""
+    python:
+      repository: ""
+      tag: ""
+    dotnet:
+      repository: ""
+      tag: ""
   ports:
     metricsPort: 8080
     webhookPort: 9443
@@ -50,6 +66,7 @@ manager:
     - port: metrics
 
   podAnnotations: {}
+  podLabels: {}
 
   prometheusRule:
     enabled: false
@@ -63,7 +80,7 @@ manager:
 
 
   ## List of additional cli arguments to configure the manager
-  ## for example: --target-allocator-image, --labels, etc.
+  ## for example: --labels, etc.
   extraArgs: []
 
   ## Enable leader election mechanism for protecting against split brain if multiple operator pods/replicas are started.
@@ -128,6 +145,7 @@ clusterRole:
 affinity: {}
 tolerations: []
 nodeSelector: {}
+topologySpreadConstraints: []
 hostNetwork: false
 
 # Allows for pod scheduler prioritisation
