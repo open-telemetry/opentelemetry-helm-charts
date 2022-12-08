@@ -86,6 +86,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- define "opentelemetry-collector.hostMetricsConfig" -}}
 receivers:
   hostmetrics:
+    root_path: /hostfs
     collection_interval: 10s
     scrapers:
         cpu:
@@ -93,6 +94,42 @@ receivers:
         memory:
         disk:
         filesystem:
+          exclude_mount_points:
+            mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+            match_type: regexp
+          exclude_fs_types:
+            fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+            match_type: strict
         network:
 {{- end }}
 
