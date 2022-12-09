@@ -237,7 +237,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 160Mi
+        memory: 175Mi
 
   frauddetectionService:
     enabled: true
@@ -335,7 +335,7 @@ components:
       - name: JAEGER_SERVICE_PORT
         value: "16686"
       - name: JAEGER_SERVICE_HOST
-        value: '{{ include "otel-demo.name" . }}-jaeger'
+        value: '{{ include "otel-demo.name" . }}-jaeger-query'
       - name: OTEL_COLLECTOR_PORT
         value: "4317"
       - name: OTEL_COLLECTOR_HOST
@@ -347,7 +347,7 @@ components:
     podAnnotations: {}
     resources:
       limits:
-        memory: 20Mi
+        memory: 30Mi
 
   loadgenerator:
     enabled: true
@@ -436,6 +436,37 @@ components:
       limits:
         memory: 20Mi
 
+  quoteService:
+    enabled: true
+    useDefault:
+      env: true
+
+    imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+    serviceType: ClusterIP
+    servicePort: 8080
+    env:
+      - name: OTEL_TRACES_SAMPLER
+        value: "parentbased_always_on"
+      - name: OTEL_TRACES_EXPORTER
+        value: "otlp"
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: "http/protobuf"
+      - name: OTEL_PHP_TRACES_PROCESSOR
+        value: "simple"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318'
+      - name: QUOTE_SERVICE_PORT
+        value: "8080"
+    envOverrides: []
+    podAnnotations: {}
+    resources:
+      limits:
+        memory: 40Mi
+
   recommendationService:
     enabled: true
     useDefault:
@@ -495,37 +526,6 @@ components:
     resources:
       limits:
         memory: 20Mi
-
-  quoteService:
-    enabled: true
-    useDefault:
-      env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
-    servicePort: 8080
-    env:
-      - name: OTEL_TRACES_SAMPLER
-        value: "parentbased_always_on"
-      - name: OTEL_TRACES_EXPORTER
-        value: "otlp"
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-        value: "http/protobuf"
-      - name: OTEL_PHP_TRACES_PROCESSOR
-        value: "simple"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include "otel-demo.name" . }}-otelcol:4318'
-      - name: QUOTE_SERVICE_PORT
-        value: "8080"
-    envOverrides: []
-    podAnnotations: {}
-    resources:
-      limits:
-        memory: 30Mi
 
   ffsPostgres:
     enabled: true
@@ -615,7 +615,7 @@ opentelemetry-collector:
   mode: deployment
   resources:
     limits:
-      memory: 100Mi
+      memory: 125Mi
   service:
     type: ClusterIP
   ports:
@@ -705,6 +705,8 @@ prometheus:
         - job_name: 'opentelemetry-community-demo'
           kubernetes_sd_configs:
             - role: pod
+              namespaces:
+                own_namespace: true
           relabel_configs:
             - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
               action: keep
@@ -752,3 +754,6 @@ grafana:
             path: /var/lib/grafana/dashboards/default
   dashboardsConfigMaps:
     default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
+  resources:
+    limits:
+      memory: 75Mi
