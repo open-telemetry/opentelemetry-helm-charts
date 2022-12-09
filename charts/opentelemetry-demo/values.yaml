@@ -436,6 +436,37 @@ components:
       limits:
         memory: 20Mi
 
+  quoteService:
+    enabled: true
+    useDefault:
+      env: true
+
+    imageOverride: {}
+    schedulingRules:
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+    serviceType: ClusterIP
+    servicePort: 8080
+    env:
+      - name: OTEL_TRACES_SAMPLER
+        value: "parentbased_always_on"
+      - name: OTEL_TRACES_EXPORTER
+        value: "otlp"
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: "http/protobuf"
+      - name: OTEL_PHP_TRACES_PROCESSOR
+        value: "simple"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318'
+      - name: QUOTE_SERVICE_PORT
+        value: "8080"
+    envOverrides: []
+    podAnnotations: {}
+    resources:
+      limits:
+        memory: 40Mi
+
   recommendationService:
     enabled: true
     useDefault:
@@ -495,37 +526,6 @@ components:
     resources:
       limits:
         memory: 20Mi
-
-  quoteService:
-    enabled: true
-    useDefault:
-      env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
-    servicePort: 8080
-    env:
-      - name: OTEL_TRACES_SAMPLER
-        value: "parentbased_always_on"
-      - name: OTEL_TRACES_EXPORTER
-        value: "otlp"
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-        value: "http/protobuf"
-      - name: OTEL_PHP_TRACES_PROCESSOR
-        value: "simple"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include "otel-demo.name" . }}-otelcol:4318'
-      - name: QUOTE_SERVICE_PORT
-        value: "8080"
-    envOverrides: []
-    podAnnotations: {}
-    resources:
-      limits:
-        memory: 40Mi
 
   ffsPostgres:
     enabled: true
