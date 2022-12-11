@@ -85,7 +85,13 @@ spec:
 {{- end}}
 
 {{- define "otel-demo.ingress" }}
-{{- if and .ingress .ingress.enabled (or .ports .servicePort) }}
+{{- $hasIngress := false}}
+{{- if .ingress }}
+{{- if .ingress.enabled }}
+{{- $hasIngress = true }}
+{{- end }}
+{{- end }}
+{{- if and $hasIngress (or .ports .servicePort) }}
 {{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
 {{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
 {{- $ingresses := prepend .ingress.additionalIngresses .ingress -}}
