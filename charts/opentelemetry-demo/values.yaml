@@ -342,12 +342,14 @@ components:
         value: '{{ include "otel-demo.name" . }}-otelcol'
       - name: ENVOY_PORT
         value: "8080"
-      - name: ENVOY_UID
-        value: "0"
     podAnnotations: {}
     resources:
       limits:
         memory: 30Mi
+    securityContext:
+      runAsUser: 101 # envoy
+      runAsGroup: 101
+      runAsNonRoot: true
 
   loadgenerator:
     enabled: true
@@ -466,6 +468,10 @@ components:
     resources:
       limits:
         memory: 40Mi
+    securityContext:
+      runAsUser: 33 # www-data
+      runAsGroup: 33
+      runAsNonRoot: true
 
   recommendationService:
     enabled: true
@@ -557,6 +563,10 @@ components:
     resources:
       limits:
         memory: 120Mi
+    securityContext:
+      runAsUser: 999 # postgres
+      runAsGroup: 999
+      runAsNonRoot: true
 
   kafka:
     enabled: true
@@ -578,6 +588,10 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    securityContext:
+      runAsUser: 1000 # appuser
+      runAsGroup: 1000
+      runAsNonRoot: true
 
   redis:
     enabled: true
@@ -598,6 +612,10 @@ components:
       nodeSelector: {}
       affinity: {}
       tolerations: []
+    securityContext:
+      runAsUser: 999 # redis
+      runAsGroup: 1000
+      runAsNonRoot: true
 
 observability:
   # collector settings are configured in the opentelemetry-collector section.
