@@ -36,22 +36,22 @@ bump even if it is only changed to the documentation.
 
 The chart `version` should follow [semver](https://semver.org/).
 
-Charts should start at `0.1.0` or `1.0.0`. Any breaking (backwards incompatible)
-changes to a chart should:
+All changes to a chart require a version bump, following semvar.
 
-1. Bump the MAJOR version
+Any breaking (backwards incompatible) changes to a chart should:
+1. Bump the MINOR version
 2. In the README, under a section called "Upgrading", describe the manual steps
    necessary to upgrade to the new (specified) MAJOR version
 
-### Adding new examples
+### Examples
+
+All charts maintain examples for the current version. After updating the version, examples must be updated with the `make generate-examples` target.
+
+The default `generate-examples` command will update all charts.  In order generate a chart's examples you must have the chart's dependencies added to your helm repo.
+
+If you need update a single chart's examples you can use the `CHARTS` variable.  For example, if you want to update only the collector chart's examples you can run `make generate-examples CHARTS=opentelemetry-collector`
 
 New examples should be added as independent folders in the respective chart's `examples` folder.  Examples should always contain a `values.yaml` and a `rendered` folder.
-
-To generate the rendered files run:
-
-```console
-make generate-examples
-```
 
 ### Chart-specific Contributing Guides
 
