@@ -1,0 +1,25 @@
+---
+# Source: opentelemetry-demo/charts/prometheus/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: "server"
+    app: prometheus
+    release: example
+    chart: prometheus-19.0.1
+    heritage: Helm
+  name: example-prometheus-server
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+  selector:
+    component: "server"
+    app: prometheus
+    release: example
+  sessionAffinity: None
+  type: "ClusterIP"
