@@ -33,11 +33,11 @@ spec:
       {{- end }}
       {{- if or .defaultValues.schedulingRules.affinity .schedulingRules.affinity}}
       affinity:
-        {{ toYaml .schedulingRules.affinity | default .defaultValues.schedulingRules.affinity | toYaml | nindent 8 }}
+        {{- .schedulingRules.affinity | default .defaultValues.schedulingRules.affinity | toYaml | nindent 8 }}
       {{- end }}
       {{- if or .defaultValues.schedulingRules.tolerations .schedulingRules.tolerations}}
       tolerations:
-        {{ toYaml .schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
+        {{- .schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
       {{- end }}
       {{- end }}
       containers:
