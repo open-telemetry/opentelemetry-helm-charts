@@ -63,7 +63,7 @@ metadata:
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
-  type: {{.serviceType}}
+  type: {{ .serviceType | default "ClusterIP" }}
   ports:
     {{- if .ports }}
     {{- range $port := .ports }}
