@@ -92,12 +92,10 @@ spec:
 {{- end }}
 {{- end }}
 {{- if and $hasIngress (or .ports .servicePort) }}
-{{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
-{{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
 {{- $ingresses := prepend .ingress.additionalIngresses .ingress -}}
 {{- range $ingresses }}
 ---
-apiVersion: {{ include "ingress.apiVersion" $ }}
+apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
   {{- if .name }}
@@ -134,19 +132,12 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ .path }}
-            {{- if $ingressSupportsPathType }}
             pathType: {{ .pathType }}
-            {{- end }}
             backend:
-              {{- if $ingressApiIsStable }}
               service:
                 name: {{ include "otel-demo.name" $ }}-{{ $.name }}
                 port:
                   number: {{ .port }}
-              {{- else }}
-              serviceName: {{ include "otel-demo.name" $ }}-{{ $.name }}
-              servicePort: {{ .port }}
-              {{- end }}
           {{- end }}
     {{- end }}
 {{- end}}
