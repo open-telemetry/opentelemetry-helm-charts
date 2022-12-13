@@ -19,9 +19,9 @@ spec:
         {{- toYaml .podAnnotations | nindent 8 }}
       {{- end }}
     spec:
-      {{- if or .defaultValues.image.pullSecrets .imageOverride.pullSecrets }}
+      {{- if or .defaultValues.image.pullSecrets ((.imageOverride).pullSecrets) }}
       imagePullSecrets:
-        {{- .imageOverride.pullSecrets | default .defaultValues.image.pullSecrets | toYaml | nindent 8}}
+        {{- ((.imageOverride).pullSecrets) | default .defaultValues.image.pullSecrets | toYaml | nindent 8}}
       {{- end }}
       {{- with .serviceAccountName }}
       serviceAccountName: {{ .serviceAccountName}}
@@ -42,8 +42,8 @@ spec:
       {{- end }}
       containers:
         - name: {{ .name }}
-          image: '{{ .imageOverride.repository | default .defaultValues.image.repository }}:{{ .imageOverride.tag | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
-          imagePullPolicy: {{ .imageOverride.pullPolicy | default .defaultValues.image.pullPolicy }}
+          image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
+          imagePullPolicy: {{ ((.imageOverride).pullPolicy) | default .defaultValues.image.pullPolicy }}
           {{- if or .ports .servicePort}}
           ports:
             {{- include "otel-demo.pod.ports" . | nindent 10 }}
@@ -63,7 +63,7 @@ metadata:
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
-  type: {{.serviceType}}
+  type: {{ .serviceType | default "ClusterIP" }}
   ports:
     {{- if .ports }}
     {{- range $port := .ports }}
