@@ -5,7 +5,8 @@ in kubernetes cluster.
 
 ## Prerequisites
 
-- Helm 3.0+
+- Kubernetes 1.23+
+- Helm 3.9+
 
 ## Installing the Chart
 
@@ -66,24 +67,33 @@ component.
 > is the name of the demo component
 
 
-| Parameter                      | Description                                                                              | Default                                                       |
-|--------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| `enabled`                      | Is this component enabled                                                                | `true`                                                        |
-| `useDefault.env`               | Use the default environment variables in this component                                  | `true`                                                        |
-| `imageOverride.repository`     | Name of image for this component                                                         | Defaults to the overall default image repository              |
-| `imageOverride.tag`            | Tag of the image for this component                                                      | Defaults to the overall default image tag                     |
-| `imageOverride.pullPolicy`     | Image pull policy for this component                                                     | `IfNotPresent`                                                |
-| `imageOverride.pullSecrets`    | Image pull secrets for this component                                                    | `[]`                                                          |
-| `servicePort`                  | Service port used for this component                                                     | `nil`                                                         |
-| `ports`                        | Array of ports to open for deployment and service of this component                      | `[]`                                                          |
-| `env`                          | Array of environment variables added to this component                                   | Each component will have its own set of environment variables |
-| `envOverrides`                 | Used to override individual environment variables without re-specifying the entire array | `[]`                                                          |
-| `resources`                    | CPU/Memory resource requests/limits	                                                     | Each component will have a default memory limit set           |
-| `schedulingRules.nodeSelector` | Node labels for pod assignment                                                           | `{}`                                                          |
-| `schedulingRules.affinity`     | Man of node/pod affinities                                                               | `{}`                                                          |
-| `schedulingRules.tolerations`  | Tolerations for pod assignment                                                           | `[]`                                                          |
-| `podAnnotations`               | Pod annotations for this component                                                       | `{}`                                                          |
-
+| Parameter                            | Description                                                                                                | Default                                                       |
+|--------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| `enabled`                            | Is this component enabled                                                                                  | `true`                                                        |
+| `useDefault.env`                     | Use the default environment variables in this component                                                    | `true`                                                        |
+| `imageOverride.repository`           | Name of image for this component                                                                           | Defaults to the overall default image repository              |
+| `imageOverride.tag`                  | Tag of the image for this component                                                                        | Defaults to the overall default image tag                     |
+| `imageOverride.pullPolicy`           | Image pull policy for this component                                                                       | `IfNotPresent`                                                |
+| `imageOverride.pullSecrets`          | Image pull secrets for this component                                                                      | `[]`                                                          |
+| `servicePort`                        | Service port used for this component                                                                       | `nil`                                                         |
+| `ports`                              | Array of ports to open for deployment and service of this component                                        | `[]`                                                          |
+| `env`                                | Array of environment variables added to this component                                                     | Each component will have its own set of environment variables |
+| `envOverrides`                       | Used to override individual environment variables without re-specifying the entire array                   | `[]`                                                          |
+| `resources`                          | CPU/Memory resource requests/limits                                                                        | Each component will have a default memory limit set           |
+| `schedulingRules.nodeSelector`       | Node labels for pod assignment                                                                             | `{}`                                                          |
+| `schedulingRules.affinity`           | Man of node/pod affinities                                                                                 | `{}`                                                          |
+| `schedulingRules.tolerations`        | Tolerations for pod assignment                                                                             | `[]`                                                          |
+| `podAnnotations`                     | Pod annotations for this component                                                                         | `{}`                                                          |
+| `ingress.enabled`                    | Enable the creation of Ingress rules                                                                       | `false`                                                       |
+| `ingress.annotations`                | Annotations to add to the ingress rule                                                                     | `{}`                                                          |
+| `ingress.ingressClassName`           | Ingress class to use. If not specified default Ingress class will be used.                                 | `nil`                                                         |
+| `ingress.hosts`                      | Array of Hosts to use for the ingress rule.                                                                | `[]`                                                          |
+| `ingress.hosts[].paths`              | Array of paths / routes to use for the ingress rule host.                                                  | `[]`                                                          |
+| `ingress.hosts[].paths[].path`       | Actual path route to use                                                                                   | `nil`                                                         |
+| `ingress.hosts[].paths[].pathType`   | Path type to use for the given path. Typically this is `Prefix`.                                           | `nil`                                                         |
+| `ingress.hosts[].paths[].port`       | Port to use for the given path                                                                             | `nil`                                                         |
+| `ingress.additionalIngresses`        | Array of additional ingress rules to add. This is handy if you need to differently annotated ingress rules | `[]`                                                          |
+| `ingress.additionalIngresses[].name` | Each additional ingress rule needs to have a unique name                                                   | `nil`                                                         |
 
 ### Observability parameters
 
