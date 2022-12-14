@@ -1,29 +1,3 @@
-observability:
-  # collector settings are configured in the opentelemetry-collector section.
-  otelcol:
-    enabled: true
-  jaeger:
-    enabled: true
-    image:
-      repository: jaegertracing/all-in-one
-      # Overrides the image tag whose default is the chart appVersion.
-      tag: "latest"
-      pullPolicy: IfNotPresent
-      pullSecrets: []
-    args: ["--memory.max-traces", "10000", "--query.base-path", "/jaeger/ui"]
-    resources:
-      limits:
-        memory: 275Mi
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: "ClusterIP"
-  prometheus:
-    enabled: true
-  grafana:
-    enabled: true
-
 default:
   # list of environment variables applied to all components
   env:
@@ -54,7 +28,7 @@ default:
   #  - name: OTEL_K8S_NODE_NAME
   #    value: "someConstantValue"
   image:
-    repository: otel/demo
+    repository: ghcr.io/open-telemetry/demo
     # Overrides the image tag whose default is the chart appVersion.
     # The service's name will be applied to the end of this value.
     tag: ""
@@ -68,45 +42,63 @@ default:
 serviceAccount: ""
 
 components:
-  redis:
+  ## Demo Components are named objects (services) with several properties
+  # demoService:
+  ## Enable the component (service)
+  #   enabled: true
+  #   useDefault:
+  ## Use default environment variables
+  #     env: true
+  ## Override Image repository and Tag. Tag will use appVersion as default.
+  ## Service's name will be applied to end of this value.
+  #   imageOverride: {}
+  ## Service Type to use for this component. Default is ClusterIP.
+  #   serviceType: ClusterIP
+  ## Service Port to use to expose this component. Default is nil
+  #   servicePort: 8080
+  ## Additional service ports to use to expose this component
+  #   ports:
+  #     - name: extraServicePort
+  #       value: 8081
+  ## Environment variables to add to the component's pod
+  #   env:
+  ## Environment variables that upsert (append + merge) into the `env` specification for this component.
+  #   envOverrides:
+  ## Pod Scheduling rules for nodeSelector, affinity, or tolerations.
+  #   schedulingRules:
+  #     nodeSelector: {}
+  #     affinity: {}
+  #     tolerations: []
+  ## Pod Annotations to add to this component
+  #   podAnnotations: {}
+  ## Resources for this component
+  #   resources: {}
+
+  accountingService:
     enabled: true
     useDefault:
       env: true
-
-    # Options to override the default image settings.
-    imageOverride:
-      repository: "redis"
-      tag: "alpine"
-    ports:
-      - name: redis
-        value: 6379
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+        value: cumulative
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
     resources:
       limits:
         memory: 20Mi
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
 
   adService:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    serviceType: ClusterIP
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: AD_SERVICE_PORT
         value: "8080"
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 300Mi
@@ -115,13 +107,6 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    serviceType: ClusterIP
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
     servicePort: 8080
     env:
       - name: ASPNETCORE_URLS
@@ -132,8 +117,6 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CART_SERVICE_PORT
         value: "8080"
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 160Mi
@@ -142,13 +125,6 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    serviceType: ClusterIP
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
     servicePort: 8080
     env:
       - name: CART_SERVICE_ADDR
@@ -167,8 +143,8 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
-    envOverrides: []
-    podAnnotations: {}
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
     resources:
       limits:
         memory: 20Mi
@@ -177,13 +153,6 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: PORT
@@ -192,24 +161,14 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: CURRENCY_SERVICE_PORT
         value: "8080"
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 20Mi
-
 
   emailService:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    serviceType: ClusterIP
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
     servicePort: 8080
     env:
       - name: APP_ENV
@@ -222,8 +181,6 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
       - name: EMAIL_SERVICE_PORT
         value: "8080"
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 100Mi
@@ -232,12 +189,11 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
+    ports:
+      - name: grpc
+        value: 50053
+      - name: http
+        value: 8081
     env:
       - name: FEATURE_FLAG_GRPC_SERVICE_PORT
         value: "50053"
@@ -249,62 +205,29 @@ components:
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-    envOverrides: []
-    serviceType: ClusterIP
-    ports:
-      - name: grpc
-        value: 50053
-      - name: http
-        value: 8081
-    podAnnotations: {}
     resources:
       limits:
-        memory: 160Mi
+        memory: 175Mi
 
-
-  ffsPostgres:
+  frauddetectionService:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride:
-      repository: "postgres"
-      tag: "14"
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
     env:
-      - name: POSTGRES_DB
-        value: ffs
-      - name: POSTGRES_PASSWORD
-        value: ffs
-      - name: POSTGRES_USER
-        value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
-    envOverrides: []
-    serviceType: ClusterIP
-    ports:
-      - name: postgres
-        value: 5432
-    podAnnotations: {}
+      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+        value: cumulative
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
     resources:
       limits:
-        memory: 120Mi
-
+        memory: 200Mi
 
   frontend:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: FRONTEND_ADDR
@@ -329,24 +252,14 @@ components:
         value: "8080"
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 200Mi
-
 
   frontendProxy:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: FRONTEND_PORT
@@ -368,27 +281,23 @@ components:
       - name: JAEGER_SERVICE_PORT
         value: "16686"
       - name: JAEGER_SERVICE_HOST
-        value: '{{ include "otel-demo.name" . }}-jaeger'
+        value: '{{ include "otel-demo.name" . }}-jaeger-query'
+      - name: OTEL_COLLECTOR_PORT
+        value: "4317"
+      - name: OTEL_COLLECTOR_HOST
+        value: '{{ include "otel-demo.name" . }}-otelcol'
       - name: ENVOY_PORT
         value: "8080"
       - name: ENVOY_UID
         value: "0"
-    podAnnotations: {}
     resources:
       limits:
-        memory: 20Mi
+        memory: 30Mi
 
   loadgenerator:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8089
     env:
       - name: FRONTEND_ADDR
@@ -411,8 +320,6 @@ components:
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: LOADGENERATOR_PORT
         value: "8089"
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 120Mi
@@ -421,21 +328,12 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 70Mi
@@ -444,13 +342,6 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -459,23 +350,36 @@ components:
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 20Mi
+
+  quoteService:
+    enabled: true
+    useDefault:
+      env: true
+    servicePort: 8080
+    env:
+      - name: OTEL_TRACES_SAMPLER
+        value: "parentbased_always_on"
+      - name: OTEL_TRACES_EXPORTER
+        value: "otlp"
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: "http/protobuf"
+      - name: OTEL_PHP_TRACES_PROCESSOR
+        value: "simple"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318'
+      - name: QUOTE_SERVICE_PORT
+        value: "8080"
+    resources:
+      limits:
+        memory: 40Mi
 
   recommendationService:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: OTEL_PYTHON_LOG_CORRELATION
@@ -490,8 +394,6 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -500,13 +402,6 @@ components:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
     servicePort: 8080
     env:
       - name: PORT
@@ -519,49 +414,79 @@ components:
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
-    envOverrides: []
-    podAnnotations: {}
     resources:
       limits:
         memory: 20Mi
 
-  quoteService:
+  ffsPostgres:
     enabled: true
     useDefault:
       env: true
-
-    imageOverride: {}
-    schedulingRules:
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
-    serviceType: ClusterIP
-    servicePort: 8080
+    imageOverride:
+      repository: "postgres"
+      tag: "14"
+    ports:
+      - name: postgres
+        value: 5432
     env:
-      - name: OTEL_TRACES_SAMPLER
-        value: "parentbased_always_on"
-      - name: OTEL_TRACES_EXPORTER
-        value: "otlp"
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-        value: "http/protobuf"
-      - name: OTEL_PHP_TRACES_PROCESSOR
-        value: "simple"
+      - name: POSTGRES_DB
+        value: ffs
+      - name: POSTGRES_PASSWORD
+        value: ffs
+      - name: POSTGRES_USER
+        value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include "otel-demo.name" . }}-otelcol:4318'
-      - name: QUOTE_SERVICE_PORT
-        value: "8080"
-    envOverrides: []
-    podAnnotations: {}
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
     resources:
       limits:
-        memory: 30Mi
+        memory: 120Mi
+
+  kafka:
+    enabled: true
+    useDefault:
+      env: false
+    ports:
+      - name: plaintext
+        value: 9092
+      - name: controller
+        value: 9093
+    env:
+      - name: KAFKA_ADVERTISED_LISTENERS
+        value: 'PLAINTEXT://{{ include "otel-demo.name" . }}-kafka:9092'
+    resources:
+      limits:
+        memory: 600Mi
+
+  redis:
+    enabled: true
+    useDefault:
+      env: true
+    imageOverride:
+      repository: "redis"
+      tag: "alpine"
+    ports:
+      - name: redis
+        value: 6379
+    resources:
+      limits:
+        memory: 20Mi
+
+observability:
+  otelcol:
+    enabled: true
+  jaeger:
+    enabled: true
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
 
 opentelemetry-collector:
   nameOverride: otelcol
   mode: deployment
   resources:
     limits:
-      memory: 100Mi
+      memory: 125Mi
   service:
     type: ClusterIP
   ports:
@@ -581,20 +506,25 @@ opentelemetry-collector:
       otlp:
         protocols:
           http:
+            # Since this collector needs to receive data from the web, enable cors for all origins
+            # `allowed_origins` can be refined for your deployment domain
             cors:
               allowed_origins:
                 - "http://*"
                 - "https://*"
 
     exporters:
+      ## Create an exporter to Jaeger using the standard `otlp` export format
       otlp:
-        endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
+        endpoint: '{{ include "otel-demo.name" . }}-jaeger-collector:4317'
         tls:
           insecure: true
+      # Create an exporter to Prometheus (metrics)
       prometheus:
         endpoint: '0.0.0.0:9464'
 
     processors:
+      # Make use of the spanmetrics processor to compute RED metrics from all tracing spans
       spanmetrics:
         metrics_exporter: prometheus
 
@@ -605,6 +535,24 @@ opentelemetry-collector:
           exporters: [otlp, logging]
         metrics:
           exporters: [prometheus, logging]
+
+jaeger:
+  provisionDataStore:
+    cassandra: false
+  allInOne:
+    enabled: true
+    args: ["--memory.max-traces", "10000", "--query.base-path", "/jaeger/ui"]
+    resources:
+      limits:
+        memory: 275Mi
+  storage:
+    type: none
+  agent:
+    enabled: false
+  collector:
+    enabled: false
+  query:
+    enabled: false
 
 prometheus:
   alertmanager:
@@ -633,6 +581,8 @@ prometheus:
         - job_name: 'opentelemetry-community-demo'
           kubernetes_sd_configs:
             - role: pod
+              namespaces:
+                own_namespace: true
           relabel_configs:
             - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
               action: keep
@@ -663,7 +613,7 @@ grafana:
         - name: Jaeger
           uid: webstore-traces
           type: jaeger
-          url: 'http://{{ include "otel-demo.name" . }}-jaeger:16686'
+          url: 'http://{{ include "otel-demo.name" . }}-jaeger-query:16686/jaeger/ui'
           editable: true
           isDefault: false
   dashboardProviders:
@@ -680,3 +630,6 @@ grafana:
             path: /var/lib/grafana/dashboards/default
   dashboardsConfigMaps:
     default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
+  resources:
+    limits:
+      memory: 75Mi
