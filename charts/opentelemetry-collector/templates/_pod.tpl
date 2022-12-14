@@ -42,20 +42,6 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
-      {{- if .Values.presets.hostMetrics.enabled }}
-      - name: HOST_PROC
-        value: /hostfs/proc
-      - name: HOST_SYS
-        value: /hostfs/sys
-      - name: HOST_ETC
-        value: /hostfs/etc
-      - name: HOST_VAR
-        value: /hostfs/var
-      - name: HOST_RUN
-        value: /hostfs/run
-      - name: HOST_DEV
-        value: /hostfs/dev
-      {{- end }}
       {{- if .Values.presets.kubeletMetrics.enabled }}
       - name: K8S_NODE_NAME
         valueFrom:
