@@ -92,7 +92,10 @@ spec:
 {{- end }}
 {{- end }}
 {{- if and $hasIngress (or .ports .servicePort) }}
-{{- $ingresses := prepend .ingress.additionalIngresses .ingress -}}
+{{- $ingresses := list .ingress }}
+{{- if .ingress.additionalIngresses }}
+{{-   $ingresses := concat $ingresses .ingress.additionalIngresses -}}
+{{- end }}
 {{- range $ingresses }}
 ---
 apiVersion: "networking.k8s.io/v1"
