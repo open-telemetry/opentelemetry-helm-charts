@@ -1,5 +1,5 @@
 TMP_DIRECTORY = ./tmp
-CHARTS ?= opentelemetry-collector opentelemetry-operator
+CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo
 
 .PHONY: generate-examples
 generate-examples:
