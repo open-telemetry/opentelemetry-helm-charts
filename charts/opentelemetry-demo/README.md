@@ -94,6 +94,8 @@ component.
 | `ingress.hosts[].paths[].port`       | Port to use for the given path                                                                             | `nil`                                                         |
 | `ingress.additionalIngresses`        | Array of additional ingress rules to add. This is handy if you need to differently annotated ingress rules | `[]`                                                          |
 | `ingress.additionalIngresses[].name` | Each additional ingress rule needs to have a unique name                                                   | `nil`                                                         |
+| `command`                            | Command & arguments to pass to the container being spun up for this service                                | `[]`                                                          |
+| `configuration`                      | Configuration for the container being spun up; will create a ConfigMap, Volume and VolumeMount             | `{}`                                                          |
 
 ### Observability parameters
 
