@@ -15,6 +15,9 @@ spec:
   {{- if .Values.service.clusterIP }}
   clusterIP: {{ .Values.service.clusterIP }}
   {{- end }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   ports: {{ include "opentelemetry-collector.deploymentPortsConfig" . | nindent 4 }}
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
