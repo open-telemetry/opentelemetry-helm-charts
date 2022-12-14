@@ -1,4 +1,4 @@
-{{- define "otel.demo.deployment" }}
+{{- define "otel-demo.deployment" }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -53,7 +53,8 @@ spec:
           resources:
             {{- .resources | toYaml | nindent 12 }}
 {{- end }}
-{{- define "otel.demo.service" }}
+
+{{- define "otel-demo.service" }}
 {{- if or .ports .servicePort}}
 ---
 apiVersion: v1
@@ -80,5 +81,68 @@ spec:
     {{- end }}
   selector:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
+{{- end}}
+{{- end}}
+
+{{- define "otel-demo.ingress" }}
+{{- $hasIngress := false}}
+{{- if .ingress }}
+{{- if .ingress.enabled }}
+{{- $hasIngress = true }}
+{{- end }}
+{{- end }}
+{{- if and $hasIngress (or .ports .servicePort) }}
+{{- $ingresses := list .ingress }}
+{{- if .ingress.additionalIngresses }}
+{{-   $ingresses := concat $ingresses .ingress.additionalIngresses -}}
+{{- end }}
+{{- range $ingresses }}
+---
+apiVersion: "networking.k8s.io/v1"
+kind: Ingress
+metadata:
+  {{- if .name }}
+  name: {{include "otel-demo.name" $ }}-{{ $.name }}-{{ .name }}
+  {{- else }}
+  name: {{include "otel-demo.name" $ }}-{{ $.name }}
+  {{- end }}
+  labels:
+    {{- include "otel-demo.labels" $ | nindent 4 }}
+  {{- if .annotations }}
+  annotations:
+    {{ toYaml .annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .ingressClassName }}
+  ingressClassName: {{ .ingressClassName }}
+  {{- end -}}
+  {{- if .tls }}
+  tls:
+    {{- range .tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- with .secretName }}
+      secretName: {{ . }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "otel-demo.name" $ }}-{{ $.name }}
+                port:
+                  number: {{ .port }}
+          {{- end }}
+    {{- end }}
+{{- end}}
 {{- end}}
 {{- end}}
