@@ -44,6 +44,10 @@ spec:
         - name: {{ .name }}
           image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "v%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
           imagePullPolicy: {{ ((.imageOverride).pullPolicy) | default .defaultValues.image.pullPolicy }}
+          {{- if .command }}
+          command:
+            {{- .command | toYaml | nindent 10 -}}
+          {{- end }}
           {{- if or .ports .servicePort}}
           ports:
             {{- include "otel-demo.pod.ports" . | nindent 10 }}
@@ -52,6 +56,16 @@ spec:
             {{- include "otel-demo.pod.env" . | nindent 10 }}
           resources:
             {{- .resources | toYaml | nindent 12 }}
+
+      {{- if .configuration }}
+          volumeMounts:
+          - name: config
+            mountPath: /etc/config
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "otel-demo.name" . }}-{{ .name }}-config
+      {{- end }}
 {{- end }}
 
 {{- define "otel-demo.service" }}
@@ -81,6 +95,21 @@ spec:
     {{- end }}
   selector:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
+{{- end}}
+{{- end}}
+{{- define "otel-demo.configmap" }}
+{{- if .configuration}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-demo.name" . }}-{{ .name }}-config
+  labels:
+    service: {{ include "otel-demo.name" . }}-{{ .name }}
+    app: {{ include "otel-demo.name" . }}-{{ .name }}
+    component: {{ include "otel-demo.name" . }}-{{ .name }}-config
+data:
+  {{- .configuration | toYaml | nindent 2}}
 {{- end}}
 {{- end}}
 
