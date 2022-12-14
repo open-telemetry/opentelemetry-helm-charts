@@ -5,7 +5,8 @@ in kubernetes cluster.
 
 ## Prerequisites
 
-- Helm 3.0+
+- Kubernetes 1.23+
+- Helm 3.9+
 
 ## Installing the Chart
 
