@@ -7,7 +7,7 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 ## Prerequisites
 
 - Kubernetes 1.19+ is required for OpenTelemetry Operator installation
-- Helm 3.0+
+- Helm 3.9+
 
 ### TLS Certificate Requirement
 
