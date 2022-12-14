@@ -1,9 +1,7 @@
 {{- if .Values.ingress.enabled -}}
-{{- $ingressApiIsStable := eq (include "ingress.isStable" .) "true" -}}
-{{- $ingressSupportsPathType := eq (include "ingress.supportsPathType" .) "true" -}}
 {{- $ingresses := prepend .Values.ingress.additionalIngresses .Values.ingress -}}
 {{- range $ingresses }}
-apiVersion: {{ include "ingress.apiVersion" $ }}
+apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
   {{- if .name }}
@@ -41,19 +39,12 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ .path }}
-            {{- if $ingressSupportsPathType }}
             pathType: {{ .pathType }}
-            {{- end }}
             backend:
-              {{- if $ingressApiIsStable }}
               service:
                 name: {{ include "opentelemetry-collector.fullname" $ }}
                 port:
                   number: {{ .port }}
-              {{- else }}
-              serviceName: {{ include "opentelemetry-collector.fullname" $ }}
-              servicePort: {{ .port }}
-              {{- end }}
           {{- end }}
     {{- end }}
 ---
