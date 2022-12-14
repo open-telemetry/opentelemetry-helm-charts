@@ -97,7 +97,7 @@ spec:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end}}
 {{- end}}
-{{- define "otel.demo.configmap" }}
+{{- define "otel-demo.configmap" }}
 {{- if .configuration}}
 ---
 apiVersion: v1
