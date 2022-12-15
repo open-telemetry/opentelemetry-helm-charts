@@ -53,6 +53,7 @@ the demo
 | `default.schedulingRules.nodeSelector` | Node labels for pod assignment                                                            | `{}`                                                 |
 | `default.schedulingRules.affinity`     | Man of node/pod affinities                                                                | `{}`                                                 |
 | `default.schedulingRules.tolerations`  | Tolerations for pod assignment                                                            | `[]`                                                 |
+| `default.securityContext`              | Demo components container security context                                                | `{}`                                                 |
 | `serviceAccount`                       | The name of the ServiceAccount to use for demo components                                 | `""`                                                 |
 
 ### Component parameters
@@ -83,6 +84,7 @@ component.
 | `schedulingRules.nodeSelector`       | Node labels for pod assignment                                                                             | `{}`                                                          |
 | `schedulingRules.affinity`           | Man of node/pod affinities                                                                                 | `{}`                                                          |
 | `schedulingRules.tolerations`        | Tolerations for pod assignment                                                                             | `[]`                                                          |
+| `securityContext`                    | Container security context to define user ID (UID), group ID (GID) and other security policies             | `{}`                                                          |
 | `podAnnotations`                     | Pod annotations for this component                                                                         | `{}`                                                          |
 | `ingress.enabled`                    | Enable the creation of Ingress rules                                                                       | `false`                                                       |
 | `ingress.annotations`                | Annotations to add to the ingress rule                                                                     | `{}`                                                          |
