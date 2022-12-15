@@ -56,6 +56,10 @@ spec:
             {{- include "otel-demo.pod.env" . | nindent 10 }}
           resources:
             {{- .resources | toYaml | nindent 12 }}
+	  {{- if or .defaultValues.securityContext .securityContext }}
+          securityContext:
+            {{- .securityContext | default .defaultValues.securityContext | toYaml | nindent 12 }}
+	  {{- end}}
 
       {{- if .configuration }}
           volumeMounts:

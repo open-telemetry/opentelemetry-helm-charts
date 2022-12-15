@@ -38,7 +38,7 @@ default:
     nodeSelector: {}
     affinity: {}
     tolerations: []
-
+  securityContext: {}
 serviceAccount: ""
 
 components:
@@ -73,6 +73,8 @@ components:
   #   podAnnotations: {}
   ## Resources for this component
   #   resources: {}
+  ## Container security context for setting user ID (UID), group ID (GID) and other security policies
+  #   securityContext:
   ## Ingresses rules to add for the to the component
   # ingress:
   ## Enable the creation of Ingress rules. Default is false
@@ -329,11 +331,13 @@ components:
         value: '{{ include "otel-demo.name" . }}-otelcol'
       - name: ENVOY_PORT
         value: "8080"
-      - name: ENVOY_UID
-        value: "0"
     resources:
       limits:
         memory: 30Mi
+    securityContext:
+      runAsUser: 101  # envoy
+      runAsGroup: 101
+      runAsNonRoot: true
 
   loadgenerator:
     enabled: true
@@ -416,6 +420,10 @@ components:
     resources:
       limits:
         memory: 40Mi
+    securityContext:
+      runAsUser: 33  # www-data
+      runAsGroup: 33
+      runAsNonRoot: true
 
   recommendationService:
     enabled: true
@@ -481,6 +489,10 @@ components:
     resources:
       limits:
         memory: 120Mi
+    securityContext:
+      runAsUser: 999  # postgres
+      runAsGroup: 999
+      runAsNonRoot: true
 
   kafka:
     enabled: true
@@ -497,6 +509,10 @@ components:
     resources:
       limits:
         memory: 600Mi
+    securityContext:
+      runAsUser: 1000  # appuser
+      runAsGroup: 1000
+      runAsNonRoot: true
 
   redis:
     enabled: true
@@ -511,6 +527,11 @@ components:
     resources:
       limits:
         memory: 20Mi
+    securityContext:
+      runAsUser: 999  # redis
+      runAsGroup: 1000
+      runAsNonRoot: true
+
 observability:
   otelcol:
     enabled: true
