@@ -127,7 +127,7 @@ containers:
 {{- end }}
 {{- if .Values.initContainers }}
 initContainers:
-  {{- toYaml .Values.initContainers | nindent 2 }}
+  {{- tpl (toYaml .Values.initContainers) . | nindent 2 }}
 {{- end }}
 {{- if .Values.priorityClassName }}
 priorityClassName: {{ .Values.priorityClassName | quote }}
