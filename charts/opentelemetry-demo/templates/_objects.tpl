@@ -81,6 +81,10 @@ metadata:
   name: {{ include "otel-demo.name" . }}-{{ .name }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
+  {{- if .serviceAnnotations }}
+  annotations:
+    {{- toYaml .serviceAnnotations | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .serviceType | default "ClusterIP" }}
   ports:
