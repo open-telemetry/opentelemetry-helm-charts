@@ -26,19 +26,18 @@ spec:
       {{- with .serviceAccountName }}
       serviceAccountName: {{ .serviceAccountName}}
       {{- end }}
-      {{- if .schedulingRules }}
-      {{- if or .defaultValues.schedulingRules.nodeSelector .schedulingRules.nodeSelector}}
+      {{- $schedulingRules := .schedulingRules | default dict }}
+      {{- if or .defaultValues.schedulingRules.nodeSelector $schedulingRules.nodeSelector}}
       nodeSelector:
-        {{- .schedulingRules.nodeSelector | default .defaultValues.schedulingRules.nodeSelector | toYaml | nindent 8 }}
+        {{- $schedulingRules.nodeSelector | default .defaultValues.schedulingRules.nodeSelector | toYaml | nindent 8 }}
       {{- end }}
-      {{- if or .defaultValues.schedulingRules.affinity .schedulingRules.affinity}}
+      {{- if or .defaultValues.schedulingRules.affinity $schedulingRules.affinity}}
       affinity:
-        {{- .schedulingRules.affinity | default .defaultValues.schedulingRules.affinity | toYaml | nindent 8 }}
+        {{- $schedulingRules.affinity | default .defaultValues.schedulingRules.affinity | toYaml | nindent 8 }}
       {{- end }}
-      {{- if or .defaultValues.schedulingRules.tolerations .schedulingRules.tolerations}}
+      {{- if or .defaultValues.schedulingRules.tolerations $schedulingRules.tolerations}}
       tolerations:
-        {{- .schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
-      {{- end }}
+        {{- $schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .name }}
