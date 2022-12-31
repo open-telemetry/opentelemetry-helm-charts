@@ -43,6 +43,10 @@ spec:
           image: "otel/opentelemetry-collector-contrib:0.67.0"
           imagePullPolicy: IfNotPresent
           ports:
+            - name: grpc-otlp
+              containerPort: 4317
+              protocol: TCP
+              hostPort: 4317
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
@@ -55,11 +59,6 @@ spec:
               containerPort: 14268
               protocol: TCP
               hostPort: 14268
-            - name: otlp-grpc
-              containerPort: 4317
-              protocol: TCP
-              appProtocol: grpc
-              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP

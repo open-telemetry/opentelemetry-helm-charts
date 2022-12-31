@@ -300,9 +300,6 @@ processors:
   port: {{ $port.servicePort }}
   targetPort: {{ $port.containerPort }}
   protocol: {{ $port.protocol }}
-  {{- if $port.appProtocol }}
-  appProtocol: {{ $port.appProtocol }}
-  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
