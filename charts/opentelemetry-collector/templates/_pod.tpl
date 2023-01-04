@@ -23,7 +23,11 @@ containers:
       {{- else -}}
       {{- toYaml .Values.securityContext | nindent 6 }}
       {{- end }}
+    {{- if .Values.image.digest }}
+    image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+    {{- else }}
     image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+    {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     ports:
       {{- range $key, $port := .Values.ports }}
