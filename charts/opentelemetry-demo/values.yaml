@@ -506,6 +506,12 @@ components:
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: 'PLAINTEXT://{{ include "otel-demo.name" . }}-kafka:9092'
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+        value: cumulative
     resources:
       limits:
         memory: 600Mi
