@@ -5,7 +5,7 @@ kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.43.2
+    helm.sh/chart: opentelemetry-collector-0.43.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.67.0"
@@ -44,6 +44,9 @@ spec:
           image: "otel/opentelemetry-collector-contrib:0.67.0"
           imagePullPolicy: IfNotPresent
           ports:
+            - name: grpc-otlp
+              containerPort: 4317
+              protocol: TCP
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
@@ -52,9 +55,6 @@ spec:
               protocol: TCP
             - name: jaeger-thrift
               containerPort: 14268
-              protocol: TCP
-            - name: otlp
-              containerPort: 4317
               protocol: TCP
             - name: otlp-http
               containerPort: 4318

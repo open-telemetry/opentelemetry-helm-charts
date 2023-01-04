@@ -5,7 +5,7 @@ kind: DaemonSet
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.43.2
+    helm.sh/chart: opentelemetry-collector-0.43.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.67.0"
@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 65c3e5d9cec090844c986b91cf55a63562297467f8a7a3cc346816c061e43cf8
+        checksum/config: d47a0e4c8a1b64ecfd30d1bde5de083218582ca9d8032969074f1e43ec920eef
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -43,6 +43,10 @@ spec:
           image: "otel/opentelemetry-collector-contrib:0.67.0"
           imagePullPolicy: IfNotPresent
           ports:
+            - name: grpc-otlp
+              containerPort: 4317
+              protocol: TCP
+              hostPort: 4317
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
@@ -55,10 +59,6 @@ spec:
               containerPort: 14268
               protocol: TCP
               hostPort: 14268
-            - name: otlp
-              containerPort: 4317
-              protocol: TCP
-              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP
