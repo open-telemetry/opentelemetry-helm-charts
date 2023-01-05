@@ -1,0 +1,93 @@
+---
+# Source: opentelemetry-collector/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-opentelemetry-collector
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.43.5
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.67.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-collector
+      app.kubernetes.io/instance: release-name
+      component: standalone-collector
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 6c4e834adbb886775435943c8a17902065856c1982ea9bcf55dd40c48ac73e5f
+
+      labels:
+        app.kubernetes.io/name: opentelemetry-collector
+        app.kubernetes.io/instance: release-name
+        component: standalone-collector
+
+    spec:
+
+      serviceAccountName: release-name-opentelemetry-collector
+      securityContext:
+        {}
+      containers:
+        - name: opentelemetry-collector
+          command:
+            - /otelcol-contrib
+            - --config=/conf/relay.yaml
+          securityContext:
+            {}
+          image: "otel/opentelemetry-collector-contrib:0.67.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: jaeger-compact
+              containerPort: 6831
+              protocol: UDP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
+            - name: otlp
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: zipkin
+              containerPort: 9411
+              protocol: TCP
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+          volumeMounts:
+            - mountPath: /conf
+              name: opentelemetry-collector-configmap
+      volumes:
+        - name: opentelemetry-collector-configmap
+          configMap:
+            name: release-name-opentelemetry-collector
+            items:
+              - key: relay
+                path: relay.yaml
+      hostNetwork: false
