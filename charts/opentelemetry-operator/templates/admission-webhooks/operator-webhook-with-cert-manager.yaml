@@ -16,7 +16,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Fail
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: minstrumentation.kb.io
     rules:
     - apiGroups:
@@ -73,7 +73,7 @@ webhooks:
     objectSelector:
     {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
     {{- end }}
-    failurePolicy: Ignore
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: mpod.kb.io
     rules:
       - apiGroups:
@@ -105,7 +105,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Fail
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vinstrumentationcreateupdate.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
@@ -134,7 +134,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Ignore
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vinstrumentationdelete.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
@@ -191,7 +191,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
-    failurePolicy: Ignore
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vopentelemetrycollectordelete.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
