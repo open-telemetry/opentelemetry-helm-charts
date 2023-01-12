@@ -1,5 +1,6 @@
 mode: daemonset
-
+global:
+  image: busybox:latest
 initContainers:
   - name: test
     command:
@@ -7,7 +8,7 @@ initContainers:
     args:
       - /bin/sleep
       - /test/sleep
-    image: busybox:latest
+    image: "{{ .Values.global.image }}"
     volumeMounts:
       - name: test
         mountPath: /test
