@@ -300,6 +300,9 @@ processors:
   port: {{ $port.servicePort }}
   targetPort: {{ $port.containerPort }}
   protocol: {{ $port.protocol }}
+{{- if $port.nodePort }}
+  nodePort: {{ $port.nodePort }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
