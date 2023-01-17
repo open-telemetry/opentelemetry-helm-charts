@@ -1,5 +1,7 @@
 {{- if and (.Values.admissionWebhooks.create) (not .Values.admissionWebhooks.certManager.enabled) }}
-{{- $altNames := list ( printf "%s%s.%s" opentelemetry-operator.name "-webhook-service" .Release.Namespace ) ( printf "%s%s.%s.svc" opentelemetry-operator.name "-webhook-service" .Release.Namespace ) -}}
+{{- $altName1 := printf "%s-webhook-service.%s" (include "opentelemetry-operator.name" .) .Release.Namespace -}}
+{{- $altName2 := printf "%s-webhook-service.%s.svc" (include "opentelemetry-operator.name" .) .Release.Namespace -}}
+{{- $altNames := list ( $altName1 ) ( $altName2 ) -}}
 {{- $ca := genCA "opentelemetry-operator-operator-ca" 365 -}}
 {{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca -}}
 apiVersion: v1
