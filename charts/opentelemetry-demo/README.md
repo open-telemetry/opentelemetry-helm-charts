@@ -8,6 +8,9 @@ in kubernetes cluster.
 - Kubernetes 1.23+
 - Helm 3.9+
 
+Since the OpenTelemetry demo does not build images targeting arm64 architecture **the chart is not supported in clusters running on
+arm64 architectures**, such as kind/minikube running on Apple Silicon.
+
 ## Installing the Chart
 
 Add OpenTelemetry Helm repository:
