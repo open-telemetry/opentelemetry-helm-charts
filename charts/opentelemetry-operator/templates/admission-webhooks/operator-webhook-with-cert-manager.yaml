@@ -18,6 +18,14 @@ webhooks:
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Fail
     name: minstrumentation.kb.io
+    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    namespaceSelector:
+    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.admissionWebhooks.objectSelector }}
+    objectSelector:
+    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- end }}
     rules:
     - apiGroups:
         - opentelemetry.io
@@ -29,6 +37,7 @@ webhooks:
       resources:
         - instrumentations
     sideEffects: None
+    timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
   - admissionReviewVersions:
       - v1
     clientConfig:

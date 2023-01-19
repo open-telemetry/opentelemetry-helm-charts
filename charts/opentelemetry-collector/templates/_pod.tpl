@@ -35,9 +35,6 @@ containers:
       - name: {{ $key }}
         containerPort: {{ $port.containerPort }}
         protocol: {{ $port.protocol }}
-        {{- if $port.appProtocol }}
-        appProtocol: {{ $port.appProtocol }}
-        {{- end }}
         {{- if and $.isAgent $port.hostPort }}
         hostPort: {{ $port.hostPort }}
         {{- end }}
