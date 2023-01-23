@@ -1,5 +1,5 @@
 {{- if and (.Values.admissionWebhooks.create) (not .Values.admissionWebhooks.certManager.enabled) }}
-{{- $altNames := list ( printf "%s.%s" "opentelemetry-operator-webhook-service" .Release.Namespace ) ( printf "%s.%s.svc" "opentelemetry-operator-webhook-service" .Release.Namespace ) -}}
+{{- $altNames := list ( printf "%s-webhook-service.%s" (include "opentelemetry-operator.name" .) .Release.Namespace ) ( printf "%s-webhook-service.%s.svc" (include "opentelemetry-operator.name" .) .Release.Namespace ) -}}
 {{- $ca := genCA "opentelemetry-operator-operator-ca" 365 -}}
 {{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca -}}
 apiVersion: v1
@@ -34,7 +34,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Fail
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: minstrumentation.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
@@ -135,7 +135,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Fail
+    failurePolicy:  {{ .Values.admissionWebhooks.failurePolicy }}
     name: vinstrumentationcreateupdate.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
