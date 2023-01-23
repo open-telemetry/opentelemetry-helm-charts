@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.45.0 to 0.46.0
+## 0.45.2 to 0.46.0
 
 [Update Collector Endpoints to use Pod IP Instead of 0.0.0.0](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/603)
 
