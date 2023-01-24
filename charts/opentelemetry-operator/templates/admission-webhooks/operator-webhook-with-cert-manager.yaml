@@ -16,7 +16,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Fail
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: minstrumentation.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
@@ -114,7 +114,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.name" . }}-webhook-service
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
-    failurePolicy: Fail
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vinstrumentationcreateupdate.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:

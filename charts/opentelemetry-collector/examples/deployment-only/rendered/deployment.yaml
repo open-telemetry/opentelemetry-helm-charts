@@ -5,10 +5,10 @@ kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.46.0
+    helm.sh/chart: opentelemetry-collector-0.70.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.69.0"
+    app.kubernetes.io/version: "0.70.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 3
@@ -22,7 +22,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 884adbf823d753896b994e61163def5e86a27566466a40d696fa26ce0ea71cb7
+        checksum/config: f8b5bb77e0d37950267b9eb9f1fd9eab2747384ce7db1f79752e0a815f302d60
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -41,7 +41,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.69.0"
+          image: "otel/opentelemetry-collector-contrib:0.70.0"
           imagePullPolicy: IfNotPresent
           ports:
             - name: jaeger-compact
