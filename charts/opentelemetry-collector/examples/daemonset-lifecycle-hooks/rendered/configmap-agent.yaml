@@ -5,10 +5,10 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.45.0
+    helm.sh/chart: opentelemetry-collector-0.47.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.69.0"
+    app.kubernetes.io/version: "0.70.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
@@ -28,17 +28,17 @@ data:
       jaeger:
         protocols:
           grpc:
-            endpoint: 0.0.0.0:14250
+            endpoint: ${MY_POD_IP}:14250
           thrift_compact:
-            endpoint: 0.0.0.0:6831
+            endpoint: ${MY_POD_IP}:6831
           thrift_http:
-            endpoint: 0.0.0.0:14268
+            endpoint: ${MY_POD_IP}:14268
       otlp:
         protocols:
           grpc:
-            endpoint: 0.0.0.0:4317
+            endpoint: ${MY_POD_IP}:4317
           http:
-            endpoint: 0.0.0.0:4318
+            endpoint: ${MY_POD_IP}:4318
       prometheus:
         config:
           scrape_configs:
@@ -48,7 +48,7 @@ data:
             - targets:
               - ${MY_POD_IP}:8888
       zipkin:
-        endpoint: 0.0.0.0:9411
+        endpoint: ${MY_POD_IP}:9411
     service:
       extensions:
       - health_check
@@ -83,4 +83,4 @@ data:
           - zipkin
       telemetry:
         metrics:
-          address: 0.0.0.0:8888
+          address: ${MY_POD_IP}:8888

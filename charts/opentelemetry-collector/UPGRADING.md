@@ -1,5 +1,16 @@
 # Upgrade guidelines
 
+## 0.46.0 to 0.47.0
+
+[Update Collector Endpoints to use Pod IP Instead of 0.0.0.0](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/603)
+
+The [Collector's security guidelines were updated](https://github.com/open-telemetry/opentelemetry-collector/pull/6959) to include containerized environments when discussing safeguards against denial of service attacks.
+To be in compliance with the Collector's security best practices the chart has been updated to use the Collector's pod IP in place of `0.0.0.0`.
+
+The chart will continue to allow complete configuration of the Collector via the `config` field in the values.yaml.  If pod IP does not suite your needs you can use `config` to set something different.
+
+See [Security Best Practices docummentation](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/security-best-practices.md#safeguards-against-denial-of-service-attacks) for more details.
+
 ## 0.40.7 to 0.41.0
 
 [Require Kubernetes version 1.23 or later](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/541)
