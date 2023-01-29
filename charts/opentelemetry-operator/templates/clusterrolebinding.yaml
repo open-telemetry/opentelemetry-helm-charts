@@ -5,11 +5,11 @@ metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
-  name: {{ template "opentelemetry-operator.name" . }}-manager-rolebinding
+  name: {{ template "opentelemetry-operator.fullname" . }}-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "opentelemetry-operator.name" . }}-manager-role
+  name: {{ template "opentelemetry-operator.fullname" . }}-manager-role
 subjects:
   - kind: ServiceAccount
     name: {{ template "opentelemetry-operator.serviceAccountName" . }}-controller-manager
@@ -23,11 +23,11 @@ metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
-  name: {{ template "opentelemetry-operator.name" . }}-proxy-rolebinding
+  name: {{ template "opentelemetry-operator.fullname" . }}-proxy-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "opentelemetry-operator.name" . }}-proxy-role
+  name: {{ template "opentelemetry-operator.fullname" . }}-proxy-role
 subjects:
   - kind: ServiceAccount
     name: {{ template "opentelemetry-operator.serviceAccountName" . }}-controller-manager

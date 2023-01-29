@@ -4,7 +4,7 @@ metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
-  name: {{ template "opentelemetry-operator.name" . }}-controller-manager
+  name: {{ template "opentelemetry-operator.fullname" . }}-controller-manager
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -138,7 +138,7 @@ spec:
         - name: cert
           secret:
             defaultMode: 420
-            secretName: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.name" .)) .Values.admissionWebhooks.secretName }}
+            secretName: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
       {{- end }}
       securityContext:
 {{ toYaml .Values.securityContext | indent 8 }}
