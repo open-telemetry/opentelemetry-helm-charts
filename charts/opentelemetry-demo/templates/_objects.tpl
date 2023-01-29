@@ -69,6 +69,10 @@ spec:
           configMap:
             name: {{ include "otel-demo.name" . }}-{{ .name }}-config
       {{- end }}
+      {{- if .livenessProbe }}
+          livenessProbe:
+            {{- .livenessProbe | toYaml | nindent 12 }}
+      {{- end }}
 {{- end }}
 
 {{- define "otel-demo.service" }}
