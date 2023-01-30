@@ -55,11 +55,14 @@ spec:
             {{- include "otel-demo.pod.env" . | nindent 10 }}
           resources:
             {{- .resources | toYaml | nindent 12 }}
-	  {{- if or .defaultValues.securityContext .securityContext }}
+          {{- if or .defaultValues.securityContext .securityContext }}
           securityContext:
             {{- .securityContext | default .defaultValues.securityContext | toYaml | nindent 12 }}
-	  {{- end}}
-
+          {{- end}}
+          {{- if .livenessProbe }}
+          livenessProbe:
+            {{- .livenessProbe | toYaml | nindent 12 }}
+          {{- end }}
       {{- if .configuration }}
           volumeMounts:
           - name: config
@@ -68,10 +71,6 @@ spec:
         - name: config
           configMap:
             name: {{ include "otel-demo.name" . }}-{{ .name }}-config
-      {{- end }}
-      {{- if .livenessProbe }}
-          livenessProbe:
-            {{- .livenessProbe | toYaml | nindent 12 }}
       {{- end }}
 {{- end }}
 
