@@ -122,6 +122,8 @@ components:
   #   command: []
   # # Configuration to for this service; will create a ConfigMap, Volume, and Mount it into the container being spun up/.
   #   configuration: {}
+  # # Kubernetes container health check options
+  #   livenessProbe: {}
   accountingService:
     enabled: true
     useDefault:
@@ -256,6 +258,12 @@ components:
     resources:
       limits:
         memory: 175Mi
+    livenessProbe:
+      httpGet:
+        path: /featureflags/
+        port: 8081
+      initialDelaySeconds: 30
+      periodSeconds: 10
 
   frauddetectionService:
     enabled: true
