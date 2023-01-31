@@ -34,6 +34,8 @@ spec:
     spec:
       containers:
         - env:
+            - name: METRICS_STORAGE_TYPE
+              value: prometheus
             - name: SPAN_STORAGE_TYPE
               value: memory
             - name: COLLECTOR_ZIPKIN_HOST_PORT
@@ -50,6 +52,8 @@ spec:
             - "10000"
             - "--query.base-path"
             - "/jaeger/ui"
+            - "--prometheus.server-url"
+            - "http://example-prometheus-server:9090"
           ports:
             - containerPort: 5775
               protocol: UDP
@@ -91,5 +95,5 @@ spec:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 275Mi
+              memory: 300Mi
       serviceAccountName: example-jaeger
