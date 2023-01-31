@@ -55,12 +55,18 @@ components:
   ## Use default environment variables
   #     env: true
   ## Override Image repository and Tag. Tag will use appVersion as default.
-  ## Service's name will be applied to end of this value.
+  ## Component's name will be applied to end of this value.
   #   imageOverride: {}
+  ## Optional service definitions to apply
+  #   service:
   ## Service Type to use for this component. Default is ClusterIP.
-  #   serviceType: ClusterIP
+  #     type: ClusterIP
   ## Service Port to use to expose this component. Default is nil
-  #   servicePort: 8080
+  #     port: 8080
+  ## Service Node Port to use to expose this component on a NodePort service. Default is nil
+  #     nodePort: 30080
+  ## Service Annotations to add to this component
+  #     annotations: {}
   ## Additional service ports to use to expose this component
   #   ports:
   #     - name: extraServicePort
@@ -143,7 +149,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
@@ -159,7 +166,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: ASPNETCORE_URLS
         value: http://*:8080
@@ -177,7 +185,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: CART_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
@@ -205,7 +214,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: PORT
         value: "8080"
@@ -221,7 +231,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: APP_ENV
         value: production
@@ -286,7 +297,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: FRONTEND_ADDR
         value: :8080
@@ -320,7 +332,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: FRONTEND_PORT
         value: "8080"
@@ -360,7 +373,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8089
+    service:
+      port: 8089
     env:
       - name: FRONTEND_ADDR
         value: '{{ include "otel-demo.name" . }}-frontend:8080'
@@ -390,7 +404,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
@@ -404,7 +419,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
@@ -422,7 +438,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318'
@@ -442,7 +459,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
@@ -464,7 +482,8 @@ components:
     enabled: true
     useDefault:
       env: true
-    servicePort: 8080
+    service:
+      port: 8080
     env:
       - name: PORT
         value: "8080"

@@ -79,7 +79,10 @@ component.
 | `imageOverride.tag`                  | Tag of the image for this component                                                                        | Defaults to the overall default image tag                     |
 | `imageOverride.pullPolicy`           | Image pull policy for this component                                                                       | `IfNotPresent`                                                |
 | `imageOverride.pullSecrets`          | Image pull secrets for this component                                                                      | `[]`                                                          |
-| `servicePort`                        | Service port used for this component                                                                       | `nil`                                                         |
+| `service.type`                       | Service type used for this component                                                                       | `ClusterIP`                                                   |
+| `service.port`                       | Service port used for this component                                                                       | `nil`                                                         |
+| `service.nodePort`                   | Service node port used for this component                                                                  | `nil`                                                         |
+| `service.annotations`                | Annotations to add to the component's service                                                              | `{}`                                                          |
 | `ports`                              | Array of ports to open for deployment and service of this component                                        | `[]`                                                          |
 | `env`                                | Array of environment variables added to this component                                                     | Each component will have its own set of environment variables |
 | `envOverrides`                       | Used to override individual environment variables without re-specifying the entire array                   | `[]`                                                          |
