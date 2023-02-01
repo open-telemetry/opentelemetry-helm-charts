@@ -47,7 +47,7 @@ spec:
           command:
             {{- .command | toYaml | nindent 10 -}}
           {{- end }}
-          {{- if or .ports .servicePort}}
+          {{- if or .ports .service}}
           ports:
             {{- include "otel-demo.pod.ports" . | nindent 10 }}
           {{- end }}
