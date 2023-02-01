@@ -37,8 +37,11 @@ Get Pod ports
 {{- end }}
 {{- end }}
 
-{{- if and .service .service.port }}
+{{- if .service }}
+{{- if .service.port }}
 - containerPort: {{.service.port}}
   name: service
 {{- end }}
+{{- end }}
+
 {{- end }}
