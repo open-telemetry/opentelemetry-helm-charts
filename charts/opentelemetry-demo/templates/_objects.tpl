@@ -134,7 +134,13 @@ data:
 {{- $hasIngress = true }}
 {{- end }}
 {{- end }}
-{{- if and $hasIngress (or .ports .servicePort) }}
+{{- $hasServicePorts := false}}
+{{- if .service }}
+{{- if .service.port }}
+{{- $hasServicePorts = true }}
+{{- end }}
+{{- end }}
+{{- if and $hasIngress (or .ports $hasServicePorts) }}
 {{- $ingresses := list .ingress }}
 {{- if .ingress.additionalIngresses }}
 {{-   $ingresses := concat $ingresses .ingress.additionalIngresses -}}
