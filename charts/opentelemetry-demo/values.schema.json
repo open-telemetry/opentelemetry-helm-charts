@@ -11,9 +11,6 @@
     "global": {
       "type": "object"
     },
-    "observability": {
-      "$ref": "#/definitions/Observability"
-    },
     "default": {
       "$ref": "#/definitions/Default"
     },
@@ -22,6 +19,9 @@
     },
     "components": {
       "$ref": "#/definitions/Components"
+    },
+    "observability": {
+      "$ref": "#/definitions/Observability"
     },
     "opentelemetry-collector": {
       "type": "object"
@@ -47,66 +47,66 @@
       "additionalProperties": false,
       "properties": {
         "accountingService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "adService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "cartService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "checkoutService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "currencyService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "emailService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "featureflagService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "frauddetectionService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "frontend": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "frontendProxy": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "loadgenerator": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "paymentService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "productCatalogService": {
-          "$ref": "#/definitions/Service"
-        },
-        "recommendationService": {
-          "$ref": "#/definitions/Service"
-        },
-        "shippingService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "quoteService": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
+        },
+        "recommendationService": {
+          "$ref": "#/definitions/Component"
+        },
+        "shippingService": {
+          "$ref": "#/definitions/Component"
         },
         "ffsPostgres": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "kafka": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         },
         "redis": {
-          "$ref": "#/definitions/Service"
+          "$ref": "#/definitions/Component"
         }
       },
       "title": "Components"
     },
-    "Service": {
+    "Component": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -129,11 +129,8 @@
         "imageOverride": {
           "$ref": "#/definitions/Image"
         },
-        "serviceType": {
-          "type": "string"
-        },
-        "servicePort": {
-          "type": "integer"
+        "service": {
+          "$ref": "#/definitions/Service"
         },
         "ports": {
           "type": "array",
@@ -326,6 +323,25 @@
       "required": [
         "key"
       ]
+    },
+    "Service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "nodePort": {
+          "type": "integer"
+        },
+        "annotations": {
+          "type": "object"
+        }
+      },
+      "title": "Service"
     },
     "Port": {
       "type": "object",

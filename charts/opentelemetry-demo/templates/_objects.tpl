@@ -47,7 +47,7 @@ spec:
           command:
             {{- .command | toYaml | nindent 10 -}}
           {{- end }}
-          {{- if or .ports .servicePort}}
+          {{- if or .ports .service}}
           ports:
             {{- include "otel-demo.pod.ports" . | nindent 10 }}
           {{- end }}
@@ -75,7 +75,8 @@ spec:
 {{- end }}
 
 {{- define "otel-demo.service" }}
-{{- if or .ports .servicePort}}
+{{- if or .ports .service}}
+{{- $service := .service | default dict }}
 ---
 apiVersion: v1
 kind: Service
@@ -83,8 +84,12 @@ metadata:
   name: {{ include "otel-demo.name" . }}-{{ .name }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
+  {{- with $service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  type: {{ .serviceType | default "ClusterIP" }}
+  type: {{ $service.type | default "ClusterIP" }}
   ports:
     {{- if .ports }}
     {{- range $port := .ports }}
@@ -94,10 +99,13 @@ spec:
     {{- end }}
     {{- end }}
 
-    {{- if .servicePort }}
-    - port: {{.servicePort}}
+    {{- if $service.port }}
+    - port: {{ $service.port}}
       name: service
-      targetPort: {{ .servicePort }}
+      targetPort: {{ $service.port }}
+      {{- if $service.nodePort }}
+      nodePort: {{ $service.nodePort }}
+      {{- end }}
     {{- end }}
   selector:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
@@ -126,7 +134,13 @@ data:
 {{- $hasIngress = true }}
 {{- end }}
 {{- end }}
-{{- if and $hasIngress (or .ports .servicePort) }}
+{{- $hasServicePorts := false}}
+{{- if .service }}
+{{- if .service.port }}
+{{- $hasServicePorts = true }}
+{{- end }}
+{{- end }}
+{{- if and $hasIngress (or .ports $hasServicePorts) }}
 {{- $ingresses := list .ingress }}
 {{- if .ingress.additionalIngresses }}
 {{-   $ingresses := concat $ingresses .ingress.additionalIngresses -}}
