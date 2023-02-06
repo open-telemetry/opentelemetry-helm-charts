@@ -10,6 +10,10 @@ metadata:
     {{- range $key, $value := .Values.manager.prometheusRule.extraLabels }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
+  annotations:
+    {{- range $key, $value := .Values.manager.serviceMonitor.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
 spec:
   groups:
 {{- if .Values.manager.prometheusRule.groups }}
