@@ -23,8 +23,8 @@ spec:
       imagePullSecrets:
         {{- ((.imageOverride).pullSecrets) | default .defaultValues.image.pullSecrets | toYaml | nindent 8}}
       {{- end }}
-      {{- with .serviceAccountName }}
-      serviceAccountName: {{ .serviceAccountName}}
+      {{- if .serviceAccount }}
+      serviceAccountName: {{ .serviceAccount}}
       {{- end }}
       {{- $schedulingRules := .schedulingRules | default dict }}
       {{- if or .defaultValues.schedulingRules.nodeSelector $schedulingRules.nodeSelector}}
