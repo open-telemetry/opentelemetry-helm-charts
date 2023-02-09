@@ -1,5 +1,10 @@
 # Upgrade guidelines
 
+## 0.21 to 0.22.0
+Kubernetes resource names will now use `{{opentelemetry-operator.fullname}}` as the default value which will change the name of many resources.
+Some CI/CD tools might create duplicate resources when upgrading from an older version because of this change.
+`fullnameOverride` can be used to keep `deployment` resource consistent with the same name during an upgrade.
+
 ## 0.16.0 to 0.17.0
 
 The v0.17.0 helm chart version changes OpenTelemetry Collector image to the contrib version. If you want to use the core version, set `manager.collectorImage.repository` to `otel/opentelemetry-collector`.
