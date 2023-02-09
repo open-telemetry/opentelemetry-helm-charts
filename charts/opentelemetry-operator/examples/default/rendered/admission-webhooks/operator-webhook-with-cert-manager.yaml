@@ -4,21 +4,21 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: default/opentelemetry-operator-serving-cert
+    cert-manager.io/inject-ca-from: default/example-opentelemetry-operator-serving-cert
   labels:
-    helm.sh/chart: opentelemetry-operator-0.21.5
+    helm.sh/chart: opentelemetry-operator-0.22.0
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.67.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: webhook
-  name: opentelemetry-operator-mutating-webhook-configuration
+  name: example-opentelemetry-operator-mutation
 webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Fail
@@ -39,7 +39,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /mutate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Fail
@@ -60,7 +60,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /mutate-v1-pod
     failurePolicy: Ignore
@@ -83,21 +83,21 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: default/opentelemetry-operator-serving-cert
+    cert-manager.io/inject-ca-from: default/example-opentelemetry-operator-serving-cert
   labels:
-    helm.sh/chart: opentelemetry-operator-0.21.5
+    helm.sh/chart: opentelemetry-operator-0.22.0
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.67.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: webhook
-  name: opentelemetry-operator-validating-webhook-configuration
+  name: example-opentelemetry-operator-validation
 webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Fail
@@ -118,7 +118,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Ignore
@@ -138,7 +138,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Fail
@@ -159,7 +159,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: opentelemetry-operator-webhook-service
+        name: example-opentelemetry-operator-webhook
         namespace: default
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Ignore
