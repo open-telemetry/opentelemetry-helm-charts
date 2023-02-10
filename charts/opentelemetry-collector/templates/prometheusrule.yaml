@@ -22,7 +22,7 @@ spec:
       labels:
         severity: critical
       annotations:
-        description: '{{`The {{ $labels.receiver }} is dropping spans at a rate of {{ humanize $value }} per second `}}'
+        description: '{{`The {{ $labels.receiver }} receiver is dropping spans at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
     - alert: ReceiverDroppedMetrics
       expr: rate(otelcol_receiver_refused_metric_points[5m]) > 0
@@ -30,7 +30,7 @@ spec:
       labels:
         severity: critical
       annotations:
-        description: '{{`The {{ $labels.receiver }} is dropping metrics at a rate of {{ humanize $value }} per second `}}'
+        description: '{{`The {{ $labels.receiver }} receiver is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
     - alert: ProcessorDroppedSpans
       expr: rate(otelcol_processor_dropped_spans[5m]) > 0
@@ -38,7 +38,7 @@ spec:
       labels:
         severity: critical
       annotations:
-        description: '{{`The {{ $labels.processor }} is dropping spans at a rate of {{ humanize $value }} per second `}}'
+        description: '{{`The {{ $labels.processor }} processor is dropping spans at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#data-loss'
     - alert: ProcessorDroppedMetrics
       expr: rate(otelcol_processor_dropped_metric_points[5m]) > 0
@@ -46,15 +46,23 @@ spec:
       labels:
         severity: critical
       annotations:
-        description: '{{`The {{ $labels.processor }} is dropping metrics at a rate of {{ humanize $value }} per second `}}'
+        description: '{{`The {{ $labels.processor }} processor is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#data-loss'
+    - alert: ExporterDroppedSpans
+      expr: rate(otelcol_exporter_send_failed_spans[5m]) > 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        description: '{{`The {{ $labels.exporter }} exporter is dropping spans at a rate of {{ humanize $value }} per second `}}'
+        runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
     - alert: ExporterDroppedMetrics
       expr: rate(otelcol_exporter_send_failed_metric_points[5m]) > 0
       for: 2m
       labels:
         severity: critical
       annotations:
-        description: '{{`The {{ $labels.exporter }} is dropping metrics at a rate of {{ humanize $value }} per second `}}'
+        description: '{{`The {{ $labels.exporter }} exporter is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
     - alert: ExporterQueueSize
       expr: otelcol_exporter_queue_size > 5000
