@@ -3,17 +3,17 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
-  name: {{ template "opentelemetry-operator.name" . }}-mutating-webhook-configuration
+  name: {{ template "opentelemetry-operator.fullname" . }}-mutation
 webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -42,7 +42,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -71,7 +71,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-v1-pod
     {{- if .Values.admissionWebhooks.namespaceSelector }}
@@ -101,17 +101,17 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
-  name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
+  name: {{ template "opentelemetry-operator.fullname" . }}-validation
 webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -140,7 +140,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Ignore
@@ -168,7 +168,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -197,7 +197,7 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Ignore

@@ -1,5 +1,5 @@
 {{- if and (.Values.admissionWebhooks.create) (not .Values.admissionWebhooks.certManager.enabled) }}
-{{- $altNames := list ( printf "%s-webhook-service.%s" (include "opentelemetry-operator.name" .) .Release.Namespace ) ( printf "%s-webhook-service.%s.svc" (include "opentelemetry-operator.name" .) .Release.Namespace ) -}}
+{{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) -}}
 {{- $ca := genCA "opentelemetry-operator-operator-ca" 365 -}}
 {{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca -}}
 apiVersion: v1
@@ -12,7 +12,7 @@ metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
-  name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.name" .)) .Values.admissionWebhooks.secretName }}
+  name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
   namespace: {{ .Release.Namespace }}
 data:
   tls.crt: {{ $cert.Cert | b64enc }}
@@ -24,14 +24,14 @@ metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
-  name: {{ template "opentelemetry-operator.name" . }}-mutating-webhook-configuration
+  name: {{ template "opentelemetry-operator.fullname" . }}-mutation
 webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -61,7 +61,7 @@ webhooks:
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -91,7 +91,7 @@ webhooks:
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-v1-pod
     failurePolicy: Ignore
@@ -121,18 +121,18 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.name" .) }}
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
-  name: {{ template "opentelemetry-operator.name" . }}-validating-webhook-configuration
+  name: {{ template "opentelemetry-operator.fullname" . }}-validation
 webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy:  {{ .Values.admissionWebhooks.failurePolicy }}
@@ -162,7 +162,7 @@ webhooks:
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
     failurePolicy: Ignore
@@ -191,7 +191,7 @@ webhooks:
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -221,7 +221,7 @@ webhooks:
     clientConfig:
       caBundle: {{ $ca.Cert | b64enc }}
       service:
-        name: {{ template "opentelemetry-operator.name" . }}-webhook-service
+        name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
     failurePolicy: Ignore
