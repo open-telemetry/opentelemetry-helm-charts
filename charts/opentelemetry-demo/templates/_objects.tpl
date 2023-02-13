@@ -23,9 +23,7 @@ spec:
       imagePullSecrets:
         {{- ((.imageOverride).pullSecrets) | default .defaultValues.image.pullSecrets | toYaml | nindent 8}}
       {{- end }}
-      {{- if .serviceAccount }}
-      serviceAccountName: {{ .serviceAccount}}
-      {{- end }}
+      serviceAccountName: {{ include "otel-demo.serviceAccountName" .}}
       {{- $schedulingRules := .schedulingRules | default dict }}
       {{- if or .defaultValues.schedulingRules.nodeSelector $schedulingRules.nodeSelector}}
       nodeSelector:
