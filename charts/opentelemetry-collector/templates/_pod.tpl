@@ -67,8 +67,10 @@ containers:
       httpGet:
         path: /
         port: 13133
+    {{- with .Values.resources }}
     resources:
-      {{- toYaml .Values.resources | nindent 6 }}
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     volumeMounts:
       {{- if .Values.configMap.create }}
       - mountPath: /conf

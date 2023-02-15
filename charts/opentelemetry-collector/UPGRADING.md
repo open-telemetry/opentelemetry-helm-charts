@@ -1,5 +1,11 @@
 # Upgrade guidelines
 
+## 0.48.0 to 0.49.0
+[Remove default resource limits]()
+
+Default resource `limits` have been removed. Users will need to specify their resource requirements
+in the corresponding `values.yaml` section.
+
 ## 0.46.0 to 0.47.0
 
 [Update Collector Endpoints to use Pod IP Instead of 0.0.0.0](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/603)
