@@ -62,9 +62,9 @@ app.kubernetes.io/component: {{ .name}}
 Create the name of the service account to use
 */}}
 {{- define "otel-demo.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "otel-demo.name" .) .Values.serviceAccount.name }}
+{{- if .serviceAccount.create }}
+{{- default (include "otel-demo.name" .) .serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- default "default" .serviceAccount.name }}
 {{- end }}
 {{- end }}
