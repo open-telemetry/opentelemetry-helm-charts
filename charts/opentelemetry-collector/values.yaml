@@ -295,6 +295,8 @@ extraContainers: []
 #         mountPath: /test
 
 # List of init container specs, e.g. for copying a binary to be executed as a lifecycle hook.
+# Another usage of init containers is e.g. initializing filesystem permissions to the OTLP Collector user `10001` in case you are using persistence 
+# and the volume is producing a permission denied error for the OTLP Collector container
 initContainers: []
 # initContainers:
 #   - name: test
@@ -307,6 +309,15 @@ initContainers: []
 #     volumeMounts:
 #       - name: test
 #         mountPath: /test
+#  - name: init-fs
+#    image: busybox:1.36
+#    command:
+#      - sh
+#      - '-c'
+#      - 'chown -R 10001: /var/lib/storage/otc' # use the path given as per `extensions.file_storage.directory` & `extraVolumeMounts[x].mountPath`
+#    volumeMounts:
+#      - name: opentelemetry-collector-data # use the name of the volume used for persistence
+#        mountPath: /var/lib/storage/otc # use the path given as per `extensions.file_storage.directory` & `extraVolumeMounts[x].mountPath`
 
 # Pod lifecycle policies.
 lifecycleHooks: {}
