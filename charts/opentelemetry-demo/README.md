@@ -52,7 +52,9 @@ the demo
 | `default.schedulingRules.affinity`     | Man of node/pod affinities                                                                | `{}`                                                 |
 | `default.schedulingRules.tolerations`  | Tolerations for pod assignment                                                            | `[]`                                                 |
 | `default.securityContext`              | Demo components container security context                                                | `{}`                                                 |
-| `serviceAccount`                       | The name of the ServiceAccount to use for demo components                                 | `""`                                                 |
+| `serviceAccount.annotations`           | Annotations for the serviceAccount                                                        | `{}`                                                 |
+| `serviceAccount.create`                | Wether to create a serviceAccount or use an existing one                                  | `true`                                            |
+| `serviceAccount.name`                  | The name of the ServiceAccount to use for demo components                                 | `""`                                              |
 
 ### Component parameters
 
