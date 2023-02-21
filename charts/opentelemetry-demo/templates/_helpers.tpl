@@ -57,3 +57,14 @@ app.kubernetes.io/component: {{ .name}}
 {{- $mergedEnvs = concat $mergedEnvs $envOverrides }}
 {{- mustToJson $mergedEnvs }}
 {{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "otel-demo.serviceAccountName" -}}
+{{- if .serviceAccount.create }}
+{{- default (include "otel-demo.name" .) .serviceAccount.name }}
+{{- else }}
+{{- default "default" .serviceAccount.name }}
+{{- end }}
+{{- end }}
