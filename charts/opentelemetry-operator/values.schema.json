@@ -8,6 +8,7 @@
         "replicaCount",
         "nameOverride",
         "imagePullSecrets",
+        "pdb",
         "manager",
         "kubeRBACProxy",
         "admissionWebhooks",
@@ -46,6 +47,47 @@
             "examples": [
                 []
             ]
+        },
+        "pdb": {
+            "type": "object",
+            "default": {},
+            "title": "The pdb Schema",
+            "required": [
+                "create"
+            ],
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The create Schema",
+                    "examples": [
+                        true
+                    ]
+                },
+                "minAvailable": {
+                    "oneOf": [
+                        {
+                            "type": ["string", "null"]
+                        },
+                        {
+                            "type": ["integer", "null"]
+                        }
+                    ]
+                },
+                "maxUnavailable": {
+                    "oneOf": [
+                        {
+                            "type": ["string", "null"]
+                        },
+                        {
+                            "type": ["integer", "null"]
+                        }
+                    ]
+                }
+            },
+            "examples": [{
+                "create": true
+            }]
         },
         "manager": {
             "type": "object",
