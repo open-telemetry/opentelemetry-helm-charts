@@ -167,6 +167,7 @@ parameters by default. The overriden parameters are specified below.
 | `prometheus-node-exporter.enabled`   | Install the Prometheus Node Exporter sub-chart | `false`                                                   |
 | `prometheus-pushgateway.enabled`     | Install the Prometheus Push Gateway sub-chart  | `false`                                                   |
 | `server.extraFlags`                  | Additional flags to add to Prometheus server   | `["enable-feature=exemplar-storage"]`                     |
+| `server.persistentVolume.enabled`    | Enable persistent storage for Prometheus data  | `false`                                                   |
 | `server.global.scrape_interval`      | How frequently to scrape targets by default    | `5s`                                                      |
 | `server.global.scrap_timeout`        | How long until a scrape request times out      | `3s`                                                      |
 | `server.global.evaluation_interval`  | How frequently to evaluate rules               | `30s`                                                     |
