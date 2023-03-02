@@ -182,6 +182,7 @@ parameters by default. The overriden parameters are specified below.
 |-----------------------|----------------------------------------------------|----------------------------------------------------------------------|
 | `grafana.ini`         | Grafana's primary configuration                    | Enables anonymous login, and proxy through the frontendProxy service |
 | `adminPassword`       | Password used by `admin` user                      | `admin`                                                              |
+| `rbac.pspEnabled`     | Enable PodSecurityPolicy resources                 | `false`                                                              |
 | `datasources`         | Configure grafana datasources (passed through tpl) | Prometheus and Jaeger data sources                                   |
 | `dashboardProviders`  | Configure grafana dashboard providers              | Defines a `default` provider based on a file path                    |
 | `dashboardConfigMaps` | ConfigMaps reference that contains dashboards      | Dashboard config map deployed with this Helm chart                   |
