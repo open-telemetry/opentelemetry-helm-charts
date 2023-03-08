@@ -6,10 +6,10 @@ metadata:
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
     {{- include "opentelemetry-collector.component" . | nindent 4 }}
-  {{- if .Values.service.annotations }}
   annotations:
-    {{ toYaml .Values.service.annotations | nindent 4 }}
-  {{- end }}
+    {{- range $key, $value := .Values.service.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.service.type }}
   {{- if .Values.service.clusterIP }}

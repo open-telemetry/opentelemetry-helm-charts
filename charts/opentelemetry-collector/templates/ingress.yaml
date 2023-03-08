@@ -12,10 +12,10 @@ metadata:
   labels:
     {{- include "opentelemetry-collector.labels" $ | nindent 4 }}
     {{- include "opentelemetry-collector.component" $ | nindent 4 }}
-  {{- if .annotations }}
   annotations:
-    {{ toYaml .annotations | nindent 4 }}
-  {{- end }}
+    {{- range $key, $value := .annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
 spec:
   {{- if .ingressClassName }}
   ingressClassName: {{ .ingressClassName }}

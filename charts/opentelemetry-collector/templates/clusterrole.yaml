@@ -5,10 +5,10 @@ metadata:
   name: {{ include "opentelemetry-collector.clusterRoleName" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-  {{- with .Values.clusterRole.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- range $key, $value := .Values.clusterRole.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
 rules:
   {{- if .Values.clusterRole.rules -}}
   {{ toYaml .Values.clusterRole.rules | nindent 2 -}}
