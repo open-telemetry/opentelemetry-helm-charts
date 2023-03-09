@@ -7,7 +7,7 @@ serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}
 securityContext:
   {{- toYaml .Values.podSecurityContext | nindent 2 }}
 containers:
-  - name: {{ .Chart.Name }}
+  - name: {{ .Chart.Name | lower }}
     command:
       - /{{ .Values.command.name }}
       {{- if .Values.configMap.create }}
@@ -72,7 +72,7 @@ containers:
     volumeMounts:
       {{- if .Values.configMap.create }}
       - mountPath: /conf
-        name: {{ .Chart.Name }}-configmap
+        name: {{ .Chart.Name | lower }}-configmap
       {{- end }}
       {{- range .Values.extraConfigMapMounts }}
       - name: {{ .name }}
@@ -131,7 +131,7 @@ priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
 volumes:
   {{- if .Values.configMap.create }}
-  - name: {{ .Chart.Name }}-configmap
+  - name: {{ .Chart.Name | lower }}-configmap
     configMap:
       name: {{ include "opentelemetry-collector.fullname" . }}{{ .configmapSuffix }}
       items:
