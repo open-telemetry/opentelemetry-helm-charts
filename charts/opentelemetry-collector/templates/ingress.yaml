@@ -14,7 +14,9 @@ metadata:
     {{- include "opentelemetry-collector.component" $ | nindent 4 }}
   {{- if .annotations }}
   annotations:
-    {{ toYaml .annotations | nindent 4 }}
+    {{- range $key, $value := .annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
   {{- end }}
 spec:
   {{- if .ingressClassName }}
