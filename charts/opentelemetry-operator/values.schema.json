@@ -17,10 +17,11 @@
         "affinity",
         "tolerations",
         "nodeSelector",
+        "topologySpreadConstraints",
         "hostNetwork",
+        "priorityClassName",
         "securityContext",
-        "testFramework",
-        "priorityClassName"
+        "testFramework"
     ],
     "properties": {
         "replicaCount": {
@@ -53,7 +54,9 @@
             "default": {},
             "title": "The pdb Schema",
             "required": [
-                "create"
+                "create",
+                "minAvailable",
+                "maxUnavailable"
             ],
             "properties": {
                 "create": {
@@ -61,32 +64,30 @@
                     "default": false,
                     "title": "The create Schema",
                     "examples": [
-                        true
+                        false
                     ]
                 },
                 "minAvailable": {
-                    "oneOf": [
-                        {
-                            "type": ["string", "null"]
-                        },
-                        {
-                            "type": ["integer", "null"]
-                        }
+                    "type": "integer",
+                    "default": 0,
+                    "title": "The minAvailable Schema",
+                    "examples": [
+                        1
                     ]
                 },
                 "maxUnavailable": {
-                    "oneOf": [
-                        {
-                            "type": ["string", "null"]
-                        },
-                        {
-                            "type": ["integer", "null"]
-                        }
+                    "type": "string",
+                    "default": "",
+                    "title": "The maxUnavailable Schema",
+                    "examples": [
+                        ""
                     ]
                 }
             },
             "examples": [{
-                "create": true
+                "create": false,
+                "minAvailable": 1,
+                "maxUnavailable": ""
             }]
         },
         "manager": {
@@ -96,14 +97,19 @@
             "required": [
                 "image",
                 "collectorImage",
+                "targetAllocatorImage",
+                "autoInstrumentationImage",
                 "ports",
                 "resources",
                 "env",
                 "serviceAccount",
                 "serviceMonitor",
+                "podAnnotations",
+                "podLabels",
                 "prometheusRule",
                 "extraArgs",
-                "leaderElection"
+                "leaderElection",
+                "verticalPodAutoscaler"
             ],
             "properties": {
                 "image": {
@@ -166,6 +172,192 @@
                     "examples": [{
                         "repository": "otel/opentelemetry-collector-contrib",
                         "tag": "0.71.0"
+                    }]
+                },
+                "targetAllocatorImage": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The targetAllocatorImage Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The repository Schema",
+                            "examples": [
+                                ""
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The tag Schema",
+                            "examples": [
+                                ""
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "",
+                        "tag": ""
+                    }]
+                },
+                "autoInstrumentationImage": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The autoInstrumentationImage Schema",
+                    "required": [
+                        "java",
+                        "nodejs",
+                        "python",
+                        "dotnet"
+                    ],
+                    "properties": {
+                        "java": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The java Schema",
+                            "required": [
+                                "repository",
+                                "tag"
+                            ],
+                            "properties": {
+                                "repository": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The repository Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The tag Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "repository": "",
+                                "tag": ""
+                            }]
+                        },
+                        "nodejs": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The nodejs Schema",
+                            "required": [
+                                "repository",
+                                "tag"
+                            ],
+                            "properties": {
+                                "repository": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The repository Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The tag Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "repository": "",
+                                "tag": ""
+                            }]
+                        },
+                        "python": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The python Schema",
+                            "required": [
+                                "repository",
+                                "tag"
+                            ],
+                            "properties": {
+                                "repository": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The repository Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The tag Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "repository": "",
+                                "tag": ""
+                            }]
+                        },
+                        "dotnet": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The dotnet Schema",
+                            "required": [
+                                "repository",
+                                "tag"
+                            ],
+                            "properties": {
+                                "repository": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The repository Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The tag Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "repository": "",
+                                "tag": ""
+                            }]
+                        }
+                    },
+                    "examples": [{
+                        "java": {
+                            "repository": "",
+                            "tag": ""
+                        },
+                        "nodejs": {
+                            "repository": "",
+                            "tag": ""
+                        },
+                        "python": {
+                            "repository": "",
+                            "tag": ""
+                        },
+                        "dotnet": {
+                            "repository": "",
+                            "tag": ""
+                        }
                     }]
                 },
                 "ports": {
@@ -318,7 +510,8 @@
                     "default": {},
                     "title": "The serviceAccount Schema",
                     "required": [
-                        "create"
+                        "create",
+                        "annotations"
                     ],
                     "properties": {
                         "create": {
@@ -330,11 +523,17 @@
                             ]
                         },
                         "annotations": {
-                          "type": "object"
+                            "type": "object",
+                            "default": {},
+                            "title": "The annotations Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
                         }
                     },
                     "examples": [{
-                        "create": true
+                        "create": true,
+                        "annotations": {}
                     }]
                 },
                 "serviceMonitor": {
@@ -414,7 +613,20 @@
                     }]
                 },
                 "podAnnotations": {
-                  "type": "object"
+                    "type": "object",
+                    "default": {},
+                    "title": "The podAnnotations Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
+                },
+                "podLabels": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The podLabels Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 },
                 "prometheusRule": {
                     "type": "object",
@@ -493,168 +705,6 @@
                         "annotations": {}
                     }]
                 },
-                "targetAllocatorImage": {
-                    "type": "object",
-                    "default": {},
-                    "title": "The targetAllocatorImage Schema",
-                    "required": [
-                        "repository",
-                        "tag"
-                    ],
-                    "properties": {
-                        "repository": {
-                            "type": "string",
-                            "default": "",
-                            "title": "The repository Schema",
-                            "examples": [
-                                "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator"
-                            ]
-                        },
-                        "tag": {
-                            "type": "string",
-                            "default": "",
-                            "title": "The tag Schema",
-                            "examples": [
-                                "0.70.0"
-                            ]
-                        }
-                    },
-                    "examples": [{
-                        "repository": "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator",
-                        "tag": "0.70.0"
-                    }]
-                },
-                "autoInstrumentationImage": {
-                    "type": "object",
-                    "default": {},
-                    "title": "The autoInstrumentationImage Schema",
-                    "properties": {
-                        "java": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The java Schema",
-                            "required": [
-                                "repository",
-                                "tag"
-                            ],
-                            "properties": {
-                                "repository": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The repository Schema",
-                                    "examples": [
-                                        "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java"
-                                    ]
-                                },
-                                "tag": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The tag Schema",
-                                    "examples": [
-                                        "1.20.2"
-                                    ]
-                                }
-                            },
-                            "examples": [{
-                                "repository": "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java",
-                                "tag": "1.20.2"
-                            }]
-                        },
-                        "nodejs": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The nodejs Schema",
-                            "required": [
-                                "repository",
-                                "tag"
-                            ],
-                            "properties": {
-                                "repository": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The repository Schema",
-                                    "examples": [
-                                        "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs"
-                                    ]
-                                },
-                                "tag": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The tag Schema",
-                                    "examples": [
-                                        "0.31.0"
-                                    ]
-                                }
-                            },
-                            "examples": [{
-                                "repository": "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs",
-                                "tag": "0.31.0"
-                            }]
-                        },
-                        "python": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The python Schema",
-                            "required": [
-                                "repository",
-                                "tag"
-                            ],
-                            "properties": {
-                                "repository": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The repository Schema",
-                                    "examples": [
-                                        "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-python"
-                                    ]
-                                },
-                                "tag": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The tag Schema",
-                                    "examples": [
-                                        "0.35b0"
-                                    ]
-                                }
-                            },
-                            "examples": [{
-                                "repository": "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-python",
-                                "tag": "0.35b0"
-                            }]
-                        },
-                        "dotnet": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The dotnet Schema",
-                            "required": [
-                                "repository",
-                                "tag"
-                            ],
-                            "properties": {
-                                "repository": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The repository Schema",
-                                    "examples": [
-                                        "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-dotnet"
-                                    ]
-                                },
-                                "tag": {
-                                    "type": "string",
-                                    "default": "",
-                                    "title": "The tag Schema",
-                                    "examples": [
-                                        "0.5.0"
-                                    ]
-                                }
-                            },
-                            "examples": [{
-                                "repository": "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-dotnet",
-                                "tag": "0.5.0"
-                            }]
-                        }
-                    }
-                },
                 "extraArgs": {
                     "type": "array",
                     "default": [],
@@ -684,6 +734,83 @@
                     "examples": [{
                         "enabled": true
                     }]
+                },
+                "verticalPodAutoscaler": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The verticalPodAutoscaler Schema",
+                    "required": [
+                        "enabled",
+                        "controlledResources",
+                        "maxAllowed",
+                        "minAllowed",
+                        "updatePolicy"
+                    ],
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "controlledResources": {
+                            "type": "array",
+                            "default": [],
+                            "title": "The controlledResources Schema",
+                            "items": {},
+                            "examples": [
+                                []
+                            ]
+                        },
+                        "maxAllowed": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The maxAllowed Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
+                        },
+                        "minAllowed": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The minAllowed Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
+                        },
+                        "updatePolicy": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The updatePolicy Schema",
+                            "required": [
+                                "updateMode"
+                            ],
+                            "properties": {
+                                "updateMode": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The updateMode Schema",
+                                    "examples": [
+                                        "Auto"
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "updateMode": "Auto"
+                            }]
+                        }
+                    },
+                    "examples": [{
+                        "enabled": false,
+                        "controlledResources": [],
+                        "maxAllowed": {},
+                        "minAllowed": {},
+                        "updatePolicy": {
+                            "updateMode": "Auto"
+                        }
+                    }]
                 }
             },
             "examples": [{
@@ -694,6 +821,28 @@
                 "collectorImage": {
                     "repository": "otel/opentelemetry-collector-contrib",
                     "tag": "0.71.0"
+                },
+                "targetAllocatorImage": {
+                    "repository": "",
+                    "tag": ""
+                },
+                "autoInstrumentationImage": {
+                    "java": {
+                        "repository": "",
+                        "tag": ""
+                    },
+                    "nodejs": {
+                        "repository": "",
+                        "tag": ""
+                    },
+                    "python": {
+                        "repository": "",
+                        "tag": ""
+                    },
+                    "dotnet": {
+                        "repository": "",
+                        "tag": ""
+                    }
                 },
                 "ports": {
                     "metricsPort": 8080,
@@ -714,7 +863,8 @@
                     "ENABLE_WEBHOOKS": "true"
                 },
                 "serviceAccount": {
-                    "create": true
+                    "create": true,
+                    "annotations": {}
                 },
                 "serviceMonitor": {
                     "enabled": false,
@@ -724,6 +874,8 @@
                         "port": "metrics"
                     }]
                 },
+                "podAnnotations": {},
+                "podLabels": {},
                 "prometheusRule": {
                     "enabled": false,
                     "groups": [],
@@ -736,6 +888,15 @@
                 "extraArgs": [],
                 "leaderElection": {
                     "enabled": true
+                },
+                "verticalPodAutoscaler": {
+                    "enabled": false,
+                    "controlledResources": [],
+                    "maxAllowed": {},
+                    "minAllowed": {},
+                    "updatePolicy": {
+                        "updateMode": "Auto"
+                    }
                 }
             }]
         },
@@ -1100,6 +1261,15 @@
             "properties": {},
             "examples": [{}]
         },
+        "topologySpreadConstraints": {
+            "type": "array",
+            "default": [],
+            "title": "The topologySpreadConstraints Schema",
+            "items": {},
+            "examples": [
+                []
+            ]
+        },
         "hostNetwork": {
             "type": "boolean",
             "default": false,
@@ -1113,8 +1283,7 @@
             "default": "",
             "title": "The priorityClassName Schema",
             "examples": [
-                "system-node-critical",
-                "system-cluster-critical"
+                ""
             ]
         },
         "securityContext": {
@@ -1133,7 +1302,7 @@
                     "default": 0,
                     "title": "The runAsGroup Schema",
                     "examples": [
-                        65534
+                        65532
                     ]
                 },
                 "runAsNonRoot": {
@@ -1149,7 +1318,7 @@
                     "default": 0,
                     "title": "The runAsUser Schema",
                     "examples": [
-                        65534
+                        65532
                     ]
                 },
                 "fsGroup": {
@@ -1157,15 +1326,15 @@
                     "default": 0,
                     "title": "The fsGroup Schema",
                     "examples": [
-                        65534
+                        65532
                     ]
                 }
             },
             "examples": [{
-                "runAsGroup": 65534,
+                "runAsGroup": 65532,
                 "runAsNonRoot": true,
-                "runAsUser": 65534,
-                "fsGroup": 65534
+                "runAsUser": 65532,
+                "fsGroup": 65532
             }]
         },
         "testFramework": {
@@ -1220,6 +1389,11 @@
         "replicaCount": 1,
         "nameOverride": "",
         "imagePullSecrets": [],
+        "pdb": {
+            "create": false,
+            "minAvailable": 1,
+            "maxUnavailable": ""
+        },
         "manager": {
             "image": {
                 "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
@@ -1228,6 +1402,28 @@
             "collectorImage": {
                 "repository": "otel/opentelemetry-collector-contrib",
                 "tag": "0.71.0"
+            },
+            "targetAllocatorImage": {
+                "repository": "",
+                "tag": ""
+            },
+            "autoInstrumentationImage": {
+                "java": {
+                    "repository": "",
+                    "tag": ""
+                },
+                "nodejs": {
+                    "repository": "",
+                    "tag": ""
+                },
+                "python": {
+                    "repository": "",
+                    "tag": ""
+                },
+                "dotnet": {
+                    "repository": "",
+                    "tag": ""
+                }
             },
             "ports": {
                 "metricsPort": 8080,
@@ -1248,7 +1444,8 @@
                 "ENABLE_WEBHOOKS": "true"
             },
             "serviceAccount": {
-                "create": true
+                "create": true,
+                "annotations": {}
             },
             "serviceMonitor": {
                 "enabled": false,
@@ -1258,6 +1455,8 @@
                     "port": "metrics"
                 }]
             },
+            "podAnnotations": {},
+            "podLabels": {},
             "prometheusRule": {
                 "enabled": false,
                 "groups": [],
@@ -1270,6 +1469,15 @@
             "extraArgs": [],
             "leaderElection": {
                 "enabled": true
+            },
+            "verticalPodAutoscaler": {
+                "enabled": false,
+                "controlledResources": [],
+                "maxAllowed": {},
+                "minAllowed": {},
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                }
             }
         },
         "kubeRBACProxy": {
@@ -1290,7 +1498,8 @@
                     "cpu": "5m",
                     "memory": "64Mi"
                 }
-            }
+            },
+            "extraArgs": []
         },
         "admissionWebhooks": {
             "create": true,
@@ -1313,13 +1522,14 @@
         "affinity": {},
         "tolerations": [],
         "nodeSelector": {},
+        "topologySpreadConstraints": [],
         "hostNetwork": false,
         "priorityClassName": "",
         "securityContext": {
-            "runAsGroup": 65534,
+            "runAsGroup": 65532,
             "runAsNonRoot": true,
-            "runAsUser": 65534,
-            "fsGroup": 65534
+            "runAsUser": 65532,
+            "fsGroup": 65532
         },
         "testFramework": {
             "image": {
