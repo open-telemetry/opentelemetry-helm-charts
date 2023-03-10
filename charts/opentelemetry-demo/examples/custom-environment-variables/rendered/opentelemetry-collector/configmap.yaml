@@ -1,0 +1,114 @@
+---
+# Source: opentelemetry-demo/charts/opentelemetry-collector/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-otelcol
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.49.1
+    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.72.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  relay: |
+    exporters:
+      logging: {}
+      otlp:
+        endpoint: 'example-jaeger-collector:4317'
+        tls:
+          insecure: true
+      prometheus:
+        enable_open_metrics: true
+        endpoint: 0.0.0.0:9464
+        resource_to_telemetry_conversion:
+          enabled: true
+    extensions:
+      health_check: {}
+      memory_ballast:
+        size_in_percentage: 40
+    processors:
+      attributes:
+        actions:
+        - action: insert
+          key: app.eng.team
+          value: ring
+        include:
+          match_type: strict
+          services:
+          - frontend-proxy
+      batch: {}
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      spanmetrics:
+        metrics_exporter: prometheus
+    receivers:
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: ${MY_POD_IP}:14250
+          thrift_compact:
+            endpoint: ${MY_POD_IP}:6831
+          thrift_http:
+            endpoint: ${MY_POD_IP}:14268
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${MY_POD_IP}:4317
+          http:
+            cors:
+              allowed_origins:
+              - http://*
+              - https://*
+            endpoint: ${MY_POD_IP}:4318
+      prometheus:
+        config:
+          scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
+            static_configs:
+            - targets:
+              - ${MY_POD_IP}:8888
+      zipkin:
+        endpoint: ${MY_POD_IP}:9411
+    service:
+      extensions:
+      - health_check
+      - memory_ballast
+      pipelines:
+        logs:
+          exporters:
+          - logging
+          processors:
+          - memory_limiter
+          - batch
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - prometheus
+          - logging
+          processors:
+          - memory_limiter
+          - batch
+          receivers:
+          - otlp
+          - prometheus
+        traces:
+          exporters:
+          - otlp
+          - logging
+          processors:
+          - memory_limiter
+          - attributes
+          - spanmetrics
+          - batch
+          receivers:
+          - otlp
+          - jaeger
+          - zipkin
+      telemetry:
+        metrics:
+          address: ${MY_POD_IP}:8888
