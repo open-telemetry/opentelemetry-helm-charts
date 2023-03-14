@@ -72,9 +72,7 @@ spec:
       {{- end }}
       {{- if .initContainers }}
       initContainers:
-        - name: {{.name}}-init
-          image: busybox:latest
-          command: ['sh', '-c', "until nc -z {{ tpl .initContainers.dependency . }}; do echo waiting for {{ tpl .initContainers.dependency .}}; sleep 2; done"]
+        {{- tpl (toYaml .initContainers) . | nindent 8 }}
       {{- end}}
 {{- end }}
 

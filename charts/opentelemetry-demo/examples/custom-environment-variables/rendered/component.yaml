@@ -978,9 +978,13 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
       initContainers:
-        - name: featureflagservice-init
+        - command:
+          - sh
+          - -c
+          - until nc -z example-ffspostgres 5432; do echo waiting
+            for postgres; sleep 2; done
           image: busybox:latest
-          command: ['sh', '-c', "until nc -z example-ffspostgres 5432; do echo waiting for example-ffspostgres 5432; sleep 2; done"]
+          name: featureflagservice-init
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
