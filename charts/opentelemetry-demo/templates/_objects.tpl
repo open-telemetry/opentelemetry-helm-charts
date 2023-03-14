@@ -70,6 +70,10 @@ spec:
           configMap:
             name: {{ include "otel-demo.name" . }}-{{ .name }}-config
       {{- end }}
+      {{- if .initContainers }}
+      initContainers:
+        {{- tpl (toYaml .initContainers) . | nindent 8 }}
+      {{- end}}
 {{- end }}
 
 {{- define "otel-demo.service" }}

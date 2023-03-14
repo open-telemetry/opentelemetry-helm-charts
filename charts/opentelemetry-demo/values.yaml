@@ -139,6 +139,11 @@ components:
   #   configuration: {}
   # # Kubernetes container health check options
   #   livenessProbe: {}
+  # # Optional init container to run before the pod starts.
+  #   initContainer:
+  #     - name: <init-container-name>
+  #       image: <init-container-image>
+  #       command: [list of commands for the init container to run]
   accountingService:
     enabled: true
     useDefault:
@@ -286,6 +291,10 @@ components:
         port: 8081
       initialDelaySeconds: 30
       periodSeconds: 10
+    initContainers:
+    - name: featureflagservice-init
+      image: busybox:latest
+      command: ['sh', '-c', 'until nc -z {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for postgres; sleep 2; done']
 
   frauddetectionService:
     enabled: true
