@@ -72,3 +72,10 @@ Create the name of the service account to use
 {{- .Values.manager.podLabels | toYaml }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create an ordered name of the MutatingWebhookConfiguration
+*/}}
+{{- define "opentelemetry-operator.MutatingWebhookName" -}}
+{{- printf "%s-%s" (.Values.admissionWebhooks.namePrefix | toString) (include "opentelemetry-operator.fullname" .) | trimPrefix "-" }}
+{{- end }}
