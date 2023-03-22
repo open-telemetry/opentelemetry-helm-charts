@@ -77,5 +77,5 @@ Create the name of the service account to use
 Create an ordered name of the MutatingWebhookConfiguration
 */}}
 {{- define "opentelemetry-operator.MutatingWebhookName" -}}
-{{- printf "%s-%s" (.Values.admissionWebhooks.orderPrefix | toString) (include "opentelemetry-operator.fullname" .) | trimPrefix "-" }}
+{{- printf "%s-%s" (.Values.admissionWebhooks.namePrefix | toString) (include "opentelemetry-operator.fullname" .) | trimPrefix "-" }}
 {{- end }}
