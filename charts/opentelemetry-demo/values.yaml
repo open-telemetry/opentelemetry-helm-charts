@@ -31,7 +31,7 @@ default:
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
   # Allows overriding and additions to .Values.default.env
-  envOverrides: []
+  envOverrides: [ ]
   #  - name: OTEL_K8S_NODE_NAME
   #    value: "someConstantValue"
   image:
@@ -40,17 +40,17 @@ default:
     # The service's name will be applied to the end of this value.
     tag: ""
     pullPolicy: IfNotPresent
-    pullSecrets: []
+    pullSecrets: [ ]
   schedulingRules:
-    nodeSelector: {}
-    affinity: {}
-    tolerations: []
-  securityContext: {}
+    nodeSelector: { }
+    affinity: { }
+    tolerations: [ ]
+  securityContext: { }
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
-  annotations: {}
+  annotations: { }
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
@@ -158,6 +158,10 @@ components:
     resources:
       limits:
         memory: 20Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
 
   adService:
     enabled: true
@@ -223,6 +227,10 @@ components:
     resources:
       limits:
         memory: 20Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
 
   currencyService:
     enabled: true
@@ -292,9 +300,9 @@ components:
       initialDelaySeconds: 30
       periodSeconds: 10
     initContainers:
-    - name: featureflagservice-init
-      image: busybox:latest
-      command: ['sh', '-c', 'until nc -z {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for postgres; sleep 2; done']
+      - name: wait-for-ffspostgres
+        image: busybox:latest
+        command: [ 'sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for ffspostgres; sleep 2; done' ]
 
   frauddetectionService:
     enabled: true
@@ -310,6 +318,11 @@ components:
     resources:
       limits:
         memory: 200Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
+
 
   frontend:
     enabled: true
@@ -647,10 +660,10 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, spanmetrics, batch]
-          exporters: [otlp, logging]
+          processors: [ memory_limiter, spanmetrics, batch ]
+          exporters: [ otlp, logging ]
         metrics:
-          exporters: [prometheus, logging]
+          exporters: [ prometheus, logging ]
 
 jaeger:
   provisionDataStore:
@@ -717,7 +730,7 @@ prometheus:
               namespaces:
                 own_namespace: true
           relabel_configs:
-            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+            - source_labels: [ __meta_kubernetes_pod_annotation_opentelemetry_community_demo ]
               action: keep
               regex: true
 
