@@ -1,5 +1,11 @@
 # Upgrade guidelines
 
+## To 0.20
+
+The `observability.<sub chart>.enabled` parameters have been moved to an
+`enabled` parameter within the sub chart itself. If you had changes to these
+parameters, you will need to update your changes to work with the new structure.
+
 ## To 0.18
 
 The `serviceType` and `servicePort` parameters have been moved under a `service`

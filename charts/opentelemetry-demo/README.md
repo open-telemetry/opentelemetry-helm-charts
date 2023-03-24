@@ -50,8 +50,8 @@ the demo
 | `default.schedulingRules.tolerations`  | Tolerations for pod assignment                                                            | `[]`                                                 |
 | `default.securityContext`              | Demo components container security context                                                | `{}`                                                 |
 | `serviceAccount.annotations`           | Annotations for the serviceAccount                                                        | `{}`                                                 |
-| `serviceAccount.create`                | Wether to create a serviceAccount or use an existing one                                  | `true`                                            |
-| `serviceAccount.name`                  | The name of the ServiceAccount to use for demo components                                 | `""`                                              |
+| `serviceAccount.create`                | Wether to create a serviceAccount or use an existing one                                  | `true`                                               |
+| `serviceAccount.name`                  | The name of the ServiceAccount to use for demo components                                 | `""`                                                 |
 
 ### Component parameters
 
@@ -99,15 +99,6 @@ component.
 | `command`                            | Command & arguments to pass to the container being spun up for this service                                | `[]`                                                          |
 | `configuration`                      | Configuration for the container being spun up; will create a ConfigMap, Volume and VolumeMount             | `{}`                                                          |
 
-### Observability parameters
-
-| Parameter                          | Description                                   | Default |
-|------------------------------------|-----------------------------------------------|---------|
-| `observability.otelcol.enabled`    | Enables the OpenTelemetry Collector sub-chart | `true`  |
-| `observability.jaeger.enabled`     | Enables the Jaeger sub-chart                  | `true`  |
-| `observability.prometheus.enabled` | Enables the Prometheus sub-chart              | `true`  |
-| `observability.grafana.enabled`    | Enables the Grafana sub-chart                 | `true`  |
-
 ### Sub-charts
 
 The OpenTelemetry Demo Helm chart depends on 4 sub-charts:
@@ -127,6 +118,7 @@ parameters by default. The overriden parameters are specified below.
 
 | Parameter        | Description                                        | Default                                                  |
 |------------------|----------------------------------------------------|----------------------------------------------------------|
+| `enabled`        | Install the OpenTelemetry collector                | `true`                                                   |
 | `nameOverride`   | Name that will be used by the sub-chart release    | `otelcol`                                                |
 | `mode`           | The Deployment or Daemonset mode                   | `deployment`                                             |
 | `resources`      | CPU/Memory resource requests/limits                | 100Mi memory limit                                       |
@@ -142,6 +134,7 @@ parameters by default. The overriden parameters are specified below.
 
 | Parameter                      | Description                                        | Default                                                               |
 |--------------------------------|----------------------------------------------------|-----------------------------------------------------------------------|
+| `enabled`                      | Install the Jaeger sub-chart                       | `true`                                                                |
 | `provisionDataStore.cassandra` | Provision a cassandra data store                   | `false` (required for AllInOne mode)                                  |
 | `allInOne.enabled`             | Enable All in One In-Memory Configuration          | `true`                                                                |
 | `allInOne.args`                | Command arguments to pass to All in One deployment | `["--memory.max-traces", "10000", "--query.base-path", "/jaeger/ui"]` |
@@ -158,6 +151,7 @@ parameters by default. The overriden parameters are specified below.
 
 | Parameter                            | Description                                    | Default                                                   |
 |--------------------------------------|------------------------------------------------|-----------------------------------------------------------|
+| `enabled`                            | Install the Prometheus sub-chart               | `true`                                                    |
 | `alertmanager.enabled`               | Install the alertmanager                       | `false`                                                   |
 | `configmapReload.prometheus.enabled` | Install the configmap-reload container         | `false`                                                   |
 | `kube-state-metrics.enabled`         | Install the kube-state-metrics sub-chart       | `false`                                                   |
@@ -178,6 +172,7 @@ parameters by default. The overriden parameters are specified below.
 
 | Parameter             | Description                                        | Default                                                              |
 |-----------------------|----------------------------------------------------|----------------------------------------------------------------------|
+| `enabled`             | Install the Grafana sub-chart                      | `true`                                                               |
 | `grafana.ini`         | Grafana's primary configuration                    | Enables anonymous login, and proxy through the frontendProxy service |
 | `adminPassword`       | Password used by `admin` user                      | `admin`                                                              |
 | `rbac.pspEnabled`     | Enable PodSecurityPolicy resources                 | `false`                                                              |
