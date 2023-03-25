@@ -140,7 +140,7 @@ components:
   # # Kubernetes container health check options
   #   livenessProbe: {}
   # # Optional init container to run before the pod starts.
-  #   initContainer:
+  #   initContainers:
   #     - name: <init-container-name>
   #       image: <init-container-image>
   #       command: [list of commands for the init container to run]
@@ -158,6 +158,10 @@ components:
     resources:
       limits:
         memory: 20Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
 
   adService:
     enabled: true
@@ -223,6 +227,10 @@ components:
     resources:
       limits:
         memory: 20Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
 
   currencyService:
     enabled: true
@@ -292,9 +300,9 @@ components:
       initialDelaySeconds: 30
       periodSeconds: 10
     initContainers:
-    - name: featureflagservice-init
-      image: busybox:latest
-      command: ['sh', '-c', 'until nc -z {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for postgres; sleep 2; done']
+      - name: wait-for-ffspostgres
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for ffspostgres; sleep 2; done']
 
   frauddetectionService:
     enabled: true
@@ -310,6 +318,10 @@ components:
     resources:
       limits:
         memory: 200Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
 
   frontend:
     enabled: true
@@ -543,7 +555,7 @@ components:
   kafka:
     enabled: true
     useDefault:
-      env: false
+      env: true
     ports:
       - name: plaintext
         value: 9092
