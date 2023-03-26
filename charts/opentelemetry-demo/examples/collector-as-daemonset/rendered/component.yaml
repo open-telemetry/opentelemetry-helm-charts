@@ -643,6 +643,14 @@ spec:
           resources:
             limits:
               memory: 160Mi
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - until nc -z -v -w30 example-redis 6379; do echo waiting
+            for redis; sleep 2; done;
+          image: busybox:latest
+          name: wait-for-redis
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
