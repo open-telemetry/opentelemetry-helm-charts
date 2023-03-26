@@ -98,6 +98,10 @@ component.
 | `ingress.additionalIngresses[].name` | Each additional ingress rule needs to have a unique name                                                   | `nil`                                                         |
 | `command`                            | Command & arguments to pass to the container being spun up for this service                                | `[]`                                                          |
 | `configuration`                      | Configuration for the container being spun up; will create a ConfigMap, Volume and VolumeMount             | `{}`                                                          |
+| `initContainers`                     | Array of init containers to add to the pod                                                                 | `[]`                                                          |
+| `initContainers[].name`              | Name of the init container                                                                                 | `nil`                                                         |
+| `initContainers[].image`             | Image to use for the init container                                                                        | `nil`                                                         |
+| `initContainers[].command`           | Command to run for the init container                                                                      | `nil`                                                         |
 
 ### Observability parameters
 
