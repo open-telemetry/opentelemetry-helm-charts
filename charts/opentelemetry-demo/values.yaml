@@ -600,17 +600,8 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-observability:
-  otelcol:
-    enabled: true
-  jaeger:
-    enabled: true
-  prometheus:
-    enabled: true
-  grafana:
-    enabled: true
-
 opentelemetry-collector:
+  enabled: true
   nameOverride: otelcol
   mode: deployment
   resources:
@@ -669,6 +660,7 @@ opentelemetry-collector:
           exporters: [prometheus, logging]
 
 jaeger:
+  enabled: true
   provisionDataStore:
     cassandra: false
   allInOne:
@@ -696,6 +688,7 @@ jaeger:
     enabled: false
 
 prometheus:
+  enabled: true
   alertmanager:
     enabled: false
   configmapReload:
@@ -738,6 +731,7 @@ prometheus:
               regex: true
 
 grafana:
+  enabled: true
   grafana.ini:
     auth:
       disable_login_form: true
