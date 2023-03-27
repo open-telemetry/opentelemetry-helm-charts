@@ -71,6 +71,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.kubernetesAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.kubernetesEvents.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -308,4 +311,19 @@ processors:
 {{- end }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.kubernetesEventsConfig" -}}
+receivers:
+  k8sobjects:
+    objects:
+      - name: events
+        mode: "watch"
+        group: "events.k8s.io"
 {{- end }}
