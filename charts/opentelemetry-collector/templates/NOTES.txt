@@ -24,6 +24,10 @@
 
 [INFO] as of chart version 0.47.0 the default collector configuration has been updated to use pod IP instead of 0.0.0.0 for its endpoints. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md#0460-to-0470 for details.
 
+{{- if not .Values.resources }}
+[WARNING] As of 0.54.0 Collector chart, the default resource limits are removed. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md#0531-to-0540 for details.
+{{ end }}
+
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- if eq .Values.mode "daemonset"}}
 {{- fail "Cluster Metrics preset is not suitable for daemonset mode. Please use statefulset or deployment mode with replicaCount: 1"}}

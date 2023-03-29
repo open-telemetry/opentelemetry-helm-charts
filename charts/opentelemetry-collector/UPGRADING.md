@@ -1,5 +1,18 @@
 # Upgrade guidelines
 
+## 0.53.1 to 0.54.0
+
+As of v0.54.0 Collector chart, the default resource limits are removed. If you want to keep old values you can use the following configuration:
+
+```
+resources:
+  limits:
+    cpu: 256m
+    memory: 512Mi
+```
+
+See [the 644 issue](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/644) for more information.
+
 ## 0.46.0 to 0.47.0
 
 [Update Collector Endpoints to use Pod IP Instead of 0.0.0.0](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/603)
