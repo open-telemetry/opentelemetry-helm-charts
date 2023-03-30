@@ -10,10 +10,12 @@ spec:
   selector:
     matchLabels:
       {{- include "otel-demo.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: {{ include "otel-demo.name" . }}-{{ .name }}
   template:
     metadata:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: {{ include "otel-demo.name" . }}-{{ .name }}
       {{- if .podAnnotations }}
       annotations:
         {{- toYaml .podAnnotations | nindent 8 }}
