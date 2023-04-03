@@ -15,7 +15,9 @@ spec:
   template:
     metadata:
       annotations:
+        {{- if .Values.manager.rolling }}
         rollme: {{ randAlphaNum 5 | quote }}
+        {{- end }}
         kubectl.kubernetes.io/default-container: manager
         {{- if .Values.manager.podAnnotations }}
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
