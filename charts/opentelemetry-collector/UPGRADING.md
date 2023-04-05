@@ -11,6 +11,39 @@ The chart will continue to allow complete configuration of the Collector via the
 
 See [Security Best Practices docummentation](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/security-best-practices.md#safeguards-against-denial-of-service-attacks) for more details.
 
+The new default of binding to the pod IP, rather than `0.0.0.0`, will cause `kubectl port-forward` to fail. If port-forwarding is desired, the following `value.yaml` snippet will allow the Collector bind to `127.0.0.1` inside the pod, in addition to the pod's IP:
+
+```yaml
+config:
+  receivers:
+    jaeger/local:
+      protocols:
+        grpc:
+          endpoint: 127.0.0.1:14250
+        thrift_compact:
+          endpoint: 127.0.0.1:6831
+        thrift_http:
+          endpoint: 127.0.0.1:14268
+    otlp/local:
+      protocols:
+        grpc:
+          endpoint: 127.0.0.1:4317
+        http:
+          endpoint: 127.0.0.1:4318
+    zipkin/local:
+      endpoint: 127.0.0.1:9411
+  service:
+    pipelines:
+      traces:
+        receivers:
+        - otlp
+        - otlp/local
+        - jaeger
+        - jaeger/local
+        - zipkin
+        - zipkin/local
+```
+
 ## 0.40.7 to 0.41.0
 
 [Require Kubernetes version 1.23 or later](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/541)
