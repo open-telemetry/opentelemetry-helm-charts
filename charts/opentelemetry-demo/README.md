@@ -26,6 +26,43 @@ helm install my-otel-demo open-telemetry/opentelemetry-demo
 
 See [UPGRADING.md](UPGRADING.md).
 
+## OpenShift
+
+Installing the chart on OpenShift requires the following additional steps:
+
+1. Create a new project:
+
+```console
+oc new-project opentelemetry-demo
+```
+
+2. Create a new service account:
+
+```console
+oc create sa opentelemetry-demo
+```
+
+3. Add the service account to the `anyuid` SCC (may require cluster admin):
+
+```console
+oc adm policy add-scc-to-user anyuid -z opentelemetry-demo
+```
+
+4. Install the chart with the following command:
+
+```console
+helm install my-otel-demo charts/opentelemetry-demo \
+    --namespace opentelemetry-demo \
+    --set serviceAccount.create=false \
+    --set serviceAccount.name=opentelemetry-demo \
+    --set prometheus.rbac.create=false \
+    --set prometheus.serviceAccounts.server.create=false \
+    --set prometheus.serviceAccounts.server.name=opentelemetry-demo \
+    --set grafana.rbac.create=false \
+    --set grafana.serviceAccount.create=false \
+    --set grafana.serviceAccount.name=opentelemetry-demo
+```
+
 ## Chart Parameters
 
 Chart parameters are separated in 4 general sections:
@@ -50,7 +87,7 @@ the demo
 | `default.schedulingRules.tolerations`  | Tolerations for pod assignment                                                            | `[]`                                                 |
 | `default.securityContext`              | Demo components container security context                                                | `{}`                                                 |
 | `serviceAccount.annotations`           | Annotations for the serviceAccount                                                        | `{}`                                                 |
-| `serviceAccount.create`                | Wether to create a serviceAccount or use an existing one                                  | `true`                                               |
+| `serviceAccount.create`                | Whether to create a serviceAccount or use an existing one                                 | `true`                                               |
 | `serviceAccount.name`                  | The name of the ServiceAccount to use for demo components                                 | `""`                                                 |
 
 ### Component parameters
