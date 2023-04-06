@@ -472,12 +472,12 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
             value: cumulative
           - name: KAFKA_SERVICE_ADDR
             value: 'example-kafka:9092'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -555,12 +555,16 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: AD_SERVICE_PORT
             value: "8080"
           - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
             value: 'example-featureflagservice:50053'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
+          - name: OTLP_LOGS_EXPORTER
+            value: otlp
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -630,14 +634,16 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: CART_SERVICE_PORT
+            value: "8080"
           - name: ASPNETCORE_URLS
-            value: http://*:8080
+            value: http://*:$(CART_SERVICE_PORT)
           - name: REDIS_ADDR
             value: 'example-redis:6379'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: CART_SERVICE_PORT
-            value: "8080"
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -715,24 +721,26 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: CHECKOUT_SERVICE_PORT
+            value: "8080"
           - name: CART_SERVICE_ADDR
             value: 'example-cartservice:8080'
           - name: CURRENCY_SERVICE_ADDR
             value: 'example-currencyservice:8080'
+          - name: EMAIL_SERVICE_ADDR
+            value: http://example-emailservice:8080
           - name: PAYMENT_SERVICE_ADDR
             value: 'example-paymentservice:8080'
           - name: PRODUCT_CATALOG_SERVICE_ADDR
             value: 'example-productcatalogservice:8080'
           - name: SHIPPING_SERVICE_ADDR
             value: 'example-shippingservice:8080'
-          - name: EMAIL_SERVICE_ADDR
-            value: http://example-emailservice:8080
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: CHECKOUT_SERVICE_PORT
-            value: "8080"
           - name: KAFKA_SERVICE_ADDR
             value: 'example-kafka:9092'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -810,12 +818,12 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: PORT
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: CURRENCY_SERVICE_PORT
             value: "8080"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: CURRENCY_SERVICE_PORT
-            value: "8080"
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -885,16 +893,14 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: APP_ENV
-            value: production
-          - name: PORT
-            value: "8080"
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: EMAIL_SERVICE_PORT
             value: "8080"
+          - name: APP_ENV
+            value: production
+          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -966,16 +972,18 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-            value: "50053"
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: FEATURE_FLAG_SERVICE_PORT
             value: "8081"
-          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-            value: grpc
+          - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+            value: "50053"
           - name: DATABASE_URL
             value: ecto://ffs:ffs@example-ffspostgres:5432/ffs
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
+          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+            value: grpc
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1059,11 +1067,13 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: POSTGRES_DB
             value: ffs
-          - name: POSTGRES_PASSWORD
-            value: ffs
           - name: POSTGRES_USER
+            value: ffs
+          - name: POSTGRES_PASSWORD
             value: ffs
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
@@ -1134,12 +1144,12 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
             value: cumulative
           - name: KAFKA_SERVICE_ADDR
             value: 'example-kafka:9092'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1217,6 +1227,10 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: FRONTEND_PORT
+            value: "8080"
           - name: FRONTEND_ADDR
             value: :8080
           - name: AD_SERVICE_ADDR
@@ -1237,8 +1251,6 @@ spec:
             value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: WEB_OTEL_SERVICE_NAME
             value: frontend-web
-          - name: FRONTEND_PORT
-            value: "8080"
           - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
             value: http://localhost:4318/v1/traces
           - name: OTEL_RESOURCE_ATTRIBUTES
@@ -1310,6 +1322,10 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: ENVOY_PORT
+            value: "8080"
           - name: FRONTEND_PORT
             value: "8080"
           - name: FRONTEND_HOST
@@ -1334,8 +1350,6 @@ spec:
             value: "4317"
           - name: OTEL_COLLECTOR_HOST
             value: $(OTEL_COLLECTOR_NAME)
-          - name: ENVOY_PORT
-            value: "8080"
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1411,12 +1425,12 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: KAFKA_ADVERTISED_LISTENERS
             value: PLAINTEXT://example-kafka:9092
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-            value: cumulative
           - name: KAFKA_HEAP_OPTS
             value: -Xmx200M -Xms200M
           - name: OTEL_RESOURCE_ATTRIBUTES
@@ -1492,8 +1506,8 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: FRONTEND_ADDR
-            value: 'example-frontend:8080'
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: LOCUST_WEB_PORT
             value: "8089"
           - name: LOCUST_USERS
@@ -1501,7 +1515,7 @@ spec:
           - name: LOCUST_SPAWN_RATE
             value: "1"
           - name: LOCUST_HOST
-            value: http://$(FRONTEND_ADDR)
+            value: http://example-frontend:8080
           - name: LOCUST_HEADLESS
             value: "false"
           - name: LOCUST_AUTOSTART
@@ -1510,8 +1524,6 @@ spec:
             value: python
           - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
-          - name: LOADGENERATOR_PORT
-            value: "8089"
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1581,10 +1593,12 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: PAYMENT_SERVICE_PORT
             value: "8080"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1654,14 +1668,14 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
             value: cumulative
           - name: PRODUCT_CATALOG_SERVICE_PORT
             value: "8080"
           - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
             value: 'example-featureflagservice:50053'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1731,12 +1745,14 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
-          - name: OTEL_PHP_AUTOLOAD_ENABLED
-            value: "true"
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: QUOTE_SERVICE_PORT
             value: "8080"
+          - name: OTEL_PHP_AUTOLOAD_ENABLED
+            value: "true"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4318
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1810,18 +1826,20 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: RECOMMENDATION_SERVICE_PORT
+            value: "8080"
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: 'example-productcatalogservice:8080'
+          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+            value: 'example-featureflagservice:50053'
           - name: OTEL_PYTHON_LOG_CORRELATION
             value: "true"
           - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
             value: python
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
-          - name: RECOMMENDATION_SERVICE_PORT
-            value: "8080"
-          - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: 'example-productcatalogservice:8080'
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1891,6 +1909,8 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
@@ -1964,14 +1984,14 @@ spec:
                 fieldPath: metadata.uid
           - name: OTEL_COLLECTOR_NAME
             value: $(OTEL_K8S_NODE_NAME)
-          - name: PORT
-            value: "8080"
-          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
           - name: SHIPPING_SERVICE_PORT
             value: "8080"
           - name: QUOTE_SERVICE_ADDR
             value: http://example-quoteservice:8080
+          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
           resources:
