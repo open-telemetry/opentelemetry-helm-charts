@@ -432,3 +432,55 @@ statefulset:
   # volumeClaimTemplates for a statefulset
   volumeClaimTemplates: []
   podManagementPolicy: "Parallel"
+
+networkPolicy:
+  enabled: false
+
+  # Annotations to add to the NetworkPolicy
+  annotations: {}
+
+  # Configure the 'from' clause of the NetworkPolicy.
+  # By default this will restrict traffic to ports enabled for the Collector. If
+  # you wish to further restrict traffic to other hosts or specific namespaces,
+  # see the standard NetworkPolicy 'spec.ingress.from' definition for more info:
+  # https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/
+  allowIngressFrom: []
+  # # Allow traffic from any pod in any namespace, but not external hosts
+  # - namespaceSelector: {}
+  # # Allow external access from a specific cidr block
+  # - ipBlock:
+  #     cidr: 192.168.1.64/32
+  # # Allow access from pods in specific namespaces
+  # - namespaceSelector:
+  #     matchExpressions:
+  #       - key: kubernetes.io/metadata.name
+  #         operator: In
+  #         values:
+  #           - "cats"
+  #           - "dogs"
+
+  # Add additional ingress rules to specific ports
+  # Useful to allow external hosts/services to access specific ports
+  # An example is allowing an external prometheus server to scrape metrics
+  #
+  # See the standard NetworkPolicy 'spec.ingress' definition for more info:
+  # https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/
+  extraIngressRules: []
+  # - ports:
+  #   - port: metrics
+  #     protocol: TCP
+  #   from:
+  #     - ipBlock:
+  #         cidr: 192.168.1.64/32
+
+  # Restrict egress traffic from the OpenTelemetry collector pod
+  # See the standard NetworkPolicy 'spec.egress' definition for more info:
+  # https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/
+  egressRules: []
+  #  - to:
+  #      - namespaceSelector: {}
+  #      - ipBlock:
+  #          cidr: 192.168.10.10/24
+  #    ports:
+  #      - port: 1234
+  #        protocol: TCP
