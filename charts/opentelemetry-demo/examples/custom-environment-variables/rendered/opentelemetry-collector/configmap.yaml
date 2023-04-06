@@ -38,12 +38,24 @@ data:
           services:
           - frontend-proxy
       batch: {}
+      filter:
+        metrics:
+          exclude:
+            match_type: strict
+            metric_names:
+            - queueSize
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
       spanmetrics:
         metrics_exporter: prometheus
+      transform:
+        metric_statements:
+        - context: metric
+          statements:
+          - set(description, "Measures the duration of inbound HTTP requests") where name
+            == "http.server.duration"
     receivers:
       jaeger:
         protocols:
@@ -92,6 +104,8 @@ data:
           - logging
           processors:
           - memory_limiter
+          - filter
+          - transform
           - batch
           receivers:
           - otlp

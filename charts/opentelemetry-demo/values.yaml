@@ -573,10 +573,10 @@ components:
       - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
         value: cumulative
       - name: KAFKA_HEAP_OPTS
-        value: "-Xmx400M -Xms400M"
+        value: "-Xmx200M -Xms200M"
     resources:
       limits:
-        memory: 750Mi
+        memory: 500Mi
     securityContext:
       runAsUser: 1000  # appuser
       runAsGroup: 1000
@@ -650,6 +650,18 @@ opentelemetry-collector:
       # Make use of the spanmetrics processor to compute RED metrics from all tracing spans
       spanmetrics:
         metrics_exporter: prometheus
+      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
+      transform:
+        metric_statements:
+          - context: metric
+            statements:
+              - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
+      filter:
+        metrics:
+          exclude:
+            match_type: strict
+            metric_names:
+              - queueSize
 
     service:
       pipelines:
@@ -658,6 +670,7 @@ opentelemetry-collector:
           exporters: [otlp, logging]
         metrics:
           exporters: [prometheus, logging]
+          processors: [memory_limiter, filter, transform, batch]
 
 jaeger:
   enabled: true
