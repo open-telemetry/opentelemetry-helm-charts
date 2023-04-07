@@ -18,6 +18,7 @@ Common labels
 {{- define "otel-demo.labels" -}}
 helm.sh/chart: {{ include "otel-demo.chart" . }}
 {{ include "otel-demo.selectorLabels" . }}
+{{ include "otel-demo.workloadLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -25,15 +26,33 @@ app.kubernetes.io/part-of: opentelemetry-demo
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+
+
+{{/*
+Workload (Pod) labels
+*/}}
+{{- define "otel-demo.workloadLabels" -}}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .name }}
+app.kubernetes.io/component: {{ .name}}
+app.kubernetes.io/name: {{ include "otel-demo.name" . }}-{{ .name }}
+{{- else }}
+app.kubernetes.io/name: {{ include "otel-demo.name" . }}
+{{- end }}
+{{- end }}
+
+
+
+
 {{/*
 Selector labels
 */}}
 {{- define "otel-demo.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "otel-demo.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .name }}
-app.kubernetes.io/component: {{ .name}}
-{{- end}}
+opentelemetry.io/name: {{ include "otel-demo.name" . }}-{{ .name }}
+{{- else }}
+opentelemetry.io/name: {{ include "otel-demo.name" . }}
+{{- end }}
 {{- end }}
 
 {{- define "otel-demo.envOverriden" -}}
