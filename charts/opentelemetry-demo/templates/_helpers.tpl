@@ -17,6 +17,7 @@ Common labels
 */}}
 {{- define "otel-demo.labels" -}}
 helm.sh/chart: {{ include "otel-demo.chart" . }}
+{{ include "otel-demo.selectorLabels" . }}
 {{ include "otel-demo.workloadLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
