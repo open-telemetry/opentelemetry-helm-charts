@@ -13,7 +13,6 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .name }}
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
         {{- include "otel-demo.workloadLabels" . | nindent 8 }}
       {{- if .podAnnotations }}
@@ -112,7 +111,6 @@ spec:
       {{- end }}
     {{- end }}
   selector:
-    app: {{ .name }}
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end}}
 {{- end}}
