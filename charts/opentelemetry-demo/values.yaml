@@ -28,6 +28,8 @@ default:
           fieldPath: metadata.uid
     - name: OTEL_COLLECTOR_NAME
       value: '{{ include "otel-demo.name" . }}-otelcol'
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
   # Allows overriding and additions to .Values.default.env
@@ -149,12 +151,10 @@ components:
     useDefault:
       env: true
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-        value: cumulative
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 20Mi
@@ -170,12 +170,14 @@ components:
     service:
       port: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: AD_SERVICE_PORT
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: OTLP_LOGS_EXPORTER
+        value: otlp
     resources:
       limits:
         memory: 300Mi
@@ -187,14 +189,14 @@ components:
     service:
       port: 8080
     env:
+      - name: CART_SERVICE_PORT
+        value: "8080"
       - name: ASPNETCORE_URLS
-        value: http://*:8080
+        value: http://*:$(CART_SERVICE_PORT)
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: CART_SERVICE_PORT
-        value: "8080"
     resources:
       limits:
         memory: 160Mi
@@ -210,24 +212,24 @@ components:
     service:
       port: 8080
     env:
+      - name: CHECKOUT_SERVICE_PORT
+        value: "8080"
       - name: CART_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
       - name: CURRENCY_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
+      - name: EMAIL_SERVICE_ADDR
+        value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
       - name: PAYMENT_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-paymentservice:8080'
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
       - name: SHIPPING_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
-      - name: EMAIL_SERVICE_ADDR
-        value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: CHECKOUT_SERVICE_PORT
-        value: "8080"
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 20Mi
@@ -243,12 +245,10 @@ components:
     service:
       port: 8080
     env:
-      - name: PORT
+      - name: CURRENCY_SERVICE_PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: CURRENCY_SERVICE_PORT
-        value: "8080"
     resources:
       limits:
         memory: 20Mi
@@ -260,16 +260,12 @@ components:
     service:
       port: 8080
     env:
-      - name: APP_ENV
-        value: production
-      - name: PORT
-        value: "8080"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
       - name: EMAIL_SERVICE_PORT
         value: "8080"
+      - name: APP_ENV
+        value: production
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
     resources:
       limits:
         memory: 100Mi
@@ -284,16 +280,16 @@ components:
       - name: http
         value: 8081
     env:
-      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-        value: "50053"
       - name: FEATURE_FLAG_SERVICE_PORT
         value: "8081"
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-        value: grpc
+      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+        value: "50053"
       - name: DATABASE_URL
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: grpc
     resources:
       limits:
         memory: 175Mi
@@ -313,12 +309,10 @@ components:
     useDefault:
       env: true
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-        value: cumulative
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 200Mi
@@ -334,6 +328,8 @@ components:
     service:
       port: 8080
     env:
+      - name: FRONTEND_PORT
+        value: "8080"
       - name: FRONTEND_ADDR
         value: :8080
       - name: AD_SERVICE_ADDR
@@ -354,13 +350,15 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
-      - name: FRONTEND_PORT
-        value: "8080"
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
     resources:
       limits:
         memory: 200Mi
+    securityContext:
+      runAsUser: 1001  # nextjs
+      runAsGroup: 1001
+      runAsNonRoot: true
 
   frontendProxy:
     enabled: true
@@ -369,6 +367,8 @@ components:
     service:
       port: 8080
     env:
+      - name: ENVOY_PORT
+        value: "8080"
       - name: FRONTEND_PORT
         value: "8080"
       - name: FRONTEND_HOST
@@ -393,8 +393,6 @@ components:
         value: "4317"
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
-      - name: ENVOY_PORT
-        value: "8080"
     resources:
       limits:
         memory: 50Mi
@@ -410,8 +408,6 @@ components:
     service:
       port: 8089
     env:
-      - name: FRONTEND_ADDR
-        value: '{{ include "otel-demo.name" . }}-frontend:8080'
       - name: LOCUST_WEB_PORT
         value: "8089"
       - name: LOCUST_USERS
@@ -419,7 +415,7 @@ components:
       - name: LOCUST_SPAWN_RATE
         value: "1"
       - name: LOCUST_HOST
-        value: "http://$(FRONTEND_ADDR)"
+        value: 'http://{{ include "otel-demo.name" . }}-frontend:8080'
       - name: LOCUST_HEADLESS
         value: "false"
       - name: LOCUST_AUTOSTART
@@ -428,8 +424,6 @@ components:
         value: python
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
-      - name: LOADGENERATOR_PORT
-        value: "8089"
     resources:
       limits:
         memory: 120Mi
@@ -441,13 +435,17 @@ components:
     service:
       port: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 120Mi
+    securityContext:
+      runAsUser: 1000  # node
+      runAsGroup: 1000
+      runAsNonRoot: true
 
   productCatalogService:
     enabled: true
@@ -456,14 +454,12 @@ components:
     service:
       port: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-        value: cumulative
       - name: PRODUCT_CATALOG_SERVICE_PORT
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 20Mi
@@ -475,12 +471,12 @@ components:
     service:
       port: 8080
     env:
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
-      - name: OTEL_PHP_AUTOLOAD_ENABLED
-        value: "true"
       - name: QUOTE_SERVICE_PORT
         value: "8080"
+      - name: OTEL_PHP_AUTOLOAD_ENABLED
+        value: "true"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
     resources:
       limits:
         memory: 40Mi
@@ -496,18 +492,18 @@ components:
     service:
       port: 8080
     env:
+      - name: RECOMMENDATION_SERVICE_PORT
+        value: "8080"
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
+      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
-      - name: RECOMMENDATION_SERVICE_PORT
-        value: "8080"
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -519,14 +515,12 @@ components:
     service:
       port: 8080
     env:
-      - name: PORT
-        value: "8080"
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
       - name: SHIPPING_SERVICE_PORT
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
     resources:
       limits:
         memory: 20Mi
@@ -544,9 +538,9 @@ components:
     env:
       - name: POSTGRES_DB
         value: ffs
-      - name: POSTGRES_PASSWORD
-        value: ffs
       - name: POSTGRES_USER
+        value: ffs
+      - name: POSTGRES_PASSWORD
         value: ffs
     resources:
       limits:
@@ -570,8 +564,6 @@ components:
         value: 'PLAINTEXT://{{ include "otel-demo.name" . }}-kafka:9092'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-        value: cumulative
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
     resources:
@@ -626,6 +618,8 @@ opentelemetry-collector:
       otlp:
         protocols:
           http:
+            # Bind to 127.0.0.1 to allow for `kubectl port-forward` to work
+            endpoint: 127.0.0.1:4318
             # Since this collector needs to receive data from the web, enable cors for all origins
             # `allowed_origins` can be refined for your deployment domain
             cors:
@@ -743,8 +737,6 @@ grafana:
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       serve_from_sub_path: true
   adminPassword: admin
-  rbac:
-    pspEnabled: false
   datasources:
     datasources.yaml:
       apiVersion: 1

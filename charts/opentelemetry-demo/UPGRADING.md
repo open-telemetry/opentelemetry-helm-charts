@@ -1,5 +1,12 @@
 # Upgrade guidelines
 
+## To 0.21
+
+The deployment labelSelector `app.kubernetes.io/name` has been renamed to
+individual workload naming. If you upgrade it from charts <= 0.20, you
+will have to delete all existing opentelemetry-demo deployments before running
+`helm upgrade` command.
+
 ## To 0.20
 
 The `observability.<sub chart>.enabled` parameters have been moved to an

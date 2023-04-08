@@ -15,6 +15,7 @@ spec:
       labels:
         app: {{ .name }}
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
+        {{- include "otel-demo.workloadLabels" . | nindent 8 }}
       {{- if .podAnnotations }}
       annotations:
         {{- toYaml .podAnnotations | nindent 8 }}
@@ -104,7 +105,7 @@ spec:
 
     {{- if $service.port }}
     - port: {{ $service.port}}
-      name: service
+      name: tcp-service
       targetPort: {{ $service.port }}
       {{- if $service.nodePort }}
       nodePort: {{ $service.nodePort }}
