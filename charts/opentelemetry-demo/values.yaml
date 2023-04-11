@@ -613,6 +613,9 @@ opentelemetry-collector:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9464"
     opentelemetry_community_demo: "true"
+  command:
+    extraArgs:
+      - "--feature-gates=service.connectors"
   config:
     receivers:
       otlp:
@@ -641,15 +644,13 @@ opentelemetry-collector:
         enable_open_metrics: true
 
     processors:
-      # Make use of the spanmetrics processor to compute RED metrics from all tracing spans
-      spanmetrics:
-        metrics_exporter: prometheus
       # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
       transform:
         metric_statements:
           - context: metric
             statements:
               - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
+      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
       filter:
         metrics:
           exclude:
@@ -657,14 +658,18 @@ opentelemetry-collector:
             metric_names:
               - queueSize
 
+    connectors:
+      spanmetrics:
+
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, spanmetrics, batch]
-          exporters: [otlp, logging]
+          processors: [memory_limiter, batch]
+          exporters: [otlp, logging, spanmetrics]
         metrics:
-          exporters: [prometheus, logging]
+          receivers: [otlp, spanmetrics]
           processors: [memory_limiter, filter, transform, batch]
+          exporters: [prometheus, logging]
 
 jaeger:
   enabled: true
@@ -791,4 +796,4 @@ grafana:
     default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
   resources:
     limits:
-      memory: 75Mi
+      memory: 100Mi

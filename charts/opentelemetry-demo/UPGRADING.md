@@ -1,5 +1,14 @@
 # Upgrade guidelines
 
+## To 0.22
+
+This release moves to using the `connectors` functionality in the OpenTelemetry
+Collector. The `spanmetrics` processor has been moved to use `connectors`
+which results in an additional required exporter in the `traces` pipeline.
+Existing releases that override `exporters` in the `traces` pipeline, will
+need to add `spanmetrics` to the list of exporters before upgrading. The
+OpenTelemetry Collector will fail to start otherwise.
+
 ## To 0.21
 
 The deployment labelSelector `app.kubernetes.io/name` has been renamed to
