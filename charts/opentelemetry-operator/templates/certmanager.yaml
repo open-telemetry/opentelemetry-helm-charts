@@ -2,6 +2,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
+  {{- if .Values.admissionWebhooks.certManager.certificateAnnotations }}
+  annotations:
+  {{- toYaml .Values.admissionWebhooks.certManager.certificateAnnotations | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
@@ -27,6 +31,10 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
+  {{- if .Values.admissionWebhooks.certManager.issuerAnnotations }}
+  annotations:
+  {{- toYaml .Values.admissionWebhooks.certManager.issuerAnnotations | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
