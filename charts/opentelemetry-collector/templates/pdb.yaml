@@ -1,4 +1,4 @@
-{{- if and .Values.podDisruptionBudget.enabled (eq .Values.mode "deployment") }}
+{{- if and (.Values.podDisruptionBudget.enabled) (eq .Values.mode "deployment") (not .Values.defineCustomResource) }}
 apiVersion: {{ include "podDisruptionBudget.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:

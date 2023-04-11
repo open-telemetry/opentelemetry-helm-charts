@@ -1,0 +1,40 @@
+{{- if .Values.defineCustomResource -}}
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.annotations }}
+      {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+      {{- end }}
+  {{- end }}
+spec:
+  mode: {{ .Values.mode }}
+  config: |
+    {{- if eq .Values.mode "deployment" }}
+    {{- include "opentelemetry-collector.deploymentConfig" . | nindent 4 -}}
+    {{- end }}
+    {{- if eq .Values.mode "daemonset" }}
+    {{- include "opentelemetry-collector.daemonsetConfig" . | nindent 4 -}}
+    {{- end }}
+    {{- if eq .Values.mode "deployment" }}
+    {{- include "opentelemetry-collector.deploymentConfig" . | nindent 4 -}}
+    {{- end }}
+  env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    {{- if .Values.presets.kubeletMetrics.enabled }}
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    {{- end }}
+    {{- with .Values.extraEnvs }}
+    {{- . | toYaml | nindent 6 }}
+    {{- end }}
+{{- end }}

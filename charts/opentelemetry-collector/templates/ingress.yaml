@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if and (.Values.ingress.enabled) (not .Values.defineCustomResource) -}}
 {{- $ingresses := prepend .Values.ingress.additionalIngresses .Values.ingress -}}
 {{- range $ingresses }}
 apiVersion: "networking.k8s.io/v1"
