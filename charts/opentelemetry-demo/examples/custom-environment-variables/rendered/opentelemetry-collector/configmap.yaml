@@ -12,6 +12,8 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
+    connectors:
+      spanmetrics: null
     exporters:
       logging: {}
       otlp:
@@ -48,8 +50,6 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      spanmetrics:
-        metrics_exporter: prometheus
       transform:
         metric_statements:
         - context: metric
@@ -109,11 +109,12 @@ data:
           - batch
           receivers:
           - otlp
-          - prometheus
+          - spanmetrics
         traces:
           exporters:
           - otlp
           - logging
+          - spanmetrics
           processors:
           - memory_limiter
           - attributes
