@@ -97,13 +97,13 @@ Create the name of the clusterRoleBinding to use
 
 {{- define "opentelemetry-collector.podAnnotations" -}}
 {{- if .Values.podAnnotations }}
-{{- tpl .Values.podAnnotations . | toYaml }}
+{{- tpl (.Values.podAnnotations | toYaml) . }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.podLabels" -}}
 {{- if .Values.podLabels }}
-{{- tpl .Values.podLabels . | toYaml }}
+{{- tpl (.Values.podLabels | toYaml) . }}
 {{- end }}
 {{- end }}
 
