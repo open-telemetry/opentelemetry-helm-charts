@@ -790,7 +790,8 @@
                             "default": {},
                             "title": "The updatePolicy Schema",
                             "required": [
-                                "updateMode"
+                                "updateMode",
+                                "minReplicas"
                             ],
                             "properties": {
                                 "updateMode": {
@@ -800,10 +801,19 @@
                                     "examples": [
                                         "Auto"
                                     ]
+                                },
+                                "minReplicas": {
+                                    "type": "integer",
+                                    "default": 2,
+                                    "title": "The minReplicas Schema",
+                                    "examples": [
+                                        2
+                                    ]
                                 }
                             },
                             "examples": [{
-                                "updateMode": "Auto"
+                                "updateMode": "Auto",
+                                "minReplicas": 2
                             }]
                         }
                     },
@@ -813,7 +823,8 @@
                         "maxAllowed": {},
                         "minAllowed": {},
                         "updatePolicy": {
-                            "updateMode": "Auto"
+                            "updateMode": "Auto",
+                            "minReplicas": 2
                         }
                     }]
                 },
@@ -908,7 +919,8 @@
                     "maxAllowed": {},
                     "minAllowed": {},
                     "updatePolicy": {
-                        "updateMode": "Auto"
+                        "updateMode": "Auto",
+                        "minReplicas": 2
                     }
                 },
                 "rolling": false
@@ -1178,7 +1190,9 @@
                     "title": "The certManager Schema",
                     "required": [
                         "enabled",
-                        "issuerRef"
+                        "issuerRef",
+                        "certificateAnnotations",
+                        "issuerAnnotations"
                     ],
                     "properties": {
                         "enabled": {
@@ -1196,11 +1210,29 @@
                             "required": [],
                             "properties": {},
                             "examples": [{}]
+                        },
+                        "certificateAnnotations": {
+                          "type": "object",
+                          "default": {},
+                          "title": "The certificateAnnotations Schema",
+                          "required": [],
+                          "properties": {},
+                          "examples": [{}]
+                        },
+                        "issuerAnnotations": {
+                          "type": "object",
+                          "default": {},
+                          "title": "The issuerAnnotations Schema",
+                          "required": [],
+                          "properties": {},
+                          "examples": [{}]
                         }
                     },
                     "examples": [{
                         "enabled": true,
-                        "issuerRef": {}
+                        "issuerRef": {},
+                        "certificateAnnotations": {},
+                        "issuerAnnotations": {}
                     }]
                 }
             },
@@ -1214,7 +1246,9 @@
                 "objectSelector": {},
                 "certManager": {
                     "enabled": true,
-                    "issuerRef": {}
+                    "issuerRef": {},
+                    "certificateAnnotations": {},
+                    "issuerAnnotations": {}
                 }
             }]
         },
@@ -1500,7 +1534,8 @@
                 "maxAllowed": {},
                 "minAllowed": {},
                 "updatePolicy": {
-                    "updateMode": "Auto"
+                    "updateMode": "Auto",
+                    "minReplicas": 2
                 }
             },
             "rolling": false
@@ -1536,7 +1571,9 @@
             "objectSelector": {},
             "certManager": {
                 "enabled": true,
-                "issuerRef": {}
+                "issuerRef": {},
+                "certificateAnnotations": {},
+                "issuerAnnotations": {}
             }
         },
         "role": {

@@ -124,6 +124,9 @@ manager:
       # Specifies whether recommended updates are applied when a Pod is started and whether recommended updates
       # are applied during the life of a Pod. Possible values are "Off", "Initial", "Recreate", and "Auto".
       updateMode: Auto
+      # Minimal number of replicas which need to be alive for Updater to attempt pod eviction.
+      # Only positive values are allowed. The default is 2.
+      minReplicas: 2
   # Enable manager pod automatically rolling
   rolling: false
 
@@ -174,6 +177,9 @@ admissionWebhooks:
     issuerRef: {}
       # kind:
       # name:
+    # Annotations for the cert and issuer if cert-manager is enabled.
+    certificateAnnotations: {}
+    issuerAnnotations: {}
 
 ## Create the provided Roles and RoleBindings
 ##
