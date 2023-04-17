@@ -651,12 +651,11 @@ opentelemetry-collector:
             statements:
               - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
       # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
-      filter:
+      filter/ottl:
+        error_mode: ignore
         metrics:
-          exclude:
-            match_type: strict
-            metric_names:
-              - queueSize
+          metric:
+            - 'name == "queueSize"'
 
     connectors:
       spanmetrics:
@@ -668,7 +667,7 @@ opentelemetry-collector:
           exporters: [otlp, logging, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]
-          processors: [memory_limiter, filter, transform, batch]
+          processors: [memory_limiter, filter/ottl, transform, batch]
           exporters: [prometheus, logging]
 
 jaeger:

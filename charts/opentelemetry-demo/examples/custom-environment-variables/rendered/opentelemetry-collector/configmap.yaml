@@ -40,12 +40,11 @@ data:
           services:
           - frontend-proxy
       batch: {}
-      filter:
+      filter/ottl:
+        error_mode: ignore
         metrics:
-          exclude:
-            match_type: strict
-            metric_names:
-            - queueSize
+          metric:
+          - name == "queueSize"
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -104,7 +103,7 @@ data:
           - logging
           processors:
           - memory_limiter
-          - filter
+          - filter/ottl
           - transform
           - batch
           receivers:
