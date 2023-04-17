@@ -565,10 +565,10 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: KAFKA_HEAP_OPTS
-        value: "-Xmx400M -Xms400M"
+        value: "-Xmx200M -Xms200M"
     resources:
       limits:
-        memory: 750Mi
+        memory: 500Mi
     securityContext:
       runAsUser: 1000  # appuser
       runAsGroup: 1000
@@ -613,6 +613,9 @@ opentelemetry-collector:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9464"
     opentelemetry_community_demo: "true"
+  command:
+    extraArgs:
+      - "--feature-gates=service.connectors"
   config:
     receivers:
       otlp:
@@ -641,16 +644,30 @@ opentelemetry-collector:
         enable_open_metrics: true
 
     processors:
-      # Make use of the spanmetrics processor to compute RED metrics from all tracing spans
+      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
+      transform:
+        metric_statements:
+          - context: metric
+            statements:
+              - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
+      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
+      filter/ottl:
+        error_mode: ignore
+        metrics:
+          metric:
+            - 'name == "queueSize"'
+
+    connectors:
       spanmetrics:
-        metrics_exporter: prometheus
 
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, spanmetrics, batch]
-          exporters: [otlp, logging]
+          processors: [memory_limiter, batch]
+          exporters: [otlp, logging, spanmetrics]
         metrics:
+          receivers: [otlp, spanmetrics]
+          processors: [memory_limiter, filter/ottl, transform, batch]
           exporters: [prometheus, logging]
 
 jaeger:
@@ -778,4 +795,4 @@ grafana:
     default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
   resources:
     limits:
-      memory: 75Mi
+      memory: 100Mi

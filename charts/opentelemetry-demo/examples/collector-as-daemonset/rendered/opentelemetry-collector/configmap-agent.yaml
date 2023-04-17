@@ -12,6 +12,8 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
+    connectors:
+      spanmetrics: null
     exporters:
       logging: {}
       otlp:
@@ -29,12 +31,21 @@ data:
         size_in_percentage: 40
     processors:
       batch: {}
+      filter/ottl:
+        error_mode: ignore
+        metrics:
+          metric:
+          - name == "queueSize"
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      spanmetrics:
-        metrics_exporter: prometheus
+      transform:
+        metric_statements:
+        - context: metric
+          statements:
+          - set(description, "Measures the duration of inbound HTTP requests") where name
+            == "http.server.duration"
     receivers:
       jaeger:
         protocols:
@@ -83,17 +94,19 @@ data:
           - logging
           processors:
           - memory_limiter
+          - filter/ottl
+          - transform
           - batch
           receivers:
           - otlp
-          - prometheus
+          - spanmetrics
         traces:
           exporters:
           - otlp
           - logging
+          - spanmetrics
           processors:
           - memory_limiter
-          - spanmetrics
           - batch
           receivers:
           - otlp
