@@ -38,4 +38,22 @@ spec:
     {{- with .Values.extraEnvs }}
     {{- . | toYaml | nindent 4 }}
     {{- end }}
+
+  {{- if .Values.securityContext }}
+  securityContext:
+  {{- toYaml .Values.securityContext | nindent 4 }}
+  {{- end }}
+
+  hostNetwork: {{ .Values.hostNetwork }}
+
+  {{- if .Values.extraVolumeMounts }}
+  volumeMounts:
+  {{- toYaml .Values.extraVolumeMounts | nindent 2 }}
+  {{- end }}
+
+  {{- if .Values.extraVolumes }}
+  volumes:
+  {{- toYaml .Values.extraVolumes | nindent 2 }}
+  {{- end }}
+
 {{- end }}
