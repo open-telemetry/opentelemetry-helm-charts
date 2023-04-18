@@ -129,3 +129,19 @@ Check if logs collection is enabled via deprecated "containerLogs" or "preset.lo
     {{- print .Values.containerLogs.enabled }}
   {{- end }}
 {{- end -}}
+
+
+{{/*
+Get config values for custom resource OpenTelemetryCollector
+*/}}
+{{- define "opentelemetry-collector.customresourceConfig" -}}
+{{- if eq .Values.mode "deployment" }}
+{{- include "opentelemetry-collector.deploymentConfig" . }}
+{{- end }}
+{{- if eq .Values.mode "daemonset" }}
+{{- include "opentelemetry-collector.daemonsetConfig" . }}
+{{- end }}
+{{- if eq .Values.mode "statefulset" }}
+{{- include "opentelemetry-collector.deploymentConfig" . }}
+{{- end }}
+{{- end }}
