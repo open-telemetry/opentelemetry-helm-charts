@@ -335,11 +335,19 @@ lifecycleHooks: {}
 #       - "5"
 
 service:
+
+  # Enable the creation of a Service pointing the agent pods with mode = daemonset.
+  # By default, Service will be created setting 'internalTrafficPolicy: Local'
+  # unless other value is explicitly set.
+  # Setting 'internalTrafficPolicy: Cluster' on a daemonset is not recommended
+  serviceForDaemonset: false
+
   type: ClusterIP
   # type: LoadBalancer
   # loadBalancerIP: 1.2.3.4
   # loadBalancerSourceRanges: []
   annotations: {}
+  # internalTrafficPolicy: Cluster
 
 ingress:
   enabled: false

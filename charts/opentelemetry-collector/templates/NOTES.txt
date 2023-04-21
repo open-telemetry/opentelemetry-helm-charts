@@ -40,3 +40,13 @@
 {{- if .Values.presets.kubernetesEvents.enabled }}
 [WARNING] The 'k8sobjects' is a ALPHA receiver and may be changed anytime.
 {{ end }}
+
+{{- if .Values.service.serviceForDaemonset }}
+{{- if not (eq .Values.mode "daemonset") }}
+{{- fail "Enabling serviceForDaemonset is only suitable for daemonset mode. Please use daemonset mode to enable it."}}
+{{ end }}
+{{- if eq .Values.service.internalTrafficPolicy "Cluster" }}
+[WARNING] Setting internalTrafficPolicy to 'Cluster' on Daemonset is not recommended. Please set it to 'Local' instead.
+{{ end }}
+{{ end }}
+
