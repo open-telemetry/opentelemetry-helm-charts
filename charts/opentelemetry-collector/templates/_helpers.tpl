@@ -144,4 +144,7 @@ Get config values for custom resource OpenTelemetryCollector
 {{- if eq .Values.mode "statefulset" }}
 {{- include "opentelemetry-collector.deploymentConfig" . }}
 {{- end }}
+{{- if eq .Values.mode "sidecar" }}
+{{- include "opentelemetry-collector.deploymentConfig" . }}
+{{- end }}
 {{- end }}

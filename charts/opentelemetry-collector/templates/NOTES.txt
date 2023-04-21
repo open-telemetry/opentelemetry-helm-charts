@@ -10,8 +10,12 @@
 [WARNING] "secretMounts" parameter is deprecated, please use "extraVolumes" or "extraVolumeMounts" instead.
 {{ end }}
 
-{{- if and (not (eq .Values.mode "daemonset")) (not (eq .Values.mode "deployment")) (not (eq .Values.mode "statefulset")) }}
+{{- if and (not (eq .Values.mode "daemonset")) (not (eq .Values.mode "deployment")) (not (eq .Values.mode "statefulset")) (not (eq .Values.mode "sidecar")) }}
 {{ fail "[ERROR] 'mode' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
+{{ end }}
+
+{{- if and (eq .Values.mode "sidecar") (not .Values.defineCustomResource )  }}
+{{ fail "[ERROR] 'mode=sidecar' can only be used when creating OpenTelemetryCollector (defineCustomResource=true) " }}
 {{ end }}
 
 {{- if not .Values.configMap.create }}
