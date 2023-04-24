@@ -12,13 +12,14 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 ### TLS Certificate Requirement
 
 In Kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
-certificate that the API server is configured to trust. There are three ways for you to generate the required TLS certificate.
+certificate that the API server is configured to trust. There are a few ways for you to generate the required TLS certificate.
 
   - The easiest and default method is to install the [cert-manager](https://cert-manager.io/docs/) and set `admissionWebhooks.certManager.create` to `true`.
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
-  - You can use self-signed certificate by configuring the `admissionWebhooks.certManager.enabled` to `false`. Helm will create self-signd cert and secret for you.
+  - You can use an automatically generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert` to `true`. Helm will create a self-signd cert and a secret for you.
+  - You can use your own generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to false and `admissionWebhooks.autoGenerateCert` to `false`. You should provide the necessary values to `cert_file`, `key_file`, and `ca_file`.
   - You can sideload custom webhooks and certificate by disabling `.Values.admissionWebhooks.create` and `admissionWebhooks.certManager.enabled` while setting your custom cert secret name in `admissionWebhooks.secretName`
   - You can disable webhooks alltogether by disabling `.Values.admissionWebhooks.create` and setting env var to `ENABLE_WEBHOOKS: "false"`
 

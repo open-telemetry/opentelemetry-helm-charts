@@ -172,7 +172,6 @@ admissionWebhooks:
   ## Provide the issuer kind and name to do the cert auth job.
   ## By default, OpenTelemetry Operator will use self-signer issuer.
   certManager:
-    # false means helm will create self-signd cert and secret for you.
     enabled: true
     issuerRef: {}
       # kind:
@@ -180,6 +179,18 @@ admissionWebhooks:
     # Annotations for the cert and issuer if cert-manager is enabled.
     certificateAnnotations: {}
     issuerAnnotations: {}
+
+  ## Enable certificate auto generation if certManager is not enabled. 
+  ## If true, Helm will automatically create self-signd cert and secret for you. 
+  autoGenerateCert: true
+  ## Secret annotations
+  secretAnnotations: {}
+  ## Path to your own PEM-encoded certificate. certManager and autoGenerateCert must be disabled.
+  cert_file: ""
+  ## Path to your own PEM-encoded private key. certManager and autoGenerateCert must be disabled.
+  key_file: ""
+  ## Path to the CA cert. certManager and autoGenerateCert must be disabled.
+  ca_file: ""
 
 ## Create the provided Roles and RoleBindings
 ##
