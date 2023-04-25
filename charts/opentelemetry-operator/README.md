@@ -19,7 +19,7 @@ certificate that the API server is configured to trust. There are a few differen
   - You can provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
   - You can use an automatically generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert` to `true`. Helm will create a self-signd cert and a secret for you.
-  - You can use your own generated self-signed certificate by setting both `admissionWebhooks.certManager.enabled` and `admissionWebhooks.autoGenerateCert` to `false`. You should provide the necessary values to `cert_file`, `key_file`, and `ca_file`.
+  - You can use your own generated self-signed certificate by setting both `admissionWebhooks.certManager.enabled` and `admissionWebhooks.autoGenerateCert` to `false`. You should provide the necessary values to `admissionWebhooks.cert_file`, `admissionWebhooks.key_file`, and `admissionWebhooks.ca_file`.
   - You can sideload custom webhooks and certificate by disabling `.Values.admissionWebhooks.create` and `admissionWebhooks.certManager.enabled` while setting your custom cert secret name in `admissionWebhooks.secretName`
   - You can disable webhooks alltogether by disabling `.Values.admissionWebhooks.create` and setting env var to `ENABLE_WEBHOOKS: "false"`
 
