@@ -10,12 +10,6 @@ global:
   region: us-east-1
   environment: stage
 
-mode: deployment
-resources:
-  limits:
-    cpu: 100m
-    memory: 200M
-
 # Tests `tpl` function reference used in pod labels and
 # ingress.hosts[*]
 podLabels:
