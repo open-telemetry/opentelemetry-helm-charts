@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.54.0 to 0.55.0
+## 0.54.1 to 0.55.0
 
 The `tpl` function has been added to references of pod labels and ingress hosts. This adds the ability to add some reusability in
 charts values through referencing global values.
