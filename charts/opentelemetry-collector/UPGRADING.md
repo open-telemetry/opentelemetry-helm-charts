@@ -1,5 +1,38 @@
 # Upgrade guidelines
 
+## 0.54.0 to 0.55.0
+
+The `tpl` function has been added to references of pod labels and ingress hosts. This adds the ability to add some reusability in
+charts values through referencing global values.
+
+```yaml
+global:
+  region: us-east-1
+  environment: stage
+
+mode: deployment
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
+
+# Tests `tpl` function reference used in pod labels and
+# ingress.hosts[*]
+podLabels:
+  environment: "{{ .Values.global.environment }}"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: "otlp-collector-{{ .Values.global.region }}-{{ .Values.global.environment }}-example.dev"
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 4318
+```
+
+Note that only global Helm values can be referenced as the Helm Chart schema currently does not allow `additionalValues`.
+
 ## 0.53.1 to 0.54.0
 
 As of v0.54.0 Collector chart, the default resource limits are removed. If you want to keep old values you can use the following configuration:
