@@ -132,24 +132,12 @@ Check if logs collection is enabled via deprecated "containerLogs" or "preset.lo
 
 
 {{/*
-Compute InternalTrafficPolicy on Service creation when mode = daemonset
-*/}}
-{{- define "opentelemetry-collector.daemonsetServiceInternalTrafficPolicy" }}
-  {{- $computedDsInternalTrafficPolicy := "Local" }}
-  {{- if and (eq .Values.mode "daemonset") (eq .Values.service.serviceForDaemonset true) (eq .Values.service.internalTrafficPolicy "Cluster") }}
-    {{- $computedDsInternalTrafficPolicy = "Cluster" }}
-  {{- end }}
-  {{- print $computedDsInternalTrafficPolicy -}}
-{{- end -}}
-
-
-{{/*
 Compute InternalTrafficPolicy on Service creation
 */}}
 {{- define "opentelemetry-collector.serviceInternalTrafficPolicy" }}
-  {{- if or (eq .Values.mode "deployment") (eq .Values.mode "statefulset") }}
-    {{- print (.Values.service.internalTrafficPolicy | default "Cluster") -}}
+  {{- if and (eq .Values.mode "daemonset") (eq .Values.service.serviceForDaemonset true) }}
+    {{- print (.Values.service.internalTrafficPolicy | default "Local") -}}
   {{- else }}
-      {{- print (include "opentelemetry-collector.daemonsetServiceInternalTrafficPolicy" .) -}}
+    {{- print (.Values.service.internalTrafficPolicy | default "Cluster") -}}
   {{- end }}
 {{- end -}}
