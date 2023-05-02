@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-grafana-dashboards
   labels:
-    helm.sh/chart: opentelemetry-demo-0.22.1
+    helm.sh/chart: opentelemetry-demo-0.22.2
     
     opentelemetry.io/name: example
     app.kubernetes.io/instance: example
@@ -4609,7 +4609,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.50, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
+              "expr": "topk(7,histogram_quantile(0.50, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
               "format": "time_series",
               "hide": true,
               "instant": false,
@@ -4625,7 +4625,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.95, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,service_name)))",
+              "expr": "topk(7,histogram_quantile(0.95, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,service_name)))",
               "hide": false,
               "instant": true,
               "interval": "",
@@ -4640,7 +4640,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.99, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.99, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile99",
@@ -4654,7 +4654,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.999, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.999, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile999",
@@ -4734,7 +4734,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,sum by (service_name) (rate(calls{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])))",
+              "expr": "topk(7,sum by (service_name) (rate(calls_total{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])))",
               "format": "time_series",
               "instant": true,
               "interval": "",
@@ -4812,7 +4812,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,sum(rate(calls{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (service_name))",
+              "expr": "topk(7,sum(rate(calls_total{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (service_name))",
               "instant": true,
               "interval": "",
               "legendFormat": "{{service_name}}",
@@ -4985,7 +4985,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "exemplar": false,
-              "expr": "topk(7, sum(rate(calls{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name)) ",
+              "expr": "topk(7, sum(rate(calls_total{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name)) ",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -4998,7 +4998,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "exemplar": false,
-              "expr": "topk(7, sum(rate(calls{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name))",
+              "expr": "topk(7, sum(rate(calls_total{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name))",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -5192,7 +5192,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.50, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
+              "expr": "topk(7,histogram_quantile(0.50, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
               "format": "time_series",
               "hide": true,
               "instant": false,
@@ -5208,7 +5208,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.95, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,span_name)))",
+              "expr": "topk(7,histogram_quantile(0.95, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,span_name)))",
               "hide": false,
               "instant": true,
               "interval": "",
@@ -5223,7 +5223,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.99, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.99, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile99",
@@ -5237,7 +5237,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.999, sum(rate(duration_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.999, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile999",
@@ -5308,7 +5308,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7, sum by (span_name,service_name)(increase(duration_sum{service_name=~\"${service}\", span_name=~\"$span_name\"}[5m]) / increase(duration_count{service_name=~\"${service}\",span_name=~\"$span_name\"}[5m\n])))",
+              "expr": "topk(7, sum by (span_name,service_name)(increase(duration_milliseconds_sum{service_name=~\"${service}\", span_name=~\"$span_name\"}[5m]) / increase(duration_milliseconds_count{service_name=~\"${service}\",span_name=~\"$span_name\"}[5m\n])))",
               "instant": true,
               "interval": "",
               "legendFormat": "{{span_name}} [{{service_name}}]",
@@ -5412,7 +5412,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(7,sum by (span_name,service_name)(increase(duration_sum{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval]) / increase(duration_count{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])))",
+              "expr": "topk(7,sum by (span_name,service_name)(increase(duration_milliseconds_sum{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval]) / increase(duration_milliseconds_count{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])))",
               "instant": false,
               "interval": "",
               "legendFormat": "[{{service_name}}]  {{span_name}}",
@@ -5441,14 +5441,14 @@ data:
               "type": "prometheus",
               "uid": "webstore-metrics"
             },
-            "definition": "query_result(count by (service_name)(count_over_time(calls[$__range])))",
+            "definition": "query_result(count by (service_name)(count_over_time(calls_total[$__range])))",
             "hide": 0,
             "includeAll": true,
             "multi": true,
             "name": "service",
             "options": [],
             "query": {
-              "query": "query_result(count by (service_name)(count_over_time(calls[$__range])))",
+              "query": "query_result(count by (service_name)(count_over_time(calls_total[$__range])))",
               "refId": "StandardVariableQuery"
             },
             "refresh": 2,
@@ -5468,14 +5468,14 @@ data:
               "type": "prometheus",
               "uid": "webstore-metrics"
             },
-            "definition": "query_result(sum ({__name__=~\".*calls\",service_name=~\"$service\"})  by (span_name))",
+            "definition": "query_result(sum ({__name__=~\".*calls_total\",service_name=~\"$service\"})  by (span_name))",
             "hide": 0,
             "includeAll": true,
             "multi": true,
             "name": "span_name",
             "options": [],
             "query": {
-              "query": "query_result(sum ({__name__=~\".*calls\",service_name=~\"$service\"})  by (span_name))",
+              "query": "query_result(sum ({__name__=~\".*calls_total\",service_name=~\"$service\"})  by (span_name))",
               "refId": "StandardVariableQuery"
             },
             "refresh": 2,
