@@ -169,28 +169,36 @@ admissionWebhooks:
   namespaceSelector: {}
   objectSelector: {}
 
-  ## Provide the issuer kind and name to do the cert auth job.
-  ## By default, OpenTelemetry Operator will use self-signer issuer.
+  ## https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/README.md#tls-certificate-requirement
+  ## TLS Certificate Option 1: Use certManager to generate self-signed certificate.
+  ## certManager must be enabled. If enabled, always takes precendence over options 2 and 3.
   certManager:
     enabled: true
+    ## Provide the issuer kind and name to do the cert auth job.
+    ## By default, OpenTelemetry Operator will use self-signer issuer.
     issuerRef: {}
       # kind:
       # name:
-    # Annotations for the cert and issuer if cert-manager is enabled.
+    ## Annotations for the cert and issuer if cert-manager is enabled.
     certificateAnnotations: {}
     issuerAnnotations: {}
 
-  ## Enable certificate auto generation if certManager is not enabled.
-  ## If true, Helm will automatically create self-signd cert and secret for you.
+  ## TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate.
+  ## certManager must be disabled and autoGenerateCert must be enabled.
+  ## If true, Helm will automatically create a self-signd cert and secret for you.
   autoGenerateCert: true
+
+  ## TLS Certificate Option 3: Use your own self-signed certificate.
+  ## certManager and autoGenerateCert must be disabled and cert_file, key_file, and ca_file must be set.
+  ## Path to your own PEM-encoded certificate.
+  cert_file: ""
+  ## Path to your own PEM-encoded private key.
+  key_file: ""
+  ## Path to the CA cert.
+  ca_file: ""
+
   ## Secret annotations
   secretAnnotations: {}
-  ## Path to your own PEM-encoded certificate. certManager and autoGenerateCert must be disabled.
-  cert_file: ""
-  ## Path to your own PEM-encoded private key. certManager and autoGenerateCert must be disabled.
-  key_file: ""
-  ## Path to the CA cert. certManager and autoGenerateCert must be disabled.
-  ca_file: ""
 
 ## Create the provided Roles and RoleBindings
 ##
