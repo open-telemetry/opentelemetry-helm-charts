@@ -1,5 +1,9 @@
 # Upgrade guidelines
 
+## 0.55.0 to 0.55.1
+
+As of v0.55.1 Collector chart use `${env:ENV}` style syntax when getting environment variables and that $`{env:ENV}` syntax is not supported before collector 0.71. If you upgrade collector chart to v0.55.1, you need to make sure your collector version is after than 0.71 (default is v0.76.1).
+
 ## 0.53.1 to 0.54.0
 
 As of v0.54.0 Collector chart, the default resource limits are removed. If you want to keep old values you can use the following configuration:
