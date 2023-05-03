@@ -3,7 +3,7 @@
 ## 0.55.2 to 0.56
 
 The `tpl` function has been added to references of pod labels and ingress hosts. This adds the ability to add some reusability in
-charts values through referencing global values. If you are currently using any `{{ }}` syntax in `.Values.yaml` it will now be rendered. To escape existing instances of {{ }}, use {{` <original content> `}}.
+charts values through referencing global values. If you are currently using any `{{ }}` syntax in pod labels or ingress hosts it will now be rendered. To escape existing instances of {{ }}, use {{` <original content> `}}.
 
 ```yaml
 global:
