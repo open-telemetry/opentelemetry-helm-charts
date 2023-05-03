@@ -274,6 +274,10 @@ receivers:
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
 processors:
   k8sattributes:
+  {{- if eq .Values.mode "daemonset" }}
+    filter:
+      node_from_env_var: K8S_NODE_NAME
+  {{- end }}
     passthrough: false
     pod_association:
     - sources:
