@@ -5,10 +5,10 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.55.0
+    helm.sh/chart: opentelemetry-collector-0.56.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.75.0"
+    app.kubernetes.io/version: "0.76.1"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
@@ -28,9 +28,9 @@ data:
       otlp:
         protocols:
           grpc:
-            endpoint: ${MY_POD_IP}:4317
+            endpoint: ${env:MY_POD_IP}:4317
           http:
-            endpoint: ${MY_POD_IP}:4318
+            endpoint: ${env:MY_POD_IP}:4318
     service:
       extensions:
       - health_check
@@ -46,4 +46,4 @@ data:
           - otlp
       telemetry:
         metrics:
-          address: ${MY_POD_IP}:8888
+          address: ${env:MY_POD_IP}:8888
