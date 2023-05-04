@@ -613,16 +613,14 @@ opentelemetry-collector:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9464"
     opentelemetry_community_demo: "true"
-  command:
-    extraArgs:
-      - "--feature-gates=service.connectors"
   config:
     receivers:
       otlp:
         protocols:
           http:
-            # Bind to 127.0.0.1 to allow for `kubectl port-forward` to work
-            endpoint: 127.0.0.1:4318
+            # Bind to 0.0.0.0 to allow for `kubectl port-forward` to work
+            # This may be susceptible to denial of service attacks - CWE-1327 https://cwe.mitre.org/data/definitions/1327.html
+            endpoint: 0.0.0.0:4318
             # Since this collector needs to receive data from the web, enable cors for all origins
             # `allowed_origins` can be refined for your deployment domain
             cors:
