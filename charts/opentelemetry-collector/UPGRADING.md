@@ -1,5 +1,36 @@
 # Upgrade guidelines
 
+## 0.55.2 to 0.56
+
+The `tpl` function has been added to references of pod labels and ingress hosts. This adds the ability to add some reusability in
+charts values through referencing global values. If you are currently using any `{{ }}` syntax in pod labels or ingress hosts it will now be rendered. To escape existing instances of {{ }}, use {{` <original content> `}}.
+
+```yaml
+global:
+  region: us-east-1
+  environment: stage
+
+# Tests `tpl` function reference used in pod labels and
+# ingress.hosts[*]
+podLabels:
+  environment: "{{ .Values.global.environment }}"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: "otlp-collector-{{ .Values.global.region }}-{{ .Values.global.environment }}-example.dev"
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 4318
+```
+
+Note that only global Helm values can be referenced as the Helm Chart schema currently does not allow `additionalValues`.
+
+## 0.55.0 to 0.55.1
+
+As of v0.55.1 Collector chart use `${env:ENV}` style syntax when getting environment variables and that $`{env:ENV}` syntax is not supported before collector 0.71. If you upgrade collector chart to v0.55.1, you need to make sure your collector version is after than 0.71 (default is v0.76.1).
+
 ## 0.53.1 to 0.54.0
 
 As of v0.54.0 Collector chart, the default resource limits are removed. If you want to keep old values you can use the following configuration:
