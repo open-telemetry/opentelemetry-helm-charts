@@ -103,6 +103,9 @@ spec:
               name: cert
               readOnly: true
           {{- end }}
+          {{- with .Values.manager.securityContext }}
+          securityContext: {{ toYaml . | nindent 12 }}
+          {{- end }}
         {{ if .Values.kubeRBACProxy.enabled }}
         - args:
             - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
@@ -120,6 +123,9 @@ spec:
               protocol: TCP
           {{- with .Values.kubeRBACProxy.resources }}
           resources: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.kubeRBACProxy.securityContext }}
+          securityContext: {{ toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
       {{- with .Values.imagePullSecrets }}
