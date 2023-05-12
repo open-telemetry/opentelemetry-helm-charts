@@ -15,6 +15,9 @@ metadata:
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
+    {{- if .Values.admissionWebhooks.secretLabels }}
+    {{- toYaml .Values.admissionWebhooks.secretLabels | nindent 4 }}
+    {{- end }}
   name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
   namespace: {{ .Release.Namespace }}
 data:
