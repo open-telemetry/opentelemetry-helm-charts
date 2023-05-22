@@ -1,4 +1,4 @@
-{{- if or (eq .Values.mode "deployment") (eq .Values.mode "statefulset") (and (eq .Values.mode "daemonset") (eq .Values.service.serviceForDaemonset true)) (.Values.ingress.enabled) -}}
+{{- if or (eq (include "opentelemetry-collector.serviceEnabled" .) "true") (.Values.ingress.enabled) -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -11,6 +11,8 @@ metadata:
     {{- range $key, $value := .Values.service.annotations }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
+    pepito: {{include "opentelemetry-collector.serviceEnabled" .}}
+    ingress: {{.Values.ingress.enabled}}
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
