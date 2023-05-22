@@ -11,8 +11,6 @@ metadata:
     {{- range $key, $value := .Values.service.annotations }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
-    pepito: {{include "opentelemetry-collector.serviceEnabled" .}}
-    ingress: {{.Values.ingress.enabled}}
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
