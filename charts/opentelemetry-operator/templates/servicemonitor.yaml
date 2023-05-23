@@ -10,10 +10,12 @@ metadata:
     {{- range $key, $value := .Values.manager.serviceMonitor.extraLabels }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
+  {{- if .Values.manager.serviceMonitor.annotations }}
   annotations:
     {{- range $key, $value := .Values.manager.serviceMonitor.annotations }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
