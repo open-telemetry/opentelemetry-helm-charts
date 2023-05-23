@@ -61,6 +61,12 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
             - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
             {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
+            - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
+            {{- end }}
+            {{- if .Values.manager.featureGates }}
+            - --feature-gates={{ .Values.manager.featureGates }}
+            {{- end }}
             {{-  if .Values.manager.extraArgs  }}
             {{- .Values.manager.extraArgs | toYaml | nindent 12 }}
             {{-  end  }}

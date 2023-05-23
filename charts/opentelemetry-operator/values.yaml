@@ -29,10 +29,10 @@ pdb:
 manager:
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
-    tag: v0.76.1
+    tag: v0.77.0
   collectorImage:
     repository: otel/opentelemetry-collector-contrib
-    tag: 0.76.1
+    tag: 0.77.0
   targetAllocatorImage:
     repository: ""
     tag: ""
@@ -49,6 +49,18 @@ manager:
     dotnet:
       repository: ""
       tag: ""
+    # The Go instrumentaiton support in the operator is disabled by default.
+    # To enable it, use the operator.autoinstrumentation.go feature gate.
+    go:
+      # Must set the default value manually for now.
+      # See https://github.com/open-telemetry/opentelemetry-operator/issues/1756 for details.
+      repository: ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go
+      tag: v0.2.1-alpha
+  # Feature Gates are a a comma-delimited list of feature gate identifiers.
+  # Prefix a gate with '-' to disable support.
+  # Prefixing a gate with '+' or no prefix will enable support.
+  # A full list of valud identifiers can be found here: https://github.com/open-telemetry/opentelemetry-operator/blob/main/pkg/featuregate/featuregate.go
+  featureGates: ""
   ports:
     metricsPort: 8080
     webhookPort: 9443
