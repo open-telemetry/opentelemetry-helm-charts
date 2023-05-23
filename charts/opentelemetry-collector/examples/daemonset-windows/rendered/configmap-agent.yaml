@@ -28,7 +28,7 @@ data:
       filelog:
         exclude: []
         include:
-        - /var/log/pods/*/*/*.log
+        - C:\var\log\pods\*\*\*.log
         include_file_name: false
         include_file_path: true
         operators:
@@ -64,7 +64,7 @@ data:
           type: json_parser
         - id: extract_metadata_from_filepath
           parse_from: attributes["log.file.path"]
-          regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
+          regex: ^C:\\var\\log\\pods\\(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[^\/]+)\\(?P<container_name>[^\._]+)\\(?P<restart_count>\d+)\.log$
           type: regex_parser
         - from: attributes.stream
           to: attributes["log.iostream"]
@@ -88,6 +88,15 @@ data:
           to: body
           type: move
         start_at: beginning
+      hostmetrics:
+        collection_interval: 10s
+        scrapers:
+          cpu: null
+          disk: null
+          filesystem: null
+          load: null
+          memory: null
+          network: null
       jaeger:
         protocols:
           grpc:
@@ -135,6 +144,7 @@ data:
           receivers:
           - otlp
           - prometheus
+          - hostmetrics
         traces:
           exporters:
           - logging

@@ -41,5 +41,7 @@ spec:
       {{- $podValues := deepCopy .Values }}
       {{- $podData := dict "Values" $podValues "configmapSuffix" "" "isAgent" false }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
+      {{- if not .Values.isWindows }}
       hostNetwork: {{ .Values.hostNetwork }}
+      {{- end }}
 {{- end }}

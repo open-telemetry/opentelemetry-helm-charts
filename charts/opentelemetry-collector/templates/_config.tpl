@@ -89,7 +89,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- define "opentelemetry-collector.hostMetricsConfig" -}}
 receivers:
   hostmetrics:
+    {{- if not .Values.isWindows }}
     root_path: /hostfs
+    {{- end }}
     collection_interval: 10s
     scrapers:
         cpu:
@@ -97,6 +99,7 @@ receivers:
         memory:
         disk:
         filesystem:
+          {{- if not .Values.isWindows }}
           exclude_mount_points:
             mount_points:
               - /dev/*
@@ -133,6 +136,7 @@ receivers:
               - sysfs
               - tracefs
             match_type: strict
+          {{- end }}
         network:
 {{- end }}
 
@@ -179,12 +183,20 @@ extensions:
 {{- end }}
 receivers:
   filelog:
+    {{- if .Values.isWindows }}
+    include: ["C:\\var\\log\\pods\\*\\*\\*.log"]
+    {{- else }}
     include: [ /var/log/pods/*/*/*.log ]
+    {{- end }}
     {{- if .Values.presets.logsCollection.includeCollectorLogs }}
     exclude: []
     {{- else }}
+    {{- if .Values.isWindows }}
+    exclude:[ "C:\\var\\log\\pods\\{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*\\{{ include "opentelemetry-collector.lowercase_chartname" . }}\\*.log" ]
+    {{- else }}
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log ]
+    {{- end }}
     {{- end }}
     start_at: beginning
     {{- if .Values.presets.logsCollection.storeCheckpoints}}
@@ -230,7 +242,11 @@ receivers:
       # Extract metadata from file path
       - type: regex_parser
         id: extract_metadata_from_filepath
+        {{- if .Values.isWindows }}
+        regex: '^C:\\var\\log\\pods\\(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[^\/]+)\\(?P<container_name>[^\._]+)\\(?P<restart_count>\d+)\.log$'
+        {{- else }}
         regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
+        {{- end }}
         parse_from: attributes["log.file.path"]
       # Rename attributes
       - type: move
