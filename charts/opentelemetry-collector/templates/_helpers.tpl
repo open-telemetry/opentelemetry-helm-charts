@@ -129,3 +129,31 @@ Check if logs collection is enabled via deprecated "containerLogs" or "preset.lo
     {{- print .Values.containerLogs.enabled }}
   {{- end }}
 {{- end -}}
+
+
+{{/*
+Compute Service creation on mode
+*/}}
+{{- define "opentelemetry-collector.serviceEnabled" }}
+  {{- $serviceEnabled := true -}}
+
+  {{- if and (eq .Values.mode "daemonset") (not .Values.service.enabled) }}
+    {{- $serviceEnabled = false -}}
+  {{- end }}
+
+  {{- print $serviceEnabled }}
+{{- end -}}
+
+
+{{/*
+Compute InternalTrafficPolicy on Service creation
+*/}}
+{{- define "opentelemetry-collector.serviceInternalTrafficPolicy" }}
+  {{- if and (eq .Values.mode "daemonset") (eq .Values.service.enabled true) }}
+    {{- print (.Values.service.internalTrafficPolicy | default "Local") -}}
+  {{- else }}
+    {{- print (.Values.service.internalTrafficPolicy | default "Cluster") -}}
+  {{- end }}
+{{- end -}}
+
+
