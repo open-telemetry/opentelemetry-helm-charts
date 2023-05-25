@@ -19,8 +19,10 @@ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm
 To install the chart with the release name my-opentelemetry-collector, run the following command:
 
 ```console
-helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector
+helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value>
 ```
+
+Where the `mode` value needs to be set to one of `daemonset`, `deployment` or `statefulset`.
 
 ## Upgrading
 
@@ -39,10 +41,10 @@ Some care must be taken when using `hostNetwork: true`, as then OpenTelemetry Co
 
 ### Default configuration
 
-By default this chart will deploy an OpenTelemetry Collector as daemonset with three pipelines (logs, metrics and traces)
-and logging exporter enabled by default. Besides daemonset (agent), it can be also installed as deployment.
+By default this chart will deploy an OpenTelemetry Collector with three pipelines (logs, metrics and traces)
+and logging exporter enabled by default. The collector can be installed either as daemonset (agent), deployment or stateful set.
 
-*Example*: Install collector as a deployment, and do not run it as an agent.
+*Example*: Install collector as a deployment.
 
 ```yaml
 mode: deployment
