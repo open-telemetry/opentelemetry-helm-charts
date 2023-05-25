@@ -117,7 +117,7 @@ webhooks:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: /mutate-v1-pod
-    failurePolicy: Ignore
+    failurePolicy: {{ .Values.admissionWebhooks.pods.failurePolicy }}
     name: mpod.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
