@@ -1,4 +1,4 @@
-{{- if or (eq .Values.mode "deployment") (eq .Values.mode "statefulset") (.Values.ingress.enabled) -}}
+{{- if or (eq (include "opentelemetry-collector.serviceEnabled" .) "true") (.Values.ingress.enabled) -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -30,4 +30,5 @@ spec:
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
     {{- include "opentelemetry-collector.component" . | nindent 4 }}
+  internalTrafficPolicy: {{ include "opentelemetry-collector.serviceInternalTrafficPolicy" . }}
 {{- end }}
