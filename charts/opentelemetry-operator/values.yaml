@@ -186,6 +186,12 @@ admissionWebhooks:
   failurePolicy: Fail
   secretName: ""
 
+  ## Defines the sidecar injection logic in Pods.
+  ## - Ignore, the injection is fail-open. The pod will be created, but the sidecar won't be injected.
+  ## - Fail, the injection is fail-close. If the webhook pod is not ready, pods cannot be created.
+  pods:
+    failurePolicy: Ignore
+
   ## Adds a prefix to the mutating webook name.
   ## This can be used to order this mutating webhook with all your cluster's mutating webhooks.
   namePrefix: ""
