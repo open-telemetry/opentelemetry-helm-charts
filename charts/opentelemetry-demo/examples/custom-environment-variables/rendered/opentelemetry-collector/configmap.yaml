@@ -5,10 +5,10 @@ kind: ConfigMap
 metadata:
   name: example-otelcol
   labels:
-    helm.sh/chart: opentelemetry-collector-0.55.1
+    helm.sh/chart: opentelemetry-collector-0.52.1
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.76.1"
+    app.kubernetes.io/version: "0.75.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
@@ -59,15 +59,15 @@ data:
       jaeger:
         protocols:
           grpc:
-            endpoint: ${env:MY_POD_IP}:14250
+            endpoint: ${MY_POD_IP}:14250
           thrift_compact:
-            endpoint: ${env:MY_POD_IP}:6831
+            endpoint: ${MY_POD_IP}:6831
           thrift_http:
-            endpoint: ${env:MY_POD_IP}:14268
+            endpoint: ${MY_POD_IP}:14268
       otlp:
         protocols:
           grpc:
-            endpoint: ${env:MY_POD_IP}:4317
+            endpoint: ${MY_POD_IP}:4317
           http:
             cors:
               allowed_origins:
@@ -81,9 +81,9 @@ data:
             scrape_interval: 10s
             static_configs:
             - targets:
-              - ${env:MY_POD_IP}:8888
+              - ${MY_POD_IP}:8888
       zipkin:
-        endpoint: ${env:MY_POD_IP}:9411
+        endpoint: ${MY_POD_IP}:9411
     service:
       extensions:
       - health_check
@@ -125,4 +125,4 @@ data:
           - zipkin
       telemetry:
         metrics:
-          address: ${env:MY_POD_IP}:8888
+          address: ${MY_POD_IP}:8888
