@@ -86,6 +86,7 @@ the demo
 | `default.schedulingRules.affinity`     | Man of node/pod affinities                                                                | `{}`                                                 |
 | `default.schedulingRules.tolerations`  | Tolerations for pod assignment                                                            | `[]`                                                 |
 | `default.securityContext`              | Demo components container security context                                                | `{}`                                                 |
+| `default.podLabels`                    | List of pod labels added to all components                                                | `[]`                                                 |
 | `serviceAccount.annotations`           | Annotations for the serviceAccount                                                        | `{}`                                                 |
 | `serviceAccount.create`                | Whether to create a serviceAccount or use an existing one                                 | `true`                                               |
 | `serviceAccount.name`                  | The name of the ServiceAccount to use for demo components                                 | `""`                                                 |
@@ -106,6 +107,7 @@ component.
 |--------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
 | `enabled`                            | Is this component enabled                                                                                  | `true`                                                        |
 | `useDefault.env`                     | Use the default environment variables in this component                                                    | `true`                                                        |
+| `useDefault.podLabels`               | Use the default custom pod labels                                                                          | `true`                                                        |
 | `imageOverride.repository`           | Name of image for this component                                                                           | Defaults to the overall default image repository              |
 | `imageOverride.tag`                  | Tag of the image for this component                                                                        | Defaults to the overall default image tag                     |
 | `imageOverride.pullPolicy`           | Image pull policy for this component                                                                       | `IfNotPresent`                                                |
@@ -139,6 +141,14 @@ component.
 | `initContainers[].name`              | Name of the init container                                                                                 | `nil`                                                         |
 | `initContainers[].image`             | Image to use for the init container                                                                        | `nil`                                                         |
 | `initContainers[].command`           | Command to run for the init container                                                                      | `nil`                                                         |
+
+### Istio-injection
+
+The OpenTelemetry Demo support istio sidecar injection. Enable this feature by the following command
+```console
+helm upgrade my-otel-demo charts/opentelemetry-demo \
+    --set default.podLabels."sidecar\.istio\.io/inject"=true
+```
 
 ### Sub-charts
 
