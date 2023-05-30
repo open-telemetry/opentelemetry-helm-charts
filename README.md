@@ -5,6 +5,13 @@
 
 This repository contains [Helm](https://helm.sh/) charts for OpenTelemetry project.
 
+
+## Fork Config
+
+```console
+helm repo index ./
+```
+
 ## Usage
 
 [Helm](https://helm.sh) must be installed to use the charts.
