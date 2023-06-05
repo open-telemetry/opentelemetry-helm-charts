@@ -45,3 +45,6 @@
 [WARNING] Setting internalTrafficPolicy to 'Cluster' on Daemonset is not recommended. Consider using 'Local' instead.
 {{ end }}
 
+{{- if and (eq .Values.dnsPolicy "None") (not .Values.dnsConfig) }}
+{{- fail "[ERROR] dnsConfig should be provided when dnsPolicy is None" }}
+{{ end }}
