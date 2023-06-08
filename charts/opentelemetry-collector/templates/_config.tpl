@@ -179,12 +179,36 @@ extensions:
 {{- end }}
 receivers:
   filelog:
-    include: [ /var/log/pods/*/*/*.log ]
-    {{- if .Values.presets.logsCollection.includeCollectorLogs }}
-    exclude: []
+    {{- if .Values.presets.logsCollection.includeNamespaces }}
+    include: 
+    {{- range .Values.presets.logsCollection.includeNamespaces }}
+      - /var/log/pods/{{ . }}_*/*/*.log 
+    {{- end }}
     {{- else }}
+    include: [ /var/log/pods/*/*/*.log ]
+    {{- end }}  
+    
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
-    exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log ]
+    {{- if and (.Values.presets.logsCollection.excludeNamespaces) (not .Values.presets.logsCollection.includeCollectorLogs) }}
+    exclude: 
+      {{- range .Values.presets.logsCollection.excludeNamespaces }}
+      - /var/log/pods/{{ . }}_*/*/*.log 
+      {{- end }}
+      - /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log 
+ 
+    {{- else if  and (.Values.presets.logsCollection.excludeNamespaces) ( .Values.presets.logsCollection.includeCollectorLogs) }}
+    {{- range .Values.presets.logsCollection.excludeNamespaces }}
+    exclude: 
+    - /var/log/pods/{{ . }}_*/*/*.log 
+    {{- end }}
+ 
+    {{- else if and (not .Values.presets.logsCollection.excludeNamespaces ) (not .Values.presets.logsCollection.includeCollectorLogs) }}
+    exclude:
+    - /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log 
+    {{- end }}
+
+    {{- if and (not .Values.presets.logsCollection.excludeNamespaces) (.Values.presets.logsCollection.includeCollectorLogs) }}
+    exclude: []
     {{- end }}
     start_at: beginning
     {{- if .Values.presets.logsCollection.storeCheckpoints}}
