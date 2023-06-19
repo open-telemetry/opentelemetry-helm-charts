@@ -1,39 +1,38 @@
-name: Release Charts
+name: Coralogix-OpenTelemetry-Collector-Helm-Chart
 
 on:
   push:
-    branches:
-      - main
+    branches: main
+    paths:
+    - 'charts/opentelemetry-collector/**'
+
+env:
+  CHART_VERSION: $(yq eval '.version' charts/opentelemetry-collector/Chart.yaml)
+  CHART_NAME: coralogix-opentelemetry-
+  ARTIFACTORY_URL: https://cgx.jfrog.io/artifactory/
+  ARTIFACTORY_USERNAME: integrations-actions
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
+      -
+        name: Checkout
+        uses: actions/checkout@v2.4.0
+      -
+        name: Setup Helm Repo
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Install Helm
-        uses: azure/setup-helm@v3.5
+          helm repo add coralogix-charts-virtual ${{ env.ARTIFACTORY_URL }}coralogix-charts-virtual --username ${{ env.ARTIFACTORY_USERNAME }} --password ${{ secrets.ARTIFACTORY_NONUSER_ACCESS_TOKEN }}
+          helm repo update
+          cd charts/opentelemetry-collector
+          helm package .
+      -
+        name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v2.1.0
         with:
-          version: v3.9.0
-
-      - name: Add dependent repositories
+          version: 2.12.1
+      -
+        name: use-jfrog-cli
         run: |
-          helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-          helm repo add prometheus https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
-          helm repo add jaeger https://jaegertracing.github.io/helm-charts
-
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        with:
-          charts_dir: charts
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          cd charts/opentelemetry-collector
+          jfrog rt upload --access-token ${{ secrets.ARTIFACTORY_NONUSER_ACCESS_TOKEN }} "${{ env.CHART_NAME }}-*.tgz" coralogix-charts --url ${{ env.ARTIFACTORY_URL }}
