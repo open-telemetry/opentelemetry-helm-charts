@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.61.1
+    helm.sh/chart: opentelemetry-collector-0.61.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
@@ -42,26 +42,47 @@ data:
             output: parser-containerd
           type: router
         - id: parser-crio
-          output: extract_metadata_from_filepath
           regex: ^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
           timestamp:
             layout: 2006-01-02T15:04:05.999999999Z07:00
             layout_type: gotime
             parse_from: attributes.time
           type: regex_parser
-        - id: parser-containerd
+        - combine_field: attributes.log
+          combine_with: ""
+          id: crio-recombine
+          is_last_entry: attributes.logtag == 'F'
+          max_log_size: 1048576
           output: extract_metadata_from_filepath
+          source_identifier: attributes["log.file.path"]
+          type: recombine
+        - id: parser-containerd
           regex: ^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
           timestamp:
             layout: '%Y-%m-%dT%H:%M:%S.%LZ'
             parse_from: attributes.time
           type: regex_parser
-        - id: parser-docker
+        - combine_field: attributes.log
+          combine_with: ""
+          id: cri-containerd-recombine
+          is_last_entry: attributes.logtag == 'F'
+          max_log_size: 1048576
           output: extract_metadata_from_filepath
+          source_identifier: attributes["log.file.path"]
+          type: recombine
+        - id: parser-docker
           timestamp:
             layout: '%Y-%m-%dT%H:%M:%S.%LZ'
             parse_from: attributes.time
           type: json_parser
+        - combine_field: attributes.log
+          combine_with: ""
+          id: docker-recombine
+          is_last_entry: attributes.log endsWith "\n"
+          max_log_size: 1048576
+          output: extract_metadata_from_filepath
+          source_identifier: attributes["log.file.path"]
+          type: recombine
         - id: extract_metadata_from_filepath
           parse_from: attributes["log.file.path"]
           regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
