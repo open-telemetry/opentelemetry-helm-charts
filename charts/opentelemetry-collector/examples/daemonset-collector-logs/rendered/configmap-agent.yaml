@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.61.0
+    helm.sh/chart: opentelemetry-collector-0.61.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
@@ -87,6 +87,11 @@ data:
         - from: attributes.log
           to: body
           type: move
+        - combine_field: body
+          is_first_entry: body matches "^([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{2}-[0-9]{2}
+            [0-9]{2}:[0-9]{2}:[0-9]{2})"
+          source_identifier: attributes["log.file.path"]
+          type: recombine
         start_at: beginning
       jaeger:
         protocols:

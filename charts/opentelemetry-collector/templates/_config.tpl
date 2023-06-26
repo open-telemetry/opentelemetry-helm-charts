@@ -255,6 +255,9 @@ receivers:
       - type: move
         from: attributes.log
         to: body
+      {{- if .Values.presets.logsCollection.extraFilelogOperators }}
+      {{- .Values.presets.logsCollection.extraFilelogOperators | toYaml | nindent 6 }}
+      {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
