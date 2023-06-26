@@ -207,19 +207,33 @@ receivers:
       - type: regex_parser
         id: parser-crio
         regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
-        output: extract_metadata_from_filepath
         timestamp:
           parse_from: attributes.time
           layout_type: gotime
           layout: '2006-01-02T15:04:05.999999999Z07:00'
+      - type: recombine
+        id: crio-recombine
+        output: extract_metadata_from_filepath
+        combine_field: attributes.log
+        source_identifier: attributes["log.file.path"]
+        is_last_entry: "attributes.logtag == 'F'"
+        combine_with: ""
+        max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
       # Parse CRI-Containerd format
       - type: regex_parser
         id: parser-containerd
         regex: '^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
-        output: extract_metadata_from_filepath
         timestamp:
           parse_from: attributes.time
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      - type: recombine
+        id: containerd-recombine
+        output: extract_metadata_from_filepath
+        combine_field: attributes.log
+        source_identifier: attributes["log.file.path"]
+        is_last_entry: "attributes.logtag == 'F'"
+        combine_with: ""
+        max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
       # Parse Docker format
       - type: json_parser
         id: parser-docker
