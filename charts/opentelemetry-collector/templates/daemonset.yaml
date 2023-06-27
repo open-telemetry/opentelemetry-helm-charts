@@ -1,3 +1,4 @@
+{{- if not .Values.collectorCRD.generate -}}
 {{- if eq .Values.mode "daemonset" -}}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -45,4 +46,5 @@ spec:
       dnsConfig: 
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
 {{- end }}

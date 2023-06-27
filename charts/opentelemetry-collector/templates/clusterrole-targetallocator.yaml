@@ -1,0 +1,42 @@
+{{- if .Values.collectorCRD.generate -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "opentelemetry-collector.clusterRoleName" . }}-targetallocator
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources:
+    - nodes
+    - nodes/metrics
+    - services
+    - endpoints
+    - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources:
+    - configmaps
+    verbs: ["get"]
+  - apiGroups:
+    - discovery.k8s.io
+    resources:
+    - endpointslices
+    verbs: ["get", "list", watch"]
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - ingresses
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+  {{- if .Values.collectorCRD.targetAllocator.enabled }}
+  - apiGroups:
+    - monitoring.coreos.com
+    resources:
+    - servicemonitors
+    - podmonitors
+    verbs:
+    - '*'
+  {{- end}}
+{{- end }}

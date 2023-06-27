@@ -1,0 +1,16 @@
+{{- if .Values.collectorCRD.generate -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "opentelemetry-collector.clusterRoleBindingName" . }}-targetallocator
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "opentelemetry-collector.clusterRoleName" . }}-targetallocator
+subjects:
+- kind: ServiceAccount
+  name: {{ include "opentelemetry-collector.serviceAccountName" . }}-targetallocator
+  namespace: {{ .Release.Namespace }}
+{{- end }}

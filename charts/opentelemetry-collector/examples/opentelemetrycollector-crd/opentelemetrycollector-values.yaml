@@ -1,0 +1,29 @@
+mode: statefulset
+collectorCRD:
+  generate: true
+  targetAllocator:
+    enabled: true
+    prometheusCR:
+      enabled: true
+    image: 
+      repository: "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator"
+      tag: "0.77.0"
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+    storeCheckpoints: true
+  hostMetrics:
+    enabled: true
+
+configMap:
+  create: false
+
+serviceAccount:
+  create: false
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

@@ -35,6 +35,125 @@
       "type": "string",
       "enum": ["daemonset", "deployment", "statefulset", ""]
     },
+    "collectorCRD": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generate": {
+          "type": "boolean"
+        },
+        "updateStrategy": {
+          "type": "string",
+          "enum": ["automatic", "none", ""]
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "limits": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": ["string", "integer"]
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": ["string", "integer"]
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "targetAllocator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "prometheusCR": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "podMonitorSelector": {},
+                "serviceMonitorSelector": {}
+              }
+            },
+            "allocationStrategy": {
+              "type": "string",
+              "enum": ["least-weighted", "consistent-hashing", ""]
+            },
+            "filterStrategy": {
+              "type": "string",
+              "enum": ["relabel-config", ""]
+            },
+            "image": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                }
+              }
+            },
+            "serviceAccount": {
+              "type": "string"
+            },
+            "resources": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "limits": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": ["string", "integer"]
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "requests": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": ["string", "integer"]
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "presets": {
       "type": "object",
       "additionalProperties": false,

@@ -1,20 +1,92 @@
 ---
-# Source: opentelemetry-collector/templates/configmap-agent.yaml
-apiVersion: v1
-kind: ConfigMap
+# Source: opentelemetry-collector/templates/opentelemetrycollector.yaml
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   labels:
     helm.sh/chart: opentelemetry-collector-0.62.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
     app.kubernetes.io/managed-by: Helm
-data:
-  relay: |
+spec:
+  mode: statefulset
+  targetAllocator:
+    enabled: true
+    prometheusCR:
+      enabled: true
+    serviceAccount: default-targetallocator
+    image: "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.77.0"
+        
+  podSecurityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  image: "otel/opentelemetry-collector-contrib:0.77.0"
+  imagePullPolicy: IfNotPresent
+  ports:
+    - name: jaeger-compact
+      port: 6831
+      protocol: UDP
+    - name: jaeger-grpc
+      port: 14250
+      protocol: TCP
+    - name: jaeger-thrift
+      port: 14268
+      protocol: TCP
+    - name: otlp
+      port: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+    - name: zipkin
+      port: 9411
+      protocol: TCP
+  env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+  resources:
+      limits:
+        cpu: 100m
+        memory: 200M
+  volumeMounts:
+    - name: varlogpods
+      mountPath: /var/log/pods
+      readOnly: true
+    - name: varlibdockercontainers
+      mountPath: /var/lib/docker/containers
+      readOnly: true
+    - name: varlibotelcol
+      mountPath: /var/lib/otelcol
+    - name: hostfs
+      mountPath: /hostfs
+      readOnly: true
+      mountPropagation: HostToContainer
+  volumes:
+    - name: varlogpods
+      hostPath:
+        path: /var/log/pods
+    - name: varlibotelcol
+      hostPath:
+        path: /var/lib/otelcol
+        type: DirectoryOrCreate
+    - name: varlibdockercontainers
+      hostPath:
+        path: /var/lib/docker/containers
+    - name: hostfs
+      hostPath:
+        path: /
+  serviceAccount: default
+  config: |
     exporters:
       logging: {}
     extensions:
+      file_storage:
+        directory: /var/lib/otelcol
       health_check: {}
       memory_ballast:
         size_in_percentage: 40
@@ -108,12 +180,54 @@ data:
         - from: attributes.log
           to: body
           type: move
-        - combine_field: body
-          is_first_entry: body matches "^([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{2}-[0-9]{2}
-            [0-9]{2}:[0-9]{2}:[0-9]{2})"
-          source_identifier: attributes["log.file.path"]
-          type: recombine
         start_at: beginning
+        storage: file_storage
+      hostmetrics:
+        collection_interval: 10s
+        root_path: /hostfs
+        scrapers:
+          cpu: null
+          disk: null
+          filesystem:
+            exclude_fs_types:
+              fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+              match_type: strict
+            exclude_mount_points:
+              match_type: regexp
+              mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+          load: null
+          memory: null
+          network: null
       jaeger:
         protocols:
           grpc:
@@ -142,6 +256,7 @@ data:
       extensions:
       - health_check
       - memory_ballast
+      - file_storage
       pipelines:
         logs:
           exporters:
@@ -161,6 +276,7 @@ data:
           receivers:
           - otlp
           - prometheus
+          - hostmetrics
         traces:
           exporters:
           - logging

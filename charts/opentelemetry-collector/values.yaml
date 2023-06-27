@@ -5,6 +5,44 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# Enable the creation of a CRD, instead of a normal Helm release.
+# If enabled, the OpenTelemetryCollector CRD will be generated
+# instead of the collector manifests. It is recommended to use this
+# in conjunction with 'helm template' and 'kubectl apply', if you
+# wish to run the collector with the OpenTelemetry operator.
+# Most of the values below correspond to the CRD spec, for full documentation see
+# https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api.md#opentelemetrycollector
+collectorCRD:
+  generate: false
+  updateStrategy: ""
+  resources: {}
+  # If the target allocator is enabled, the service account, cluster role
+  # and cluster role binding will be generated as well, with appropriate
+  # permissions, necessary for target allocator to work. If you do not
+  # wish to create these objects and would like to specify your own
+  # service account, provide it below.
+  targetAllocator:
+    enabled: false
+    prometheusCR:
+      enabled: false
+      podMonitorSelector: {}
+      serviceMonitorSelector: {}
+    allocationStrategy: ""
+    filterStrategy: ""
+    # Target allocator image defaults to repository and tag set by
+    # the operator (this should correspond to operator's version).
+    # Set appropriate values to override.
+    image:
+      repository: ""
+      tag: ""
+      digest: ""
+    # Name of the service account to be used by the target allocator.
+    # If set, no service account or cluster role for target allocator
+    # will be created.
+    serviceAccount: ""
+    resources: {}
+
+
 # Valid values are "daemonset", "deployment", and "statefulset".
 mode: ""
 

@@ -1,3 +1,4 @@
+{{- if not .Values.collectorCRD.generate -}}
 {{- if eq .Values.mode "statefulset" -}}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -48,4 +49,5 @@ spec:
   volumeClaimTemplates:
   {{- toYaml . | nindent 2 }}
   {{- end }}
+{{- end }}
 {{- end }}
