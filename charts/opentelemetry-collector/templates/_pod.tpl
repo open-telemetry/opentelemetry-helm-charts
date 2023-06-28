@@ -55,6 +55,10 @@ containers:
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
+    {{- with .Values.extraEnvsFrom }}
+    envFrom:
+    {{- . | toYaml | nindent 6 }}
+    {{- end }}
     {{- if .Values.lifecycleHooks }}
     lifecycle:
       {{- toYaml .Values.lifecycleHooks | nindent 6 }}
