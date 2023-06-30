@@ -9,12 +9,19 @@ securityContext:
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     command:
+      {{- if .Values.isWindows }}
+      - "C:\\otelcol-contrib.exe"
+      {{- if .Values.configMap.create }}
+      - --config=C:\\conf\relay.yaml
+      {{- end }}
+      {{- else }}
       - /{{ .Values.command.name }}
       {{- if .Values.configMap.create }}
       - --config=/conf/relay.yaml
       {{- end }}
       {{- range .Values.command.extraArgs }}
       - {{ . }}
+      {{- end }}
       {{- end }}
     securityContext:
       {{- if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
@@ -103,7 +110,7 @@ containers:
     {{- end }}
     volumeMounts:
       {{- if .Values.configMap.create }}
-      - mountPath: /conf
+      - mountPath: {{ .Values.isWindows | ternary "C:\\conf" "/conf" }}
         name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
       {{- end }}
       {{- range .Values.extraConfigMapMounts }}
@@ -131,22 +138,34 @@ containers:
         {{- end }}
       {{- end }}
       {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+      {{- if .Values.isWindows }}
+      - name: varlogpods
+        mountPath: C:\var\log\pods
+        readOnly: true
+      {{- else }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
       - name: varlibdockercontainers
         mountPath: /var/lib/docker/containers
         readOnly: true
+      {{- end }}
       {{- if .Values.presets.logsCollection.storeCheckpoints}}
       - name: varlibotelcol
         mountPath: /var/lib/otelcol
       {{- end }}
       {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
+      {{- if .Values.isWindows }}
+      - mountPath: "C:\\hostfs"
+        name: hostfs
+        readOnly: true
+      {{- else }}
       - name: hostfs
         mountPath: /hostfs
         readOnly: true
         mountPropagation: HostToContainer
+      {{- end }}
       {{- end }}
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
@@ -186,30 +205,47 @@ volumes:
       secretName: {{ .secretName }}
   {{- end }}
   {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+  {{- if .Values.isWindows }}
+  - name: varlogpods
+    hostPath:
+      path: C:\var\log\pods
+  - name: programdata
+    hostPath:
+      path: C:\ProgramData
+  {{- else }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  {{- end }}
   {{- if .Values.presets.logsCollection.storeCheckpoints}}
   - name: varlibotelcol
     hostPath:
       path: /var/lib/otelcol
       type: DirectoryOrCreate
   {{- end }}
-  - name: varlibdockercontainers
-    hostPath:
-      path: /var/lib/docker/containers
   {{- end }}
   {{- if .Values.presets.hostMetrics.enabled }}
+  {{- if .Values.isWindows }}
+  - name: hostfs
+    hostPath:
+      path: "C:\\"
+  {{- else }}
   - name: hostfs
     hostPath:
       path: /
   {{- end }}
+  {{- end }}
   {{- if .Values.extraVolumes }}
   {{- toYaml .Values.extraVolumes | nindent 2 }}
   {{- end }}
-{{- with .Values.nodeSelector }}
 nodeSelector:
-  {{- toYaml . | nindent 2 }}
+{{- if .Values.nodeSelector }}
+{{ toYaml .Values.nodeSelector | nindent 2 }}
+{{- else }}
+  kubernetes.io/os: {{ .Values.isWindows | ternary "windows" "linux" }}
 {{- end }}
 {{- with .Values.affinity }}
 affinity:

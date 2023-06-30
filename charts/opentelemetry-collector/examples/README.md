@@ -7,6 +7,7 @@ Here is a collection of common configurations for the OpenTelemetry collector.  
 - [Daemonset and deployment](daemonset-and-deployment)
 - [Log collection, including collector logs](daemonset-collector-logs)
 - [Add component (hostmetrics)](daemonset-hostmetrics)
+- [Daemonset Windows](daemonset-windows)
 
 The manifests are rendered using the `helm template` command and the specific example folder's values.yaml.
 

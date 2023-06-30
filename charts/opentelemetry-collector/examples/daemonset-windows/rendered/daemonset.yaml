@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 5942647a9be4d6a1dcbb1ca17f1ec2284b67c41156ea71d4680aa7a3e3aa9271
+        checksum/config: 95e9619b4a954c26d6cf37135b3f20b9cb502bcaf9e2c4e8b9ee8e1cb626df15
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -36,8 +36,8 @@ spec:
       containers:
         - name: opentelemetry-collector
           command:
-            - /otelcol-contrib
-            - --config=/conf/relay.yaml
+            - "C:\\otelcol-contrib.exe"
+            - --config=C:\\conf\relay.yaml
           securityContext:
             {}
           image: "otel/opentelemetry-collector-contrib:0.77.0"
@@ -82,8 +82,14 @@ spec:
               path: /
               port: 13133
           volumeMounts:
-            - mountPath: /conf
+            - mountPath: C:\conf
               name: opentelemetry-collector-configmap
+            - name: varlogpods
+              mountPath: C:\var\log\pods
+              readOnly: true
+            - mountPath: "C:\\hostfs"
+              name: hostfs
+              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -91,6 +97,14 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: varlogpods
+          hostPath:
+            path: C:\var\log\pods
+        - name: programdata
+          hostPath:
+            path: C:\ProgramData
+        - name: hostfs
+          hostPath:
+            path: "C:\\"
       nodeSelector:
-        kubernetes.io/os: linux
-      hostNetwork: false
+        kubernetes.io/os: windows
