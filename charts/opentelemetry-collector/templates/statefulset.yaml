@@ -26,7 +26,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-statefulset.yaml") . | sha256sum }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
@@ -37,7 +37,7 @@ spec:
       dnsPolicy: {{ . }}
       {{- end }}
       {{- with .Values.dnsConfig }}
-      dnsConfig: 
+      dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- $podValues := deepCopy .Values }}
