@@ -1,0 +1,42 @@
+{{- if and (.Values.collectorCRD.generate) (.Values.presets.mysql.extraLogs.enabled) -}}
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-mysql-logs-sidecar
+spec:
+  mode: sidecar
+  volumeMounts:
+  - mountPath: {{ .Values.presets.mysql.extraLogs.mountPath }}
+    name: {{ .Values.presets.mysql.extraLogs.volumeMountName }}
+  config: |
+    receivers:
+      filelog:
+        {{- if not (eq (.Values.presets.mysql.extraLogs.logFilesPath) "") }}
+        include: [ {{ .Values.presets.mysql.extraLogs.logFilesPath }}/*{{ .Values.presets.mysql.extraLogs.logFilesExtension }} ]
+        {{- else }}
+        include: [ {{ .Values.presets.mysql.extraLogs.mountPath }}/*{{ .Values.presets.mysql.extraLogs.logFilesExtension }} ]
+        {{- end }}
+        exclude: []
+        start_at: beginning
+        include_file_path: true
+        include_file_name: false
+    processors:
+
+    exporters:
+      otlp:
+        endpoint: {{ include "opentelemetry-collector.fullname" . }}-collector.{{ .Release.Namespace }}.svc.cluster.local:4317
+        tls:
+          insecure: true
+
+    service:
+      telemetry:
+        metrics:
+          address: 0.0.0.0:8888
+        logs:
+          level: "debug"
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: []
+          exporters: [otlp]
+{{- end}}

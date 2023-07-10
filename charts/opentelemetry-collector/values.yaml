@@ -110,6 +110,36 @@ presets:
   # Best used with mode = daemonset.
   kubeletMetrics:
     enabled: false
+  # Configures the collector to collect MySQL metrics .
+  mysql:
+    # metrics enables collection of MySQL metrics.
+    metrics:
+      enabled: false
+      # If you have multiple instance you'd like to collect, specify each instance in the list below.
+      # If you have only one instance, you don't need to specify the labelSelectors.
+      instances:
+      - labelSelectors:
+            # app.kubernetes.io/name: "mysql"
+            # app.kubernetes.io/instance: "mysql-logs"
+        username: "root"
+        password: ${env:MYSQL_PASSWORD}
+        port: 3306
+    # extraLogs enables collection of MySQL log files that are not out put to stdin / stderr. These include
+    # for example general or slow query logs.
+    # This configuration option is valid ONLY with the OpenTelemetry Operator, when collectorCRD.generate = true.
+    # Otherwise enabling extra logs has no effect.
+    extraLogs:
+      enabled: false
+      # volumeMountName specifies the name of the volume mount. It should correspond to the volume name of the MySQL data volume.
+      volumeMountName: "data"
+      # mountPath specifies the path at which to mount the volumet. This should correspond the mount path of your MySQL data volume.
+      # Provide this parameter without trailing slash.
+      mountPath: "/var/lib/mysql"
+      # logFilesPath specifies which directory to watch for log files. This will typically be the MySQL data directory,
+      # such as /var/lib/mysql. If not specified, the value of mountPath will be used.
+      logFilesPath: ""
+      # logFilesExtension specifies the file extension of the log files to watch. This will normally be .log.
+      logFilesExtension: ".log"
 
 configMap:
   # Specifies whether a configMap should be created (true by default)

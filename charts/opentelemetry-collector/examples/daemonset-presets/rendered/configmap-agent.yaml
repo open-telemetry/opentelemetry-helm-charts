@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.62.2
+    helm.sh/chart: opentelemetry-collector-0.63.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
@@ -16,6 +16,10 @@ data:
       logging: {}
     extensions:
       health_check: {}
+      k8s_observer:
+        auth_type: serviceAccount
+        node: ${env:K8S_NODE_NAME}
+        observe_pods: true
       memory_ballast:
         size_in_percentage: 40
     processors:
@@ -136,12 +140,28 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      receiver_creator/mysql:
+        receivers:
+          mysql:
+            config:
+              collection_interval: 10s
+              password: ${env:MYSQL_PASSWORD}
+              statement_events:
+                digest_text_limit: 120
+                limit: 250
+                time_limit: 24h
+              username: root
+            rule: type == "port" && port == 3306 && pod.labels["env"] == "test" && pod.labels["team"]
+              == "teamA"
+        watch_observers:
+        - k8s_observer
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
       extensions:
       - health_check
       - memory_ballast
+      - k8s_observer
       pipelines:
         logs:
           exporters:
@@ -161,6 +181,7 @@ data:
           receivers:
           - otlp
           - prometheus
+          - receiver_creator/mysql
         traces:
           exporters:
           - logging

@@ -37,6 +37,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.mysql.metrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -61,6 +64,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.mysql.metrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -295,6 +301,38 @@ receivers:
       {{- if .Values.presets.logsCollection.extraFilelogOperators }}
       {{- .Values.presets.logsCollection.extraFilelogOperators | toYaml | nindent 6 }}
       {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyMysqlConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.mysqlConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "receiver_creator/mysql" | uniq)  }}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "k8s_observer" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.mysqlConfig" -}}
+{{- $instances := deepCopy .Values.presets.mysql.metrics.instances }}
+{{- range $key, $instance := $instances }}
+extensions:
+  k8s_observer:
+    auth_type: serviceAccount
+    node: ${env:K8S_NODE_NAME}
+    observe_pods: true
+receivers:
+  receiver_creator/mysql:
+    watch_observers: [k8s_observer]
+    receivers:
+      mysql:
+        rule: type == "port" && port == {{ $instance.port }} {{- range $name, $value := $instance.labelSelectors }} && pod.labels["{{ $name }}"] == "{{ $value }}" {{- end }}
+        config:
+          username: {{ $instance.username }}
+          password: {{ $instance.password }}
+          collection_interval: 10s
+          statement_events:
+            digest_text_limit: 120
+            time_limit: 24h
+            limit: 250
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}

@@ -1,0 +1,38 @@
+---
+# Source: opentelemetry-collector/templates/integrations/mysql/opentelemetrycollector-sidecar.yaml
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: example-opentelemetry-collector-mysql-logs-sidecar
+spec:
+  mode: sidecar
+  volumeMounts:
+  - mountPath: /var/lib/mysql
+    name: data
+  config: |
+    receivers:
+      filelog:
+        include: [ /var/lib/mysql/*.log ]
+        exclude: []
+        start_at: beginning
+        include_file_path: true
+        include_file_name: false
+    processors:
+
+    exporters:
+      otlp:
+        endpoint: example-opentelemetry-collector-collector.default.svc.cluster.local:4317
+        tls:
+          insecure: true
+
+    service:
+      telemetry:
+        metrics:
+          address: 0.0.0.0:8888
+        logs:
+          level: "debug"
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: []
+          exporters: [otlp]
