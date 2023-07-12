@@ -1,0 +1,199 @@
+{{- if and .Values.networkExplorer.enabled .Values.networkExplorer.kernelCollector.enabled }}
+# kernel collector daemonset: deploys the kernel collector to each node in the cluster.
+# The kernel collector needs to be able to compile and install
+# eBPF programs in the node's kernel, so needs to run as root and
+# needs to mount /lib/modules and /usr/src from the node itself.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        release_number: "3"
+        charts.flowmill.com/version: {{ .Chart.Version }}
+      labels:
+        app.kubernetes.io/name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+{{- if .Values.networkExplorer.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.networkExplorer.imagePullSecrets }}
+        - name: {{ . }}
+{{- end }}
+{{- end }}
+      containers:
+        - name: kernel-collector
+          image: "{{ default .Values.networkExplorer.images.repository .Values.networkExplorer.kernelCollector.image.repository }}/{{ .Values.networkExplorer.kernelCollector.image.name }}:{{ default .Values.networkExplorer.images.tag .Values.networkExplorer.kernelCollector.image.tag }}"
+          imagePullPolicy: {{ .Values.networkExplorer.images.pullPolicy }}
+          args:
+            - --config-file=/etc/network-explorer/config.yaml
+{{- if .Values.networkExplorer.kernelCollector.bpfDumpFile }}
+            - --bpf-dump-file={{ .Values.networkExplorer.kernelCollector.bpfDumpFile }}
+{{- end }}
+{{- if (default false .Values.networkExplorer.kernelCollector.useDockerMetadata) }}
+            - --force-docker-metadata
+{{- end }}
+{{- if not (default false .Values.networkExplorer.kernelCollector.collectNomadMetadata) }}
+            - --disable-nomad-metadata
+{{- end }}
+{{- if .Values.networkExplorer.kernelCollector.userlandTcp }}
+            - --enable-userland-tcp
+{{- end }}
+{{- if .Values.networkExplorer.log.console }}
+            - --log-console
+{{- end }}
+{{- if hasKey .Values.networkExplorer.log "level" }}
+            - --{{ .Values.networkExplorer.log.level }}
+{{- end }}
+{{- if hasKey .Values.networkExplorer.kernelCollector "log" }}
+{{- if hasKey .Values.networkExplorer.kernelCollector.log "whitelist" }}
+{{- if hasKey .Values.networkExplorer.kernelCollector.log.whitelist "agentLog" }}
+            - --log-whitelist-agent-log={{ .Values.networkExplorer.kernelCollector.log.whitelist.agentLog }}
+{{- end }}
+{{- if hasKey .Values.networkExplorer.kernelCollector.log.whitelist "channel" }}
+          - --log-whitelist-channel={{ .Values.networkExplorer.kernelCollector.log.whitelist.channel }}
+{{- end }}
+{{- if hasKey .Values.networkExplorer.kernelCollector.log.whitelist "component" }}
+            - --log-whitelist-component={{ .Values.networkExplorer.kernelCollector.log.whitelist.component }}
+{{- end }}
+{{- if hasKey .Values.networkExplorer.kernelCollector.log.whitelist "cloudPlatform" }}
+            - --log-whitelist-cloud-platform={{ .Values.networkExplorer.kernelCollector.log.whitelist.cloudPlatform }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.networkExplorer.kernelCollector.additionalArgs }}
+{{ toYaml .Values.networkExplorer.kernelCollector.additionalArgs | indent 12 }}
+{{- end }}
+          # TODO: liveness probe
+          env:
+            - name: "EBPF_NET_CLUSTER_NAME"
+              value: {{ tpl (.Values.networkExplorer.clusterName | toYaml) . }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.networkExplorer.debug.enabled) }}
+            - name: "EBPF_NET_DEBUG_MODE"
+              value: "true"
+{{- end }}
+{{- end }}
+            - name: "EBPF_NET_DISABLE_HTTP_METRICS"
+              value: {{ quote (default false .Values.networkExplorer.kernelCollector.disableHttpMetrics) }}
+{{- if (default false .Values.networkExplorer.kernelCollector.runUnderGDB) }}
+            - name: "EBPF_NET_RUN_UNDER_GDB"
+              value: "gdb"
+{{- end }}
+            - name: "EBPF_NET_KERNEL_HEADERS_AUTO_FETCH"
+              value: {{ quote (default true .Values.networkExplorer.kernelCollector.fetchKernelHeaders) }}
+            - name: "EBPF_NET_INTAKE_HOST"
+              value: {{ include "opentelemetry-collector-reducer.fullname" . }}
+            - name: "EBPF_NET_INTAKE_PORT"
+              value: "{{ default 7000 .Values.networkExplorer.reducer.telemetryPort }}"
+{{- if .Values.networkExplorer.kernelCollector.exportBpfSrcFile }}
+            - name: "EBPF_NET_EXPORT_BPF_SRC_FILE"
+              value: {{ quote .Values.networkExplorer.kernelCollector.exportBpfSrcFile }}
+{{- end }}
+            - name: "EBPF_NET_HOST_DIR"
+              value: "/hostfs"
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.networkExplorer.debug.storeMinidump) }}
+            - name: "EBPF_NET_MINIDUMP_DIR"
+              value: "/hostfs/var/run/network-explorer/minidump"
+{{- end }}
+{{- end }}
+{{- if .Values.networkExplorer.debug.sendUnplannedExitMetric }}
+            ## TODO: Needs to be reviewed.
+            ## it requires a collector running as deployment
+            - name: "EBPF_NET_CRASH_METRIC_HOST"
+              value: {{quote (include "opentelemetry-collector.fullname" .) }}
+            - name: "EBPF_NET_CRASH_METRIC_PORT"
+              value: {{ .Values.ports.otlp.servicePort | quote }}
+{{- end }}
+{{- if .Values.networkExplorer.kernelCollector.env }}
+{{ toYaml .Values.networkExplorer.kernelCollector.env | indent 12 }}
+{{- end }}
+{{- if hasKey .Values.networkExplorer.kernelCollector "resources" }}
+          resources:
+{{ toYaml .Values.networkExplorer.kernelCollector.resources | indent 12 }}
+{{- end }}
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - mountPath: /hostfs/
+            name: host-root
+            readOnly: true
+{{- if (default true .Values.networkExplorer.kernelCollector.fetchKernelHeaders) }}
+          - mountPath: /hostfs/var/cache
+            name: host-var-cache
+            readOnly: false
+{{- end }}
+          - mountPath: /etc/network-explorer
+            name: {{ include "opentelemetry-collector.fullname" . }}-config
+            readOnly: true
+{{- if (default false .Values.networkExplorer.kernelCollector.useDockerMetadata) }}
+          - mountPath: /var/run/docker.sock
+            name: docker-sock
+            readOnly: false
+{{- end }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.networkExplorer.debug.storeMinidump) }}
+          - mountPath: /hostfs/var/run/network-explorer
+            name: host-var-run-network-explorer
+            readOnly: false
+{{- end }}
+{{- end }}
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      hostPID: true
+      serviceAccountName: {{ include "opentelemetry-collector-kernel-collector.serviceAccountName" . }}
+      volumes:
+      - name: {{ include "opentelemetry-collector.fullname" . }}-config
+        projected:
+          sources:
+          - configMap:
+              name: {{ include "opentelemetry-collector.fullname" . }}-config
+              items:
+              - key: config.yaml
+                path: config.yaml
+      - name: host-root
+        hostPath:
+          path: /
+          type: Directory
+{{- if (default true .Values.networkExplorer.kernelCollector.fetchKernelHeaders) }}
+      - name: host-var-cache
+        hostPath:
+          path: /var/cache
+          type: DirectoryOrCreate
+{{- end }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.networkExplorer.debug.storeMinidump) }}
+      - name: host-var-run-network-explorer
+        hostPath:
+          path: /var/run/network-explorer
+          type: DirectoryOrCreate
+{{- end }}
+{{- end }}
+{{- if (default false .Values.networkExplorer.kernelCollector.useDockerMetadata) }}
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
+{{- end }}
+    {{- with .Values.networkExplorer.kernelCollector.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.networkExplorer.kernelCollector.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.networkExplorer.kernelCollector.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}

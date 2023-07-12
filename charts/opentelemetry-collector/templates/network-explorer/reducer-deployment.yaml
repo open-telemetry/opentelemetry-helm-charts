@@ -1,0 +1,115 @@
+{{- if .Values.networkExplorer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+{{- if .Values.networkExplorer.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.networkExplorer.imagePullSecrets }}
+        - name: {{ . }}
+{{- end }}
+{{- end }}
+      containers:
+        - name: reducer
+          image: "{{ default .Values.networkExplorer.images.repository .Values.networkExplorer.reducer.image.repository }}/{{ .Values.networkExplorer.reducer.image.name }}:{{ default .Values.networkExplorer.images.tag .Values.networkExplorer.reducer.image.tag }}"
+          imagePullPolicy: {{ .Values.networkExplorer.images.pullPolicy }}
+          args:
+            - --port={{- .Values.networkExplorer.reducer.telemetryPort }}
+            - --log-console
+            - --no-log-file
+            {{- if hasKey .Values.networkExplorer.log "level" }}
+            - --{{ .Values.networkExplorer.log.level }}
+            {{- end }}
+            - --enable-aws-enrichment
+            - --disable-prometheus-metrics
+            - --enable-otlp-grpc-metrics
+            - --otlp-grpc-metrics-host={{ include "opentelemetry-collector.fullname" . }}
+            - --otlp-grpc-metrics-port={{ .Values.ports.otlp.servicePort }}
+            {{- if .Values.networkExplorer.reducer.disableMetrics }}
+            - --disable-metrics={{join "," .Values.networkExplorer.reducer.disableMetrics}}
+            {{- end }}
+            {{- if .Values.networkExplorer.reducer.enableMetrics }}
+            - --enable-metrics={{join "," .Values.networkExplorer.reducer.enableMetrics}}
+            {{- end }}
+            {{- if .Values.networkExplorer.reducer.ingestShards }}
+            - --num-ingest-shards={{- .Values.networkExplorer.reducer.ingestShards }}
+            {{- end }}
+            {{- if .Values.networkExplorer.reducer.matchingShards }}
+            - --num-matching-shards={{- .Values.networkExplorer.reducer.matchingShards }}
+            {{- end }}
+            {{- if .Values.networkExplorer.reducer.aggregationShards }}
+            - --num-aggregation-shards={{- .Values.networkExplorer.reducer.aggregationShards }}
+            {{- end }}
+            {{- if .Values.networkExplorer.reducer.extraArgs }}
+            {{- toYaml .Values.networkExplorer.reducer.extraArgs | nindent 12 }}
+            {{- end }}
+          env:
+            {{- if (default false .Values.networkExplorer.debug.storeMinidump) }}
+            - name: "EBPF_NET_MINIDUMP_DIR"
+              value: "/hostfs/var/run/network-explorer/minidump"
+            {{- end }}
+            {{- if .Values.networkExplorer.debug.sendUnplannedExitMetric }}
+            - name: "EBPF_NET_CRASH_METRIC_HOST"
+              value: {{quote (include "opentelemetry-collector.fullname" .) }}
+            - name: "EBPF_NET_CRASH_METRIC_PORT"
+              value: {{ .Values.ports.otlp.servicePort | quote }}
+            {{- end }}
+          ports:
+            - name: telemetry
+              containerPort: {{ .Values.networkExplorer.reducer.telemetryPort }}
+              protocol: TCP
+            {{- if not .Values.networkExplorer.reducer.disableInternalMetrics }}
+            - name: stats
+              containerPort: {{ .Values.networkExplorer.reducer.statsPromPort }}
+              protocol: TCP
+            {{- end }}
+          volumeMounts:
+          {{- if (default false .Values.networkExplorer.debug.storeMinidump) }}
+            - mountPath: /hostfs/var/run/network-explorer
+              name: host-var-run-network-explorer
+              readOnly: false
+          {{- end }}
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            timeoutSeconds: 5
+            exec:
+              command: ['/srv/health_check.sh', 'readiness_probe', 'localhost', {{ quote .Values.networkExplorer.reducer.telemetryPort }}]
+          resources:
+            {{- toYaml .Values.networkExplorer.resources | nindent 12 }}
+      {{- with .Values.networkExplorer.reducer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.networkExplorer.reducer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.networkExplorer.reducer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if (default false .Values.networkExplorer.debug.storeMinidump) }}
+      - name: host-var-run-network-explorer
+        hostPath:
+          path: /var/run/network-explorer
+          type: DirectoryOrCreate
+      {{- end }}
+{{- end }}

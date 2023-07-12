@@ -1,0 +1,13 @@
+{{- if .Values.networkExplorer.enabled}}
+## TODO: Review Cluster Name
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-config
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    labels:
+      environment: {{ tpl (.Values.networkExplorer.clusterName | toYaml) . }}
+{{- end }}
