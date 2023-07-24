@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector-agent
   labels:
-    helm.sh/chart: opentelemetry-collector-0.63.0
+    helm.sh/chart: opentelemetry-collector-0.64.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
@@ -24,6 +24,12 @@ data:
         size_in_percentage: 40
     processors:
       batch: {}
+      filter/k8s_node_cadvisor:
+        metrics:
+          metric:
+          - resource.attributes["service.name"] == "kubernetes-cadvisor" and (name !=
+            "container_fs_writes_total" and name != "container_fs_reads_total" and name
+            != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total")
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -37,6 +43,10 @@ data:
             endpoint: ${env:MY_POD_IP}:6831
           thrift_http:
             endpoint: ${env:MY_POD_IP}:14268
+      kubeletstats:
+        auth_type: serviceAccount
+        collection_interval: 20s
+        endpoint: ${K8S_NODE_NAME}:10250
       otlp:
         protocols:
           grpc:
@@ -51,6 +61,22 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      prometheus/k8s_node_cadvisor:
+        config:
+          scrape_configs:
+          - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            honor_timestamps: true
+            job_name: kubernetes-cadvisor
+            kubernetes_sd_configs:
+            - role: node
+            metrics_path: /metrics/cadvisor
+            relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            scheme: https
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: true
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
@@ -74,9 +100,12 @@ data:
           processors:
           - memory_limiter
           - batch
+          - filter/k8s_node_cadvisor
           receivers:
           - otlp
           - prometheus
+          - kubeletstats
+          - prometheus/k8s_node_cadvisor
         traces:
           exporters:
           - otlp

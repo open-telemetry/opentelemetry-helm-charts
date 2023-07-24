@@ -12,11 +12,8 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups: [""]
-    resources: ["pods", "namespaces"]
+    resources: ["pods", "endpoints", "nodes/stats", "nodes/metrics", "nodes", "services"]
     verbs: ["get", "watch", "list"]
-  - apiGroups: ["apps"]
-    resources: ["replicasets"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["extensions"]
-    resources: ["replicasets"]
-    verbs: ["get", "list", "watch"]
+  - nonResourceURLs:
+    - "/metrics"
+    verbs: ["get"]

@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.63.0
+    helm.sh/chart: opentelemetry-collector-0.64.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
@@ -16,10 +16,18 @@ data:
       logging: {}
     extensions:
       health_check: {}
+      k8s_observer:
+        auth_type: serviceAccount
+        observe_pods: true
       memory_ballast:
         size_in_percentage: 40
     processors:
       batch: {}
+      filter/k8s_apiserver:
+        metrics:
+          metric:
+          - resource.attributes["service.name"] == "kubernetes-apiserver" and name !=
+            "kubernetes_build_info"
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -47,12 +55,40 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      prometheus/k8s_apiserver:
+        config:
+          scrape_configs:
+          - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            honor_timestamps: true
+            job_name: kubernetes-apiserver
+            kubernetes_sd_configs:
+            - role: endpoints
+            relabel_configs:
+            - action: keep
+              regex: default;kubernetes;https
+              source_labels:
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_service_name
+              - __meta_kubernetes_endpoint_port_name
+            scheme: https
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: true
+      receiver_creator/ksm_prometheus:
+        receivers:
+          prometheus_simple:
+            config:
+              endpoint: '`endpoint`'
+            rule: type == "port" && port == 8080 && pod.name contains "kube-state-metrics"
+        watch_observers:
+        - k8s_observer
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
       extensions:
       - health_check
       - memory_ballast
+      - k8s_observer
       pipelines:
         logs:
           exporters:
@@ -68,9 +104,12 @@ data:
           processors:
           - memory_limiter
           - batch
+          - filter/k8s_apiserver
           receivers:
           - otlp
           - prometheus
+          - receiver_creator/ksm_prometheus
+          - prometheus/k8s_apiserver
         traces:
           exporters:
           - logging

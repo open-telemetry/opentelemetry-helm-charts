@@ -43,10 +43,13 @@ rules:
     resources: ["horizontalpodautoscalers"]
     verbs: ["get", "list", "watch"]
   {{- end}}
-  {{- if .Values.presets.kubeletMetrics.enabled}}
+  {{- if or (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesExtraMetrics.enabled)}}
   - apiGroups: [""]
-    resources: ["nodes/stats"]
+    resources: ["pods", "endpoints", "nodes/stats", "nodes/metrics", "nodes", "services"]
     verbs: ["get", "watch", "list"]
+  - nonResourceURLs:
+    - "/metrics"
+    verbs: ["get"]
   {{- end }}
   {{- if .Values.presets.kubernetesEvents.enabled }}
   - apiGroups: ["events.k8s.io"]
