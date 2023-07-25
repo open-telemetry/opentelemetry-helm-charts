@@ -104,8 +104,14 @@ receivers:
     collection_interval: 10s
     scrapers:
         cpu:
+          metrics:
+            system.cpu.utilization:
+              enabled: true
         load:
         memory:
+          metrics:
+            system.memory.utilization:
+              enabled: true
         disk:
         filesystem:
           {{- if not .Values.isWindows }}

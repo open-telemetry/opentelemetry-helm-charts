@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.64.0
+    helm.sh/chart: opentelemetry-collector-0.64.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.77.0"
@@ -190,7 +190,10 @@ spec:
         collection_interval: 10s
         root_path: /hostfs
         scrapers:
-          cpu: null
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
           disk: null
           filesystem:
             exclude_fs_types:
@@ -230,7 +233,10 @@ spec:
               - /var/lib/kubelet/*
               - /snap/*
           load: null
-          memory: null
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
           network: null
       jaeger:
         protocols:
