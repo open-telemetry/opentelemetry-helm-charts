@@ -316,8 +316,8 @@ processors:
         - "k8s.pod.start_time"
 {{- end }}
 
-{{/* Build the list of port for service */}}
-{{- define "opentelemetry-collector.servicePortsConfig" -}}
+{{/* Build the list of port for deployment service */}}
+{{- define "opentelemetry-collector.deploymentPortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
@@ -331,21 +331,6 @@ processors:
 {{- if $port.nodePort }}
   nodePort: {{ $port.nodePort }}
 {{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{/* Build the list of port for pod */}}
-{{- define "opentelemetry-collector.podPortsConfig" -}}
-{{- $ports := deepCopy .Values.ports }}
-{{- range $key, $port := $ports }}
-{{- if $port.enabled }}
-- name: {{ $key }}
-  containerPort: {{ $port.containerPort }}
-  protocol: {{ $port.protocol }}
-  {{- if and $.isAgent $port.hostPort }}
-  hostPort: {{ $port.hostPort }}
-  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
