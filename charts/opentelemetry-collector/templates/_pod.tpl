@@ -29,17 +29,12 @@ containers:
     image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
     {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
+    
+    {{- $ports := include "opentelemetry-collector.podPortsConfig" . }}
+    {{- if $ports }}
     ports:
-      {{- range $key, $port := .Values.ports }}
-      {{- if $port.enabled }}
-      - name: {{ $key }}
-        containerPort: {{ $port.containerPort }}
-        protocol: {{ $port.protocol }}
-        {{- if and $.isAgent $port.hostPort }}
-        hostPort: {{ $port.hostPort }}
-        {{- end }}
-      {{- end }}
-      {{- end }}
+      {{- $ports | nindent 6}}
+    {{- end }}
     env:
       - name: MY_POD_IP
         valueFrom:

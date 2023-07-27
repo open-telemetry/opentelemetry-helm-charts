@@ -26,7 +26,11 @@ spec:
     - {{ . }}
     {{- end }}
   {{- end }}
-  ports: {{ include "opentelemetry-collector.deploymentPortsConfig" . | nindent 4 }}
+  {{- $ports := include "opentelemetry-collector.servicePortsConfig" . }}
+  {{- if $ports }}
+  ports:
+    {{- $ports | nindent 4}}
+  {{- end }}
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
     {{- include "opentelemetry-collector.component" . | nindent 4 }}
