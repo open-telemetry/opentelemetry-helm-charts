@@ -407,7 +407,7 @@ receivers:
     watch_observers: [k8s_observer]
     receivers:
       mysql:
-        rule: type == "port" && port == {{ $instance.port }} {{- range $name, $value := $instance.labelSelectors }} && pod.labels["{{ $name }}"] == "{{ $value }}" {{- end }}
+        rule: type == "port" && port == {{ $instance.port | default 3306 }} {{- range $name, $value := $instance.labelSelectors }} && pod.labels["{{ $name }}"] == "{{ $value }}" {{- end }}
         config:
           username: {{ $instance.username }}
           password: {{ $instance.password }}
@@ -416,6 +416,24 @@ receivers:
             digest_text_limit: 120
             time_limit: 24h
             limit: 250
+          metrics:
+            mysql.query.count:
+              enabled: true
+            mysql.query.slow.count:
+              enabled: true
+            mysql.joins:
+              enabled: true
+            mysql.sorts:
+              enabled: true
+            mysql.connection.errors:
+              enabled: true
+            mysql.commands:
+              enabled: true
+            mysql.client.network.io:
+              enabled: true
+            mysql.table_open_cache:
+              enabled: true
+            
 {{- end }}
 {{- end }}
 

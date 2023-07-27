@@ -48,3 +48,22 @@
 {{- if and (eq .Values.dnsPolicy "None") (not .Values.dnsConfig) }}
 {{- fail "[ERROR] dnsConfig should be provided when dnsPolicy is None" }}
 {{ end }}
+
+{{- if .Values.presets.mysql.metrics.enabled }}
+{{- $instances := deepCopy .Values.presets.mysql.metrics.instances }}
+{{- range $key, $instance := $instances }}
+{{- if or (not $instance.username) (not $instance.password) }}
+{{- fail "[ERROR] Username and password must be specified for every instance of the MySQL metrics collector" }}
+{{ end }}
+{{ end }}
+{{ end }}
+
+{{- if .Values.presets.mysql.extraLogs.enabled }}
+{{- if or (not .Values.presets.mysql.extraLogs.volumeMountName) (not .Values.presets.mysql.extraLogs.mountPath) }}
+{{- fail "[ERROR] Volume mount name and mount path must be specified when MySQL extra logs collection is enabled" }}
+{{ end }}
+[INFO] You have enabled MySQL extra logs collection. In order for the collection to take effect, please annotate your MySQL instance(s) pod templates with the following:
+
+    kubectl patch sts <YOUR_MYSQL_INSTANCE_NAME> -p '{"spec": {"template":{"metadata":{"annotations":{"sidecar.opentelemetry.io/inject":"{{ include "opentelemetry-collector.fullname" . }}-mysql-logs-sidecar"}}}} }'
+
+{{ end }}

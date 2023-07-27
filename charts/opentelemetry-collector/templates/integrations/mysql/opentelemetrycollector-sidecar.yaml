@@ -12,9 +12,9 @@ spec:
     receivers:
       filelog:
         {{- if not (eq (.Values.presets.mysql.extraLogs.logFilesPath) "") }}
-        include: [ {{ .Values.presets.mysql.extraLogs.logFilesPath }}/*{{ .Values.presets.mysql.extraLogs.logFilesExtension }} ]
+        include: [ {{ .Values.presets.mysql.extraLogs.logFilesPath }}/*{{ .Values.presets.mysql.extraLogs.logFilesExtension | default ".log" }} ]
         {{- else }}
-        include: [ {{ .Values.presets.mysql.extraLogs.mountPath }}/*{{ .Values.presets.mysql.extraLogs.logFilesExtension }} ]
+        include: [ {{ .Values.presets.mysql.extraLogs.mountPath }}/*{{ .Values.presets.mysql.extraLogs.logFilesExtension | default ".log" }} ]
         {{- end }}
         exclude: []
         start_at: beginning
@@ -32,8 +32,6 @@ spec:
       telemetry:
         metrics:
           address: 0.0.0.0:8888
-        logs:
-          level: "debug"
       pipelines:
         logs:
           receivers: [filelog]

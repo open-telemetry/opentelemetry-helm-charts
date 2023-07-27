@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.65.0
+    helm.sh/chart: opentelemetry-collector-0.66.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.81.0"
@@ -265,6 +265,23 @@ spec:
           mysql:
             config:
               collection_interval: 10s
+              metrics:
+                mysql.client.network.io:
+                  enabled: true
+                mysql.commands:
+                  enabled: true
+                mysql.connection.errors:
+                  enabled: true
+                mysql.joins:
+                  enabled: true
+                mysql.query.count:
+                  enabled: true
+                mysql.query.slow.count:
+                  enabled: true
+                mysql.sorts:
+                  enabled: true
+                mysql.table_open_cache:
+                  enabled: true
               password: ${env:MYSQL_PASSWORD}
               statement_events:
                 digest_text_limit: 120
