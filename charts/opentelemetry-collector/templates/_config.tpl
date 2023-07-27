@@ -453,7 +453,7 @@ processors:
     extract:
       metadata:
         - "k8s.namespace.name"
-        - "k8s.deployment.name"
+        - "k8s.replicaset.name"
         - "k8s.statefulset.name"
         - "k8s.daemonset.name"
         - "k8s.cronjob.name"
@@ -462,6 +462,13 @@ processors:
         - "k8s.pod.name"
         - "k8s.pod.uid"
         - "k8s.pod.start_time"
+  transform/k8s_attributes:
+    metric_statements:
+    - context: resource
+      statements:
+      - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1")
+      - delete_key(attributes, "k8s.replicaset.name")
 {{- end }}
 
 {{/* Build the list of port for deployment service */}}
