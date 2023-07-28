@@ -7,7 +7,7 @@ Just upgrade and enjoy.
 ## 0.62 to 0.63
 
 The `kubernetesAttributes` preset now respects order of processors in logs, metrics and traces pipelines.
-This implicitly might break your pipelines if you relied on having the `k8sAttributes` processor rendered as first processor.
+This implicitly might break your pipelines if you relied on having the `k8sAttributes` processor rendered as the first processor but also explicitly listed it in the signal's pipeline somewhere else.
 
 ## 0.55.2 to 0.56
 
