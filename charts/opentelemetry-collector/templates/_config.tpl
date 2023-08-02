@@ -203,7 +203,8 @@ processors:
       metric:
         - 'resource.attributes["service.name"] == "kubernetes-cadvisor" and 
           (name != "container_fs_writes_total" and name != "container_fs_reads_total" and 
-          name != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total")'
+          name != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total" and
+          name != "container_fs_usage_bytes")'
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
