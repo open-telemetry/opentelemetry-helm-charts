@@ -1,7 +1,7 @@
 # Upgrade guidelines
 
 These upgrade guidelines only contain instructions for version upgrades which require manual modifications on the user's side.
-If the version you want to upgrade to is not listed here, then there is nothing to do for you. 
+If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
 ## 0.62 to 0.63
@@ -47,7 +47,8 @@ As of v0.54.0 Collector chart, the default resource limits are removed. If you w
 ```
 resources:
   limits:
-    cpu: 256m
+    # CPU units are in fractions of 1000; memory in powers of 2
+    cpu: 250m
     memory: 512Mi
 ```
 
