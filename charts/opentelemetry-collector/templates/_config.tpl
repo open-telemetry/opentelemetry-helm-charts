@@ -170,8 +170,6 @@ receivers:
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus/k8s_node_cadvisor" | uniq)  }}
-{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "filter/k8s_node_cadvisor" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -181,30 +179,6 @@ receivers:
     collection_interval: 20s
     auth_type: "serviceAccount"
     endpoint: "${K8S_NODE_NAME}:10250"
-  prometheus/k8s_node_cadvisor:
-    config:
-      scrape_configs:  
-      - job_name: kubernetes-cadvisor
-        honor_timestamps: true
-        metrics_path: /metrics/cadvisor
-        scheme: https
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          insecure_skip_verify: true
-        kubernetes_sd_configs:
-        - role: node
-        relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
-processors:
-  filter/k8s_node_cadvisor:
-    metrics:
-      metric:
-        - 'resource.attributes["service.name"] == "kubernetes-cadvisor" and 
-          (name != "container_fs_writes_total" and name != "container_fs_reads_total" and 
-          name != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total" and
-          name != "container_fs_usage_bytes")'
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
@@ -341,8 +315,8 @@ receivers:
 {{- define "opentelemetry-collector.applyKubernetesExtraMetrics" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesExtraMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "receiver_creator/ksm_prometheus" | uniq)  }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus/k8s_apiserver" | uniq)  }}
-{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "filter/k8s_apiserver" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus/k8s_extra_metrics" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "filter/k8s_extra_metrics" | uniq)  }}
 {{- $_ := set $config.service "extensions" (append $config.service.extensions "k8s_observer" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
@@ -357,10 +331,10 @@ receivers:
     watch_observers: [k8s_observer]
     receivers:
       prometheus_simple:
-        rule: type == "port" && port == 8080 && pod.name contains "kube-state-metrics" 
+        rule: type == "port" && port == 8080 && pod.name contains "{{ .Release.Name }}-kube-state-metrics" 
         config:
           endpoint: '`endpoint`'
-  prometheus/k8s_apiserver:
+  prometheus/k8s_extra_metrics:
     config:
       scrape_configs:
       - job_name: kubernetes-apiserver
@@ -381,11 +355,28 @@ receivers:
               ]
             action: keep
             regex: default;kubernetes;https
+      - job_name: kubernetes-cadvisor
+        honor_timestamps: true
+        metrics_path: /metrics/cadvisor
+        scheme: https
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        kubernetes_sd_configs:
+        - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
 processors:
-  filter/k8s_apiserver:
+  filter/k8s_extra_metrics:
     metrics:
       metric:
         - 'resource.attributes["service.name"] == "kubernetes-apiserver" and name != "kubernetes_build_info"'
+        - 'resource.attributes["service.name"] == "kubernetes-cadvisor" and 
+          (name != "container_fs_writes_total" and name != "container_fs_reads_total" and 
+          name != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total" and
+          name != "container_fs_usage_bytes")'
 {{- end }}
 
 {{- define "opentelemetry-collector.applyMysqlConfig" -}}
