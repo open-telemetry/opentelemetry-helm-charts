@@ -1,0 +1,37 @@
+name: Test eBPF Chart
+
+on:
+  pull_request:
+    paths:
+      - "charts/opentelemetry-ebpf/**"
+    branches:
+      - main
+
+jobs:
+  collector-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "true"
+
+      - name: Run chart-testing (install)
+        run: ct install --charts charts/opentelemetry-ebpf
+
+      - name: Run daemonset and deployment install test
+        run: |
+          kubectl apply -f ./charts/opentelemetry-collector/examples/daemonset-and-deployment/rendered
+
+          kubectl rollout status deployment example-opentelemetry-collector --timeout=30s
+
+          kubectl apply -f ./charts/opentelemetry-ebpf/examples/cloud-collector/rendered
+
+          kubectl rollout status daemonset example-opentelemetry-ebpf-kernel-collector --timeout=30s
+          kubectl rollout status deployment example-opentelemetry-ebpf-cloud-collector --timeout=30s
+          kubectl rollout status deployment example-opentelemetry-ebpf-k8s-collector --timeout=30s
+          kubectl rollout status deployment example-opentelemetry-ebpf-reducer --timeout=30s

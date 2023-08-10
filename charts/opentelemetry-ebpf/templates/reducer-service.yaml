@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+  labels:
+    {{- include "opentelemetry-ebpf.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: telemetry
+      port: {{ .Values.reducer.telemetryPort }}
+      targetPort: telemetry
+      protocol: TCP
+    {{- if not .Values.reducer.disableInternalMetrics }}
+    - name: stats
+      port: {{ .Values.reducer.statsPromPort }}
+      targetPort: stats
+      protocol: TCP
+    {{- end }}
