@@ -1,5 +1,11 @@
 # Upgrade guidelines
 
+## To 0.23
+
+The Prometheus sub-chart dependency made updates to pod labels. You may need to
+use the `--force` option with your Helm upgrade command, or delete the release
+and re-install it.
+
 ## To 0.22
 
 This release moves to using the `connectors` functionality in the OpenTelemetry
