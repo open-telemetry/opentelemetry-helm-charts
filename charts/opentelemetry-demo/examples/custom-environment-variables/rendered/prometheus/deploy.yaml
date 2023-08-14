@@ -4,38 +4,43 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    component: "server"
-    app: prometheus
-    release: example
-    chart: prometheus-20.2.0
-    heritage: Helm
+    app.kubernetes.io/component: server
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: v2.46.0
+    helm.sh/chart: prometheus-23.3.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: prometheus
   name: example-prometheus-server
   namespace: default
 spec:
   selector:
     matchLabels:
-      component: "server"
-      app: prometheus
-      release: example
+      app.kubernetes.io/component: server
+      app.kubernetes.io/name: prometheus
+      app.kubernetes.io/instance: example
   replicas: 1
+  revisionHistoryLimit: 10
   strategy:
     type: Recreate
     rollingUpdate: null
   template:
     metadata:
       labels:
-        component: "server"
-        app: prometheus
-        release: example
-        chart: prometheus-20.2.0
-        heritage: Helm
+        app.kubernetes.io/component: server
+        app.kubernetes.io/name: prometheus
+        app.kubernetes.io/instance: example
+        app.kubernetes.io/version: v2.46.0
+        helm.sh/chart: prometheus-23.3.0
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: prometheus
     spec:
       enableServiceLinks: true
       serviceAccountName: example-prometheus-server
       containers:
 
         - name: prometheus-server
-          image: "quay.io/prometheus/prometheus:v2.43.0"
+          image: "quay.io/prometheus/prometheus:v2.46.0"
           imagePullPolicy: "IfNotPresent"
           args:
             - --storage.tsdb.retention.time=15d
