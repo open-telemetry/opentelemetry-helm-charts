@@ -19,6 +19,7 @@ spec:
     {{- if .Values.admissionWebhooks.certManager.issuerRef }}
     {{- toYaml .Values.admissionWebhooks.certManager.issuerRef | nindent 4 }}
     {{- else }}
+    group: cert-manager.io
     kind: Issuer
     name: {{ template "opentelemetry-operator.fullname" . }}-selfsigned-issuer
     {{- end }}
@@ -26,6 +27,9 @@ spec:
   subject:
     organizationalUnits:
       - {{ template "opentelemetry-operator.fullname" . }}
+  {{- if .Values.admissionWebhooks.certManager.extraSpecs }}
+  {{- toYaml .Values.admissionWebhooks.certManager.extraSpecs | nindent 2 }}
+  {{- end }}
 {{- if not .Values.admissionWebhooks.certManager.issuerRef }}
 ---
 apiVersion: cert-manager.io/v1
