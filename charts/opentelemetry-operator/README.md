@@ -158,6 +158,7 @@ metadata:
   name: my-collector
 spec:
   mode: daemonset
+  hostNetwork: true
   config: |
     receivers:
       jaeger:
