@@ -314,6 +314,18 @@ processors:
         - "k8s.pod.name"
         - "k8s.pod.uid"
         - "k8s.pod.start_time"
+      {{- if .Values.presets.kubernetesAttributes.extractAllPodLabels }}
+      labels:
+        - tag_name: $$1
+          key_regex: (.*)
+          from: pod
+      {{- end }}
+      {{- if .Values.presets.kubernetesAttributes.extractAllPodAnnotations }}
+      annotations:
+        - tag_name: $$1
+          key_regex: (.*)
+          from: pod
+      {{- end }}
 {{- end }}
 
 {{/* Build the list of port for service */}}
