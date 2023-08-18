@@ -298,6 +298,7 @@ topologySpreadConstraints: []
 priorityClassName: ""
 
 extraEnvs: []
+extraEnvsFrom: []
 extraVolumes: []
 extraVolumeMounts: []
 
@@ -354,7 +355,7 @@ ports:
 resources: {}
 # resources:
 #   limits:
-#     cpu: 256m
+#     cpu: 250m
 #     memory: 512Mi
 
 podAnnotations: {}
@@ -471,6 +472,12 @@ service:
   # type: LoadBalancer
   # loadBalancerIP: 1.2.3.4
   # loadBalancerSourceRanges: []
+
+  # By default, Service of type 'LoadBalancer' will be created setting 'externalTrafficPolicy: Cluster'
+  # unless other value is explicitly set.
+  # Possible values are Cluster or Local (https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)
+  # externalTrafficPolicy: Cluster
+
   annotations: {}
 
   # By default, Service will be created setting 'internalTrafficPolicy: Local' on mode = daemonset

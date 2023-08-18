@@ -1,5 +1,14 @@
 # Upgrade guidelines
 
+These upgrade guidelines only contain instructions for version upgrades which require manual modifications on the user's side.
+If the version you want to upgrade to is not listed here, then there is nothing to do for you.
+Just upgrade and enjoy.
+
+## 0.62 to 0.63
+
+The `kubernetesAttributes` preset now respects order of processors in logs, metrics and traces pipelines.
+This implicitly might break your pipelines if you relied on having the `k8sAttributes` processor rendered as the first processor but also explicitly listed it in the signal's pipeline somewhere else.
+
 ## 0.55.2 to 0.56
 
 The `tpl` function has been added to references of pod labels and ingress hosts. This adds the ability to add some reusability in
@@ -38,7 +47,8 @@ As of v0.54.0 Collector chart, the default resource limits are removed. If you w
 ```
 resources:
   limits:
-    cpu: 256m
+    # CPU units are in fractions of 1000; memory in powers of 2
+    cpu: 250m
     memory: 512Mi
 ```
 

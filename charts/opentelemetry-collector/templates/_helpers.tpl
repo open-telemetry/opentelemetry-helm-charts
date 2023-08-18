@@ -147,8 +147,10 @@ Check if logs collection is enabled via deprecated "containerLogs" or "preset.lo
 Compute Service creation on mode
 */}}
 {{- define "opentelemetry-collector.serviceEnabled" }}
-  {{- $serviceEnabled := true -}}
-
+  {{- $serviceEnabled := true }}
+  {{- if not (eq (toString .Values.service.enabled) "<nil>") }}
+    {{- $serviceEnabled = .Values.service.enabled -}}
+  {{- end }}
   {{- if or (and (eq .Values.mode "daemonset") (not .Values.service.enabled)) (.Values.collectorCRD.generate) }}
     {{- $serviceEnabled = false -}}
   {{- end }}

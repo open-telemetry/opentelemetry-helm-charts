@@ -254,7 +254,7 @@ receivers:
           parse_from: attributes.time
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
       - type: recombine
-        id: cri-containerd-recombine
+        id: containerd-recombine
         output: extract_metadata_from_filepath
         combine_field: attributes.log
         source_identifier: attributes["log.file.path"]
@@ -431,13 +431,13 @@ receivers:
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
-{{- if $config.service.pipelines.logs }}
+{{- if and ($config.service.pipelines.logs) (not (has "k8sattributes" $config.service.pipelines.logs.processors)) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
 {{- end }}
-{{- if $config.service.pipelines.metrics }}
+{{- if and ($config.service.pipelines.metrics) (not (has "k8sattributes" $config.service.pipelines.metrics.processors)) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
 {{- end }}
-{{- if $config.service.pipelines.traces }}
+{{- if and ($config.service.pipelines.traces) (not (has "k8sattributes" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -481,8 +481,8 @@ processors:
       - delete_key(attributes, "k8s.replicaset.name")
 {{- end }}
 
-{{/* Build the list of port for deployment service */}}
-{{- define "opentelemetry-collector.deploymentPortsConfig" -}}
+{{/* Build the list of port for service */}}
+{{- define "opentelemetry-collector.servicePortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
@@ -496,6 +496,21 @@ processors:
 {{- if $port.nodePort }}
   nodePort: {{ $port.nodePort }}
 {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/* Build the list of port for pod */}}
+{{- define "opentelemetry-collector.podPortsConfig" -}}
+{{- $ports := deepCopy .Values.ports }}
+{{- range $key, $port := $ports }}
+{{- if $port.enabled }}
+- name: {{ $key }}
+  containerPort: {{ $port.containerPort }}
+  protocol: {{ $port.protocol }}
+  {{- if and $.isAgent $port.hostPort }}
+  hostPort: {{ $port.hostPort }}
+  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
