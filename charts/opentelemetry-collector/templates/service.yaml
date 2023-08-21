@@ -34,7 +34,7 @@ spec:
   selector:
     {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
     {{- include "opentelemetry-collector.component" . | nindent 4 }}
-  internalTrafficPolicy: {{ include "opentelemetry-collector.serviceInternalTrafficPolicy" . }}
+  {{ include "opentelemetry-collector.serviceInternalTrafficPolicy" . | nindent 2 }}
   {{- if and (eq .Values.service.type "LoadBalancer") (.Values.service.externalTrafficPolicy) }}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{- end }}

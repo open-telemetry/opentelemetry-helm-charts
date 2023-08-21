@@ -151,11 +151,13 @@ Compute Service creation on mode
 Compute InternalTrafficPolicy on Service creation
 */}}
 {{- define "opentelemetry-collector.serviceInternalTrafficPolicy" }}
+{{- if (semverCompare ">= 1.21-0" .Capabilities.KubeVersion.Version) -}}
   {{- if and (eq .Values.mode "daemonset") (eq .Values.service.enabled true) }}
-    {{- print (.Values.service.internalTrafficPolicy | default "Local") -}}
+    {{- printf "internalTrafficPolicy: %s" (.Values.service.internalTrafficPolicy | default "Local") }}
   {{- else }}
-    {{- print (.Values.service.internalTrafficPolicy | default "Cluster") -}}
+    {{- printf "internalTrafficPolicy: %s" (.Values.service.internalTrafficPolicy | default "Cluster") }}
   {{- end }}
+{{- end -}}
 {{- end -}}
 
 
