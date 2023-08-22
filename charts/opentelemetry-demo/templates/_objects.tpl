@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
+  replicas: {{ .replicasOverride | default .defaultValues.replicas }}
   selector:
     matchLabels:
       {{- include "otel-demo.selectorLabels" . | nindent 6 }}

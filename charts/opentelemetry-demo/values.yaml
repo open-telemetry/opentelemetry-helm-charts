@@ -48,6 +48,8 @@ default:
     affinity: {}
     tolerations: []
   securityContext: {}
+  replicas: 1
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -146,6 +148,8 @@ components:
   #     - name: <init-container-name>
   #       image: <init-container-image>
   #       command: [list of commands for the init container to run]
+  # # Number of replicas to run for this component. Default is set in the defaults.replicas
+  #   replicasOverride: 1
   accountingService:
     enabled: true
     useDefault:
@@ -427,6 +431,7 @@ components:
     resources:
       limits:
         memory: 120Mi
+    replicasOverride: 1
 
   paymentService:
     enabled: true
@@ -549,6 +554,7 @@ components:
       runAsUser: 999  # postgres
       runAsGroup: 999
       runAsNonRoot: true
+    replicasOverride: 1
 
   kafka:
     enabled: true
@@ -573,6 +579,7 @@ components:
       runAsUser: 1000  # appuser
       runAsGroup: 1000
       runAsNonRoot: true
+    replicasOverride: 1
 
   redis:
     enabled: true
@@ -591,6 +598,7 @@ components:
       runAsUser: 999  # redis
       runAsGroup: 1000
       runAsNonRoot: true
+    replicasOverride: 1
 
 opentelemetry-collector:
   enabled: true

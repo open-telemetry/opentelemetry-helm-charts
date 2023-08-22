@@ -89,6 +89,7 @@ the demo
 | `serviceAccount.annotations`           | Annotations for the serviceAccount                                                        | `{}`                                                 |
 | `serviceAccount.create`                | Whether to create a serviceAccount or use an existing one                                 | `true`                                               |
 | `serviceAccount.name`                  | The name of the ServiceAccount to use for demo components                                 | `""`                                                 |
+| `replicas`                             | The number of replicas for each of the services (doesn't apply to databases)              | `1`                                                 |
 
 ### Component parameters
 
@@ -139,6 +140,7 @@ component.
 | `initContainers[].name`              | Name of the init container                                                                                 | `nil`                                                         |
 | `initContainers[].image`             | Image to use for the init container                                                                        | `nil`                                                         |
 | `initContainers[].command`           | Command to run for the init container                                                                      | `nil`                                                         |
+| `replicasOverride`                   | Used to override the number of replicas of this component                                              | `nil`                                                         |
 
 ### Sub-charts
 
