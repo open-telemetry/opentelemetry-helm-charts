@@ -159,12 +159,12 @@ Compute InternalTrafficPolicy on Service creation
 {{- end -}}
 
 {{/*
-Specify namespace
+Allow the release namespace to be overridden
 */}}
 {{- define "opentelemetry-collector.namespace" -}}
-{{- if .Values.namespace -}}
-{{- .Values.namespace -}}
-{{- else -}}
-{{- .Release.Namespace -}}
-{{- end -}}
+  {{- if .Values.namespaceOverride -}}
+    {{- .Values.namespaceOverride -}}
+  {{- else -}}
+    {{- .Release.Namespace -}}
+  {{- end -}}
 {{- end -}}
