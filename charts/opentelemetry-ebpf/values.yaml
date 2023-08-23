@@ -4,19 +4,18 @@
 
 nameOverride: ""
 fullnameOverride: ""
-
 clusterName: ""
 
-images:
-  tag: "v0.10.0"
-  repository: otel
+image:
+  tag: ""
+  registry: otel
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 
 resources: {}
 
-otelCollector:
+endpoint:
   address: ""
   port: ""
 
@@ -36,7 +35,7 @@ kernelCollector:
     create: true
     name: ""
   image:
-    repository: ""
+    registry: ""
     tag: ""
     name: opentelemetry-ebpf-kernel-collector
 
@@ -64,15 +63,14 @@ kernelCollector:
 cloudCollector:
   enabled: false
   image:
-    repository: ""
+    registry: ""
     tag: ""
     name: opentelemetry-ebpf-cloud-collector
 
   serviceAccount:
     create: true
     name: ""
-    annotations:
-      {}
+    annotations: {}
       ## eks.amazonaws.com/role-arn: "role-arn-name"
 
   tolerations: []
@@ -85,12 +83,12 @@ k8sCollector:
     name: ""
   relay:
     image:
-      repository: ""
+      registry: ""
       tag: ""
       name: opentelemetry-ebpf-k8s-relay
   watcher:
     image:
-      repository: ""
+      registry: ""
       tag: ""
       name: opentelemetry-ebpf-k8s-watcher
 
@@ -99,7 +97,7 @@ k8sCollector:
 
 reducer:
   image:
-    repository: ""
+    registry: ""
     tag: ""
     name: opentelemetry-ebpf-reducer
   extraArgs: {}
@@ -107,8 +105,7 @@ reducer:
   matchingShards: 1
   aggregationShards: 1
   disableInternalMetrics: true
-  disableMetrics:
-    []
+  disableMetrics: []
     ### to disable an entire metric category: ###
     # - tcp.all
     # - udp.all
@@ -179,8 +176,7 @@ reducer:
     # - ebpf_net.rpc_queue_buf_utilization
     ### to enable all metrics (including metrics turned off by default): ###
     # - none
-  enableMetrics:
-    []
+  enableMetrics: []
     ### Disable metrics flag is evaluated first and only then enable metric flag is evaluated. ###
     ### to enable an entire metric category: ###
     # - tcp.all
@@ -251,25 +247,28 @@ reducer:
     # - ebpf_net.codetiming_sum_ns
     # - ebpf_net.otlp_grpc.failed_requests
     # - ebpf_net.rpc_queue_buf_utilization
-  telemetryPort: 7000
-  statsPromPort: 7001
+
   resources: {}
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  service:
+    type: ClusterIP
+    ports:
+      telemetry:
+        enabled: true
+        servicePort: 7000
+        containerPort: 7000
+        targetPort: 7000
+        protocol: TCP
+        appProtocol: http
+      stats:
+        enabled: true
+        servicePort: 7001
+        containerPort: 7001
+        targetPort: 7001
+        protocol: TCP
+        appProtocol: http
 
 rbac:
   create: true
-
-podSecurityPolicy:
-  enabled: true
-  annotations:
-    {}
-    ## Specify pod annotations
-    ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#apparmor
-    ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#seccomp
-    ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#sysctl
-    ##
-    # seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
-    # seccomp.security.alpha.kubernetes.io/defaultProfileName: 'docker/default'
-    # apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'

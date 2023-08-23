@@ -8,7 +8,7 @@ metadata:
     helm.sh/chart: opentelemetry-ebpf-0.1.0
     app.kubernetes.io/name: opentelemetry-ebpf
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "v0.10.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   progressDeadlineSeconds: 600
@@ -27,9 +27,9 @@ spec:
         app.kubernetes.io/instance: example
     spec:
       containers:
-      - image: "otel/opentelemetry-ebpf-cloud-collector:v0.10.0"
+      - name: cloud-collector
+        image: "otel/opentelemetry-ebpf-cloud-collector:v0.10.0"
         imagePullPolicy: IfNotPresent
-        name: cloud-collector
         args:
           - --warning
         env:

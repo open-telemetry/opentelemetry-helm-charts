@@ -136,3 +136,33 @@ Fully qualified app name for the reducer deployment.
 {{- printf "%s-%s-reducer" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
+
+{{/* Build the list of port for service */}}
+{{- define "opentelemetry-collector-reducer.servicePortsConfig" -}}
+{{- $ports := deepCopy .Values.reducer.service.ports }}
+{{- range $key, $port := $ports }}
+{{- if $port.enabled }}
+- name: {{ $key }}
+  port: {{ $port.servicePort }}
+  targetPort: {{ $port.containerPort }}
+  protocol: {{ $port.protocol }}
+  {{- if $port.appProtocol }}
+  appProtocol: {{ $port.appProtocol }}
+  {{- end }}
+{{- if $port.nodePort }}
+  nodePort: {{ $port.nodePort }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Return the appropriate apiVersion for podDisruptionBudget.
+*/}}
+{{- define "podSecurityPolicy.apiVersion" -}}
+  {{- if and (.Capabilities.APIVersions.Has "policy/v1") (semverCompare ">= 1.21-0" .Capabilities.KubeVersion.Version) -}}
+    {{- print "policy/v1" -}}
+  {{- else -}}
+    {{- print "policy/v1beta1" -}}
+  {{- end -}}
+{{- end -}}

@@ -37,9 +37,13 @@ spec:
 {{- end }}
 {{- end }}
       containers:
-      - image: "{{ default .Values.images.repository .Values.k8sCollector.watcher.image.repository }}/{{ .Values.k8sCollector.watcher.image.name }}:{{ default .Values.images.tag .Values.k8sCollector.watcher.image.tag }}"
-        imagePullPolicy: {{ .Values.images.pullPolicy }}
-        name: k8s-watcher
+      - name: k8s-watcher 
+        {{- if .Values.k8sCollector.watcher.image.tag }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.watcher.image.repository }}/{{ .Values.k8sCollector.watcher.image.name }}:{{ .Values.k8sCollector.watcher.image.tag }}"
+        {{- else }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.watcher.image.repository }}/{{ .Values.k8sCollector.watcher.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
 {{- if hasKey .Values.k8sCollector.watcher "resources" }}
         resources:
 {{ toYaml .Values.k8sCollector.watcher.resources | indent 10 }}
@@ -52,9 +56,14 @@ spec:
       # k8s-relay, which is a service that the k8s-watcher talks to.
       # Currently not configurable, has to be reachable on localhost:8172, so must
       # share a pod with the k8s-watcher above.
-      - image: "{{ default .Values.images.repository .Values.k8sCollector.relay.image.repository }}/{{ .Values.k8sCollector.relay.image.name }}:{{ default .Values.images.tag .Values.k8sCollector.relay.image.tag }}"
-        imagePullPolicy: {{ .Values.images.pullPolicy }}
-        name: k8s-relay
+      - name: k8s-relay
+        {{- if .Values.k8sCollector.relay.image.tag }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.relay.image.registry }}/{{ .Values.k8sCollector.relay.image.name }}:{{ .Values.k8sCollector.relay.image.tag }}"
+        {{- else }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.relay.image.registry }}/{{ .Values.k8sCollector.relay.image.name }}:{{ default .Chart.AppVersion .Values.k8sCollector.relay.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        
 {{- if hasKey .Values.k8sCollector.relay "resources" }}
         resources:
 {{ toYaml .Values.k8sCollector.relay.resources | indent 10 }}
@@ -99,7 +108,7 @@ spec:
           - name: "EBPF_NET_INTAKE_HOST"
             value: {{ include "opentelemetry-collector-reducer.fullname" . }}
           - name: "EBPF_NET_INTAKE_PORT"
-            value: "{{ default 7000 .Values.reducer.telemetryPort }}"
+            value: "{{ default 7000 .Values.reducer.service.ports.telemetry.port }}"
 {{- if hasKey .Values "debug" }}
 {{- if (default false .Values.debug.storeMinidump) }}
           - name: "EBPF_NET_MINIDUMP_DIR"
@@ -108,9 +117,9 @@ spec:
 {{- end }}
 {{- if and .Values.debug.enabled .Values.debug.sendUnplannedExitMetric }}
           - name: "EBPF_NET_CRASH_METRIC_HOST"
-            value: {{ .Values.otelCollector.address }}
+            value: {{ .Values.endpoint.address }}
           - name: "EBPF_NET_CRASH_METRIC_PORT"
-            value: {{ .Values.otelCollector.port | default 4317 }}
+            value: {{ .Values.endpoint.port | default 4317 }}
 {{- end }}
 {{- if .Values.k8sCollector.relay.env }}
 {{ toYaml .Values.k8sCollector.relay.env | indent 10 }}

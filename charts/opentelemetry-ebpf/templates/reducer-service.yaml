@@ -5,18 +5,12 @@ metadata:
   labels:
     {{- include "opentelemetry-ebpf.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.reducer.service.type }}
   selector:
     app.kubernetes.io/name: {{ include "opentelemetry-collector-reducer.fullname" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- $ports := include "opentelemetry-collector-reducer.servicePortsConfig" . }}
+  {{- if $ports }}
   ports:
-    - name: telemetry
-      port: {{ .Values.reducer.telemetryPort }}
-      targetPort: telemetry
-      protocol: TCP
-    {{- if not .Values.reducer.disableInternalMetrics }}
-    - name: stats
-      port: {{ .Values.reducer.statsPromPort }}
-      targetPort: stats
-      protocol: TCP
-    {{- end }}
+    {{- $ports | nindent 4}}
+  {{- end }}

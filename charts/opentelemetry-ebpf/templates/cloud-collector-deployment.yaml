@@ -28,9 +28,13 @@ spec:
 {{- end }}
 {{- end }}
       containers:
-      - image: "{{ default .Values.images.repository .Values.cloudCollector.image.repository }}/{{ .Values.cloudCollector.image.name }}:{{ default .Values.images.tag .Values.cloudCollector.image.tag }}"
-        imagePullPolicy: {{ .Values.images.pullPolicy }}
-        name: cloud-collector
+      - name: cloud-collector
+        {{- if .Values.cloudCollector.image.tag }}
+        image: "{{ default .Values.image.registry .Values.cloudCollector.image.registry }}/{{ .Values.cloudCollector.image.name }}:{{ .Values.cloudCollector.image.tag }}"
+        {{- else }}
+        image: "{{ default .Values.image.registry .Values.cloudCollector.image.registry }}/{{ .Values.cloudCollector.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
 {{- if hasKey .Values.cloudCollector "resources" }}
         resources:
 {{ toYaml .Values.cloudCollector.resources | indent 10 }}
@@ -74,7 +78,7 @@ spec:
           - name: "EBPF_NET_INTAKE_HOST"
             value: {{ include "opentelemetry-collector-reducer.fullname" . }}
           - name: "EBPF_NET_INTAKE_PORT"
-            value: "{{ default 7000 .Values.reducer.telemetryPort }}"
+            value: "{{ default 7000 .Values.reducer.service.ports.telemetry.port }}"
 {{- if hasKey .Values "debug" }}
 {{- if (default false .Values.debug.storeMinidump) }}
           - name: "EBPF_NET_MINIDUMP_DIR"

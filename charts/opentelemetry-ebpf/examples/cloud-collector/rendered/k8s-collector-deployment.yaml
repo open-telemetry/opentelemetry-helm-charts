@@ -13,7 +13,7 @@ metadata:
     helm.sh/chart: opentelemetry-ebpf-0.1.0
     app.kubernetes.io/name: opentelemetry-ebpf
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "v0.10.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   progressDeadlineSeconds: 600
@@ -36,18 +36,18 @@ spec:
         app.kubernetes.io/instance: example
     spec:
       containers:
-      - image: "otel/opentelemetry-ebpf-k8s-watcher:v0.10.0"
+      - name: k8s-watcher
+        image: "otel/opentelemetry-ebpf-k8s-watcher:v0.10.0"
         imagePullPolicy: IfNotPresent
-        name: k8s-watcher
         args:
           - --log-console
           - --log-level=warning
       # k8s-relay, which is a service that the k8s-watcher talks to.
       # Currently not configurable, has to be reachable on localhost:8172, so must
       # share a pod with the k8s-watcher above.
-      - image: "otel/opentelemetry-ebpf-k8s-relay:v0.10.0"
+      - name: k8s-relay
+        image: "otel/opentelemetry-ebpf-k8s-relay:v0.10.0"
         imagePullPolicy: IfNotPresent
-        name: k8s-relay
         args:
           - --config-file=/etc/network-explorer/config.yaml
           - --warning

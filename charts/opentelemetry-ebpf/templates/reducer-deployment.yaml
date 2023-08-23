@@ -26,10 +26,14 @@ spec:
 {{- end }}
       containers:
         - name: reducer
-          image: "{{ default .Values.images.repository .Values.reducer.image.repository }}/{{ .Values.reducer.image.name }}:{{ default .Values.images.tag .Values.reducer.image.tag }}"
-          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          {{- if .Values.reducer.image.tag }}
+          image: "{{ default .Values.image.registry .Values.reducer.image.registry }}/{{ .Values.reducer.image.name }}:{{ .Values.reducer.image.tag }}"
+          {{- else }}
+          image: "{{ default .Values.image.registry .Values.reducer.image.registry }}/{{ .Values.reducer.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - --port={{- .Values.reducer.telemetryPort }}
+            - --port={{- .Values.reducer.service.ports.telemetry.containerPort }}
             - --log-console
             - --no-log-file
             {{- if hasKey .Values.log "level" }}
@@ -38,8 +42,8 @@ spec:
             - --enable-aws-enrichment
             - --disable-prometheus-metrics
             - --enable-otlp-grpc-metrics
-            - --otlp-grpc-metrics-host={{ .Values.otelCollector.address }}
-            - --otlp-grpc-metrics-port={{ .Values.otelCollector.port | default 4317 }}
+            - --otlp-grpc-metrics-host={{ .Values.endpoint.address }}
+            - --otlp-grpc-metrics-port={{ .Values.endpoint.port | default 4317 }}
             {{- if .Values.reducer.disableMetrics }}
             - --disable-metrics={{join "," .Values.reducer.disableMetrics}}
             {{- end }}
@@ -66,18 +70,18 @@ spec:
             {{- end }}
             {{- if .Values.debug.sendUnplannedExitMetric }}
             - name: "EBPF_NET_CRASH_METRIC_HOST"
-              value: {{ .Values.otelCollector.address }}
+              value: {{ .Values.endpoint.address }}
             - name: "EBPF_NET_CRASH_METRIC_PORT"
-              value: {{ .Values.otelCollector.port | default 4317 }}
+              value: {{ .Values.endpoint.port | default 4317 }}
             {{- end }}
           {{- end }}
           ports:
             - name: telemetry
-              containerPort: {{ .Values.reducer.telemetryPort }}
+              containerPort: {{ .Values.reducer.service.ports.telemetry.containerPort }}
               protocol: TCP
             {{- if not .Values.reducer.disableInternalMetrics }}
             - name: stats
-              containerPort: {{ .Values.reducer.statsPromPort }}
+              containerPort: {{ .Values.reducer.service.ports.stats.containerPort }}
               protocol: TCP
             {{- end }}
           {{- if .Values.debug.enabled }}
@@ -93,7 +97,7 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 5
             exec:
-              command: ['/srv/health_check.sh', 'readiness_probe', 'localhost', {{ quote .Values.reducer.telemetryPort }}]
+              command: ['/srv/health_check.sh', 'readiness_probe', 'localhost', {{ quote .Values.reducer.service.ports.telemetry.containerPort }}]
           {{- if .Values.resources }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

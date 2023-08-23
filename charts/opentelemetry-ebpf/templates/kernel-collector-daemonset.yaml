@@ -17,7 +17,6 @@ spec:
   template:
     metadata:
       annotations:
-        release_number: "3"
         charts.flowmill.com/version: {{ .Chart.Version }}
       labels:
         app.kubernetes.io/name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
@@ -31,8 +30,12 @@ spec:
 {{- end }}
       containers:
         - name: kernel-collector
-          image: "{{ default .Values.images.repository .Values.kernelCollector.image.repository }}/{{ .Values.kernelCollector.image.name }}:{{ default .Values.images.tag .Values.kernelCollector.image.tag }}"
-          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          {{- if .Values.kernelCollector.image.tag }}
+          image: "{{ default .Values.image.registry .Values.kernelCollector.image.registry }}/{{ .Values.kernelCollector.image.name }}:{{ .Values.kernelCollector.image.tag }}"
+          {{- else }}
+          image: "{{ default .Values.image.registry .Values.kernelCollector.image.registry }}/{{ .Values.kernelCollector.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - --config-file=/etc/network-explorer/config.yaml
 {{- if .Values.kernelCollector.bpfDumpFile }}
@@ -93,7 +96,7 @@ spec:
             - name: "EBPF_NET_INTAKE_HOST"
               value: {{ include "opentelemetry-collector-reducer.fullname" . }}
             - name: "EBPF_NET_INTAKE_PORT"
-              value: "{{ default 7000 .Values.reducer.telemetryPort }}"
+              value: "{{ default 7000 .Values.reducer.service.ports.telemetry.port }}"
 {{- if .Values.kernelCollector.exportBpfSrcFile }}
             - name: "EBPF_NET_EXPORT_BPF_SRC_FILE"
               value: {{ quote .Values.kernelCollector.exportBpfSrcFile }}
@@ -108,9 +111,9 @@ spec:
 {{- end }}
 {{- if and .Values.debug.enabled .Values.debug.sendUnplannedExitMetric }}
             - name: "EBPF_NET_CRASH_METRIC_HOST"
-              value: {{ .Values.otelCollector.address }}
+              value: {{ .Values.endpoint.address }}
             - name: "EBPF_NET_CRASH_METRIC_PORT"
-              value: {{ .Values.otelCollector.port | default 4317 }}
+              value: {{ .Values.endpoint.port | default 4317 }}
 {{- end }}
 {{- if .Values.kernelCollector.env }}
 {{ toYaml .Values.kernelCollector.env | indent 12 }}
