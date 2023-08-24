@@ -22,6 +22,7 @@ presets:
   # Adds the filelog receiver to the logs pipeline
   # and adds the necessary volumes and volume mounts.
   # Best used with mode = daemonset.
+  # See https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver for details on the receiver.
   logsCollection:
     enabled: false
     includeCollectorLogs: false
@@ -35,12 +36,14 @@ presets:
   # Adds the hostmetrics receiver to the metrics pipeline
   # and adds the necessary volumes and volume mounts.
   # Best used with mode = daemonset.
+  # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
   hostMetrics:
     enabled: false
   # Configures the Kubernetes Processor to add Kubernetes metadata.
   # Adds the k8sattributes processor to all the pipelines
   # and adds the necessary rules to ClusteRole.
   # Best used with mode = daemonset.
+  # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
   kubernetesAttributes:
     enabled: false
     # When enabled the processor will extra all labels for an associated pod and add them as resource attributes.
@@ -49,23 +52,26 @@ presets:
     # When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
     # The annotation's exact name will be the key.
     extractAllPodAnnotations: false
+  # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
+  # Adds the kubeletstats receiver to the metrics pipeline
+  # and adds the necessary rules to ClusteRole.
+  # Best used with mode = daemonset.
+  # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
+  kubeletMetrics:
+    enabled: false
   # Configures the collector to collect kubernetes events.
   # Adds the k8sobject receiver to the logs pipeline
   # and collects kubernetes events by default.
   # Best used with mode = deployment or statefulset.
+  # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusteRole.
   # Best used with mode = deployment or statefulset.
+  # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
   clusterMetrics:
-    enabled: false
-  # Configures the collector to collect Kubelet metrics.
-  # Adds the kubeletstats receiver to the metrics pipeline
-  # and adds the necessary rules to ClusteRole.
-  # Best used with mode = daemonset.
-  kubeletMetrics:
     enabled: false
 
 configMap:
