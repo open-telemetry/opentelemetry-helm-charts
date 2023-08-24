@@ -158,4 +158,13 @@ Compute InternalTrafficPolicy on Service creation
   {{- end }}
 {{- end -}}
 
-
+{{/*
+Specify namespace
+*/}}
+{{- define "opentelemetry-collector.namespace" -}}
+{{- if .Values.namespace -}}
+{{- .Values.namespace -}}
+{{- else -}}
+{{- .Release.Namespace -}}
+{{- end -}}
+{{- end -}}
