@@ -87,8 +87,7 @@ The collector can be used to collect logs sent to standard output by Kubernetes 
 This feature is disabled by default. It has the following requirements:
 
 - It needs agent collector to be deployed.
-- It requires the [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version
-of the collector image.
+- It requires the [Filelog receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
 
 To enable this feature, set the  `presets.logsCollection.enabled` property to `true`.
 Here is an example `values.yaml`:
@@ -148,7 +147,7 @@ The collector can be configured to add Kubernetes metadata, such as pod name and
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires [k8sattributesprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) processor to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires the [Kubernetes Attributes processor](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
 
 To enable this feature, set the  `presets.kubernetesAttributes.enabled` property to `true`.
 Here is an example `values.yaml`:
@@ -164,13 +163,31 @@ presets:
     extractAllPodAnnotations: true
 ```
 
+### Configuration for Retrieving Kubelet Metrics
+
+The collector can be configured to collect node, pod, and container metrics from the API server on a kubelet.
+
+This feature is disabled by default. It has the following requirements:
+
+- It requires the [Kubeletstats receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+
+To enable this feature, set the  `presets.kubeletMetrics.enabled` property to `true`.
+Here is an example `values.yaml`:
+
+```yaml
+mode: daemonset
+presets:
+  kubeletMetrics:
+    enabled: true
+```
+
 ### Configuration for Kubernetes Cluster Metrics
 
 The collector can be configured to collects cluster-level metrics from the Kubernetes API server. A single instance of this receiver can be used to monitor a cluster.
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires [k8sclusterreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
 - It requires statefulset or deployment mode with a single replica.
 
 To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
@@ -182,24 +199,6 @@ mode: deployment
 replicaCount: 1
 presets:
   clusterMetrics:
-    enabled: true
-```
-
-### Configuration for Retrieving Kubelet Metrics
-
-The collector can be configured to collect Kubelet metrics.
-
-This feature is disabled by default. It has the following requirements:
-
-- It requires [kubeletstats](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver) receiver to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
-
-To enable this feature, set the  `presets.kubeletMetrics.enabled` property to `true`.
-Here is an example `values.yaml`:
-
-```yaml
-mode: daemonset
-presets:
-  kubeletMetrics:
     enabled: true
 ```
 
