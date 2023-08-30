@@ -104,6 +104,29 @@ presets:
 The way this feature works is it adds a `filelog` receiver on the `logs` pipeline. This receiver is preconfigured
 to read the files where Kubernetes container runtime writes all containers' console output to.
 
+#### Log collection for a subset of pods or containers
+
+The `logsCollection` preset will by default ingest the logs of all kubernetes containers.
+This is achieved by using an include path of `/var/log/pods/*/*/*.log` for the `filelog`receiver.
+
+To limit the the import to a certain subset of pods or containers, the `filelog`
+receivers `include` list can be overwritten by supplying explicit configuration.
+
+E.g. the following configuration would only import logs for pods within namespace `my-namespace`:
+
+```yaml
+mode: daemonset
+
+presets:
+  logsCollection:
+    enabled: true
+config:
+  receivers:
+    filelog:
+      include:
+        - /var/log/pods/my-namespace_*/*/*.log
+```
+
 #### :warning: Warning: Risk of looping the exported logs back into the receiver, causing "log explosion"
 
 The container logs pipeline uses the `logging` console exporter by default.
@@ -113,7 +136,8 @@ it is easy to accidentally feed the exported logs back into the receiver.
 Also note that using the `--log-level=debug` option for the `logging` exporter causes it to output
 multiple lines per single received log, which when looped, would amplify the logs exponentially.
 
-To prevent the looping, the default configuration of the receiver excludes logs from the collector's containers.
+To prevent the looping, the default configuration of the receiver excludes logs from the collector's containers
+by setting `presets.logsCollection.includeCollectorLogs` to `false`.
 
 If you want to include the collector's logs, make sure to replace the `logging` exporter
 with an exporter that does not send logs to collector's standard output.
