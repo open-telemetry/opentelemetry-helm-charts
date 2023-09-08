@@ -22,6 +22,9 @@ spec:
       for: 2m
       labels:
         severity: critical
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.receiver }} receiver is dropping spans at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
@@ -30,6 +33,9 @@ spec:
       for: 2m
       labels:
         severity: critical
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.receiver }} receiver is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
@@ -38,6 +44,9 @@ spec:
       for: 2m
       labels:
         severity: critical
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.processor }} processor is dropping spans at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#data-loss'
@@ -46,6 +55,9 @@ spec:
       for: 2m
       labels:
         severity: critical
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.processor }} processor is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#data-loss'
@@ -54,6 +66,9 @@ spec:
       for: 2m
       labels:
         severity: critical
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.exporter }} exporter is dropping spans at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
@@ -62,6 +77,9 @@ spec:
       for: 2m
       labels:
         severity: critical
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.exporter }} exporter is dropping metrics at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#receive-failures'
@@ -70,6 +88,9 @@ spec:
       for: 1m
       labels:
         severity: warning
+        {{- range $key, $value := .Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.exporter }} queue has reached a size of {{ $value }} `}}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#queue-length'
@@ -80,6 +101,9 @@ spec:
       for: 1m
       labels:
         severity: warning
+        {{- range $key, $value := $.Values.prometheusRule.defaultRules.extraLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`The {{ $labels.exporter }} sending queue failed to accept {{ $value }} `}} {{ $signal }}'
         runbook_url: 'https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/monitoring.md#queue-length'
