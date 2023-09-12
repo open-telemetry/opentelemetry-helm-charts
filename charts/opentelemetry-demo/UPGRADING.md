@@ -1,5 +1,12 @@
 # Upgrade guidelines
 
+## To 0.24
+
+This release uses the [kubernetes attributes processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) 
+to add kubernetes metadata as resource attributes. If you override the processors array in your config, you will 
+need to add the k8s attributes processor manually to restore `service.instance.id`
+resource attribute.
+
 ## To 0.23
 
 The Prometheus sub-chart dependency made updates to pod labels. You may need to
