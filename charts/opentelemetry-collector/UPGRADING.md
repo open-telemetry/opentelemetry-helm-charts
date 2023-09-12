@@ -4,6 +4,12 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.67 to 0.68
+
+The `preset.kubernetesEvents` preset now excludes `DELETED` watch types so that an log is not ingested when Kubernetes deletes an event.
+The intention behind this change is to cleanup the data ingested by the preset as the `DELETED` updated for a Kubernetes Events is
+uninteresting. If you want to keep ingesting `DELETED` updates for Kubernetes Events you will need to configure the `k8sobjectsreceiver` manually.
+
 ## 0.62 to 0.63
 
 The `kubernetesAttributes` preset now respects order of processors in logs, metrics and traces pipelines.
