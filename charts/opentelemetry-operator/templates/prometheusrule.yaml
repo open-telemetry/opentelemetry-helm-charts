@@ -23,7 +23,7 @@ spec:
   - name: managerRules
     rules:
     - alert: ReconcileErrors
-      expr: rate(controller_runtime_reconcile_total{result="error"}[5m]) > 0
+      expr: rate(controller_runtime_reconcile_total{controller="opentelemetrycollector",result="error"}[5m]) > 0
       for: 5m
       labels:
         severity: warning
@@ -31,7 +31,7 @@ spec:
         description: '{{`Reconciliation errors for {{ $labels.controller }} is increasing and has now reached {{ humanize $value }} `}}'
         runbook_url: 'Check manager logs for reasons why this might happen'
     - alert: WorkqueueDepth
-      expr: workqueue_depth > 0
+      expr: workqueue_depth{name="opentelemetrycollector"} > 0
       for: 5m
       labels:
         severity: warning
