@@ -375,4 +375,6 @@ receivers:
       - name: events
         mode: "watch"
         group: "events.k8s.io"
+        exclude_watch_type: 
+          - "DELETED"
 {{- end }}
