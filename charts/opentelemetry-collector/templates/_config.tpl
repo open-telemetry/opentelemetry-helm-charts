@@ -52,6 +52,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.metadata.enabled }}
+{{- $config = (include "opentelemetry-collector.applyMetadataConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -85,6 +88,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.kubernetesExtraMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesExtraMetrics" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.metadata.enabled }}
+{{- $config = (include "opentelemetry-collector.applyMetadataConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -331,7 +337,7 @@ receivers:
     watch_observers: [k8s_observer]
     receivers:
       prometheus_simple:
-        rule: type == "port" && port == 8080 && pod.name contains "{{ .Release.Name }}-kube-state-metrics" 
+        rule: type == "port" && port == 8080 && pod.name contains "{{ .Release.Name }}-kube-state-metrics"
         config:
           endpoint: '`endpoint`'
   prometheus/k8s_extra_metrics:
@@ -373,8 +379,8 @@ processors:
     metrics:
       metric:
         - 'resource.attributes["service.name"] == "kubernetes-apiserver" and name != "kubernetes_build_info"'
-        - 'resource.attributes["service.name"] == "kubernetes-cadvisor" and 
-          (name != "container_fs_writes_total" and name != "container_fs_reads_total" and 
+        - 'resource.attributes["service.name"] == "kubernetes-cadvisor" and
+          (name != "container_fs_writes_total" and name != "container_fs_reads_total" and
           name != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total" and
           name != "container_fs_usage_bytes")'
 {{- end }}
@@ -425,7 +431,7 @@ receivers:
               enabled: true
             mysql.table_open_cache:
               enabled: true
-            
+
 {{- end }}
 {{- end }}
 
@@ -441,6 +447,36 @@ receivers:
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyMetadataConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.metadataConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (not (has "resource/metadata" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resource/metadata" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "resource/metadata" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resource/metadata" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (not (has "resource/metadata" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resource/metadata" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.metadataConfig" -}}
+processors:
+  resource/metadata:
+    attributes:
+      {{- if .Values.presets.metadata.clusterName }}
+      - key: k8s.cluster.name
+        value: "{{ .Values.presets.metadata.clusterName }}"
+        action: upsert
+      {{- end }}
+      {{- if .Values.presets.metadata.integrationName }}
+      - key: cx.otel_integration.name
+        value: "{{ .Values.presets.metadata.integrationName }}"
+        action: upsert
+      {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}

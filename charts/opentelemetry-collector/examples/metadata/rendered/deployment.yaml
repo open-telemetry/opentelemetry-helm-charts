@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/daemonset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   labels:
     helm.sh/chart: opentelemetry-collector-0.71.2
     app.kubernetes.io/name: opentelemetry-collector
@@ -11,22 +11,24 @@ metadata:
     app.kubernetes.io/version: "0.83.0"
     app.kubernetes.io/managed-by: Helm
 spec:
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: agent-collector
-  updateStrategy:
+      component: standalone-collector
+  strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 996464289bae97e115e400e34ba00bd5fb210c60ca14f3abfdfe87c5a73acc8a
+        checksum/config: 554deb5a7a09fa5c852bdd69348ab0d2c1795485e249c06d3029ce06585baccf
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: agent-collector
+        component: standalone-collector
         
     spec:
       
@@ -47,27 +49,21 @@ spec:
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
-              hostPort: 6831
             - name: jaeger-grpc
               containerPort: 14250
               protocol: TCP
-              hostPort: 14250
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
-              hostPort: 14268
             - name: otlp
               containerPort: 4317
               protocol: TCP
-              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP
-              hostPort: 4318
             - name: zipkin
               containerPort: 9411
               protocol: TCP
-              hostPort: 9411
           env:
             - name: MY_POD_IP
               valueFrom:
@@ -88,7 +84,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-agent
+            name: example-opentelemetry-collector
             items:
               - key: relay
                 path: relay.yaml
