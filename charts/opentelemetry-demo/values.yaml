@@ -634,18 +634,16 @@ opentelemetry-collector:
         - key: service.instance.id
           from_attribute: k8s.pod.uid
           action: insert
-      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
       transform:
         metric_statements:
           - context: metric
             statements:
-              - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
-      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
-      filter/ottl:
-        error_mode: ignore
-        metrics:
-          metric:
-            - 'name == "queueSize"'
+              # FIXME: remove this when this is issue is resolved: https://github.com/open-telemetry/opentelemetry-java/issues/4834
+              - set(description, "") where name == "queueSize"
+              # FIXME: remove this when the following 2 issues are resolved
+              # Java: https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/9478
+              # Go: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/4301
+              - set(description, "") where name == "rpc.server.duration"
 
     connectors:
       spanmetrics:
@@ -657,7 +655,7 @@ opentelemetry-collector:
           exporters: [otlp, logging, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]
-          processors: [memory_limiter, filter/ottl, resource, transform, batch]
+          processors: [memory_limiter, resource, transform, batch]
           exporters: [prometheus, logging]
 
 jaeger:
@@ -785,4 +783,4 @@ grafana:
     default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
   resources:
     limits:
-      memory: 100Mi
+      memory: 150Mi

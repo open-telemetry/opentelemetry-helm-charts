@@ -40,11 +40,6 @@ data:
           services:
           - frontend-proxy
       batch: {}
-      filter/ottl:
-        error_mode: ignore
-        metrics:
-          metric:
-          - name == "queueSize"
       k8sattributes:
         extract:
           metadata:
@@ -81,8 +76,8 @@ data:
         metric_statements:
         - context: metric
           statements:
-          - set(description, "Measures the duration of inbound HTTP requests") where name
-            == "http.server.duration"
+          - set(description, "") where name == "queueSize"
+          - set(description, "") where name == "rpc.server.duration"
     receivers:
       jaeger:
         protocols:
@@ -133,7 +128,6 @@ data:
           processors:
           - k8sattributes
           - memory_limiter
-          - filter/ottl
           - resource
           - transform
           - batch
