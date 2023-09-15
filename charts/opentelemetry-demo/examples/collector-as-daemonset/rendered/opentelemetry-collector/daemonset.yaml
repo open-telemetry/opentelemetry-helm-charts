@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: e62fcdf5b3a33ec3cdb0ad02e110fcaa5f3ec9f29067a643b7413b0bd7623171
+        checksum/config: a716efb929ffbb7d38b2d583356cb2ea14e792f032e01900ab87a97d7f87d62c
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
@@ -81,6 +81,10 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           livenessProbe:
             httpGet:
               path: /

@@ -6,32 +6,12 @@ default:
         fieldRef:
           apiVersion: v1
           fieldPath: "metadata.labels['app.kubernetes.io/component']"
-    - name: OTEL_K8S_NAMESPACE
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.namespace
-    - name: OTEL_K8S_NODE_NAME
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: spec.nodeName
-    - name: OTEL_K8S_POD_NAME
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.name
-    - name: OTEL_K8S_POD_UID
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.uid
     - name: OTEL_COLLECTOR_NAME
       value: '{{ include "otel-demo.name" . }}-otelcol'
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+      value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -600,6 +580,9 @@ opentelemetry-collector:
   enabled: true
   nameOverride: otelcol
   mode: deployment
+  presets:
+    kubernetesAttributes:
+      enabled: true
   resources:
     limits:
       memory: 125Mi
@@ -646,6 +629,11 @@ opentelemetry-collector:
         enable_open_metrics: true
 
     processors:
+      resource:
+        attributes:
+        - key: service.instance.id
+          from_attribute: k8s.pod.uid
+          action: insert
       # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
       transform:
         metric_statements:
@@ -665,11 +653,11 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, resource, batch]
           exporters: [otlp, logging, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]
-          processors: [memory_limiter, filter/ottl, transform, batch]
+          processors: [memory_limiter, filter/ottl, resource, transform, batch]
           exporters: [prometheus, logging]
 
 jaeger:

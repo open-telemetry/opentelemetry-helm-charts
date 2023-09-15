@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
   {{- if .Values.annotations }}
@@ -42,7 +43,7 @@ spec:
       dnsPolicy: {{ . }}
       {{- end }}
       {{- with .Values.dnsConfig }}
-      dnsConfig: 
+      dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- $podValues := deepCopy .Values }}
