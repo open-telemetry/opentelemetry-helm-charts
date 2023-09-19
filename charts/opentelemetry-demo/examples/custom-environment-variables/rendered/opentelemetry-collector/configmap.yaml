@@ -22,7 +22,7 @@ data:
           insecure: true
       prometheus:
         enable_open_metrics: true
-        endpoint: 0.0.0.0:9464
+        endpoint: ${env.MY_POD_IP}:9464
         resource_to_telemetry_conversion:
           enabled: true
     extensions:
@@ -44,7 +44,7 @@ data:
         error_mode: ignore
         metrics:
           metric:
-          - name == "queueSize"
+          - name == "rpc.server.duration"
       k8sattributes:
         extract:
           metadata:
@@ -81,8 +81,9 @@ data:
         metric_statements:
         - context: metric
           statements:
-          - set(description, "Measures the duration of inbound HTTP requests") where name
-            == "http.server.duration"
+          - set(description, "") where name == "queueSize"
+          - set(description, "") where name == "rpc.server.duration"
+          - set(description, "") where name == "http.client.duration"
     receivers:
       jaeger:
         protocols:
@@ -101,7 +102,7 @@ data:
               allowed_origins:
               - http://*
               - https://*
-            endpoint: 0.0.0.0:4318
+            endpoint: ${env:MY_POD_IP}:4318
       prometheus:
         config:
           scrape_configs:
@@ -134,8 +135,8 @@ data:
           - k8sattributes
           - memory_limiter
           - filter/ottl
-          - resource
           - transform
+          - resource
           - batch
           receivers:
           - otlp
