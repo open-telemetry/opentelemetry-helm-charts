@@ -24,7 +24,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: b18fe67c942e7ded6b5ad70b319f8a591342de5b2229a7cc2318687a402599c8
+        checksum/config: 99b84284a8d33b3e7167b756db2a863d6d2efc3345e1e7b407541a948979d0d0
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -71,6 +71,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: GOMEMLIMIT
+              value: 156Mi
           livenessProbe:
             httpGet:
               path: /
@@ -79,6 +81,10 @@ spec:
             httpGet:
               path: /
               port: 13133
+          resources:
+            limits:
+              cpu: 100m
+              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap

@@ -48,3 +48,7 @@
 {{- if and (eq .Values.dnsPolicy "None") (not .Values.dnsConfig) }}
 {{- fail "[ERROR] dnsConfig should be provided when dnsPolicy is None" }}
 {{ end }}
+
+{{- if and (.Values.useGOMEMLIMIT) (not ((((.Values.resources).limits).memory))) }}
+[WARNING] "useGOMEMLIMIT" is enabled but memory limits have not been supplied. It is best to use "useGOMEMLIMIT" when memory limits have been set.  
+{{ end }}

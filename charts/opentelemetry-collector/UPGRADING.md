@@ -4,6 +4,16 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## something to soemthing
+
+A new flag, `useGOMEMLIMIT` has been added that allows specifying whether or not the chart should use the `GOMEMLIMIT` environment variable or the Memory Ballast Extension.
+When enabled, the chart will remove the Memory Ballast Extension from the collector's configuration AND will setup a `GOMEMLIMIT` envarionment variable that is set to 80%
+of the configures `resources.limits.memory`.  If no `resources.limits.memory` are set when `useGOMEMLIMIT` is enabled then a `GOMEMLIMIT` envarionment variable WILL NOT be
+created but the Memory Ballast Extension will still be removed.
+
+If you are not interested in using `GOMEMLIMIT` then this change does not affect you.  But, depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
+the use of `GOMEMLIMIT` may completely replace the Memory Ballast Extension in the future.
+
 ## 0.67 to 0.68
 
 The `preset.kubernetesEvents` preset now excludes `DELETED` watch types so that an log is not ingested when Kubernetes deletes an event.
