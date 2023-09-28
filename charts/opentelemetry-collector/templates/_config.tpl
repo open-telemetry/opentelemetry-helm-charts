@@ -159,7 +159,7 @@ receivers:
   kubeletstats:
     collection_interval: 20s
     auth_type: "serviceAccount"
-    endpoint: "${K8S_NODE_NAME}:10250"
+    endpoint: "${env:K8S_NODE_NAME}:10250"
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
@@ -375,6 +375,6 @@ receivers:
       - name: events
         mode: "watch"
         group: "events.k8s.io"
-        exclude_watch_type: 
+        exclude_watch_type:
           - "DELETED"
 {{- end }}
