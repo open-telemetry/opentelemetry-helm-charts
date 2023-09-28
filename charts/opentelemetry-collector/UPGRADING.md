@@ -4,7 +4,9 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## something to soemthing
+## Feature Flags
+
+### useGOMEMLIMIT
 
 A new flag, `useGOMEMLIMIT` has been added that allows specifying whether or not the chart should use the `GOMEMLIMIT` environment variable or the Memory Ballast Extension.
 When enabled, the chart will remove the Memory Ballast Extension from the collector's configuration AND will setup a `GOMEMLIMIT` envarionment variable that is set to 80%
