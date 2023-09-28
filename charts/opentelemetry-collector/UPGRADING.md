@@ -9,7 +9,7 @@ Just upgrade and enjoy.
 ### useGOMEMLIMIT
 
 A new flag, `useGOMEMLIMIT` has been added that allows specifying whether or not the chart should use the `GOMEMLIMIT` environment variable or the Memory Ballast Extension.
-When enabled, the chart will remove the Memory Ballast Extension from the collector's configuration AND will setup a `GOMEMLIMIT` envarionment variable that is set to 80%
+When enabled, the chart will remove the Memory Ballast Extension from the collector's configuration AND will setup a `GOMEMLIMIT` environment variable that is set to 80%
 of the configures `resources.limits.memory`.  If no `resources.limits.memory` are set when `useGOMEMLIMIT` is enabled then a `GOMEMLIMIT` envarionment variable WILL NOT be
 created but the Memory Ballast Extension will still be removed.
 
