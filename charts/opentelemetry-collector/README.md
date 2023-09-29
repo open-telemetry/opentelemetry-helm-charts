@@ -44,7 +44,7 @@ Some care must be taken when using `hostNetwork: true`, as then OpenTelemetry Co
 ### Default configuration
 
 By default this chart will deploy an OpenTelemetry Collector with three pipelines (logs, metrics and traces)
-and logging exporter enabled by default. The collector can be installed either as daemonset (agent), deployment or stateful set.
+and debug exporter enabled by default. The collector can be installed either as daemonset (agent), deployment or stateful set.
 
 *Example*: Install collector as a deployment.
 
@@ -106,19 +106,19 @@ to read the files where Kubernetes container runtime writes all containers' cons
 
 #### :warning: Warning: Risk of looping the exported logs back into the receiver, causing "log explosion"
 
-The container logs pipeline uses the `logging` console exporter by default.
+The container logs pipeline uses the `debug` exporter by default.
 Paired with the default `filelog` receiver that receives all containers' console output,
 it is easy to accidentally feed the exported logs back into the receiver.
 
-Also note that using the `--log-level=debug` option for the `logging` exporter causes it to output
+Also note that using the `--verbosity=detailed` option for the `debug` exporter causes it to output
 multiple lines per single received log, which when looped, would amplify the logs exponentially.
 
 To prevent the looping, the default configuration of the receiver excludes logs from the collector's containers.
 
-If you want to include the collector's logs, make sure to replace the `logging` exporter
+If you want to include the collector's logs, make sure to replace the `debug` exporter
 with an exporter that does not send logs to collector's standard output.
 
-Here's an example `values.yaml` file that replaces the default `logging` exporter on the `logs` pipeline
+Here's an example `values.yaml` file that replaces the default `debug` exporter on the `logs` pipeline
 with an `otlphttp` exporter that sends the container logs to `https://example.com:55681` endpoint.
 It also clears the `filelog` receiver's `exclude` property, for collector logs to be included in the pipeline.
 

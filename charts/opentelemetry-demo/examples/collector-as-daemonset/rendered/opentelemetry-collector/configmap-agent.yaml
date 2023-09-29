@@ -6,26 +6,25 @@ metadata:
   name: example-otelcol-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.68.0
+    helm.sh/chart: opentelemetry-collector-0.69.1
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.85.0"
+    app.kubernetes.io/version: "0.86.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
     connectors:
       spanmetrics: null
     exporters:
-      logging: {}
+      debug: {}
       otlp:
         endpoint: 'example-jaeger-collector:4317'
         tls:
           insecure: true
-      prometheus:
-        enable_open_metrics: true
-        endpoint: ${env.MY_POD_IP}:9464
-        resource_to_telemetry_conversion:
-          enabled: true
+      otlphttp/prometheus:
+        endpoint: 'example-prometheus-server:9090/api/v1/otlp'
+        tls:
+          insecure: true
     extensions:
       health_check: {}
       memory_ballast:
@@ -114,7 +113,7 @@ data:
       pipelines:
         logs:
           exporters:
-          - logging
+          - debug
           processors:
           - k8sattributes
           - memory_limiter
@@ -123,8 +122,8 @@ data:
           - otlp
         metrics:
           exporters:
-          - prometheus
-          - logging
+          - otlphttp/prometheus
+          - debug
           processors:
           - k8sattributes
           - memory_limiter
@@ -138,7 +137,7 @@ data:
         traces:
           exporters:
           - otlp
-          - logging
+          - debug
           - spanmetrics
           processors:
           - k8sattributes

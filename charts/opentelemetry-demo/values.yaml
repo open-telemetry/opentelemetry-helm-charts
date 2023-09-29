@@ -619,11 +619,10 @@ opentelemetry-collector:
         tls:
           insecure: true
       # Create an exporter to Prometheus (metrics)
-      prometheus:
-        endpoint: "${env.MY_POD_IP}:9464"
-        resource_to_telemetry_conversion:
-          enabled: true
-        enable_open_metrics: true
+      otlphttp/prometheus:
+        endpoint: '{{ include "otel-demo.name" . }}-prometheus-server:9090/api/v1/otlp'
+        tls:
+          insecure: true
 
     processors:
       resource:
@@ -658,11 +657,11 @@ opentelemetry-collector:
       pipelines:
         traces:
           processors: [memory_limiter, resource, batch]
-          exporters: [otlp, logging, spanmetrics]
+          exporters: [otlp, debug, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]
           processors: [memory_limiter, filter/ottl, transform, resource, batch]
-          exporters: [prometheus, logging]
+          exporters: [otlphttp/prometheus, debug]
 
 jaeger:
   enabled: true
@@ -709,6 +708,7 @@ prometheus:
   server:
     extraFlags:
       - "enable-feature=exemplar-storage"
+      - "enable-feature=otlp-write-receiver"
     global:
       scrape_interval: 5s
       scrape_timeout: 3s

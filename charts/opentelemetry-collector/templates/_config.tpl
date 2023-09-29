@@ -195,7 +195,7 @@ receivers:
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log ]
     {{- end }}
-    start_at: beginning
+    start_at: end
     {{- if .Values.presets.logsCollection.storeCheckpoints}}
     storage: file_storage
     {{- end }}

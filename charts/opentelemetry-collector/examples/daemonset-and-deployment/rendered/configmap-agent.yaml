@@ -6,15 +6,15 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.69.0
+    helm.sh/chart: opentelemetry-collector-0.70.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.85.0"
+    app.kubernetes.io/version: "0.86.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
     exporters:
-      logging: {}
+      debug: {}
       otlp:
         endpoint: example-opentelemetry-collector:4317
         tls:
@@ -62,7 +62,7 @@ data:
         logs:
           exporters:
           - otlp
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch
@@ -71,7 +71,7 @@ data:
         metrics:
           exporters:
           - otlp
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch
@@ -81,7 +81,7 @@ data:
         traces:
           exporters:
           - otlp
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch

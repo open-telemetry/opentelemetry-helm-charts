@@ -113,7 +113,7 @@ to an early version if anything unexpected happens, pause the Collector, etc. In
 instance just as an application.
 
 The following example configuration deploys the Collector as Deployment resource. The receiver is Jaeger receiver and
-the exporter is [logging exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/loggingexporter).
+the exporter is [debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter).
 
 ```console
 $ kubectl apply -f - <<EOF
@@ -131,14 +131,14 @@ spec:
     processors:
 
     exporters:
-      logging:
+      debug:
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 ```
 
@@ -148,7 +148,7 @@ DaemonSet should satisfy your needs if you want the Collector to run as an agent
 In this case, every Kubernetes node will have its own Collector copy which would monitor the pods in it.
 
 The following example configuration deploys the Collector as DaemonSet resource. The receiver is Jaeger receiver and
-the exporter is logging exporter.
+the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
@@ -167,15 +167,15 @@ spec:
     processors:
 
     exporters:
-      logging:
-        loglevel: debug
+      debug:
+        verbosity: detailed
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 ```
 
@@ -189,7 +189,7 @@ There are basically three main advantages to deploy the Collector as the Statefu
   to attach the same sticky identity (e.g., volumes) to the new pod.
 
 The following example configuration deploys the Collector as StatefulSet resource with three replicas. The receiver
-is Jaeger receiver and the exporter is logging exporter.
+is Jaeger receiver and the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
@@ -208,14 +208,14 @@ spec:
     processors:
 
     exporters:
-      logging:
+      debug:
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 ```
 
@@ -245,14 +245,14 @@ spec:
     processors:
 
     exporters:
-      logging:
+      debug:
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 
 $ kubectl apply -f - <<EOF
