@@ -6,17 +6,17 @@ metadata:
   name: example-otelcol
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.68.0
+    helm.sh/chart: opentelemetry-collector-0.69.1
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.85.0"
+    app.kubernetes.io/version: "0.86.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
     connectors:
       spanmetrics: null
     exporters:
-      logging: {}
+      debug: {}
       otlp:
         endpoint: 'example-jaeger-collector:4317'
         tls:
@@ -111,7 +111,7 @@ data:
       pipelines:
         logs:
           exporters:
-          - logging
+          - debug
           processors:
           - k8sattributes
           - memory_limiter
@@ -121,7 +121,7 @@ data:
         metrics:
           exporters:
           - otlphttp/prometheus
-          - logging
+          - debug
           processors:
           - k8sattributes
           - memory_limiter
@@ -135,7 +135,7 @@ data:
         traces:
           exporters:
           - otlp
-          - logging
+          - debug
           - spanmetrics
           processors:
           - k8sattributes
