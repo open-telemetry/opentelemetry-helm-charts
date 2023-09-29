@@ -21,11 +21,10 @@ data:
         endpoint: 'example-jaeger-collector:4317'
         tls:
           insecure: true
-      prometheus:
-        enable_open_metrics: true
-        endpoint: ${env.MY_POD_IP}:9464
-        resource_to_telemetry_conversion:
-          enabled: true
+      otlphttp/prometheus:
+        endpoint: 'example-prometheus-server:9090/api/v1/otlp'
+        tls:
+          insecure: true
     extensions:
       health_check: {}
       memory_ballast:
@@ -121,7 +120,7 @@ data:
           - otlp
         metrics:
           exporters:
-          - prometheus
+          - otlphttp/prometheus
           - logging
           processors:
           - k8sattributes
