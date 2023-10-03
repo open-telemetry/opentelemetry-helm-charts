@@ -105,31 +105,7 @@ containers:
       - mountPath: /conf
         name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
       {{- end }}
-      {{- range .Values.extraConfigMapMounts }}
-      - name: {{ .name }}
-        mountPath: {{ .mountPath }}
-        readOnly: {{ .readOnly }}
-        {{- if .subPath }}
-        subPath: {{ .subPath }}
-        {{- end }}
-      {{- end }}
-      {{- range .Values.extraHostPathMounts }}
-      - name: {{ .name }}
-        mountPath: {{ .mountPath }}
-        readOnly: {{ .readOnly }}
-        {{- if .mountPropagation }}
-        mountPropagation: {{ .mountPropagation }}
-        {{- end }}
-      {{- end }}
-      {{- range .Values.secretMounts }}
-      - name: {{ .name }}
-        mountPath: {{ .mountPath }}
-        readOnly: {{ .readOnly }}
-        {{- if .subPath }}
-        subPath: {{ .subPath }}
-        {{- end }}
-      {{- end }}
-      {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+      {{- if .Values.presets.logsCollection.enabled }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
@@ -169,22 +145,7 @@ volumes:
         - key: relay
           path: relay.yaml
   {{- end }}
-  {{- range .Values.extraConfigMapMounts }}
-  - name: {{ .name }}
-    configMap:
-      name: {{ .configMap }}
-  {{- end }}
-  {{- range .Values.extraHostPathMounts }}
-  - name: {{ .name }}
-    hostPath:
-      path: {{ .hostPath }}
-  {{- end }}
-  {{- range .Values.secretMounts }}
-  - name: {{ .name }}
-    secret:
-      secretName: {{ .secretName }}
-  {{- end }}
-  {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+  {{- if .Values.presets.logsCollection.enabled }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
