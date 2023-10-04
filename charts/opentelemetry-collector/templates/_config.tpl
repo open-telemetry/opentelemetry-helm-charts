@@ -127,6 +127,7 @@ receivers:
               - /proc/*
               - /sys/*
               - /run/k3s/containerd/*
+              - /run/containerd/runc/*
               - /var/lib/docker/*
               - /var/lib/kubelet/*
               - /snap/*
