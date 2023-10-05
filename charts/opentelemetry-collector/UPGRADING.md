@@ -16,6 +16,23 @@ created but the Memory Ballast Extension will still be removed.
 If you are not interested in using `GOMEMLIMIT` then this change does not affect you.  But, depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
 the use of `GOMEMLIMIT` may completely replace the Memory Ballast Extension in the future.
 
+## 0.69.3 to 0.70.0
+
+The following deprecated fields have been removed.  Please use the new values:
+
+- `extraConfigMapMounts` -> `extraVolumes`
+- `extraHostPathMounts` -> `extraVolumes`
+- `secretMounts` -> `extraVolumes`
+- `containerLogs` -> `presets.logsCollection`
+
+## 0.69.0 to 0.69.1 & 0.69.2
+
+The `loggingexporter` was replaced with the `debugexporter`. This ended up being an accidental breaking change for any user that depended on the default logging exporter config when explicitly listing the logging exporter in an exporter list.
+
+When using versions `0.69.1` or `0.69.2` you should explicitly list the debugging exporter instead of the logging exporter. You other option is to skip these version and use `0.69.3` or newer, which includes the logging exporter configuration.
+
+**The logging exporter will be removed in a future version.** We highly recommend switching to the debug exporter.
+
 ## 0.67 to 0.68
 
 The `preset.kubernetesEvents` preset now excludes `DELETED` watch types so that an log is not ingested when Kubernetes deletes an event.
