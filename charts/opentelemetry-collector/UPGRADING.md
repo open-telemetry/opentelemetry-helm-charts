@@ -4,7 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.69.2 to 0.70.0
+## 0.69.3 to 0.70.0
 
 The following deprecated fields have been removed.  Please use the new values:
 
@@ -12,6 +12,14 @@ The following deprecated fields have been removed.  Please use the new values:
 - `extraHostPathMounts` -> `extraVolumes`
 - `secretMounts` -> `extraVolumes`
 - `containerLogs` -> `presets.logsCollection`
+
+## 0.69.0 to 0.69.1 & 0.69.2
+
+The `loggingexporter` was replaced with the `debugexporter`. This ended up being an accidental breaking change for any user that depended on the default logging exporter config when explicitly listing the logging exporter in an exporter list.
+
+When using versions `0.69.1` or `0.69.2` you should explicitly list the debugging exporter instead of the logging exporter. You other option is to skip these version and use `0.69.3` or newer, which includes the logging exporter configuration.
+
+**The logging exporter will be removed in a future version.** We highly recommend switching to the debug exporter.
 
 ## 0.67 to 0.68
 
