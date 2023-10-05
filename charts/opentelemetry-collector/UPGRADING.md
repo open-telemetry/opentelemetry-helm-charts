@@ -4,6 +4,14 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.69.3 to 0.70.0
+
+The following deprecated fields have been removed.  Please use the new values:
+
+- `extraConfigMapMounts` -> `extraVolumes`
+- `extraHostPathMounts` -> `extraVolumes`
+- `secretMounts` -> `extraVolumes`
+- `containerLogs` -> `presets.logsCollection`
 
 ## 0.69.0 to 0.69.1 & 0.69.2
 

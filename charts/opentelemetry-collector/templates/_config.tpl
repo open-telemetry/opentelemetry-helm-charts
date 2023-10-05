@@ -34,7 +34,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+{{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
@@ -59,7 +59,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
-{{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+{{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
