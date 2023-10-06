@@ -10,6 +10,22 @@
 [WARNING] "secretMounts" parameter is deprecated, please use "extraVolumes" or "extraVolumeMounts" instead.
 {{ end }}
 
+{{- if not (eq (toString .Values.extraEnvs) "<nil>") }}
+[WARNING] "extraEnvs" parameter is deprecated, please use "extraEnvsMap" instead.
+{{ end }}
+
+{{- if not (eq (toString .Values.extraEnvsFrom) "<nil>") }}
+[WARNING] "extraEnvsFrom" parameter is deprecated, please use "extraEnvsFromMap" instead.
+{{ end }}
+
+{{- if not (eq (toString .Values.extraVolumes) "<nil>") }}
+[WARNING] "extraVolumes" parameter is deprecated, please use "extraVolumesMap" instead.
+{{ end }}
+
+{{- if not (eq (toString .Values.extraVolumeMounts) "<nil>") }}
+[WARNING] "extraVolumeMounts" parameter is deprecated, please use "extraVolumeMountsMap" instead.
+{{ end }}
+
 {{- if and (not (eq .Values.mode "daemonset")) (not (eq .Values.mode "deployment")) (not (eq .Values.mode "statefulset")) }}
 {{ fail "[ERROR] 'mode' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
 {{ end }}
