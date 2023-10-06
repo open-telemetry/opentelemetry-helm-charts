@@ -21,7 +21,7 @@ Merge user supplied config into memory limiter config.
 {{-   $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
 {{- end }}
 
-{{- if and .Values.useGOMEMLIMIT }}
+{{- if .Values.useGOMEMLIMIT }}
   {{- if (((.Values.config).service).extensions) }}
     {{- $_ := set .Values.config.service "extensions" (without .Values.config.service.extensions "memory_ballast") }}
   {{- end}}
