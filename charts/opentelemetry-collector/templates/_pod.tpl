@@ -47,6 +47,10 @@ containers:
           fieldRef:
             fieldPath: spec.nodeName
       {{- end }}
+      {{- if and (.Values.useGOMEMLIMIT) ((((.Values.resources).limits).memory))  }}
+      - name: GOMEMLIMIT
+        value: {{ div (mul (include "opentelemetry-collector.convertMemToMib" .Values.resources.limits.memory) 80) 100 }}Mi
+      {{- end }}
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
