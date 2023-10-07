@@ -31,6 +31,15 @@ spec:
           else exit 1
           fi
   restartPolicy: Never
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
 ---
 apiVersion: v1
@@ -64,3 +73,13 @@ spec:
           else exit 1
           fi
   restartPolicy: Never
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
+
