@@ -5,7 +5,7 @@ kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.73.1
+    helm.sh/chart: opentelemetry-collector-0.73.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.85.0"
@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: c03c289b9f2d849111f740b94edd50d13ceb0396332798d188812cc9aff5b795
+        checksum/config: 47f6ec7a76cf7c0864d48368c5898bac4f00ea0a487392a9c65e6c9400ccf46e
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -70,18 +70,6 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: TEST
-              valueFrom:
-                secretKeyRef:
-                  key: PRIVATE_KEY
-                  name: test
-            - name: TEST2
-              value: test
-          envFrom:
-          - configMapRef:
-              name: env-configmap
-          - secretRef:
-              name: env-secret
           livenessProbe:
             httpGet:
               path: /
@@ -97,10 +85,6 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-            - name: testpath
-              mountPath: /etc/test
-              mountPropagation: HostToContainer
-              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -108,9 +92,6 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
-        - name: testpath
-          hostPath:
-            path: /etc/test
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: false

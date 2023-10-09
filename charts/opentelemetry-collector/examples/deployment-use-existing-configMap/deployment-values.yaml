@@ -12,15 +12,15 @@ command:
   name: otelcol-contrib
   extraArgs: ["--config=/conf/config.yaml"]
 
-extraVolumesMap:
-  custom-otelcol-configmap:
+extraVolumes:
+  - name: custom-otelcol-configmap
     configMap:
       name: custom-otel-collector-config
       items:
         - key: config
           path: config.yaml
       defaultMode: 420
-extraVolumeMountsMap:
-  custom-otelcol-configmap:
+extraVolumeMounts:
+  - name: custom-otelcol-configmap
     mountPath: /conf/config.yaml
 

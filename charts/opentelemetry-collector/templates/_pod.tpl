@@ -57,19 +57,9 @@ containers:
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
-      {{- range $key, $value := .Values.extraEnvsMap }}
-      - name: {{ $key }}
-        {{- toYaml $value | nindent 8 }}
-      {{- end }}
-    {{- if or .Values.extraEnvsFrom .Values.extraEnvsFromMap }}
+    {{- with .Values.extraEnvsFrom }}
     envFrom:
-    {{- with .Values.extraEnvsFrom}}
     {{- . | toYaml | nindent 6 }}
-    {{- end }}
-    {{- range $key, $value := .Values.extraEnvsFromMap }}
-    - {{ $value }}:
-        name: {{ $key }}
-    {{- end }}
     {{- end }}
     {{- if .Values.lifecycleHooks }}
     lifecycle:
@@ -179,12 +169,6 @@ containers:
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
-      {{- if .Values.extraVolumeMountsMap }}
-      {{- range $key, $value := .Values.extraVolumeMountsMap }}
-      - name: {{ $key }}
-        {{- toYaml $value | nindent 8 }}
-      {{- end }}
-      {{- end }}
 {{- with .Values.extraContainers }}
 {{- toYaml . | nindent 2 }}
 {{- end }}
@@ -255,10 +239,6 @@ volumes:
   {{- end }}
   {{- if .Values.extraVolumes }}
   {{- toYaml .Values.extraVolumes | nindent 2 }}
-  {{- end }}
-  {{- range $key, $value := .Values.extraVolumesMap }}
-  - name: {{ $key }}
-    {{- toYaml $value | nindent 4 }}
   {{- end }}
 nodeSelector:
 {{- if .Values.nodeSelector }}
