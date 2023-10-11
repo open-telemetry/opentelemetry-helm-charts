@@ -31,6 +31,10 @@
 [WARNING] Setting internalTrafficPolicy to 'Cluster' on Daemonset is not recommended. Consider using 'Local' instead.
 {{ end }}
 
+{{- if and (.Values.useGOMEMLIMIT) (not ((((.Values.resources).limits).memory))) }}
+[WARNING] "useGOMEMLIMIT" is enabled but memory limits have not been supplied, which means no GOMEMLIMIT env var was configured but the Memory Ballast Extension was removed. It is highly recommended to only use "useGOMEMLIMIT" when memory limits have been set.
+{{ end }}
+
 {{- if .Values.configMap.create }}
 {{- range $key, $value := (((.Values.config).service).pipelines) }}
 {{- if has "logging" ($value.exporters) }}

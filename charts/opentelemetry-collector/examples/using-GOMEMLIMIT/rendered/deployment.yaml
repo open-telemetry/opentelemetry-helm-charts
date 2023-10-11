@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/version: "0.86.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -24,7 +24,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 0487773e701692d5a8ce17bcb985b307798a2a352c0f16fa9cac69132a39b699
+        checksum/config: 0607a429bfee51aa8a7383b2ccfe6b5ef13838fe616d18769bce3b926e4fc34e
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -71,6 +71,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: GOMEMLIMIT
+              value: 156MiB
           livenessProbe:
             httpGet:
               path: /
@@ -81,8 +83,8 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 2
-              memory: 4Gi
+              cpu: 100m
+              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
