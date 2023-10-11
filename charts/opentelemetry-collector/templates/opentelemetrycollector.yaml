@@ -197,6 +197,7 @@ spec:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   serviceAccount: {{ include "opentelemetry-collector.serviceAccountName" . }}
+  hostNetwork: {{ .Values.hostNetwork }}
   config: |
   {{- if or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")  -}}
   {{- include "opentelemetry-collector.deploymentConfig" . | nindent 4 -}}
