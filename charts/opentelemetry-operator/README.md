@@ -49,8 +49,14 @@ $ helm install --namespace opentelemetry-operator-system \
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
-$ helm install  --set admissionWebhooks.certManager.enabled=false --set admissionWebhooks.certManager.autoGenerateCert=true \
+$ helm install --set admissionWebhooks.certManager.enabled=false --set admissionWebhooks.certManager.autoGenerateCert=true \
   opentelemetry-operator open-telemetry/opentelemetry-operator
+```
+
+Additional featureGates can also be enabled through the Helm installation. For enabling the [rewrite target allocator](https://github.com/open-telemetry/opentelemetry-operator#target-allocator-config-rewriting) feature, add a `--set` flag as follows.
+
+```console
+$ helm install --set manager.featureGates=operator.collector.rewritetargetallocator opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
