@@ -53,12 +53,6 @@ $ helm install --set admissionWebhooks.certManager.enabled=false --set admission
   opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
-Additional featureGates can also be enabled through the Helm installation. For enabling the [rewrite target allocator](https://github.com/open-telemetry/opentelemetry-operator#target-allocator-config-rewriting) feature, add a `--set` flag as follows.
-
-```console
-$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator --set manager.featureGates=operator.collector.rewritetargetallocator
-```
-
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
 
 ## Uninstall Chart
@@ -99,6 +93,14 @@ The following command will show all the configurable options with detailed comme
 
 ```console
 $ helm show values open-telemetry/opentelemetry-operator
+```
+
+Extra configuration values can be passed into the the chart individually using the `--set` flag, or in a values file using the `--values` flag as per the `helm install` [instructions](https://helm.sh/docs/helm/helm_install/).  
+
+Additional featureGates need to be enabled during the Helm installation. Enabling the [rewrite target allocator](https://github.com/open-telemetry/opentelemetry-operator#target-allocator-config-rewriting) feature gate can be done by adding a `--set` flag as follows:
+
+```console
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator --set manager.featureGates=operator.collector.rewritetargetallocator
 ```
 
 ## Install OpenTelemetry Collector
