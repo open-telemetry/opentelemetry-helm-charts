@@ -56,7 +56,7 @@ $ helm install --set admissionWebhooks.certManager.enabled=false --set admission
 Additional featureGates can also be enabled through the Helm installation. For enabling the [rewrite target allocator](https://github.com/open-telemetry/opentelemetry-operator#target-allocator-config-rewriting) feature, add a `--set` flag as follows.
 
 ```console
-$ helm install --set manager.featureGates=operator.collector.rewritetargetallocator opentelemetry-operator open-telemetry/opentelemetry-operator
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator --set manager.featureGates=operator.collector.rewritetargetallocator
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
