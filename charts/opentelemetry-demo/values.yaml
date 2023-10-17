@@ -669,13 +669,14 @@ jaeger:
     cassandra: false
   allInOne:
     enabled: true
+    # FIXME: Remove this tag after the Jaeger Helm chart supports appVersion >= "1.50"
+    tag: "1.50"
     args:
-      - "--memory.max-traces"
-      - "8000"
-      - "--query.base-path"
-      - "/jaeger/ui"
-      - "--prometheus.server-url"
-      - 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090'
+      - "--memory.max-traces=8000"
+      - "--query.base-path=/jaeger/ui"
+      - "--prometheus.server-url=http://{{ include \"otel-demo.name\" . }}-prometheus-server:9090"
+      - "--prometheus.query.normalize-calls=true"
+      - "--prometheus.query.normalize-duration=true"
     extraEnv:
       - name: METRICS_STORAGE_TYPE
         value: prometheus
@@ -709,10 +710,6 @@ prometheus:
     extraFlags:
       - "enable-feature=exemplar-storage"
       - "enable-feature=otlp-write-receiver"
-    global:
-      scrape_interval: 5s
-      scrape_timeout: 3s
-      evaluation_interval: 30s
     persistentVolume:
       enabled: false
     service:
@@ -723,17 +720,7 @@ prometheus:
 
   serverFiles:
     prometheus.yml:
-      scrape_configs:
-        - job_name: 'opentelemetry-community-demo'
-          honor_labels: true
-          kubernetes_sd_configs:
-            - role: pod
-              namespaces:
-                own_namespace: true
-          relabel_configs:
-            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
-              action: keep
-              regex: true
+      scrape_configs: []
 
 grafana:
   enabled: true
