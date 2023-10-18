@@ -97,7 +97,7 @@ $ helm show values open-telemetry/opentelemetry-operator
 
 Extra configuration values can be passed into the the chart individually using the `--set` flag, or in a values file using the `--values` flag as per the `helm install` [instructions](https://helm.sh/docs/helm/helm_install/).  
 
-Additional featureGates need to be enabled during the Helm installation. Enabling the [rewrite target allocator](https://github.com/open-telemetry/opentelemetry-operator#target-allocator-config-rewriting) feature gate can be done by adding a `--set` flag as follows:
+Additional Operator featureGates may need to be enabled during the Helm installation. For example, enabling the [rewrite target allocator](https://github.com/open-telemetry/opentelemetry-operator#target-allocator-config-rewriting) feature gate can be done by adding a `--set` flag as follows:
 
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator --set manager.featureGates=operator.collector.rewritetargetallocator
