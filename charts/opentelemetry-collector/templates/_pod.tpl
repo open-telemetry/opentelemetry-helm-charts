@@ -24,7 +24,7 @@ containers:
       {{- end }}
       {{- end }}
     securityContext:
-      {{- if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
+      {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (.Values.presets.logsCollection.storeCheckpoints) }}
       runAsUser: 0
       runAsGroup: 0
       {{- else -}}

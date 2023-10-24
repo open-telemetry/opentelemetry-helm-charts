@@ -57,7 +57,7 @@ spec:
   {{- end }}
     {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
   podSecurityContext:
-    {{- if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
+    {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (.Values.presets.logsCollection.storeCheckpoints) }}
     runAsUser: 0
     runAsGroup: 0
     {{- else -}}
