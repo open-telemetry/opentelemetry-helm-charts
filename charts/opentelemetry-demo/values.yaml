@@ -1,5 +1,5 @@
 default:
-  # list of environment variables applied to all components
+  # List of environment variables applied to all components
   env:
     - name: OTEL_SERVICE_NAME
       valueFrom:
@@ -23,11 +23,16 @@ default:
     tag: ""
     pullPolicy: IfNotPresent
     pullSecrets: []
+  # Default # of replicas for all components
+  replicas: 1
+  # Default schedulingRules for all components
   schedulingRules:
     nodeSelector: {}
     affinity: {}
     tolerations: []
+  # Default securityContext for all components
   securityContext: {}
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -516,6 +521,7 @@ components:
     imageOverride:
       repository: "postgres"
       tag: "14"
+    replicas: 1
     ports:
       - name: postgres
         value: 5432
@@ -538,6 +544,7 @@ components:
     enabled: true
     useDefault:
       env: true
+    replicas: 1
     ports:
       - name: plaintext
         value: 9092
@@ -565,6 +572,7 @@ components:
     imageOverride:
       repository: "redis"
       tag: "alpine"
+    replicas: 1
     ports:
       - name: redis
         value: 6379

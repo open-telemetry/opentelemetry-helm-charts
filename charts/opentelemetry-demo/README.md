@@ -82,6 +82,7 @@ the demo
 | `default.image.tag`                    | Demo components image tag (leave blank to use app version)                                | `nil`                                                |
 | `default.image.pullPolicy`             | Demo components image pull policy                                                         | `IfNotPresent`                                       |
 | `default.image.pullSecrets`            | Demo components image pull secrets                                                        | `[]`                                                 |
+| `default.replicas`                     | Number of replicas for each component                                                     | `1`                                                  |
 | `default.schedulingRules.nodeSelector` | Node labels for pod assignment                                                            | `{}`                                                 |
 | `default.schedulingRules.affinity`     | Man of node/pod affinities                                                                | `{}`                                                 |
 | `default.schedulingRules.tolerations`  | Tolerations for pod assignment                                                            | `[]`                                                 |
@@ -117,6 +118,7 @@ component.
 | `ports`                              | Array of ports to open for deployment and service of this component                                        | `[]`                                                          |
 | `env`                                | Array of environment variables added to this component                                                     | Each component will have its own set of environment variables |
 | `envOverrides`                       | Used to override individual environment variables without re-specifying the entire array                   | `[]`                                                          |
+| `replicas`                           | Number of replicas for this component                                                                      | `nil`                                                         |
 | `resources`                          | CPU/Memory resource requests/limits                                                                        | Each component will have a default memory limit set           |
 | `schedulingRules.nodeSelector`       | Node labels for pod assignment                                                                             | `{}`                                                          |
 | `schedulingRules.affinity`           | Man of node/pod affinities                                                                                 | `{}`                                                          |
