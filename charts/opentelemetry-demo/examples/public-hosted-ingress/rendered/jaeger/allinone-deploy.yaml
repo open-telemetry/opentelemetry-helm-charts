@@ -5,7 +5,7 @@ kind: Deployment
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: jaeger-0.71.11
+    helm.sh/chart: jaeger-0.71.17
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "1.45.0"
@@ -31,7 +31,7 @@ spec:
       annotations:
         prometheus.io/port: "14269"
         prometheus.io/scrape: "true"
-    spec:
+    spec:    
       containers:
         - env:
             - name: METRICS_STORAGE_TYPE
@@ -44,16 +44,15 @@ spec:
               value: "false"
             - name: COLLECTOR_OTLP_ENABLED
               value: "true"
-          image: jaegertracing/all-in-one:1.45.0
+          image: jaegertracing/all-in-one:1.50
           imagePullPolicy: IfNotPresent
           name: jaeger
           args:
-            - "--memory.max-traces"
-            - "10000"
-            - "--query.base-path"
-            - "/jaeger/ui"
-            - "--prometheus.server-url"
-            - "http://example-prometheus-server:9090"
+            - "--memory.max-traces=8000"
+            - "--query.base-path=/jaeger/ui"
+            - "--prometheus.server-url=http://example-prometheus-server:9090"
+            - "--prometheus.query.normalize-calls=true"
+            - "--prometheus.query.normalize-duration=true"
           ports:
             - containerPort: 5775
               protocol: UDP

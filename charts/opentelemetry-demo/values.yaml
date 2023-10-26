@@ -6,32 +6,12 @@ default:
         fieldRef:
           apiVersion: v1
           fieldPath: "metadata.labels['app.kubernetes.io/component']"
-    - name: OTEL_K8S_NAMESPACE
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.namespace
-    - name: OTEL_K8S_NODE_NAME
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: spec.nodeName
-    - name: OTEL_K8S_POD_NAME
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.name
-    - name: OTEL_K8S_POD_UID
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.uid
     - name: OTEL_COLLECTOR_NAME
       value: '{{ include "otel-demo.name" . }}-otelcol'
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+      value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -176,7 +156,7 @@ components:
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTLP_LOGS_EXPORTER
+      - name: OTEL_LOGS_EXPORTER
         value: otlp
     resources:
       limits:
@@ -193,6 +173,8 @@ components:
         value: "8080"
       - name: ASPNETCORE_URLS
         value: http://*:$(CART_SERVICE_PORT)
+      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -351,7 +333,7 @@ components:
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
+        value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
     resources:
       limits:
         memory: 200Mi
@@ -389,8 +371,10 @@ components:
         value: "16686"
       - name: JAEGER_SERVICE_HOST
         value: '{{ include "otel-demo.name" . }}-jaeger-query'
-      - name: OTEL_COLLECTOR_PORT
+      - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
+      - name: OTEL_COLLECTOR_PORT_HTTP
+        value: "4318"
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
     resources:
@@ -415,15 +399,15 @@ components:
       - name: LOCUST_SPAWN_RATE
         value: "1"
       - name: LOCUST_HOST
-        value: 'http://{{ include "otel-demo.name" . }}-frontend:8080'
+        value: 'http://{{ include "otel-demo.name" . }}-frontendproxy:8080'
       - name: LOCUST_HEADLESS
         value: "false"
       - name: LOCUST_AUTOSTART
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 120Mi
@@ -596,9 +580,12 @@ opentelemetry-collector:
   enabled: true
   nameOverride: otelcol
   mode: deployment
+  presets:
+    kubernetesAttributes:
+      enabled: true
   resources:
     limits:
-      memory: 125Mi
+      memory: 200Mi
   service:
     type: ClusterIP
   ports:
@@ -618,9 +605,6 @@ opentelemetry-collector:
       otlp:
         protocols:
           http:
-            # Bind to 0.0.0.0 to allow for `kubectl port-forward` to work
-            # This may be susceptible to denial of service attacks - CWE-1327 https://cwe.mitre.org/data/definitions/1327.html
-            endpoint: 0.0.0.0:4318
             # Since this collector needs to receive data from the web, enable cors for all origins
             # `allowed_origins` can be refined for your deployment domain
             cors:
@@ -635,25 +619,36 @@ opentelemetry-collector:
         tls:
           insecure: true
       # Create an exporter to Prometheus (metrics)
-      prometheus:
-        endpoint: '0.0.0.0:9464'
-        resource_to_telemetry_conversion:
-          enabled: true
-        enable_open_metrics: true
+      otlphttp/prometheus:
+        endpoint: 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090/api/v1/otlp'
+        tls:
+          insecure: true
 
     processors:
-      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
-      transform:
-        metric_statements:
-          - context: metric
-            statements:
-              - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
-      # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
+      resource:
+        attributes:
+        - key: service.instance.id
+          from_attribute: k8s.pod.uid
+          action: insert
       filter/ottl:
         error_mode: ignore
         metrics:
           metric:
-            - 'name == "queueSize"'
+            # FIXME: remove when a Metrics View is implemented in the checkout and productcatalog components
+            # or when this issue is resolved: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/3071
+            - 'name == "rpc.server.duration"'
+      transform:
+        metric_statements:
+          - context: metric
+            statements:
+              # FIXME: remove when this issue is resolved: https://github.com/open-telemetry/opentelemetry-java/issues/4834
+              - set(description, "") where name == "queueSize"
+              # FIXME: remove when these 2 issues are resolved:
+              # Java: https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/9478
+              # Go: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/4301
+              - set(description, "") where name == "rpc.server.duration"
+              # FIXME: remove when this issue is resolved: https://github.com/open-telemetry/opentelemetry-python-contrib/issues/1958
+              - set(description, "") where name == "http.client.duration"
 
     connectors:
       spanmetrics:
@@ -661,12 +656,12 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, batch]
-          exporters: [otlp, logging, spanmetrics]
+          processors: [memory_limiter, resource, batch]
+          exporters: [otlp, debug, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]
-          processors: [memory_limiter, filter/ottl, transform, batch]
-          exporters: [prometheus, logging]
+          processors: [memory_limiter, filter/ottl, transform, resource, batch]
+          exporters: [otlphttp/prometheus, debug]
 
 jaeger:
   enabled: true
@@ -674,13 +669,14 @@ jaeger:
     cassandra: false
   allInOne:
     enabled: true
+    # FIXME: Remove this tag after the Jaeger Helm chart supports appVersion >= "1.50"
+    tag: "1.50"
     args:
-      - "--memory.max-traces"
-      - "10000"
-      - "--query.base-path"
-      - "/jaeger/ui"
-      - "--prometheus.server-url"
-      - 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090'
+      - "--memory.max-traces=8000"
+      - "--query.base-path=/jaeger/ui"
+      - "--prometheus.server-url=http://{{ include \"otel-demo.name\" . }}-prometheus-server:9090"
+      - "--prometheus.query.normalize-calls=true"
+      - "--prometheus.query.normalize-duration=true"
     extraEnv:
       - name: METRICS_STORAGE_TYPE
         value: prometheus
@@ -713,10 +709,7 @@ prometheus:
   server:
     extraFlags:
       - "enable-feature=exemplar-storage"
-    global:
-      scrape_interval: 5s
-      scrape_timeout: 3s
-      evaluation_interval: 30s
+      - "enable-feature=otlp-write-receiver"
     persistentVolume:
       enabled: false
     service:
@@ -727,17 +720,7 @@ prometheus:
 
   serverFiles:
     prometheus.yml:
-      scrape_configs:
-        - job_name: 'opentelemetry-community-demo'
-          honor_labels: true
-          kubernetes_sd_configs:
-            - role: pod
-              namespaces:
-                own_namespace: true
-          relabel_configs:
-            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
-              action: keep
-              regex: true
+      scrape_configs: []
 
 grafana:
   enabled: true
@@ -793,4 +776,4 @@ grafana:
     default: '{{ include "otel-demo.name" . }}-grafana-dashboards'
   resources:
     limits:
-      memory: 100Mi
+      memory: 150Mi

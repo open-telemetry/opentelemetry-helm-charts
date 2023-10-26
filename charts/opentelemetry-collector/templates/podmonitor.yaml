@@ -3,6 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}-agent
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
     {{- range $key, $value := .Values.podMonitor.extraLabels }}

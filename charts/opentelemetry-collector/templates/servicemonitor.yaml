@@ -3,6 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
     {{- range $key, $value := .Values.serviceMonitor.extraLabels }}

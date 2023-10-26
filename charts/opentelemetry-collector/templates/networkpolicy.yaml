@@ -3,6 +3,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
   {{- if .Values.networkPolicy.annotations }}

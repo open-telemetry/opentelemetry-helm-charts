@@ -125,7 +125,7 @@ spec:
       subPath: {{ .subPath }}
       {{- end }}
     {{- end }}
-    {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+    {{- if .Values.presets.logsCollection.enabled }}
     - name: varlogpods
       mountPath: /var/log/pods
       readOnly: true
@@ -162,7 +162,7 @@ spec:
       secret:
         secretName: {{ .secretName }}
     {{- end }}
-    {{- if eq (include "opentelemetry-collector.logsCollectionEnabled" .) "true" }}
+    {{- if .Values.presets.logsCollection.enabled  }}
     - name: varlogpods
       hostPath:
         path: /var/log/pods

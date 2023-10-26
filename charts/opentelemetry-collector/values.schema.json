@@ -35,6 +35,10 @@
       "type": "boolean",
       "description": "Specifies whether the chart is deployed on Windows nodes."
     },
+    "namespaceOverride": {
+      "type": "string",
+      "description": "Name of the namespace to deploy the resources into."
+    },
     "mode": {
       "type": "string",
       "enum": ["daemonset", "deployment", "statefulset", ""]
@@ -274,6 +278,14 @@
           "properties": {
             "enabled": {
               "description": "Specifies whether the collector should add Kubernetes metdata to resource attributes.",
+              "type": "boolean"
+            },
+            "extractAllPodLabels": {
+              "description": "Specifies whether the k8sattributes processor should extract all pod labels.",
+              "type": "boolean"
+            },
+            "extractAllPodAnnotations": {
+              "description": "Specifies whether the k8sattributes processor should extract all pod annotations.",
               "type": "boolean"
             }
           }
@@ -561,15 +573,6 @@
           "required": ["enabled"]
         }
       }
-    },
-    "containerLogs": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        }
-      },
-      "required": ["enabled"]
     },
     "resources": {
       "type": "object",
@@ -1130,6 +1133,9 @@
               }
             }
         }
+    },
+    "useGOMEMLIMIT": {
+      "type": "boolean"
     }
   },
   "required": ["mode"]

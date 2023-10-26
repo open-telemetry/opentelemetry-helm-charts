@@ -4,11 +4,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: example-otelcol
+  namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.65.1
+    helm.sh/chart: opentelemetry-collector-0.72.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.82.0"
+    app.kubernetes.io/version: "0.87.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -23,7 +24,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 20851ed0c4bdafbefc52a90b489ba1a5a377b40e2add9425e2e4de2dcfce0f2d
+        checksum/config: ac1ca0b2242e7d58cf9df2cf06e643c8667fb0b870e9b41fd510007979768a6a
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
@@ -44,9 +45,10 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.82.0"
+          image: "otel/opentelemetry-collector-contrib:0.87.0"
           imagePullPolicy: IfNotPresent
           ports:
+            
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
@@ -87,7 +89,7 @@ spec:
               port: 13133
           resources:
             limits:
-              memory: 125Mi
+              memory: 200Mi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap

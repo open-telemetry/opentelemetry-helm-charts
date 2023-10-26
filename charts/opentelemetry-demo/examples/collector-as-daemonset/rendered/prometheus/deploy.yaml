@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/component: server
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: v2.46.0
-    helm.sh/chart: prometheus-23.3.0
+    app.kubernetes.io/version: v2.47.0
+    helm.sh/chart: prometheus-25.1.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: prometheus
   name: example-prometheus-server
@@ -30,8 +30,8 @@ spec:
         app.kubernetes.io/component: server
         app.kubernetes.io/name: prometheus
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: v2.46.0
-        helm.sh/chart: prometheus-23.3.0
+        app.kubernetes.io/version: v2.47.0
+        helm.sh/chart: prometheus-25.1.0
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: prometheus
     spec:
@@ -40,7 +40,7 @@ spec:
       containers:
 
         - name: prometheus-server
-          image: "quay.io/prometheus/prometheus:v2.46.0"
+          image: "quay.io/prometheus/prometheus:v2.47.0"
           imagePullPolicy: "IfNotPresent"
           args:
             - --storage.tsdb.retention.time=15d
@@ -49,6 +49,7 @@ spec:
             - --web.console.libraries=/etc/prometheus/console_libraries
             - --web.console.templates=/etc/prometheus/consoles
             - --enable-feature=exemplar-storage
+            - --enable-feature=otlp-write-receiver
           ports:
             - containerPort: 9090
           readinessProbe:
