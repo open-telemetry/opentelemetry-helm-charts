@@ -1,7 +1,27 @@
 {{- if and (.Values.admissionWebhooks.create) (not .Values.admissionWebhooks.certManager.enabled) }}
 {{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) -}}
-{{- $ca := genCA "opentelemetry-operator-operator-ca" 365 -}}
-{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca -}}
+{{- $caCertEnc := "" }}
+{{- $certCrtEnc := "" }}
+{{- $certKeyEnc := "" }}
+{{- if .Values.admissionWebhooks.autoGenerateCert }}
+{{- $prevSecret := (lookup "v1" "Secret" .Release.Namespace (default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName )) }}
+{{- $prevHook := (lookup "admissionregistration.k8s.io/v1" "MutatingWebhookConfiguration" .Release.Namespace (print (include "opentelemetry-operator.MutatingWebhookName" . ) "-mutation")) }}
+{{- if and .Values.admissionWebhooks.autoGenerateReuseCert $prevSecret $prevHook }}
+{{- $certCrtEnc = index $prevSecret "data" "tls.crt" }}
+{{- $certKeyEnc = index $prevSecret "data" "tls.key" }}
+{{- $caCertEnc = (first $prevHook.webhooks).clientConfig.caBundle }}
+{{- else }}
+{{- $ca := genCA "opentelemetry-operator-operator-ca" 365 }}
+{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca }}
+{{- $certCrtEnc = b64enc $cert.Cert }}
+{{- $certKeyEnc = b64enc $cert.Key }}
+{{- $caCertEnc = b64enc $ca.Cert }}
+{{- end }}
+{{- else }}
+{{- $certCrtEnc = b64enc .Values.admissionWebhooks.cert_file }}
+{{- $certKeyEnc = b64enc .Values.admissionWebhooks.key_file }}
+{{- $caCertEnc = b64enc .Values.admissionWebhooks.ca_file }}
+{{- end }}
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/tls
@@ -21,13 +41,8 @@ metadata:
   name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
   namespace: {{ .Release.Namespace }}
 data:
-  {{- if .Values.admissionWebhooks.autoGenerateCert }}
-  tls.crt: {{ $cert.Cert | b64enc }}
-  tls.key: {{ $cert.Key | b64enc }}
-  {{- else }}
-  tls.crt: {{ .Values.admissionWebhooks.cert_file | b64enc }}
-  tls.key: {{ .Values.admissionWebhooks.key_file | b64enc }}
-  {{- end }}
+  tls.crt: {{ $certCrtEnc }}
+  tls.key: {{ $certKeyEnc }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
@@ -40,11 +55,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
@@ -75,11 +86,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
@@ -110,11 +117,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
@@ -156,11 +159,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
@@ -191,11 +190,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
@@ -225,11 +220,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
@@ -260,11 +251,7 @@ webhooks:
   - admissionReviewVersions:
       - v1
     clientConfig:
-      {{- if .Values.admissionWebhooks.autoGenerateCert }}
-      caBundle: {{ $ca.Cert | b64enc }}
-      {{- else }}
-      caBundle: {{ .Values.admissionWebhooks.ca_file | b64enc }}
-      {{- end }}
+      caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
