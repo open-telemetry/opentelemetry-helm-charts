@@ -95,6 +95,13 @@ Create the name of the clusterRoleBinding to use
 {{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
 
+{{/*
+Create the name of the priorityClass to use
+*/}}
+{{- define "opentelemetry-collector.priorityClassName" -}}
+{{- default (include "opentelemetry-collector.fullname" .) .Values.priorityClass.name }}
+{{- end }}
+
 {{- define "opentelemetry-collector.podAnnotations" -}}
 {{- if .Values.podAnnotations }}
 {{- tpl (.Values.podAnnotations | toYaml) . }}

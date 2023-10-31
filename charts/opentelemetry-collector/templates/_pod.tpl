@@ -182,6 +182,8 @@ initContainers:
 {{- end }}
 {{- if .Values.priorityClassName }}
 priorityClassName: {{ .Values.priorityClassName | quote }}
+ {{- else if and (.Values.priorityClass) (or (.Values.priorityClass.create) (.Values.priorityClass.name)) }}
+priorityClassName: {{ include "opentelemetry-collector.priorityClassName" . | quote }}
 {{- end }}
 volumes:
   {{- if .Values.configMap.create }}
