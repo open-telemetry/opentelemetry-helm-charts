@@ -448,11 +448,20 @@ receivers:
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (not (has "transform/k8s_attributes" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "transform/k8s_attributes" | uniq)  }}
+{{- end }}
 {{- if and ($config.service.pipelines.logs) (not (has "k8sattributes" $config.service.pipelines.logs.processors)) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
 {{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "transform/k8s_attributes" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "transform/k8s_attributes" | uniq)  }}
+{{- end }}
 {{- if and ($config.service.pipelines.metrics) (not (has "k8sattributes" $config.service.pipelines.metrics.processors)) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (not (has "transform/k8s_attributes" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "transform/k8s_attributes" | uniq)  }}
 {{- end }}
 {{- if and ($config.service.pipelines.traces) (not (has "k8sattributes" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
@@ -533,6 +542,18 @@ processors:
       {{- end }}
   transform/k8s_attributes:
     metric_statements:
+    - context: resource
+      statements:
+      - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1")
+      - delete_key(attributes, "k8s.replicaset.name")
+    trace_statements:
+    - context: resource
+      statements:
+      - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1")
+      - delete_key(attributes, "k8s.replicaset.name")
+    log_statements:
     - context: resource
       statements:
       - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])

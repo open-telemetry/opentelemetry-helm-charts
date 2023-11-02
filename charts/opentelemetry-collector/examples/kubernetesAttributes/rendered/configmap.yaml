@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.76.0
+    helm.sh/chart: opentelemetry-collector-0.76.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.88.0"
@@ -49,7 +49,21 @@ data:
         limit_percentage: 80
         spike_limit_percentage: 25
       transform/k8s_attributes:
+        log_statements:
+        - context: resource
+          statements:
+          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
+            "$$1")
+          - delete_key(attributes, "k8s.replicaset.name")
         metric_statements:
+        - context: resource
+          statements:
+          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
+            "$$1")
+          - delete_key(attributes, "k8s.replicaset.name")
+        trace_statements:
         - context: resource
           statements:
           - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
@@ -91,6 +105,7 @@ data:
           - logging
           processors:
           - k8sattributes
+          - transform/k8s_attributes
           - memory_limiter
           - batch
           receivers:
@@ -100,6 +115,7 @@ data:
           - logging
           processors:
           - k8sattributes
+          - transform/k8s_attributes
           - memory_limiter
           - batch
           receivers:
@@ -109,6 +125,7 @@ data:
           exporters:
           - logging
           processors:
+          - transform/k8s_attributes
           - resource
           - k8sattributes
           - batch
