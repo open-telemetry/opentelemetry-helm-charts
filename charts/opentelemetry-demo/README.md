@@ -118,7 +118,7 @@ component.
 | `ports`                              | Array of ports to open for deployment and service of this component                                        | `[]`                                                          |
 | `env`                                | Array of environment variables added to this component                                                     | Each component will have its own set of environment variables |
 | `envOverrides`                       | Used to override individual environment variables without re-specifying the entire array                   | `[]`                                                          |
-| `replicas`                           | Number of replicas for this component                                                                      | `nil`                                                         |
+| `replicas`                           | Number of replicas for this component                                                                      | `1` for ffsPostgres, kafka, and redis ; `nil` otherwise       |
 | `resources`                          | CPU/Memory resource requests/limits                                                                        | Each component will have a default memory limit set           |
 | `schedulingRules.nodeSelector`       | Node labels for pod assignment                                                                             | `{}`                                                          |
 | `schedulingRules.affinity`           | Man of node/pod affinities                                                                                 | `{}`                                                          |
