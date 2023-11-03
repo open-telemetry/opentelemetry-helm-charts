@@ -1,3 +1,6 @@
+{{/*
+Demo component Deployment template
+*/}}
 {{- define "otel-demo.deployment" }}
 ---
 apiVersion: apps/v1
@@ -7,6 +10,7 @@ metadata:
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
+  replicas: {{ .replicas | default .defaultValues.replicas }}
   selector:
     matchLabels:
       {{- include "otel-demo.selectorLabels" . | nindent 6 }}
@@ -77,6 +81,9 @@ spec:
       {{- end}}
 {{- end }}
 
+{{/*
+Demo component Service template
+*/}}
 {{- define "otel-demo.service" }}
 {{- if or .ports .service}}
 {{- $service := .service | default dict }}
@@ -114,6 +121,10 @@ spec:
     {{- include "otel-demo.selectorLabels" . | nindent 4 }}
 {{- end}}
 {{- end}}
+
+{{/*
+Demo component ConfigMap template
+*/}}
 {{- define "otel-demo.configmap" }}
 {{- if .configuration}}
 ---
@@ -130,6 +141,9 @@ data:
 {{- end}}
 {{- end}}
 
+{{/*
+Demo component Ingress template
+*/}}
 {{- define "otel-demo.ingress" }}
 {{- $hasIngress := false}}
 {{- if .ingress }}
