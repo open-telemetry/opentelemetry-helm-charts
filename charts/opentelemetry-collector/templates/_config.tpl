@@ -348,7 +348,7 @@ receivers:
     watch_observers: [k8s_observer]
     receivers:
       prometheus_simple:
-        rule: type == "port" && port == 8080 && pod.name contains "{{ .Release.Name }}-kube-state-metrics"
+        rule: type == "port" && port == 8080 && pod.name contains "{{tpl .Values.presets.kubernetesExtraMetrics.kubeStateMetricsName . }}"
         config:
           endpoint: '`endpoint`'
   prometheus/k8s_extra_metrics:
