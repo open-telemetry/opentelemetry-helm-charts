@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.76.2
+    helm.sh/chart: opentelemetry-collector-0.76.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.88.0"
@@ -105,9 +105,9 @@ data:
           - logging
           processors:
           - k8sattributes
-          - transform/k8s_attributes
           - memory_limiter
           - batch
+          - transform/k8s_attributes
           receivers:
           - otlp
         metrics:
@@ -115,9 +115,9 @@ data:
           - logging
           processors:
           - k8sattributes
-          - transform/k8s_attributes
           - memory_limiter
           - batch
+          - transform/k8s_attributes
           receivers:
           - otlp
           - prometheus
@@ -125,10 +125,10 @@ data:
           exporters:
           - logging
           processors:
-          - transform/k8s_attributes
           - resource
           - k8sattributes
           - batch
+          - transform/k8s_attributes
           receivers:
           - otlp
           - jaeger
