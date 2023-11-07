@@ -1,5 +1,10 @@
 # Upgrade guidelines
 
+## <0.42.1 to 0.42.1
+
+A type of flag `autoGenerateCert` has been changed, now it is an object with two attributes `enabled` and `recreate`.
+If you previously set `autoGenerateCert` to `true` or `false` you have to set `autoGenerateCert.enabled` accordingly.
+
 ## <0.35.0 to 0.35.0
 OpenTelemetry Operator [0.82.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.82.0) includes a change that allows setting the management state of custom resources [PR 1888](https://github.com/open-telemetry/opentelemetry-operator/pull/1888). Since helm doesn't upgrade CRDs ([documented](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-operator#upgrade-chart)) it is critical to manually update CRDs from chart `0.35.0` or above, possibly using [this procedure](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/69#issuecomment-1567285625).  If this step isn't taken existing otelcol CRs won't be reconciled by the operator.
 
