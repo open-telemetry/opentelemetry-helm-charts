@@ -612,6 +612,14 @@ opentelemetry-collector:
     opentelemetry_community_demo: "true"
   config:
     receivers:
+      filelog:
+        exclude:
+          - '/var/log/pods/*-otelcol*/opentelemetry-collector/*.log'
+          # logs are sent as OTLP, so we filter out the file logs
+          - '/var/log/pods/*/adservice/*.log'              # java
+          - '/var/log/pods/*/frauddetectionservice/*.log'  # kotlin
+          - '/var/log/pods/*/recommendationservice/*.log'  # python
+          - '/var/log/pods/*/cartservice/*.log'            # dotnet
       otlp:
         protocols:
           http:
