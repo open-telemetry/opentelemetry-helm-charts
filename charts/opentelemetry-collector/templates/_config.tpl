@@ -323,6 +323,7 @@ processors:
         - "k8s.pod.name"
         - "k8s.pod.uid"
         - "k8s.pod.start_time"
+        - "k8s.cluster.name"
       {{- if .Values.presets.kubernetesAttributes.extractAllPodLabels }}
       labels:
         - tag_name: $$1
