@@ -77,6 +77,14 @@ data:
           - set(description, "") where name == "rpc.server.duration"
           - set(description, "") where name == "http.client.duration"
     receivers:
+      filelog:
+        exclude:
+        - /var/log/pods/*-otelcol*/opentelemetry-collector/*.log
+        - /var/log/pods/*/adservice/*.log
+        - /var/log/pods/*/frauddetectionservice/*.log
+        - /var/log/pods/*/recommendationservice/*.log
+        - /var/log/pods/*/cartservice/*.log
+        - /var/log/pods/*/quoteservice/*.log
       jaeger:
         protocols:
           grpc:
