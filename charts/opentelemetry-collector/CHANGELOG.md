@@ -2,6 +2,18 @@
 
 ## OpenTelemetry Collector
 
+### v0.77.0 / 2023-11-13
+- [BREAKING] Remove scraping of kube-state-metrics from kubernetesExtraMetrics preset.
+
+### v0.76.3 / 2023-11-03
+- [FIX] Append transform processor to the processor list instead of prepend
+
+### v0.76.2 / 2023-11-03
+- [FIX] Allow setting kube-state-metrics pod name.
+
+### v0.76.2 / 2023-11-02
+- [FIX] Add k8s.deployment.name attribute workaround for all signals
+
 ### v0.76.0 / 2023-10-31
 - [CHORE] Bump Collector to 0.88.0
 

@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.76.3
+    helm.sh/chart: opentelemetry-collector-0.77.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.88.0"
@@ -92,14 +92,6 @@ data:
             tls_config:
               ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
               insecure_skip_verify: true
-      receiver_creator/ksm_prometheus:
-        receivers:
-          prometheus_simple:
-            config:
-              endpoint: '`endpoint`'
-            rule: type == "port" && port == 8080 && pod.name contains "example-kube-state-metrics"
-        watch_observers:
-        - k8s_observer
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
@@ -126,7 +118,6 @@ data:
           receivers:
           - otlp
           - prometheus
-          - receiver_creator/ksm_prometheus
           - prometheus/k8s_extra_metrics
         traces:
           exporters:

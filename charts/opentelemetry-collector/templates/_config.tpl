@@ -331,7 +331,6 @@ receivers:
 
 {{- define "opentelemetry-collector.applyKubernetesExtraMetrics" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesExtraMetricsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "receiver_creator/ksm_prometheus" | uniq)  }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus/k8s_extra_metrics" | uniq)  }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "filter/k8s_extra_metrics" | uniq)  }}
 {{- $_ := set $config.service "extensions" (append $config.service.extensions "k8s_observer" | uniq)  }}
@@ -344,13 +343,6 @@ extensions:
     auth_type: serviceAccount
     observe_pods: true
 receivers:
-  receiver_creator/ksm_prometheus:
-    watch_observers: [k8s_observer]
-    receivers:
-      prometheus_simple:
-        rule: type == "port" && port == 8080 && pod.name contains "{{tpl .Values.presets.kubernetesExtraMetrics.kubeStateMetricsName . }}"
-        config:
-          endpoint: '`endpoint`'
   prometheus/k8s_extra_metrics:
     config:
       scrape_configs:
