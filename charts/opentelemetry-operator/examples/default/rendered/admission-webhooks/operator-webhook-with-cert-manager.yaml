@@ -6,7 +6,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: default/example-opentelemetry-operator-serving-cert
   labels:
-    helm.sh/chart: opentelemetry-operator-0.42.1
+    helm.sh/chart: opentelemetry-operator-0.42.2
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.88.0"
     app.kubernetes.io/managed-by: Helm
@@ -33,6 +33,7 @@ webhooks:
         - UPDATE
       resources:
         - instrumentations
+      scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
   - admissionReviewVersions:
@@ -54,6 +55,7 @@ webhooks:
           - UPDATE
         resources:
           - opentelemetrycollectors
+        scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
   - admissionReviewVersions:
@@ -75,6 +77,7 @@ webhooks:
           - UPDATE
         resources:
           - pods
+        scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
 ---
@@ -85,7 +88,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: default/example-opentelemetry-operator-serving-cert
   labels:
-    helm.sh/chart: opentelemetry-operator-0.42.1
+    helm.sh/chart: opentelemetry-operator-0.42.2
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.88.0"
     app.kubernetes.io/managed-by: Helm
@@ -112,6 +115,7 @@ webhooks:
         - UPDATE
       resources:
         - instrumentations
+      scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
   - admissionReviewVersions:
@@ -132,6 +136,7 @@ webhooks:
           - DELETE
         resources:
           - instrumentations
+        scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
   - admissionReviewVersions:
@@ -153,6 +158,7 @@ webhooks:
           - UPDATE
         resources:
           - opentelemetrycollectors
+        scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
   - admissionReviewVersions:
@@ -173,5 +179,6 @@ webhooks:
           - DELETE
         resources:
           - opentelemetrycollectors
+        scope: Namespaced
     sideEffects: None
     timeoutSeconds: 10
