@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## <0.42.1 to 0.42.1
+## <0.42.3 to 0.42.3
 
 A type of flag `autoGenerateCert` has been changed, now it is an object with two attributes `enabled` and `recreate`.
 If you previously set `autoGenerateCert` to `true` or `false` you have to set `autoGenerateCert.enabled` accordingly.
