@@ -29,10 +29,13 @@ pdb:
 manager:
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
-    tag: v0.87.0
+    tag: v0.88.0
   collectorImage:
     repository: otel/opentelemetry-collector-contrib
-    tag: 0.87.0
+    tag: 0.88.0
+  opampBridgeImage:
+    repository: ""
+    tag: ""
   targetAllocatorImage:
     repository: ""
     tag: ""
@@ -218,7 +221,10 @@ admissionWebhooks:
   ## TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate.
   ## certManager must be disabled and autoGenerateCert must be enabled.
   ## If true and certManager.enabled is false, Helm will automatically create a self-signd cert and secret for you.
-  autoGenerateCert: true
+  autoGenerateCert:
+    enabled: true
+    # If set to true, new webhook key/certificate is generated on helm upgrade.
+    recreate: true
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
   ## certManager and autoGenerateCert must be disabled and cert_file, key_file, and ca_file must be set.

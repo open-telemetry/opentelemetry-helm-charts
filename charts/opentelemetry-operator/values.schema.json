@@ -101,6 +101,7 @@
             "required": [
                 "image",
                 "collectorImage",
+                "opampBridgeImage",
                 "targetAllocatorImage",
                 "autoInstrumentationImage",
                 "ports",
@@ -177,6 +178,37 @@
                     "examples": [{
                         "repository": "otel/opentelemetry-collector-contrib",
                         "tag": "0.77.0"
+                    }]
+                },
+                "opampBridgeImage": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The opampBridgeImage Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The repository Schema",
+                            "examples": [
+                                ""
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The tag Schema",
+                            "examples": [
+                                ""
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "",
+                        "tag": ""
                     }]
                 },
                 "targetAllocatorImage": {
@@ -1304,12 +1336,31 @@
                     }]
                 },
                 "autoGenerateCert": {
-                    "type": "boolean",
-                    "default": true,
-                    "title": "The autoGenerateCert schema",
-                    "examples": [
-                        true
-                    ]
+                    "type": "object",
+                    "default": {},
+                    "title": "The autoGenerateCert Schema",
+                    "required": [
+                        "enabled",
+                        "recreate"
+                    ],
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": true,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                true
+                            ]
+                        },
+                        "recreate": {
+                            "type": "boolean",
+                            "default": true,
+                            "title": "The recreate Schema",
+                            "examples": [
+                                true
+                            ]
+                       }
+                    }
                 },
                 "secretAnnotations": {
                     "type": "object",
