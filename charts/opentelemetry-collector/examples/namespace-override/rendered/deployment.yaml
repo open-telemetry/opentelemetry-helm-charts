@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: example-opentelemetry-collector
-  namespace: default
+  namespace: my-otel-ns
   labels:
     helm.sh/chart: opentelemetry-collector-0.74.1
     app.kubernetes.io/name: opentelemetry-collector
@@ -24,7 +24,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 9ae10f743eb72d7a0bb2df50d7318725363e8cdcaedc42423a7d292361328267
+        checksum/config: a2998ba701d2e066a58137a8b81fd2cbe8f9dc002e6a938251df2ee5ff2ded55
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -47,11 +47,23 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             
+            - name: jaeger-compact
+              containerPort: 6831
+              protocol: UDP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
             - name: otlp
               containerPort: 4317
               protocol: TCP
             - name: otlp-http
               containerPort: 4318
+              protocol: TCP
+            - name: zipkin
+              containerPort: 9411
               protocol: TCP
           env:
             - name: MY_POD_IP
