@@ -2,7 +2,7 @@
 
 All changes to the chart require a bump to the version in `chart.yaml`. See the [Contributing Guide](https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/CONTRIBUTING.md#versioning) for our versioning requirements.
 
-Once the chart version is bumped, the examples must be regenerated.  You can regenerate examples by running `make generate-examples CHARTS=opentelemetry-collector`.
+Once the chart version is bumped, the examples must be regenerated.  You can regenerate examples by running `make generate-examples CHARTS=opentelemetry-ebpf`.
 
 ## Bumping Default Collector Version
 
