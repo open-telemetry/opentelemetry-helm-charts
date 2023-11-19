@@ -19,7 +19,7 @@ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm
 To install the chart with the release name my-opentelemetry-collector-ebpf, run the following command:
 
 ```console
-helm install my-opentelemetry-collector-ebpf open-telemetry/opentelemetry-collector-ebpf
+helm install my-opentelemetry-ebpf open-telemetry/opentelemetry-ebpf
 ```
 
 ### Other configuration options
