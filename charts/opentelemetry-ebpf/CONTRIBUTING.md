@@ -1,4 +1,4 @@
-# Collector Chart Contributing Guide
+# OpenTelemetry eBPF Chart Contributing Guide
 
 All changes to the chart require a bump to the version in `chart.yaml`. See the [Contributing Guide](https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/CONTRIBUTING.md#versioning) for our versioning requirements.
 
