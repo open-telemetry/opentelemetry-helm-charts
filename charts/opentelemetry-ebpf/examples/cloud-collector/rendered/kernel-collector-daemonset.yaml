@@ -1,0 +1,89 @@
+---
+# Source: opentelemetry-ebpf/templates/kernel-collector-daemonset.yaml
+# kernel collector daemonset: deploys the kernel collector to each node in the cluster.
+# The kernel collector needs to be able to compile and install
+# eBPF programs in the node's kernel, so needs to run as root and
+# needs to mount /lib/modules and /usr/src from the node itself.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: example-opentelemetry-ebpf-kernel-collector
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: example-opentelemetry-ebpf-kernel-collector
+      app.kubernetes.io/instance: example
+  template:
+    metadata:
+      annotations:
+        charts.flowmill.com/version: 0.1.0
+      labels:
+        app.kubernetes.io/name: example-opentelemetry-ebpf-kernel-collector
+        app.kubernetes.io/instance: example
+    spec:
+      containers:
+        - name: kernel-collector
+          image: "otel/opentelemetry-ebpf-kernel-collector:v0.10.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --config-file=/etc/network-explorer/config.yaml
+            - --disable-nomad-metadata
+            - --warning
+          # TODO: liveness probe
+          env:
+            - name: "EBPF_NET_CLUSTER_NAME"
+              value: ""
+            - name: "EBPF_NET_DISABLE_HTTP_METRICS"
+              value: "false"
+            - name: "EBPF_NET_KERNEL_HEADERS_AUTO_FETCH"
+              value: "true"
+            - name: "EBPF_NET_INTAKE_HOST"
+              value: example-opentelemetry-ebpf-reducer
+            - name: "EBPF_NET_INTAKE_PORT"
+              value: "7000"
+            - name: "EBPF_NET_HOST_DIR"
+              value: "/hostfs"
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - mountPath: /hostfs/
+            name: host-root
+            readOnly: true
+          - mountPath: /hostfs/var/cache
+            name: host-var-cache
+            readOnly: false
+          - mountPath: /etc/network-explorer
+            name: example-opentelemetry-ebpf-config
+            readOnly: true
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      hostPID: true
+      serviceAccountName: example-opentelemetry-ebpf-kernel-collector
+      volumes:
+      - name: example-opentelemetry-ebpf-config
+        projected:
+          sources:
+          - configMap:
+              name: example-opentelemetry-ebpf-config
+              items:
+              - key: config.yaml
+                path: config.yaml
+      - name: host-root
+        hostPath:
+          path: /
+          type: Directory
+      - name: host-var-cache
+        hostPath:
+          path: /var/cache
+          type: DirectoryOrCreate
+      tolerations:
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists

@@ -1,0 +1,200 @@
+{{- if .Values.kernelCollector.enabled }}
+# kernel collector daemonset: deploys the kernel collector to each node in the cluster.
+# The kernel collector needs to be able to compile and install
+# eBPF programs in the node's kernel, so needs to run as root and
+# needs to mount /lib/modules and /usr/src from the node itself.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
+  labels:
+    {{- include "opentelemetry-ebpf.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        charts.flowmill.com/version: {{ .Chart.Version }}
+      labels:
+        app.kubernetes.io/name: {{ include "opentelemetry-collector-kernel-collector.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+        - name: {{ . }}
+{{- end }}
+{{- end }}
+      containers:
+        - name: kernel-collector
+          {{- if .Values.kernelCollector.image.tag }}
+          image: "{{ default .Values.image.registry .Values.kernelCollector.image.registry }}/{{ .Values.kernelCollector.image.name }}:{{ .Values.kernelCollector.image.tag }}"
+          {{- else }}
+          image: "{{ default .Values.image.registry .Values.kernelCollector.image.registry }}/{{ .Values.kernelCollector.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --config-file=/etc/network-explorer/config.yaml
+{{- if .Values.kernelCollector.bpfDumpFile }}
+            - --bpf-dump-file={{ .Values.kernelCollector.bpfDumpFile }}
+{{- end }}
+{{- if (default false .Values.kernelCollector.useDockerMetadata) }}
+            - --force-docker-metadata
+{{- end }}
+{{- if not (default false .Values.kernelCollector.collectNomadMetadata) }}
+            - --disable-nomad-metadata
+{{- end }}
+{{- if .Values.kernelCollector.userlandTcp }}
+            - --enable-userland-tcp
+{{- end }}
+{{- if .Values.log.console }}
+            - --log-console
+{{- end }}
+{{- if hasKey .Values.log "level" }}
+            - --{{ .Values.log.level }}
+{{- end }}
+{{- if hasKey .Values.kernelCollector "log" }}
+{{- if hasKey .Values.kernelCollector.log "whitelist" }}
+{{- if hasKey .Values.kernelCollector.log.whitelist "agentLog" }}
+            - --log-whitelist-agent-log={{ .Values.kernelCollector.log.whitelist.agentLog }}
+{{- end }}
+{{- if hasKey .Values.kernelCollector.log.whitelist "channel" }}
+          - --log-whitelist-channel={{ .Values.kernelCollector.log.whitelist.channel }}
+{{- end }}
+{{- if hasKey .Values.kernelCollector.log.whitelist "component" }}
+            - --log-whitelist-component={{ .Values.kernelCollector.log.whitelist.component }}
+{{- end }}
+{{- if hasKey .Values.kernelCollector.log.whitelist "cloudPlatform" }}
+            - --log-whitelist-cloud-platform={{ .Values.kernelCollector.log.whitelist.cloudPlatform }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.kernelCollector.additionalArgs }}
+{{ toYaml .Values.kernelCollector.additionalArgs | indent 12 }}
+{{- end }}
+          # TODO: liveness probe
+          env:
+            - name: "EBPF_NET_CLUSTER_NAME"
+              value: {{ tpl (.Values.clusterName | toYaml) . }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.enabled) }}
+            - name: "EBPF_NET_DEBUG_MODE"
+              value: "true"
+{{- end }}
+{{- end }}
+            - name: "EBPF_NET_DISABLE_HTTP_METRICS"
+              value: {{ quote (default false .Values.kernelCollector.disableHttpMetrics) }}
+{{- if (default false .Values.kernelCollector.runUnderGDB) }}
+            - name: "EBPF_NET_RUN_UNDER_GDB"
+              value: "gdb"
+{{- end }}
+            - name: "EBPF_NET_KERNEL_HEADERS_AUTO_FETCH"
+              value: {{ quote (default true .Values.kernelCollector.fetchKernelHeaders) }}
+            - name: "EBPF_NET_INTAKE_HOST"
+              value: {{ include "opentelemetry-collector-reducer.fullname" . }}
+            - name: "EBPF_NET_INTAKE_PORT"
+              value: "{{ default 7000 .Values.reducer.service.ports.telemetry.port }}"
+{{- if .Values.kernelCollector.exportBpfSrcFile }}
+            - name: "EBPF_NET_EXPORT_BPF_SRC_FILE"
+              value: {{ quote .Values.kernelCollector.exportBpfSrcFile }}
+{{- end }}
+            - name: "EBPF_NET_HOST_DIR"
+              value: "/hostfs"
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+            - name: "EBPF_NET_MINIDUMP_DIR"
+              value: "/hostfs/var/run/network-explorer/minidump"
+{{- end }}
+{{- end }}
+{{- if and .Values.debug.enabled .Values.debug.sendUnplannedExitMetric }}
+            - name: "EBPF_NET_CRASH_METRIC_HOST"
+              value: {{ .Values.endpoint.address }}
+            - name: "EBPF_NET_CRASH_METRIC_PORT"
+              value: {{ .Values.endpoint.port }}
+{{- end }}
+{{- if .Values.kernelCollector.env }}
+{{ toYaml .Values.kernelCollector.env | indent 12 }}
+{{- end }}
+{{- if .Values.kernelCollector.resources }}
+          resources:
+{{ toYaml .Values.kernelCollector.resources | indent 12 }}
+{{- end }}
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - mountPath: /hostfs/
+            name: host-root
+            readOnly: true
+{{- if (default true .Values.kernelCollector.fetchKernelHeaders) }}
+          - mountPath: /hostfs/var/cache
+            name: host-var-cache
+            readOnly: false
+{{- end }}
+          - mountPath: /etc/network-explorer
+            name: {{ include "opentelemetry-ebpf.fullname" . }}-config
+            readOnly: true
+{{- if (default false .Values.kernelCollector.useDockerMetadata) }}
+          - mountPath: /var/run/docker.sock
+            name: docker-sock
+            readOnly: false
+{{- end }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+          - mountPath: /hostfs/var/run/network-explorer
+            name: host-var-run-network-explorer
+            readOnly: false
+{{- end }}
+{{- end }}
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      hostPID: true
+      serviceAccountName: {{ include "opentelemetry-collector-kernel-collector.serviceAccountName" . }}
+      volumes:
+      - name: {{ include "opentelemetry-ebpf.fullname" . }}-config
+        projected:
+          sources:
+          - configMap:
+              name: {{ include "opentelemetry-ebpf.fullname" . }}-config
+              items:
+              - key: config.yaml
+                path: config.yaml
+      - name: host-root
+        hostPath:
+          path: /
+          type: Directory
+{{- if (default true .Values.kernelCollector.fetchKernelHeaders) }}
+      - name: host-var-cache
+        hostPath:
+          path: /var/cache
+          type: DirectoryOrCreate
+{{- end }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+      - name: host-var-run-network-explorer
+        hostPath:
+          path: /var/run/network-explorer
+          type: DirectoryOrCreate
+{{- end }}
+{{- end }}
+{{- if (default false .Values.kernelCollector.useDockerMetadata) }}
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
+{{- end }}
+    {{- with .Values.kernelCollector.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.kernelCollector.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.kernelCollector.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}
