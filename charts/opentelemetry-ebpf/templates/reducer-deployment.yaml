@@ -43,7 +43,7 @@ spec:
             - --disable-prometheus-metrics
             - --enable-otlp-grpc-metrics
             - --otlp-grpc-metrics-host={{ .Values.endpoint.address }}
-            - --otlp-grpc-metrics-port={{ .Values.endpoint.port | default 4317 }}
+            - --otlp-grpc-metrics-port={{ .Values.endpoint.port }}
             {{- if .Values.reducer.disableMetrics }}
             - --disable-metrics={{join "," .Values.reducer.disableMetrics}}
             {{- end }}
@@ -72,7 +72,7 @@ spec:
             - name: "EBPF_NET_CRASH_METRIC_HOST"
               value: {{ .Values.endpoint.address }}
             - name: "EBPF_NET_CRASH_METRIC_PORT"
-              value: {{ .Values.endpoint.port | default 4317 }}
+              value: {{ .Values.endpoint.port }}
             {{- end }}
           {{- end }}
           ports:
