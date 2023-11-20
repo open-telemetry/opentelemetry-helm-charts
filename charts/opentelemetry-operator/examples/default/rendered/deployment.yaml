@@ -4,9 +4,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.42.3
+    helm.sh/chart: opentelemetry-operator-0.43.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.88.0"
+    app.kubernetes.io/version: "0.89.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: controller-manager
@@ -33,13 +33,13 @@ spec:
             - --enable-leader-election
             - --health-probe-addr=:8081
             - --webhook-port=9443
-            - --collector-image=otel/opentelemetry-collector-contrib:0.88.0
+            - --collector-image=otel/opentelemetry-collector-contrib:0.89.0
           command:
             - /manager
           env:
             - name: ENABLE_WEBHOOKS
               value: "true"
-          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.88.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.89.0"
           name: manager
           ports:
             - containerPort: 8080
@@ -77,7 +77,7 @@ spec:
             - --upstream=http://127.0.0.1:8080/
             - --logtostderr=true
             - --v=0
-          image: "quay.io/brancz/kube-rbac-proxy:v0.14.2"
+          image: "quay.io/brancz/kube-rbac-proxy:v0.15.0"
           name: kube-rbac-proxy
           ports:
             - containerPort: 8443
