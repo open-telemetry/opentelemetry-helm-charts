@@ -1,0 +1,119 @@
+{{- if .Values.cloudCollector.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opentelemetry-collector-cloud-collector.fullname" . }}
+  labels:
+    {{- include "opentelemetry-ebpf.labels" . | nindent 4 }}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector-cloud-collector.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "opentelemetry-collector-cloud-collector.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+        - name: {{ . }}
+{{- end }}
+{{- end }}
+      containers:
+      - name: cloud-collector
+        {{- if .Values.cloudCollector.image.tag }}
+        image: "{{ default .Values.image.registry .Values.cloudCollector.image.registry }}/{{ .Values.cloudCollector.image.name }}:{{ .Values.cloudCollector.image.tag }}"
+        {{- else }}
+        image: "{{ default .Values.image.registry .Values.cloudCollector.image.registry }}/{{ .Values.cloudCollector.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- if hasKey .Values.cloudCollector "resources" }}
+        resources:
+{{ toYaml .Values.cloudCollector.resources | indent 10 }}
+{{- end }}
+        args:
+{{- if .Values.log.console }}
+          - --log-console
+{{- end }}
+{{- if hasKey .Values.log "level" }}
+          - --{{ .Values.log.level }}
+{{- end }}
+{{- if hasKey .Values.cloudCollector "log" -}}
+{{- if hasKey .Values.cloudCollector.log "whitelist" }}
+{{- if hasKey .Values.cloudCollector.log.whitelist "channel" }}
+          - --log-whitelist-channel={{ .Values.cloudCollector.log.whitelist.channel }}
+{{- end }}
+{{- if hasKey .Values.cloudCollector.log.whitelist "component" }}
+          - --log-whitelist-component={{ .Values.cloudCollector.log.whitelist.component }}
+{{- end }}
+{{- if hasKey .Values.cloudCollector.log.whitelist "cloudPlatform" }}
+          - --log-whitelist-cloud-platform={{ .Values.cloudCollector.log.whitelist.cloudPlatform }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.cloudCollector.additionalArgs }}
+{{ toYaml .Values.cloudCollector.additionalArgs | indent 10 }}
+{{- end }}
+        env:
+          - name: "EBPF_NET_CLUSTER_NAME"
+            value: {{ tpl (.Values.clusterName | toYaml) . }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.enabled) }}
+          - name: "EBPF_NET_DEBUG_MODE"
+            value: "true"
+{{- end }}
+{{- end }}
+{{- if (default false .Values.cloudCollector.runUnderGDB) }}
+          - name: "EBPF_NET_RUN_UNDER_GDB"
+            value: "gdb"
+{{- end }}
+          - name: "EBPF_NET_INTAKE_HOST"
+            value: {{ include "opentelemetry-collector-reducer.fullname" . }}
+          - name: "EBPF_NET_INTAKE_PORT"
+            value: "{{ default 7000 .Values.reducer.service.ports.telemetry.port }}"
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+          - name: "EBPF_NET_MINIDUMP_DIR"
+            value: "/hostfs/var/run/network-explorer/minidump"
+{{- end }}
+{{- end }}
+{{- if .Values.cloudCollector.env }}
+{{ toYaml .Values.cloudCollector.env | indent 10 }}
+{{- end }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+        volumeMounts:
+        - mountPath: /hostfs/var/run/network-explorer
+          name: host-var-run-network-explorer
+          readOnly: false
+      volumes:
+      - name: host-var-run-network-explorer
+        hostPath:
+          path: /var/run/network-explorer
+          type: DirectoryOrCreate
+{{- end }}
+{{- end }}
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      serviceAccountName: {{ include "opentelemetry-collector-cloud-collector.serviceAccountName" . }}
+    {{- with .Values.cloudCollector.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8}}
+    {{- end }}
+    {{- with .Values.cloudCollector.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.cloudCollector.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}

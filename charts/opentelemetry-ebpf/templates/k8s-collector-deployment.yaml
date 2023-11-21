@@ -1,0 +1,169 @@
+{{- if .Values.k8sCollector.enabled }}
+# The k8s-collector consists of two services:
+# 1) k8s-watcher: talks to the Kubernetes API server to determine the current state of
+#    the cluster; sets up watches to be notified of subsequent changes to pods, services
+#    and other resources.
+# 2) k8s-relay: relays the information collected by k8s-watcher to the reducer.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opentelemetry-collector-k8s-collector.fullname" . }}
+  labels:
+    {{- include "opentelemetry-ebpf.labels" . | nindent 4 }}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector-k8s-collector.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        # This is here to allow us to do "zero-downtime" updates without an image change.
+        rollingUpdateVersion: "1"
+        charts.flowmill.com/version: {{ .Chart.Version }}
+      labels:
+        app.kubernetes.io/name: {{ include "opentelemetry-collector-k8s-collector.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+        - name: {{ . }}
+{{- end }}
+{{- end }}
+      containers:
+      - name: k8s-watcher 
+        {{- if .Values.k8sCollector.watcher.image.tag }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.watcher.image.repository }}/{{ .Values.k8sCollector.watcher.image.name }}:{{ .Values.k8sCollector.watcher.image.tag }}"
+        {{- else }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.watcher.image.repository }}/{{ .Values.k8sCollector.watcher.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- if hasKey .Values.k8sCollector.watcher "resources" }}
+        resources:
+{{ toYaml .Values.k8sCollector.watcher.resources | indent 10 }}
+{{- end }}
+        args:
+          - --log-console
+        {{- if hasKey .Values.log "level" }}
+          - --log-level={{ .Values.log.level }}
+        {{- end }}
+      # k8s-relay, which is a service that the k8s-watcher talks to.
+      # Currently not configurable, has to be reachable on localhost:8172, so must
+      # share a pod with the k8s-watcher above.
+      - name: k8s-relay
+        {{- if .Values.k8sCollector.relay.image.tag }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.relay.image.registry }}/{{ .Values.k8sCollector.relay.image.name }}:{{ .Values.k8sCollector.relay.image.tag }}"
+        {{- else }}
+        image: "{{ default .Values.image.registry .Values.k8sCollector.relay.image.registry }}/{{ .Values.k8sCollector.relay.image.name }}:{{ default .Chart.AppVersion .Values.k8sCollector.relay.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        
+{{- if hasKey .Values.k8sCollector.relay "resources" }}
+        resources:
+{{ toYaml .Values.k8sCollector.relay.resources | indent 10 }}
+{{- end }}
+        args:
+          - --config-file=/etc/network-explorer/config.yaml
+{{- if .Values.log.console }}
+          - --log-console
+{{- end }}
+{{- if hasKey .Values.log "level" }}
+          - --{{ .Values.log.level }}
+{{- end }}
+{{- if hasKey .Values.k8sCollector.relay "log" -}}
+{{- if hasKey .Values.k8sCollector.relay.log "whitelist" }}
+{{- if hasKey .Values.k8sCollector.relay.log.whitelist "channel" }}
+          - --log-whitelist-channel={{ .Values.k8sCollector.relay.log.whitelist.channel }}
+{{- end }}
+{{- if hasKey .Values.k8sCollector.relay.log.whitelist "component" }}
+          - --log-whitelist-component={{ .Values.k8sCollector.relay.log.whitelist.component }}
+{{- end }}
+{{- if hasKey .Values.k8sCollector.relay.log.whitelist "cloudPlatform" }}
+          - --log-whitelist-cloud-platform={{ .Values.k8sCollector.relay.log.whitelist.cloudPlatform }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.k8sCollector.relay.additionalArgs }}
+{{ toYaml .Values.k8sCollector.relay.additionalArgs | indent 10 }}
+{{- end }}
+        env:
+          - name: "EBPF_NET_CLUSTER_NAME"
+            value: {{ tpl (.Values.clusterName | toYaml) . }}
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.enabled) }}
+          - name: "EBPF_NET_DEBUG_MODE"
+            value: "true"
+{{- end }}
+{{- end }}
+{{- if (default false .Values.k8sCollector.relay.runUnderGDB) }}
+          - name: "EBPF_NET_RUN_UNDER_GDB"
+            value: "gdb"
+{{- end }}
+          - name: "EBPF_NET_INTAKE_HOST"
+            value: {{ include "opentelemetry-collector-reducer.fullname" . }}
+          - name: "EBPF_NET_INTAKE_PORT"
+            value: "{{ default 7000 .Values.reducer.service.ports.telemetry.port }}"
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+          - name: "EBPF_NET_MINIDUMP_DIR"
+            value: "/hostfs/var/run/network-explorer/minidump"
+{{- end }}
+{{- end }}
+{{- if and .Values.debug.enabled .Values.debug.sendUnplannedExitMetric }}
+          - name: "EBPF_NET_CRASH_METRIC_HOST"
+            value: {{ .Values.endpoint.address }}
+          - name: "EBPF_NET_CRASH_METRIC_PORT"
+            value: {{ .Values.endpoint.port }}
+{{- end }}
+{{- if .Values.k8sCollector.relay.env }}
+{{ toYaml .Values.k8sCollector.relay.env | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/network-explorer
+          name: k8s-relay-config
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+        - mountPath: /hostfs/var/run/network-explorer
+          name: host-var-run-network-explorer
+          readOnly: false
+{{- end }}
+{{- end }}
+      terminationGracePeriodSeconds: 30
+      volumes:
+{{- if hasKey .Values "debug" }}
+{{- if (default false .Values.debug.storeMinidump) }}
+      - name: host-var-run-network-explorer
+        hostPath:
+          path: /var/run/network-explorer
+          type: DirectoryOrCreate
+{{- end }}
+{{- end }}
+      - name: k8s-relay-config
+        projected:
+          sources:
+            - configMap:
+                name: {{ include "opentelemetry-ebpf.fullname" . }}-config
+                items:
+                - key: config.yaml
+                  path: config.yaml
+      securityContext: {}
+      serviceAccountName: {{ include "opentelemetry-collector-k8s-collector.serviceAccountName" . }}
+    {{- with .Values.k8sCollector.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8}}
+    {{- end }}
+    {{- with .Values.k8sCollector.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.k8sCollector.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}

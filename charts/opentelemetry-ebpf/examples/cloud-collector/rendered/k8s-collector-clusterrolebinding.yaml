@@ -1,0 +1,20 @@
+---
+# Source: opentelemetry-ebpf/templates/k8s-collector-clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: example-opentelemetry-ebpf-k8s-collector
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: example-opentelemetry-ebpf-k8s-collector
+subjects:
+- kind: ServiceAccount
+  name: example-opentelemetry-ebpf-k8s-collector
+  namespace: default

@@ -1,0 +1,75 @@
+---
+# Source: opentelemetry-ebpf/templates/k8s-collector-deployment.yaml
+# The k8s-collector consists of two services:
+# 1) k8s-watcher: talks to the Kubernetes API server to determine the current state of
+#    the cluster; sets up watches to be notified of subsequent changes to pods, services
+#    and other resources.
+# 2) k8s-relay: relays the information collected by k8s-watcher to the reducer.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-opentelemetry-ebpf-k8s-collector
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: example-opentelemetry-ebpf-k8s-collector
+      app.kubernetes.io/instance: example
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        # This is here to allow us to do "zero-downtime" updates without an image change.
+        rollingUpdateVersion: "1"
+        charts.flowmill.com/version: 0.1.0
+      labels:
+        app.kubernetes.io/name: example-opentelemetry-ebpf-k8s-collector
+        app.kubernetes.io/instance: example
+    spec:
+      containers:
+      - name: k8s-watcher
+        image: "otel/opentelemetry-ebpf-k8s-watcher:v0.10.0"
+        imagePullPolicy: IfNotPresent
+        args:
+          - --log-console
+          - --log-level=warning
+      # k8s-relay, which is a service that the k8s-watcher talks to.
+      # Currently not configurable, has to be reachable on localhost:8172, so must
+      # share a pod with the k8s-watcher above.
+      - name: k8s-relay
+        image: "otel/opentelemetry-ebpf-k8s-relay:v0.10.0"
+        imagePullPolicy: IfNotPresent
+        args:
+          - --config-file=/etc/network-explorer/config.yaml
+          - --warning
+        env:
+          - name: "EBPF_NET_CLUSTER_NAME"
+            value: ""
+          - name: "EBPF_NET_INTAKE_HOST"
+            value: example-opentelemetry-ebpf-reducer
+          - name: "EBPF_NET_INTAKE_PORT"
+            value: "7000"
+        volumeMounts:
+        - mountPath: /etc/network-explorer
+          name: k8s-relay-config
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: k8s-relay-config
+        projected:
+          sources:
+            - configMap:
+                name: example-opentelemetry-ebpf-config
+                items:
+                - key: config.yaml
+                  path: config.yaml
+      securityContext: {}
+      serviceAccountName: example-opentelemetry-ebpf-k8s-collector
