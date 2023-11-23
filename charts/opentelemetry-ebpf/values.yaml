@@ -1,0 +1,275 @@
+# Default values for opentelemetry-ebpf.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+clusterName: ""
+
+image:
+  tag: ""
+  registry: otel
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+resources: {}
+
+# OTLP gRPC endpoint to send the collected metrics
+endpoint:
+  address: ""
+  port: 4317
+
+log:
+  console: false
+  # possible values: { error | warning | info | debug | trace }
+  level: warning
+
+debug:
+  enabled: false
+  storeMinidump: false
+  sendUnplannedExitMetric: false
+
+kernelCollector:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: ""
+  image:
+    registry: ""
+    tag: ""
+    name: opentelemetry-ebpf-kernel-collector
+
+  nodeSelector: {}
+  disableHttpMetrics: false
+
+  tolerations:
+    - operator: "Exists"
+      effect: "NoExecute"
+    - operator: "Exists"
+      effect: "NoSchedule"
+
+  affinity: {}
+  resources: {}
+
+  # uncomment the line below to disable automatic kernel headers fetching
+  # fetchKernelHeaders: false
+
+  # uncomment to enable enrichment using Docker metadata
+  # useDockerMetadata: true
+
+  # uncomment to enable enrichment using Nomad metadata (https://www.nomadproject.io/)
+  # collectNomadMetadata: true
+
+cloudCollector:
+  enabled: false
+  image:
+    registry: ""
+    tag: ""
+    name: opentelemetry-ebpf-cloud-collector
+
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+      ## eks.amazonaws.com/role-arn: "role-arn-name"
+
+  tolerations: []
+  affinity: {}
+
+k8sCollector:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: ""
+  relay:
+    image:
+      registry: ""
+      tag: ""
+      name: opentelemetry-ebpf-k8s-relay
+  watcher:
+    image:
+      registry: ""
+      tag: ""
+      name: opentelemetry-ebpf-k8s-watcher
+
+  tolerations: []
+  affinity: {}
+
+reducer:
+  image:
+    registry: ""
+    tag: ""
+    name: opentelemetry-ebpf-reducer
+  extraArgs: {}
+  ingestShards: 1
+  matchingShards: 1
+  aggregationShards: 1
+  disableInternalMetrics: true
+  disableMetrics: []
+    ### to disable an entire metric category: ###
+    # - tcp.all
+    # - udp.all
+    # - dns.all
+    # - http.all
+    ### to disable an individual metric: ###
+    ### tcp ###
+    # - tcp.bytes
+    # - tcp.rtt.num_measurements
+    # - tcp.active
+    # - tcp.rtt.average
+    # - tcp.packets
+    # - tcp.retrans
+    # - tcp.syn_timeouts
+    # - tcp.new_sockets
+    # - tcp.resets
+    ### udp ###
+    # - udp.bytes
+    # - udp.packets
+    # - udp.active
+    # - udp.drops
+    ### dns ###
+    # - dns.client.duration.average
+    # - dns.server.duration.average
+    # - dns.active_sockets
+    # - dns.responses
+    # - dns.timeouts
+    ### http ##
+    # - http.client.duration.average
+    # - http.server.duration.average
+    # - http.active_sockets
+    # - http.status_code
+    ### ebpf_net ##
+    # - ebpf_net.span_utilization_fraction
+    # - ebpf_net.pipeline_metric_bytes_discarded
+    # - ebpf_net.codetiming_min_ns
+    # - ebpf_net.entrypoint_info
+    # - ebpf_net.otlp_grpc.requests_sent
+    # - ebpf_net.connections
+    # - ebpf_net.rpc_queue_elem_utilization_fraction
+    # - ebpf_net.disconnects
+    # - ebpf_net.codetiming_avg_ns
+    # - ebpf_net.client_handle_pool
+    # - ebpf_net.otlp_grpc.successful_requests
+    # - ebpf_net.span_utilization
+    # - ebpf_net.up
+    # - ebpf_net.rpc_queue_buf_utilization_fraction
+    # - ebpf_net.collector_log_count
+    # - ebpf_net.time_since_last_message_ns
+    # - ebpf_net.bpf_log
+    # - ebpf_net.codetiming_count
+    # - ebpf_net.message
+    # - ebpf_net.otlp_grpc.bytes_sent
+    # - ebpf_net.pipeline_message_error
+    # - ebpf_net.pipeline_metric_bytes_written
+    # - ebpf_net.codetiming_max_ns
+    # - ebpf_net.span_utilization_max
+    # - ebpf_net.client_handle_pool_fraction
+    # - ebpf_net.span_utilization_fraction
+    # - ebpf_net.rpc_latency_ns
+    # - ebpf_net.agg_root_truncation
+    # - ebpf_net.clock_offset_ns
+    # - ebpf_net.otlp_grpc.metrics_sent
+    # - ebpf_net.otlp_grpc.unknown_response_tags
+    # - ebpf_net.collector_health
+    # - ebpf_net.codetiming_sum_ns
+    # - ebpf_net.otlp_grpc.failed_requests
+    # - ebpf_net.rpc_queue_buf_utilization
+    ### to enable all metrics (including metrics turned off by default): ###
+    # - none
+  enableMetrics: []
+    ### Disable metrics flag is evaluated first and only then enable metric flag is evaluated. ###
+    ### to enable an entire metric category: ###
+    # - tcp.all
+    # - udp.all
+    # - dns.all
+    # - http.all
+    # - ebpf_net.all
+    ### to enable an individual metric: ###
+    ### tcp ###
+    # - tcp.bytes
+    # - tcp.rtt.num_measurements
+    # - tcp.active
+    # - tcp.rtt.average
+    # - tcp.packets
+    # - tcp.retrans
+    # - tcp.syn_timeouts
+    # - tcp.new_sockets
+    # - tcp.resets
+    ### udp ###
+    # - udp.bytes
+    # - udp.packets
+    # - udp.active
+    # - udp.drops
+    ### dns ###
+    # - dns.client.duration.average
+    # - dns.server.duration.average
+    # - dns.active_sockets
+    # - dns.responses
+    # - dns.timeouts
+    ### http ###
+    # - http.client.duration.average
+    # - http.server.duration.average
+    # - http.active_sockets
+    # - http.status_code
+    ### ebpf_net ###
+    # - ebpf_net.span_utilization_fraction
+    # - ebpf_net.pipeline_metric_bytes_discarded
+    # - ebpf_net.codetiming_min_ns
+    # - ebpf_net.entrypoint_info
+    # - ebpf_net.otlp_grpc.requests_sent
+    # - ebpf_net.connections
+    # - ebpf_net.rpc_queue_elem_utilization_fraction
+    # - ebpf_net.disconnects
+    # - ebpf_net.codetiming_avg_ns
+    # - ebpf_net.client_handle_pool
+    # - ebpf_net.otlp_grpc.successful_requests
+    # - ebpf_net.span_utilization
+    # - ebpf_net.up
+    # - ebpf_net.rpc_queue_buf_utilization_fraction
+    # - ebpf_net.collector_log_count
+    # - ebpf_net.time_since_last_message_ns
+    # - ebpf_net.bpf_log
+    # - ebpf_net.codetiming_count
+    # - ebpf_net.message
+    # - ebpf_net.otlp_grpc.bytes_sent
+    # - ebpf_net.pipeline_message_error
+    # - ebpf_net.pipeline_metric_bytes_written
+    # - ebpf_net.codetiming_max_ns
+    # - ebpf_net.span_utilization_max
+    # - ebpf_net.client_handle_pool_fraction
+    # - ebpf_net.span_utilization_fraction
+    # - ebpf_net.rpc_latency_ns
+    # - ebpf_net.agg_root_truncation
+    # - ebpf_net.clock_offset_ns
+    # - ebpf_net.otlp_grpc.metrics_sent
+    # - ebpf_net.otlp_grpc.unknown_response_tags
+    # - ebpf_net.collector_health
+    # - ebpf_net.codetiming_sum_ns
+    # - ebpf_net.otlp_grpc.failed_requests
+    # - ebpf_net.rpc_queue_buf_utilization
+
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  service:
+    type: ClusterIP
+    ports:
+      telemetry:
+        enabled: true
+        servicePort: 7000
+        containerPort: 7000
+        targetPort: 7000
+        protocol: TCP
+        appProtocol: http
+      stats:
+        enabled: true
+        servicePort: 7001
+        containerPort: 7001
+        targetPort: 7001
+        protocol: TCP
+        appProtocol: http
+
+rbac:
+  create: true

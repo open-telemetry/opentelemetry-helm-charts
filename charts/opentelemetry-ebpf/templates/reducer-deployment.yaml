@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+  labels:
+    {{- include "opentelemetry-ebpf.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "opentelemetry-collector-reducer.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+        - name: {{ . }}
+{{- end }}
+{{- end }}
+      containers:
+        - name: reducer
+          {{- if .Values.reducer.image.tag }}
+          image: "{{ default .Values.image.registry .Values.reducer.image.registry }}/{{ .Values.reducer.image.name }}:{{ .Values.reducer.image.tag }}"
+          {{- else }}
+          image: "{{ default .Values.image.registry .Values.reducer.image.registry }}/{{ .Values.reducer.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --port={{- .Values.reducer.service.ports.telemetry.containerPort }}
+            - --log-console
+            - --no-log-file
+            {{- if hasKey .Values.log "level" }}
+            - --{{ .Values.log.level }}
+            {{- end }}
+            - --enable-aws-enrichment
+            - --disable-prometheus-metrics
+            - --enable-otlp-grpc-metrics
+            - --otlp-grpc-metrics-host={{ .Values.endpoint.address }}
+            - --otlp-grpc-metrics-port={{ .Values.endpoint.port }}
+            {{- if .Values.reducer.disableMetrics }}
+            - --disable-metrics={{join "," .Values.reducer.disableMetrics}}
+            {{- end }}
+            {{- if .Values.reducer.enableMetrics }}
+            - --enable-metrics={{join "," .Values.reducer.enableMetrics}}
+            {{- end }}
+            {{- if .Values.reducer.ingestShards }}
+            - --num-ingest-shards={{- .Values.reducer.ingestShards }}
+            {{- end }}
+            {{- if .Values.reducer.matchingShards }}
+            - --num-matching-shards={{- .Values.reducer.matchingShards }}
+            {{- end }}
+            {{- if .Values.reducer.aggregationShards }}
+            - --num-aggregation-shards={{- .Values.reducer.aggregationShards }}
+            {{- end }}
+            {{- if .Values.reducer.extraArgs }}
+            {{- toYaml .Values.reducer.extraArgs | nindent 12 }}
+            {{- end }}
+          {{- if .Values.debug.enabled }}
+          env:
+            {{- if (default false .Values.debug.storeMinidump) }}
+            - name: "EBPF_NET_MINIDUMP_DIR"
+              value: "/hostfs/var/run/network-explorer/minidump"
+            {{- end }}
+            {{- if .Values.debug.sendUnplannedExitMetric }}
+            - name: "EBPF_NET_CRASH_METRIC_HOST"
+              value: {{ .Values.endpoint.address }}
+            - name: "EBPF_NET_CRASH_METRIC_PORT"
+              value: {{ .Values.endpoint.port }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: telemetry
+              containerPort: {{ .Values.reducer.service.ports.telemetry.containerPort }}
+              protocol: TCP
+            {{- if not .Values.reducer.disableInternalMetrics }}
+            - name: stats
+              containerPort: {{ .Values.reducer.service.ports.stats.containerPort }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.debug.enabled }}
+          volumeMounts:
+            {{- if (default false .Values.debug.storeMinidump) }}
+            - mountPath: /hostfs/var/run/network-explorer
+              name: host-var-run-network-explorer
+              readOnly: false
+            {{- end }}
+          {{- end }}
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            timeoutSeconds: 5
+            exec:
+              command: ['/srv/health_check.sh', 'readiness_probe', 'localhost', {{ quote .Values.reducer.service.ports.telemetry.containerPort }}]
+          {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}    
+      {{- with .Values.reducer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.reducer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.reducer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.debug.enabled }}
+      volumes:
+        {{- if (default false .Values.debug.storeMinidump) }}
+        - name: host-var-run-network-explorer
+          hostPath:
+            path: /var/run/network-explorer
+            type: DirectoryOrCreate
+        {{- end }}
+      {{- end }}
