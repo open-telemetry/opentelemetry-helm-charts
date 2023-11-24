@@ -64,6 +64,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.metadata.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMetadataConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.spanMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -100,6 +103,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.metadata.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMetadataConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.spanMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -489,6 +495,27 @@ processors:
         value: "{{ .Values.presets.metadata.integrationName }}"
         action: upsert
       {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applySpanMetricsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.spanMetricsConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "spanmetrics" $config.service.pipelines.traces.exporters)) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "spanmetrics" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "spanmetrics" $config.service.pipelines.metrics.receivers)) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "spanmetrics" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.spanMetricsConfig" -}}
+connectors:
+  spanmetrics:
+{{- if .Values.presets.spanMetrics.extraDimensions }}
+    dimensions:
+{{- .Values.presets.spanMetrics.extraDimensions | toYaml | nindent 10 }}
+{{- end }}
+
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
