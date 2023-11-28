@@ -6,13 +6,15 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.77.1
+    helm.sh/chart: opentelemetry-collector-0.77.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.88.0"
     app.kubernetes.io/managed-by: Helm
 data:
   relay: |
+    connectors:
+      spanmetrics: null
     exporters:
       logging: {}
     extensions:
@@ -23,6 +25,12 @@ data:
         observe_pods: true
       memory_ballast:
         size_in_percentage: 40
+    processor:
+      transform/span_name:
+        trace_statements:
+        - context: span
+          statements:
+          - replace_pattern(name, "^(.*)$", "$1")
     processors:
       batch: {}
       memory_limiter:
@@ -200,10 +208,13 @@ data:
           - otlp
           - prometheus
           - receiver_creator/mysql
+          - spanmetrics
         traces:
           exporters:
           - logging
+          - spanmetrics
           processors:
+          - transform/span_name
           - memory_limiter
           - batch
           receivers:
