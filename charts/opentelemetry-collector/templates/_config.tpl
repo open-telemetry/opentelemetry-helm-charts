@@ -576,19 +576,19 @@ processors:
     - context: resource
       statements:
       - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
-      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1")
+      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1") where attributes["k8s.replicaset.name"] != nil
       - delete_key(attributes, "k8s.replicaset.name")
     trace_statements:
     - context: resource
       statements:
       - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
-      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1")
+      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1") where attributes["k8s.replicaset.name"] != nil
       - delete_key(attributes, "k8s.replicaset.name")
     log_statements:
     - context: resource
       statements:
       - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
-      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1")
+      - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1") where attributes["k8s.replicaset.name"] != nil
       - delete_key(attributes, "k8s.replicaset.name")
 {{- end }}
 

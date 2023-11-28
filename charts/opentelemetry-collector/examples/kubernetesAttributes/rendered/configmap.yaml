@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.77.3
+    helm.sh/chart: opentelemetry-collector-0.77.4
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.88.0"
@@ -54,21 +54,21 @@ data:
           statements:
           - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
           - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
-            "$$1")
+            "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
         metric_statements:
         - context: resource
           statements:
           - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
           - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
-            "$$1")
+            "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
         trace_statements:
         - context: resource
           statements:
           - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
           - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
-            "$$1")
+            "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
     receivers:
       jaeger:

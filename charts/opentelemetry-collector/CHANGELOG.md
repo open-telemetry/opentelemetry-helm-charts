@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.77.4 / 2023-11-28
+- [FIX] Fix k8s.deployment.name transformation, in case the attribute already exists.
+
 ### v0.77.3 / 2023-11-27
 - [FIX] Kubelet Stats use Node IP instead of Node name.
 -
