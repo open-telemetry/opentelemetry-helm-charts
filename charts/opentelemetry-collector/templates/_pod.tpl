@@ -36,7 +36,6 @@ containers:
     image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
     {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
-    
     {{- $ports := include "opentelemetry-collector.podPortsConfig" . }}
     {{- if $ports }}
     ports:
@@ -48,11 +47,18 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
-      {{- if or .Values.presets.kubeletMetrics.enabled (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset")) }}
+      {{- if and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset") }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:
             fieldPath: spec.nodeName
+      {{- end }}
+      {{- if .Values.presets.kubeletMetrics.enabled }}
+      - name: K8S_NODE_IP
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.hostIP
       {{- end }}
       {{- if and (.Values.useGOMEMLIMIT) ((((.Values.resources).limits).memory))  }}
       - name: GOMEMLIMIT

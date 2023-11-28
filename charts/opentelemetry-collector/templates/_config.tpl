@@ -201,7 +201,7 @@ receivers:
     collection_interval: 20s
     insecure_skip_verify: true
     auth_type: "serviceAccount"
-    endpoint: "${env:K8S_NODE_NAME}:10250"
+    endpoint: "${env:K8S_NODE_IP}:10250"
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}

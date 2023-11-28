@@ -2,6 +2,15 @@
 
 ## OpenTelemetry Collector
 
+### v0.77.3 / 2023-11-27
+- [FIX] Kubelet Stats use Node IP instead of Node name.
+-
+### v0.77.2 / 2023-11-26
+- [FEAT] Add feature for replace patterns in span metrics preset.
+
+### v0.77.1 / 2023-11-24
+- [FEAT] Add spanmetricsconnector preset.
+
 ### v0.77.0 / 2023-11-13
 - [BREAKING] Remove scraping of kube-state-metrics from kubernetesExtraMetrics preset.
 
