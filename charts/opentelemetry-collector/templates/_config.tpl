@@ -614,12 +614,13 @@ processors:
 {{/* Build the list of port for pod */}}
 {{- define "opentelemetry-collector.podPortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
+{{- $distribution := .Values.distribution }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
 - name: {{ $key }}
   containerPort: {{ $port.containerPort }}
   protocol: {{ $port.protocol }}
-  {{- if and $.isAgent $port.hostPort }}
+  {{- if and $.isAgent $port.hostPort (ne $distribution "gke/autopilot") }}
   hostPort: {{ $port.hostPort }}
   {{- end }}
 {{- end }}

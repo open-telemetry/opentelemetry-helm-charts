@@ -22,7 +22,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 5a4eb6ff5faa0452ebfcd141c7df30bce55beaad93358afbb3e68ab3af7b33f3
+        checksum/config: 61d32b506e2d3c7d83007301ed6aeff0334b9f37c62d0be936eaddb609e038d1
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -37,8 +37,8 @@ spec:
       containers:
         - name: opentelemetry-collector
           command:
-            - "C:\\otelcol-contrib.exe"
-            - --config=C:\\conf\relay.yaml
+            - /otelcol-contrib
+            - --config=/conf/relay.yaml
           securityContext:
             {}
           image: "otel/opentelemetry-collector-contrib:0.88.0"
@@ -48,33 +48,32 @@ spec:
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
-              hostPort: 6831
             - name: jaeger-grpc
               containerPort: 14250
               protocol: TCP
-              hostPort: 14250
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
-              hostPort: 14268
             - name: otlp
               containerPort: 4317
               protocol: TCP
-              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP
-              hostPort: 4318
             - name: zipkin
               containerPort: 9411
               protocol: TCP
-              hostPort: 9411
           env:
             - name: MY_POD_IP
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
           livenessProbe:
             httpGet:
               path: /
@@ -83,16 +82,15 @@ spec:
             httpGet:
               path: /
               port: 13133
+          resources:
+            limits:
+              cpu: 100m
+              memory: 200M
           volumeMounts:
-            - mountPath: C:\conf
+            - mountPath: /conf
               name: opentelemetry-collector-configmap
             - name: varlogpods
-              mountPath: C:\var\log\pods
-              readOnly: true
-            - name: varlibotelcol
-              mountPath: /var/lib/otelcol
-            - mountPath: "C:\\hostfs"
-              name: hostfs
+              mountPath: /var/log/pods
               readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
@@ -103,16 +101,7 @@ spec:
                 path: relay.yaml
         - name: varlogpods
           hostPath:
-            path: C:\var\log\pods
-        - name: programdata
-          hostPath:
-            path: C:\ProgramData
-        - name: varlibotelcol
-          hostPath:
-            path: /var/lib/otelcol
-            type: DirectoryOrCreate
-        - name: hostfs
-          hostPath:
-            path: "C:\\"
+            path: /var/log/pods
       nodeSelector:
-        kubernetes.io/os: windows
+        kubernetes.io/os: linux
+      hostNetwork: false

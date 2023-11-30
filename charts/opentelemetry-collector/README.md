@@ -239,6 +239,25 @@ presets:
     enabled: true
 ```
 
+### Configuration for GKE autopilot distribution
+
+GKE Autopilot has limited access to host filesystems and host ports, due to this some features of OpenTelemetry Collector doesn't work.
+More information about limitations is available in [GKE Autopilot security capabilities document](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-security)
+
+To deploy into GKE Autopilot you need to configuration "gke/autopilot" distribution.
+Here is an example `values.yaml`:
+```yaml
+distribution: "gke/autopilot"
+```
+
+This setting will:
+- disable `/var/lib/docker` mount
+- disable allocating host ports.
+
+Note due to limited access, these options will not work:
+- `presets.hostMetrics`
+- `presets.logsCollection.storeCheckpoints`
+
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.

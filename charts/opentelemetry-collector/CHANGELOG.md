@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.77.5 / 2023-11-30
+- [FEAT] Add gke/autopilot distribution.
+
 ### v0.77.4 / 2023-11-28
 - [FIX] Fix k8s.deployment.name transformation, in case the attribute already exists.
 

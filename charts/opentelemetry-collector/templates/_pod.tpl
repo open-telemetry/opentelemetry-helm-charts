@@ -155,9 +155,11 @@ containers:
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
+      {{- if ne .Values.distribution "gke/autopilot" }}
       - name: varlibdockercontainers
         mountPath: /var/lib/docker/containers
         readOnly: true
+      {{- end }}
       {{- end }}
       {{- if .Values.presets.logsCollection.storeCheckpoints}}
       - name: varlibotelcol
@@ -227,9 +229,11 @@ volumes:
   - name: varlogpods
     hostPath:
       path: /var/log/pods
+  {{- if ne .Values.distribution "gke/autopilot" }}
   - name: varlibdockercontainers
     hostPath:
       path: /var/lib/docker/containers
+  {{- end }}
   {{- end }}
   {{- if .Values.presets.logsCollection.storeCheckpoints}}
   - name: varlibotelcol
