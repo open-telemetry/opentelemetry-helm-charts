@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.75.1
+    helm.sh/chart: opentelemetry-collector-0.76.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.90.1"
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 8973c991f2dfa7e12914f574c78f471061b1678a6285f2fce497cf8ac19325fe
+        checksum/config: e9fb193dffb5840a0442a66c8346dabd78429ea7fa062208a650a62eac8a8179
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -72,6 +72,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: GOMEMLIMIT
+              value: 3276MiB
           livenessProbe:
             httpGet:
               path: /
