@@ -1,0 +1,21 @@
+---
+# Source: opentelemetry-collector/templates/configmap-targetallocator.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-collector-targetallocator
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.77.6
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.88.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  targetallocator.yaml: |
+    allocation_strategy: 
+    label_selector:
+      app.kubernetes.io/name: opentelemetry-collector
+      app.kubernetes.io/instance: example
+    prometheus_cr:
+      scrape_interval: 30s

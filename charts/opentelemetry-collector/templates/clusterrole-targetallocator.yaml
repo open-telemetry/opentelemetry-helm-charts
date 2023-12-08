@@ -1,4 +1,4 @@
-{{- if .Values.collectorCRD.targetAllocator.enabled -}}
+{{- if and (.Values.targetAllocator.enabled) (not (.Values.targetAllocator.serviceAccount)) -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -30,7 +30,7 @@ rules:
     verbs: ["get", "list", "watch"]
   - nonResourceURLs: ["/metrics"]
     verbs: ["get"]
-  {{- if .Values.collectorCRD.targetAllocator.enabled }}
+  {{- if .Values.targetAllocator.prometheusCR.enabled }}
   - apiGroups:
     - monitoring.coreos.com
     resources:

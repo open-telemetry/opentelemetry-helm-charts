@@ -1,0 +1,27 @@
+{{- if not .Values.collectorCRD.generate -}}
+{{- if .Values.targetAllocator.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+data:
+  targetallocator.yaml: |
+    allocation_strategy: {{ .Values.targetAllocator.allocationStrategy }}
+    label_selector:
+      app.kubernetes.io/name: {{ include "opentelemetry-collector.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+    prometheus_cr:
+      scrape_interval: 30s
+    {{- if .Values.targetAllocator.podMonitorSelector }}
+    podMonitorSelector:
+      {{- include "opentelemetry-target-allocator.podMonitorSelector" . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.targetAllocator.serviceMonitorSelector }}
+    serviceMonitorSelector:
+      {{- include "opentelemetry-target-allocator.serviceMonitorSelector" . | nindent 8 }}
+    {{- end }}
+{{- end }}
+{{- end }}

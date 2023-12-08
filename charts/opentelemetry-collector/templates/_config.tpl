@@ -67,6 +67,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.spanMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.targetAllocator.enabled }}
+{{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -107,7 +110,32 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.spanMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.targetAllocator.enabled }}
+{{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- tpl (toYaml $config) . }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyTargetAllocatorConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.targetAllocatorConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.targetAllocatorConfig" -}}
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+      - job_name: opentelemetry-collector
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+              - ${MY_POD_IP}:8888
+    target_allocator:
+      endpoint: http://{{ include "opentelemetry-collector.fullname" . }}-targetallocator
+      interval: 30s
+      collector_id: ${MY_POD_NAME}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}

@@ -1,0 +1,61 @@
+---
+# Source: opentelemetry-collector/templates/deployment-targetallocator.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-opentelemetry-collector-targetallocator
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.77.6
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.88.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-collector
+      app.kubernetes.io/instance: example
+      component: agent-collector
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 28372a60a6da2ff327b4b085e1317298ac69b9c0f5a90fff6254159e83bb3a43
+        
+      labels:
+        app.kubernetes.io/name: opentelemetry-collector
+        app.kubernetes.io/instance: example
+        component: agent-collector
+        
+    spec:
+      containers:
+        - name: example-opentelemetry-collector-targetallocator
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.77.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --enable-prometheus-cr-watcher
+          env:
+          - name: OTELCOL_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          volumeMounts:
+          - mountPath: /conf
+            name: ta-internal
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: targetallocator.yaml
+            path: targetallocator.yaml
+          name: example-opentelemetry-collector-targetallocator
+        name: ta-internal
+      serviceAccountName: example-opentelemetry-collector-targetallocator

@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.77.5
+    helm.sh/chart: opentelemetry-collector-0.77.6
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.88.0"
@@ -264,6 +264,10 @@ spec:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+        target_allocator:
+          collector_id: ${MY_POD_NAME}
+          endpoint: http://example-opentelemetry-collector-targetallocator
+          interval: 30s
       receiver_creator/mysql:
         receivers:
           mysql:

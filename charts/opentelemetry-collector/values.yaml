@@ -16,35 +16,36 @@ collectorCRD:
   generate: false
   updateStrategy: ""
   resources: {}
-  # If the target allocator is enabled, the service account, cluster role
-  # and cluster role binding will be generated as well, with appropriate
-  # permissions, necessary for target allocator to work. If you do not
-  # wish to create these objects and would like to specify your own
-  # service account, provide it below.
-  targetAllocator:
-    enabled: false
-    prometheusCR:
-      enabled: false
-      podMonitorSelector: {}
-      serviceMonitorSelector: {}
-    allocationStrategy: ""
-    filterStrategy: ""
-    # Target allocator image defaults to repository and tag set by
-    # the operator (this should correspond to operator's version).
-    # Set appropriate values to override.
-    image:
-      repository: ""
-      tag: ""
-      digest: ""
-    # Name of the service account to be used by the target allocator.
-    # If set, no service account or cluster role for target allocator
-    # will be created.
-    serviceAccount: ""
-    resources: {}
-
 
 # Valid values are "daemonset", "deployment", and "statefulset".
 mode: ""
+
+# If the target allocator is enabled, the service account, cluster role
+# and cluster role binding will be generated as well, with appropriate
+# permissions, necessary for target allocator to work. If you do not
+# wish to create these objects and would like to specify your own
+# service account, provide it below.
+targetAllocator:
+  enabled: false
+  replicas: 1
+  prometheusCR:
+    enabled: false
+    podMonitorSelector: {}
+    serviceMonitorSelector: {}
+  allocationStrategy: ""
+  # Target allocator image defaults to repository and tag set by
+  # the operator (this should correspond to operator's version).
+  # Set appropriate values to override.
+  image:
+    repository: ""
+    pullPolicy: IfNotPresent
+    tag: ""
+    digest: ""
+  # Name of the service account to be used by the target allocator.
+  # If set, no service account or cluster role for target allocator
+  # will be created.
+  serviceAccount: ""
+  resources: {}
 
 # When using windows set this to true and make sure
 # to use collector image built for windows.

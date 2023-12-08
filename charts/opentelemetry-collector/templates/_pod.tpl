@@ -47,6 +47,12 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
+      {{- if .Values.targetAllocator.enabled }}
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      {{- end }}
       {{- if and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset") }}
       - name: K8S_NODE_NAME
         valueFrom:

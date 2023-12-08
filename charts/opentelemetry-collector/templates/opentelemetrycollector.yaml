@@ -16,38 +16,35 @@ spec:
   {{- if .Values.collectorCRD.updateStrategy }}
   updateStrategy: {{ .Values.collectorCRD.updateStrategy | quote }}
   {{- end }}
-  {{- if .Values.collectorCRD.targetAllocator.enabled }}
+  {{- if .Values.targetAllocator.enabled }}
   targetAllocator:
-    enabled: {{ .Values.collectorCRD.targetAllocator.enabled }}
-    {{- if .Values.collectorCRD.targetAllocator.prometheusCR.enabled }}
+    enabled: {{ .Values.targetAllocator.enabled }}
+    {{- if .Values.targetAllocator.prometheusCR.enabled }}
     prometheusCR:
       enabled: true
-      {{- if .Values.collectorCRD.targetAllocator.prometheusCR.podMonitorSelector }}
+      {{- if .Values.targetAllocator.prometheusCR.podMonitorSelector }}
       podMonitorSelector:
         {{- include "opentelemetry-target-allocator.podMonitorSelector" . | nindent 8 }}
       {{- end }}
-      {{- if .Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector }}
+      {{- if .Values.targetAllocator.prometheusCR.serviceMonitorSelector }}
       serviceMonitorSelector:
         {{- include "opentelemetry-target-allocator.serviceMonitorSelector" . | nindent 8 }}
       {{- end }}
     {{- end }}
-    {{- if .Values.collectorCRD.allocationStrategy }}
-    allocationStrategy: {{ .Values.collectorCRD.allocationStrategy | quote }}
+    {{- if .Values.targetAllocator.allocationStrategy }}
+    allocationStrategy: {{ .Values.targetAllocator.allocationStrategy | quote }}
     {{- end }}
-    {{- if .Values.collectorCRD.filterStrategy }}
-    filterStrategy: {{ .Values.collectorCRD.filterStrategy | quote }}
-    {{- end }}
-    {{- if .Values.collectorCRD.serviceAccount }}
-    serviceAccount: {{ .Values.collectorCRD.serviceAccount | quote }}
+    {{- if .Values.targetAllocator.serviceAccount }}
+    serviceAccount: {{ .Values.targetAllocator.serviceAccount | quote }}
     {{- else }}
     serviceAccount: {{ include "opentelemetry-collector.serviceAccountName" . }}-targetallocator
     {{- end }}
-    {{- if .Values.collectorCRD.targetAllocator.image.tag }}
-    image: "{{ .Values.collectorCRD.targetAllocator.image.repository }}:{{ .Values.collectorCRD.targetAllocator.image.tag | default .Chart.AppVersion }}"
-    {{- else if .Values.collectorCRD.targetAllocator.image.digest}}
-    image: "{{ .Values.collectorCRD.targetAllocator.image.repository }}@{{ .Values.collectorCRD.targetAllocator.image.digest }}"
+    {{- if .Values.targetAllocator.image.tag }}
+    image: "{{ .Values.targetAllocator.image.repository }}:{{ .Values.targetAllocator.image.tag | default .Chart.AppVersion }}"
+    {{- else if .Values.targetAllocator.image.digest}}
+    image: "{{ .Values.targetAllocator.image.repository }}@{{ .Values.targetAllocator.image.digest }}"
     {{- end }}
-    {{- with .Values.collectorCRD.resources }}
+    {{- with .Values.targetAllocator.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
     {{- end }}

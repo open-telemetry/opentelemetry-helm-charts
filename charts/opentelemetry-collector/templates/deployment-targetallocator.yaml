@@ -1,0 +1,83 @@
+{{- if not .Values.collectorCRD.generate -}}
+{{- if .Values.targetAllocator.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.targetAllocator.replicas }}
+  selector:
+    matchLabels:
+      {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
+      {{- include "opentelemetry-collector.component" . | nindent 6 }}
+  strategy:
+    {{- if eq .Values.rollout.strategy "RollingUpdate" }}
+    {{- with .Values.rollout.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
+    type: {{ .Values.rollout.strategy }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-targetallocator.yaml") . | sha256sum }}
+        {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
+      labels:
+        {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-collector.component" . | nindent 8 }}
+        {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
+          {{- if .Values.targetAllocator.image.tag }}
+          image: "{{ .Values.targetAllocator.image.repository }}:{{ .Values.targetAllocator.image.tag | default .Chart.AppVersion }}"
+          {{- else if .Values.targetAllocator.image.digest}}
+          image: "{{ .Values.targetAllocator.image.repository }}@{{ .Values.targetAllocator.image.digest }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.targetAllocator.image.pullPolicy }}
+          args:
+            {{- if .Values.targetAllocator.prometheusCR.enabled }}
+            - --enable-prometheus-cr-watcher
+            {{- end }}
+          env:
+          - name: OTELCOL_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP 
+          {{- with .Values.targetAllocator.resources }}
+          resources:
+            {{- toYaml . | nindent 6 }}
+          {{- end }}
+          volumeMounts:
+          - mountPath: /conf
+            name: ta-internal
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: targetallocator.yaml
+            path: targetallocator.yaml
+          name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
+        name: ta-internal
+      {{- if .Values.targetAllocator.serviceAccount }}
+      serviceAccountName: {{ .Values.targetAllocator.serviceAccount | quote }}
+      {{- else }}
+      serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}-targetallocator
+      {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,26 @@
+{{- if not .Values.collectorCRD.generate -}}
+{{- if .Values.targetAllocator.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+    {{- include "opentelemetry-collector.component" . | nindent 4 }}
+  {{- if .Values.service.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.service.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  ports:
+  - name: targetallocation
+    port: 80
+    targetPort: http
+  selector:
+    {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
+    {{- include "opentelemetry-collector.component" . | nindent 4 }}
+{{- end }}
+{{- end }}
