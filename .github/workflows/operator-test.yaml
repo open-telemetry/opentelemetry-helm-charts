@@ -74,4 +74,5 @@ jobs:
           kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
 
       - name: Run e2e tests
-        run:  kubectl kuttl test ./opentelemetry-operator/tests/e2e --config ./charts/opentelemetry-operator/kuttl-test.yaml
+        working-directory: ./opentelemetry-operator
+        run:  kubectl kuttl test ./tests/e2e --config ../charts/opentelemetry-operator/kuttl-test.yaml --crd-dir ../charts/opentelemetry-operator/crds
