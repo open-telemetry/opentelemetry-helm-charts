@@ -62,10 +62,30 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Common target allocator labels
+*/}}
+{{- define "opentelemetry-target-allocator.labels" -}}
+helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
+{{ include "opentelemetry-target-allocator.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "opentelemetry-collector.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "opentelemetry-collector.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Selector labels target allocator
+*/}}
+{{- define "opentelemetry-target-allocator.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "opentelemetry-collector.name" . }}-target-allocator
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 

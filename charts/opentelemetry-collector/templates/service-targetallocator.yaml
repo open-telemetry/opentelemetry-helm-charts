@@ -6,8 +6,8 @@ metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
   namespace: {{ template "opentelemetry-collector.namespace" . }}
   labels:
-    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
-    {{- include "opentelemetry-collector.component" . | nindent 4 }}
+    {{- include "opentelemetry-target-allocator.labels" . | nindent 4 }}
+    component: target-allocator
   {{- if .Values.service.annotations }}
   annotations:
     {{- range $key, $value := .Values.service.annotations }}
@@ -20,7 +20,7 @@ spec:
     port: 80
     targetPort: http
   selector:
-    {{- include "opentelemetry-collector.selectorLabels" . | nindent 4 }}
-    {{- include "opentelemetry-collector.component" . | nindent 4 }}
+    {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 4 }}
+    component: target-allocator
 {{- end }}
 {{- end }}

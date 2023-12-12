@@ -17,8 +17,8 @@ spec:
   replicas: {{ .Values.targetAllocator.replicas }}
   selector:
     matchLabels:
-      {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
-      {{- include "opentelemetry-collector.component" . | nindent 6 }}
+      {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 6 }}
+      component: target-allocator
   strategy:
     {{- if eq .Values.rollout.strategy "RollingUpdate" }}
     {{- with .Values.rollout.rollingUpdate }}
@@ -33,9 +33,8 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap-targetallocator.yaml") . | sha256sum }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
-        {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
-        {{- include "opentelemetry-collector.component" . | nindent 8 }}
-        {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
+        {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 8 }}
+        component: target-allocator
     spec:
       containers:
         - name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
