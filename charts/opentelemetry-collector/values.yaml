@@ -194,6 +194,9 @@ configMap:
 # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
 config:
   exporters:
+    debug: {}
+    # Will be removed in a future release.
+    # Use the debug exporter instead.
     logging: {}
   extensions:
     # The health_check extension is mandatory for this chart.
@@ -240,7 +243,7 @@ config:
     pipelines:
       logs:
         exporters:
-          - logging
+          - debug
         processors:
           - memory_limiter
           - batch
@@ -248,7 +251,7 @@ config:
           - otlp
       metrics:
         exporters:
-          - logging
+          - debug
         processors:
           - memory_limiter
           - batch
@@ -257,7 +260,7 @@ config:
           - prometheus
       traces:
         exporters:
-          - logging
+          - debug
         processors:
           - memory_limiter
           - batch
@@ -409,6 +412,10 @@ resources: {}
 podAnnotations: {}
 
 podLabels: {}
+
+# Common labels to add to all otel-collector resources. Evaluated as a template.
+additionalLabels: {}
+#  app.kubernetes.io/part-of: my-app
 
 # Host networking requested for this pod. Use the host's network namespace.
 hostNetwork: false
@@ -687,4 +694,4 @@ networkPolicy:
 # In a future release this setting will be enabled by default.
 # See https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891
 # for more details.
-useGOMEMLIMIT: false
+useGOMEMLIMIT: true

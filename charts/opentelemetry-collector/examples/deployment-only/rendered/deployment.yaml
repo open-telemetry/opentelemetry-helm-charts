@@ -6,11 +6,12 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.77.8
+    helm.sh/chart: opentelemetry-collector-0.78.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.90.1"
+    app.kubernetes.io/version: "0.91.0"
     app.kubernetes.io/managed-by: Helm
+    
 spec:
   replicas: 3
   revisionHistoryLimit: 10
@@ -24,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 7f7ae9e016ac5ef27bd8110bcc31d63d21045cceeea3993d8535ed8a6376f4be
+        checksum/config: 0917956db5a6e6ce39cf4dbb5da2f7c8ad4d59a69fa4dd1792315eeedd63971a
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -43,7 +44,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.90.1"
+          image: "otel/opentelemetry-collector-contrib:0.91.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -71,6 +72,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: GOMEMLIMIT
+              value: 3276MiB
           livenessProbe:
             httpGet:
               path: /

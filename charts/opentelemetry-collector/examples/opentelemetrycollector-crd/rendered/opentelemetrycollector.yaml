@@ -5,11 +5,12 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.77.8
+    helm.sh/chart: opentelemetry-collector-0.78.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.90.1"
+    app.kubernetes.io/version: "0.91.0"
     app.kubernetes.io/managed-by: Helm
+    
 spec:
   mode: statefulset
   targetAllocator:
@@ -22,7 +23,7 @@ spec:
   podSecurityContext:
     runAsUser: 0
     runAsGroup: 0
-  image: "otel/opentelemetry-collector-contrib:0.90.1"
+  image: "otel/opentelemetry-collector-contrib:0.91.0"
   imagePullPolicy: IfNotPresent
   ports:
     - name: jaeger-compact
@@ -86,6 +87,7 @@ spec:
   hostNetwork: false
   config: |
     exporters:
+      debug: {}
       logging: {}
     extensions:
       file_storage:
@@ -95,8 +97,6 @@ spec:
         auth_type: serviceAccount
         node: ${env:K8S_NODE_NAME}
         observe_pods: true
-      memory_ballast:
-        size_in_percentage: 40
     processors:
       batch: {}
       memory_limiter:
@@ -304,13 +304,12 @@ spec:
     service:
       extensions:
       - health_check
-      - memory_ballast
       - file_storage
       - k8s_observer
       pipelines:
         logs:
           exporters:
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch
@@ -319,7 +318,7 @@ spec:
           - filelog
         metrics:
           exporters:
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch
@@ -330,7 +329,7 @@ spec:
           - hostmetrics
         traces:
           exporters:
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch

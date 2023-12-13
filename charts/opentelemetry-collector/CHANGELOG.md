@@ -2,6 +2,12 @@
 
 ## OpenTelemetry Collector
 
+
+### v0.78.0 / 2023-12-13
+- [CHORE] Pull upstream changes
+- [CHORE] Bump Collector to 0.91.0
+- [CHORE] Enable Go memory limit feature flag by default.
+
 ### v0.77.5 / 2023-11-30
 - [FEAT] Add gke/autopilot distribution.
 

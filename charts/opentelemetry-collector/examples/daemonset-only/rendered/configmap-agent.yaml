@@ -6,19 +6,19 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.77.8
+    helm.sh/chart: opentelemetry-collector-0.78.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.90.1"
+    app.kubernetes.io/version: "0.91.0"
     app.kubernetes.io/managed-by: Helm
+    
 data:
   relay: |
     exporters:
+      debug: {}
       logging: {}
     extensions:
       health_check: {}
-      memory_ballast:
-        size_in_percentage: 40
     processors:
       batch: {}
       memory_limiter:
@@ -53,11 +53,10 @@ data:
     service:
       extensions:
       - health_check
-      - memory_ballast
       pipelines:
         logs:
           exporters:
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch
@@ -65,7 +64,7 @@ data:
           - otlp
         metrics:
           exporters:
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch
@@ -74,7 +73,7 @@ data:
           - prometheus
         traces:
           exporters:
-          - logging
+          - debug
           processors:
           - memory_limiter
           - batch

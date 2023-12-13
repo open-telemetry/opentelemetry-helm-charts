@@ -59,6 +59,7 @@ helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "opentelemetry-collector.additionalLabels" . }}
 {{- end }}
 
 {{/*
@@ -143,6 +144,12 @@ Create the name of the priorityClass to use
 {{- define "opentelemetry-target-allocator.serviceMonitorSelector" -}}
 {{- if .Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector }}
 {{- tpl (.Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector | toYaml) . }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.additionalLabels" -}}
+{{- if .Values.additionalLabels }}
+{{- tpl (.Values.additionalLabels | toYaml) . }}
 {{- end }}
 {{- end }}
 
