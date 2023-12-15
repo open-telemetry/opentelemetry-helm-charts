@@ -29,7 +29,18 @@ data:
     - /etc/config/alerting_rules.yml
     - /etc/config/rules
     - /etc/config/alerts
-    scrape_configs: []
+    scrape_configs:
+    - honor_labels: true
+      job_name: opentelemetry-community-demo
+      kubernetes_sd_configs:
+      - namespaces:
+          own_namespace: true
+        role: pod
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_pod_annotation_opentelemetry_community_demo
   recording_rules.yml: |
     {}
   rules: |
