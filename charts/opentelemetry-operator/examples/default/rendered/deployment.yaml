@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.44.1
+    helm.sh/chart: opentelemetry-operator-0.44.2
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.90.0"
     app.kubernetes.io/managed-by: Helm
@@ -61,7 +61,9 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: 
-            limits: {}
+            limits:
+              cpu: 100m
+              memory: 128Mi
             requests:
               cpu: 100m
               memory: 64Mi
@@ -82,7 +84,9 @@ spec:
               name: https
               protocol: TCP
           resources: 
-            limits: {}
+            limits:
+              cpu: 500m
+              memory: 128Mi
             requests:
               cpu: 5m
               memory: 64Mi
