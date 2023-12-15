@@ -13,8 +13,14 @@ When enabled, the chart will remove the Memory Ballast Extension from the collec
 of the configured `resources.limits.memory`.  If no `resources.limits.memory` are set when `useGOMEMLIMIT` is enabled then a `GOMEMLIMIT` environment variable WILL NOT be
 created but the Memory Ballast Extension will still be removed.
 
-If you are not interested in using `GOMEMLIMIT` then this change does not affect you.  But, depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
+Depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
 the use of `GOMEMLIMIT` may completely replace the Memory Ballast Extension in the future.
+
+## 0.75.1 to 0.76.0
+
+Enable the `useGOMEMLIMIT` feature flag by default. This means by default the chart now does not use the Memory Ballast Extension and any custom configuraiton applied to the Memory Ballast Extension is ignored.
+
+**If you're still interested in using the Memory Ballast Extension set this back to false.**
 
 ## 0.69.3 to 0.70.0
 

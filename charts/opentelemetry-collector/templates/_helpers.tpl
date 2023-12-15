@@ -59,6 +59,7 @@ helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "opentelemetry-collector.additionalLabels" . }}
 {{- end }}
 
 {{/*
@@ -104,6 +105,12 @@ Create the name of the clusterRoleBinding to use
 {{- define "opentelemetry-collector.podLabels" -}}
 {{- if .Values.podLabels }}
 {{- tpl (.Values.podLabels | toYaml) . }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.additionalLabels" -}}
+{{- if .Values.additionalLabels }}
+{{- tpl (.Values.additionalLabels | toYaml) . }}
 {{- end }}
 {{- end }}
 

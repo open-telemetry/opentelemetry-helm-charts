@@ -1,0 +1,36 @@
+---
+# Source: opentelemetry-demo/charts/prometheus/templates/cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: v2.47.2
+    helm.sh/chart: prometheus-25.4.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: prometheus
+  name: example-prometheus-server
+  namespace: default
+data:
+  allow-snippet-annotations: "false"
+  alerting_rules.yml: |
+    {}
+  alerts: |
+    {}
+  prometheus.yml: |
+    global:
+      evaluation_interval: 1m
+      scrape_interval: 1m
+      scrape_timeout: 10s
+    rule_files:
+    - /etc/config/recording_rules.yml
+    - /etc/config/alerting_rules.yml
+    - /etc/config/rules
+    - /etc/config/alerts
+    scrape_configs: []
+  recording_rules.yml: |
+    {}
+  rules: |
+    {}
