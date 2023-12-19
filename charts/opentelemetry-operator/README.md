@@ -95,6 +95,8 @@ The following command will show all the configurable options with detailed comme
 $ helm show values open-telemetry/opentelemetry-operator
 ```
 
+When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
+
 ## Install OpenTelemetry Collector
 
 _See [OpenTelemetry website](https://opentelemetry.io/docs/collector/) for more details about the Collector_
