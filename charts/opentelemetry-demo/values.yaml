@@ -728,7 +728,17 @@ prometheus:
 
   serverFiles:
     prometheus.yml:
-      scrape_configs: []
+      scrape_configs:
+        - job_name: 'opentelemetry-community-demo'
+          honor_labels: true
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                own_namespace: true
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+              action: keep
+              regex: true
 
 grafana:
   enabled: true

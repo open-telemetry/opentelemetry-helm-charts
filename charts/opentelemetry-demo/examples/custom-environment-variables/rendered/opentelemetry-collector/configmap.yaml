@@ -6,11 +6,12 @@ metadata:
   name: example-otelcol
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.73.1
+    helm.sh/chart: opentelemetry-collector-0.77.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.88.0"
+    app.kubernetes.io/version: "0.91.0"
     app.kubernetes.io/managed-by: Helm
+    
 data:
   relay: |
     connectors:
@@ -28,8 +29,6 @@ data:
           insecure: true
     extensions:
       health_check: {}
-      memory_ballast:
-        size_in_percentage: 40
     processors:
       attributes:
         actions:
@@ -117,7 +116,6 @@ data:
     service:
       extensions:
       - health_check
-      - memory_ballast
       pipelines:
         logs:
           exporters:
