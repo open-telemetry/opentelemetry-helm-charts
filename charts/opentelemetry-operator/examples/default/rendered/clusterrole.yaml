@@ -16,6 +16,9 @@ rules:
       - ""
     resources:
       - configmaps
+      - pods
+      - serviceaccounts
+      - services
     verbs:
       - create
       - delete
@@ -39,45 +42,11 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
-    resources:
-      - serviceaccounts
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - services
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
       - apps
     resources:
       - daemonsets
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - apps
-    resources:
       - deployments
+      - statefulsets
     verbs:
       - create
       - delete
@@ -95,18 +64,6 @@ rules:
       - list
       - watch
   - apiGroups:
-      - apps
-    resources:
-      - statefulsets
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
@@ -117,6 +74,15 @@ rules:
       - list
       - patch
       - update
+      - watch
+  - apiGroups:
+      - config.openshift.io
+    resources:
+      - infrastructures
+      - infrastructures/status
+    verbs:
+      - get
+      - list
       - watch
   - apiGroups:
       - coordination.k8s.io
@@ -130,8 +96,8 @@ rules:
   - apiGroups:
       - monitoring.coreos.com
     resources:
-      - servicemonitors
       - podmonitors
+      - servicemonitors
     verbs:
       - create
       - delete
@@ -165,6 +131,32 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      - opampbridges
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opampbridges/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opampbridges/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - opentelemetry.io
+    resources:
       - opentelemetrycollectors
     verbs:
       - get
@@ -189,56 +181,35 @@ rules:
       - patch
       - update
   - apiGroups:
-      - opentelemetry.io
+      - policy
     resources:
-      - opampbridges
+      - poddisruptionbudgets
     verbs:
+      - create
+      - delete
       - get
       - list
       - patch
       - update
       - watch
   - apiGroups:
-      - opentelemetry.io
+      - rbac.authorization.k8s.io
     resources:
-      - opampbridges/finalizers
+      - clusterrolebindings
+      - clusterroles
     verbs:
+      - create
+      - delete
       - get
+      - list
       - patch
       - update
+      - watch
   - apiGroups:
-      - opentelemetry.io
+      - route.openshift.io
     resources:
-      - opampbridges/status
-    verbs:
-      - get
-      - patch
-      - update
-  - apiGroups:
-    - route.openshift.io
-    resources:
-    - routes
-    - routes/custom-host
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  - apiGroups:
-    - discovery.k8s.io
-    resources:
-    - endpointslices
-    verbs:
-    - get
-    - list
-    - watch
-  - apiGroups:
-      - policy
-    resources:
-      - poddisruptionbudgets
+      - routes
+      - routes/custom-host
     verbs:
       - create
       - delete
