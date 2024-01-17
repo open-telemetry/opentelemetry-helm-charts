@@ -1,9 +1,32 @@
 # Upgrade guidelines
 
+## To 0.28
+
+The `configuration` property for components has been removed in favor of the new `mountedConfigMaps` property.
+This new property allows you to specify the contents of the configuration using the `data` sub-property. You will also
+need to specify the `mountPath` to use, and give the configuration a name. The old `configuration` property used
+`/etc/config` and `config` as values for these respectively. The following example shows how to migrate from the old
+`configuration` property to the new `mountedConfigMaps` property:
+
+```yaml
+# Old configuration property
+configuration:
+  my-config.yaml: |
+    # Contents of my-config.yaml
+
+# New mountedConfigMaps property
+mountedConfigMaps:
+  - name: config
+    mountPath: /etc/config
+    data:
+      my-config.yaml: |
+        # Contents of my-config.yaml
+```
+
 ## To 0.24
 
-This release uses the [kubernetes attributes processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) 
-to add kubernetes metadata as resource attributes. If you override the processors array in your config, you will 
+This release uses the [kubernetes attributes processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor)
+to add kubernetes metadata as resource attributes. If you override the processors array in your config, you will
 need to add the k8s attributes processor manually to restore `service.instance.id`
 resource attribute.
 
