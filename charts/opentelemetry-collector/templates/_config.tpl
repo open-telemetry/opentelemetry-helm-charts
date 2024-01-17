@@ -542,6 +542,11 @@ processors:
 {{- define "opentelemetry-collector.spanMetricsConfig" -}}
 connectors:
   spanmetrics:
+{{- if .Values.presets.spanMetrics.histogramBuckets }}
+    histogram:
+      explicit:
+        buckets: {{ .Values.presets.spanMetrics.histogramBuckets }}
+{{- end }}
 {{- if .Values.presets.spanMetrics.extraDimensions }}
     dimensions:
 {{- .Values.presets.spanMetrics.extraDimensions | toYaml | nindent 10 }}
