@@ -545,7 +545,7 @@ connectors:
 {{- if .Values.presets.spanMetrics.histogramBuckets }}
     histogram:
       explicit:
-        buckets: {{ .Values.presets.spanMetrics.histogramBuckets }}
+        buckets: {{ .Values.presets.spanMetrics.histogramBuckets | toYaml | nindent 12 }}
 {{- end }}
 {{- if .Values.presets.spanMetrics.extraDimensions }}
     dimensions:
