@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.78.0
+    helm.sh/chart: opentelemetry-collector-0.78.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.92.0"
@@ -102,6 +102,8 @@ data:
         - from: attributes.log
           to: body
           type: move
+        retry_on_failure:
+          enabled: true
         start_at: end
       jaeger:
         protocols:
