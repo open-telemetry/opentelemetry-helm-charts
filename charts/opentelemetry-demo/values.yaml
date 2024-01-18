@@ -122,7 +122,7 @@ components:
   #             - demo.example.com
   # # Command to use in the container spec, in case you don't want to go with the default command from the image.
   #   command: []
-  # # Configuration to for this service; will create a ConfigMap, Volume, and Mount it into the container being spun up/.
+  # # Configuration to for this service; will create a ConfigMap, Volume, and Mount it into the container being created.
   #   configuration: {}
   # # Kubernetes container health check options
   #   livenessProbe: {}
@@ -522,7 +522,7 @@ components:
       env: true
     imageOverride:
       repository: "postgres"
-      tag: "14"
+      tag: "16.1"
     replicas: 1
     ports:
       - name: postgres
@@ -573,7 +573,7 @@ components:
       env: true
     imageOverride:
       repository: "redis"
-      tag: "alpine"
+      tag: "7.2-alpine"
     replicas: 1
     ports:
       - name: redis
@@ -718,6 +718,10 @@ prometheus:
     extraFlags:
       - "enable-feature=exemplar-storage"
       - "enable-feature=otlp-write-receiver"
+    global:
+      scrape_interval: 5s
+      scrape_timeout: 3s
+      evaluation_interval: 30s
     persistentVolume:
       enabled: false
     service:
@@ -729,7 +733,7 @@ prometheus:
   serverFiles:
     prometheus.yml:
       scrape_configs:
-        - job_name: 'opentelemetry-community-demo'
+        - job_name: 'otel-collector'
           honor_labels: true
           kubernetes_sd_configs:
             - role: pod
