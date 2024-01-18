@@ -196,6 +196,8 @@ receivers:
     exclude: [ /var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log ]
     {{- end }}
     start_at: end
+    retry_on_failure:
+        enabled: true
     {{- if .Values.presets.logsCollection.storeCheckpoints}}
     storage: file_storage
     {{- end }}
