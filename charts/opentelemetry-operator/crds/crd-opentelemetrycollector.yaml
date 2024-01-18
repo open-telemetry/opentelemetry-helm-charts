@@ -2218,6 +2218,37 @@ spec:
                   - name
                   type: object
                 type: array
+              deploymentUpdateStrategy:
+                description: UpdateStrategy represents the strategy the operator will
+                  take replacing existing Deployment pods with new pods https://kubernetes.
+                properties:
+                  rollingUpdate:
+                    description: 'Rolling update config params. Present only if DeploymentStrategyType
+                      = RollingUpdate. --- TODO: Update this to follow our convention
+                      for oneOf, whatever we decide it to be.'
+                    properties:
+                      maxSurge:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: 'The maximum number of pods that can be scheduled
+                          above the desired number of pods. Value can be an absolute
+                          number (ex: 5) or a percentage of desired pods (ex: 10%).'
+                        x-kubernetes-int-or-string: true
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: 'The maximum number of pods that can be unavailable
+                          during the update. Value can be an absolute number (ex:
+                          5) or a percentage of desired pods (ex: 10%).'
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  type:
+                    description: Type of deployment. Can be "Recreate" or "RollingUpdate".
+                      Default is RollingUpdate.
+                    type: string
+                type: object
               env:
                 description: ENV vars to set on the OpenTelemetry Collector's Pods.
                   These can then in certain cases be consumed in the config file for
@@ -5021,10 +5052,11 @@ spec:
                         type: object
                     type: object
                   allocationStrategy:
+                    default: consistent-hashing
                     description: AllocationStrategy determines which strategy the
                       target allocator should use for allocation. The current options
                       are least-weighted and consistent-hashing. The default option
-                      is least-weighted
+                      is consistent-hashing
                     enum:
                     - least-weighted
                     - consistent-hashing
@@ -5194,93 +5226,9 @@ spec:
                           the eviction, i.e. even in the absence of the evicted pod.
                         x-kubernetes-int-or-string: true
                     type: object
-                  prometheusCR:
-                    description: PrometheusCR defines the configuration for the retrieval
-                      of PrometheusOperator CRDs ( servicemonitor.monitoring.coreos.com/v1
-                      and podmonitor.monitoring.coreos.com/v1 )  retrieval.
-                    properties:
-                      enabled:
-                        description: Enabled indicates whether to use a PrometheusOperator
-                          custom resources as targets or not.
-                        type: boolean
-                      podMonitorSelector:
-                        additionalProperties:
-                          type: string
-                        description: PodMonitors to be selected for target discovery.
-                          This is a map of {key,value} pairs. Each {key,value} in
-                          the map is going to exactly match a label in a PodMonitor's
-                          meta labels.
-                        type: object
-                      scrapeInterval:
-                        default: 30s
-                        description: "Interval between consecutive scrapes. Equivalent
-                          to the same setting on the Prometheus CRD. \n Default: \"30s\""
-                        format: duration
-                        type: string
-                      serviceMonitorSelector:
-                        additionalProperties:
-                          type: string
-                        description: ServiceMonitors to be selected for target discovery.
-                          This is a map of {key,value} pairs. Each {key,value} in
-                          the map is going to exactly match a label in a ServiceMonitor's
-                          meta labels.
-                        type: object
-                    type: object
-                  replicas:
-                    description: Replicas is the number of pod instances for the underlying
-                      TargetAllocator. This should only be set to a value other than
-                      1 if a strategy that allows for high availability is chosen.
-                    format: int32
-                    type: integer
-                  resources:
-                    description: Resources to set on the OpenTelemetryTargetAllocator
-                      containers.
-                    properties:
-                      claims:
-                        description: "Claims lists the names of resources, defined
-                          in spec.resourceClaims, that are used by this container.
-                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
-                          feature gate."
-                        items:
-                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
-                          properties:
-                            name:
-                              description: Name must match the name of one entry in
-                                pod.spec.resourceClaims of the Pod where this field
-                                is used. It makes that resource available inside a
-                                container.
-                              type: string
-                          required:
-                          - name
-                          type: object
-                        type: array
-                        x-kubernetes-list-map-keys:
-                        - name
-                        x-kubernetes-list-type: map
-                      limits:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        description: 'Limits describes the maximum amount of compute
-                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
-                        type: object
-                      requests:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        description: Requests describes the minimum amount of compute
-                          resources required.
-                        type: object
-                    type: object
-                  securityContext:
-                    description: SecurityContext configures the container security
-                      context for the targetallocator.
+                  podSecurityContext:
+                    description: PodSecurityContext configures the pod security context
+                      for the targetallocator.
                     properties:
                       fsGroup:
                         description: "A special supplemental group that applies to
@@ -5383,6 +5331,222 @@ spec:
                         description: The Windows specific settings applied to all
                           containers. If unspecified, the options within a container's
                           SecurityContext will be used.
+                        properties:
+                          gmsaCredentialSpec:
+                            description: GMSACredentialSpec is where the GMSA admission
+                              webhook (https://github.com/kubernetes-sigs/windows-gmsa)
+                              inlines the contents of the GMSA credential spec named
+                              by the GMSACredentialSpecName field.
+                            type: string
+                          gmsaCredentialSpecName:
+                            description: GMSACredentialSpecName is the name of the
+                              GMSA credential spec to use.
+                            type: string
+                          hostProcess:
+                            description: HostProcess determines if a container should
+                              be run as a 'Host Process' container.
+                            type: boolean
+                          runAsUserName:
+                            description: The UserName in Windows to run the entrypoint
+                              of the container process. Defaults to the user specified
+                              in image metadata if unspecified. May also be set in
+                              PodSecurityContext.
+                            type: string
+                        type: object
+                    type: object
+                  prometheusCR:
+                    description: PrometheusCR defines the configuration for the retrieval
+                      of PrometheusOperator CRDs ( servicemonitor.monitoring.coreos.com/v1
+                      and podmonitor.monitoring.coreos.com/v1 )  retrieval.
+                    properties:
+                      enabled:
+                        description: Enabled indicates whether to use a PrometheusOperator
+                          custom resources as targets or not.
+                        type: boolean
+                      podMonitorSelector:
+                        additionalProperties:
+                          type: string
+                        description: PodMonitors to be selected for target discovery.
+                          This is a map of {key,value} pairs. Each {key,value} in
+                          the map is going to exactly match a label in a PodMonitor's
+                          meta labels.
+                        type: object
+                      scrapeInterval:
+                        default: 30s
+                        description: "Interval between consecutive scrapes. Equivalent
+                          to the same setting on the Prometheus CRD. \n Default: \"30s\""
+                        format: duration
+                        type: string
+                      serviceMonitorSelector:
+                        additionalProperties:
+                          type: string
+                        description: ServiceMonitors to be selected for target discovery.
+                          This is a map of {key,value} pairs. Each {key,value} in
+                          the map is going to exactly match a label in a ServiceMonitor's
+                          meta labels.
+                        type: object
+                    type: object
+                  replicas:
+                    description: Replicas is the number of pod instances for the underlying
+                      TargetAllocator. This should only be set to a value other than
+                      1 if a strategy that allows for high availability is chosen.
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resources to set on the OpenTelemetryTargetAllocator
+                      containers.
+                    properties:
+                      claims:
+                        description: "Claims lists the names of resources, defined
+                          in spec.resourceClaims, that are used by this container.
+                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
+                          feature gate."
+                        items:
+                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                          properties:
+                            name:
+                              description: Name must match the name of one entry in
+                                pod.spec.resourceClaims of the Pod where this field
+                                is used. It makes that resource available inside a
+                                container.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: Requests describes the minimum amount of compute
+                          resources required.
+                        type: object
+                    type: object
+                  securityContext:
+                    description: SecurityContext configures the container security
+                      context for the targetallocator.
+                    properties:
+                      allowPrivilegeEscalation:
+                        description: AllowPrivilegeEscalation controls whether a process
+                          can gain more privileges than its parent process. This bool
+                          directly controls if the no_new_privs flag will be set on
+                          the container process.
+                        type: boolean
+                      capabilities:
+                        description: The capabilities to add/drop when running containers.
+                          Defaults to the default set of capabilities granted by the
+                          container runtime. Note that this field cannot be set when
+                          spec.os.name is windows.
+                        properties:
+                          add:
+                            description: Added capabilities
+                            items:
+                              description: Capability represent POSIX capabilities
+                                type
+                              type: string
+                            type: array
+                          drop:
+                            description: Removed capabilities
+                            items:
+                              description: Capability represent POSIX capabilities
+                                type
+                              type: string
+                            type: array
+                        type: object
+                      privileged:
+                        description: Run container in privileged mode. Processes in
+                          privileged containers are essentially equivalent to root
+                          on the host. Defaults to false. Note that this field cannot
+                          be set when spec.os.name is windows.
+                        type: boolean
+                      procMount:
+                        description: procMount denotes the type of proc mount to use
+                          for the containers. The default is DefaultProcMount which
+                          uses the container runtime defaults for readonly paths and
+                          masked paths.
+                        type: string
+                      readOnlyRootFilesystem:
+                        description: Whether this container has a read-only root filesystem.
+                          Default is false. Note that this field cannot be set when
+                          spec.os.name is windows.
+                        type: boolean
+                      runAsGroup:
+                        description: The GID to run the entrypoint of the container
+                          process. Uses runtime default if unset. May also be set
+                          in PodSecurityContext.
+                        format: int64
+                        type: integer
+                      runAsNonRoot:
+                        description: Indicates that the container must run as a non-root
+                          user.
+                        type: boolean
+                      runAsUser:
+                        description: The UID to run the entrypoint of the container
+                          process. Defaults to user specified in image metadata if
+                          unspecified. May also be set in PodSecurityContext.
+                        format: int64
+                        type: integer
+                      seLinuxOptions:
+                        description: The SELinux context to be applied to the container.
+                          If unspecified, the container runtime will allocate a random
+                          SELinux context for each container.  May also be set in
+                          PodSecurityContext.
+                        properties:
+                          level:
+                            description: Level is SELinux level label that applies
+                              to the container.
+                            type: string
+                          role:
+                            description: Role is a SELinux role label that applies
+                              to the container.
+                            type: string
+                          type:
+                            description: Type is a SELinux type label that applies
+                              to the container.
+                            type: string
+                          user:
+                            description: User is a SELinux user label that applies
+                              to the container.
+                            type: string
+                        type: object
+                      seccompProfile:
+                        description: The seccomp options to use by this container.
+                          If seccomp options are provided at both the pod & container
+                          level, the container options override the pod options.
+                        properties:
+                          localhostProfile:
+                            description: localhostProfile indicates a profile defined
+                              in a file on the node should be used. The profile must
+                              be preconfigured on the node to work.
+                            type: string
+                          type:
+                            description: "type indicates which kind of seccomp profile
+                              will be applied. Valid options are: \n Localhost - a
+                              profile defined in a file on the node should be used."
+                            type: string
+                        required:
+                        - type
+                        type: object
+                      windowsOptions:
+                        description: The Windows specific settings applied to all
+                          containers. If unspecified, the options from the PodSecurityContext
+                          will be used.
                         properties:
                           gmsaCredentialSpec:
                             description: GMSACredentialSpec is where the GMSA admission
