@@ -356,6 +356,11 @@ components:
     service:
       port: 8080
     env:
+      - name: OTEL_SERVICE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: "metadata.labels['app.kubernetes.io/component']"
       - name: ENVOY_PORT
         value: "8080"
       - name: FRONTEND_PORT
@@ -384,6 +389,8 @@ components:
         value: "4318"
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
     resources:
       limits:
         memory: 50Mi
