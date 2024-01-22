@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.78.2
+    helm.sh/chart: opentelemetry-collector-0.78.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.92.0"
@@ -18,7 +18,8 @@ data:
       debug: {}
       logging: {}
     extensions:
-      health_check: {}
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
     processors:
       batch: {}
       k8sattributes:
