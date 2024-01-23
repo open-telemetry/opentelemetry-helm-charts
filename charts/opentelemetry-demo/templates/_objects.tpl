@@ -66,15 +66,24 @@ spec:
           livenessProbe:
             {{- .livenessProbe | toYaml | nindent 12 }}
           {{- end }}
-      {{- if .configuration }}
           volumeMounts:
-          - name: config
-            mountPath: /etc/config
+          {{- range .mountedConfigMaps }}
+            - name: {{ .name | lower }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+          {{- end }}
       volumes:
-        - name: config
+        {{- range .mountedConfigMaps }}
+        - name: {{ .name | lower}}
           configMap:
-            name: {{ include "otel-demo.name" . }}-{{ .name }}-config
-      {{- end }}
+            {{- if .existingConfigMap }}
+            name: {{ .existingConfigMap }}
+            {{- else }}
+            name: {{ include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
+            {{- end }}
+        {{- end }}
       {{- if .initContainers }}
       initContainers:
         {{- tpl (toYaml .initContainers) . | nindent 8 }}
@@ -126,18 +135,18 @@ spec:
 Demo component ConfigMap template
 */}}
 {{- define "otel-demo.configmap" }}
-{{- if .configuration}}
+{{- range .mountedConfigMaps }}
+{{- if .data }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "otel-demo.name" . }}-{{ .name }}-config
+  name: {{ include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
   labels:
-    service: {{ include "otel-demo.name" . }}-{{ .name }}
-    app: {{ include "otel-demo.name" . }}-{{ .name }}
-    component: {{ include "otel-demo.name" . }}-{{ .name }}-config
+        {{- include "otel-demo.labels" $ | nindent 4 }}
 data:
-  {{- .configuration | toYaml | nindent 2}}
+  {{- .data | toYaml | nindent 2}}
+{{- end}}
 {{- end}}
 {{- end}}
 
@@ -168,7 +177,7 @@ apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
   {{- if .name }}
-  name: {{include "otel-demo.name" $ }}-{{ $.name }}-{{ .name }}
+  name: {{include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
   {{- else }}
   name: {{include "otel-demo.name" $ }}-{{ $.name }}
   {{- end }}
