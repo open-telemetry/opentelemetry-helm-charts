@@ -120,10 +120,19 @@ components:
   #         - secretName: demo-tls
   #           hosts:
   #             - demo.example.com
-  # # Command to use in the container spec, in case you don't want to go with the default command from the image.
+  ## Command to use in the container spec, in case you don't want to go with the default command from the image.
   #   command: []
-  # # Configuration to for this service; will create a ConfigMap, Volume, and Mount it into the container being created.
-  #   configuration: {}
+  ## Configuration to for this component; will create a Volume, and Mount backed by an optionally created ConfigMap.
+  ## The name, mountPath are required, and one of existingConfigMap or data is required.
+  ## If an existing ConfigMap is not provided, the contents under data will be used for the created ConfigMap.
+  #   mountedConfigMaps: []
+  #     - name: my-config
+  #       mountPath: /etc/config
+  #       subPath:
+  #       exsitingConfigMap: my-configmap
+  #       data:
+  #         my-config.yaml: |
+  #           key: value
   # # Kubernetes container health check options
   #   livenessProbe: {}
   # # Optional init container to run before the pod starts.
