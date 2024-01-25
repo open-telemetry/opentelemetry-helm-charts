@@ -164,7 +164,7 @@ Allow the release namespace to be overridden
 {{- end -}}
 
 {{/*
-  This helper converts the input value of memory to MiB.
+  This helper converts the input value of memory to Bytes.
   Input needs to be a valid value as supported by k8s memory resource field.
  */}}
 {{- define "opentelemetry-collector.convertMemToBytes" }}
