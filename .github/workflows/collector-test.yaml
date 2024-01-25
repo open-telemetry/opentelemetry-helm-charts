@@ -2,7 +2,7 @@ name: Test Collector Chart
 
 on:
   pull_request:
-    paths: 
+    paths:
     - 'charts/opentelemetry-collector/**'
     branches:
       - main
@@ -19,6 +19,9 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
+
+      - name: Run unit tests
+        run: helm unittest charts/opentelemetry-collector --strict
 
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-collector

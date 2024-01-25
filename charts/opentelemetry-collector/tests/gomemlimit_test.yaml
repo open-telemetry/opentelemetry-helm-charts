@@ -1,0 +1,51 @@
+suite: splunk-otel-collector.convertMemToMib
+templates:
+  - "deployment.yaml"
+  - "configmap.yaml"
+set:
+  mode: "deployment"
+tests:
+- it: convert floating-point memory limit (Gi to Mi)
+  set:
+    resources.limits.memory: 2Gi
+  templates:
+    - "deployment.yaml"
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GOMEMLIMIT
+          value: "1638MiB"
+- it: convert integer memory limit (M to Mi)
+  set:
+    resources.limits.memory: 1000M
+  templates:
+    - "deployment.yaml"
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GOMEMLIMIT
+          value: "762MiB"
+- it: convert integer memory limit (Ki to Mi)
+  set:
+    resources.limits.memory: 1680Ki
+  templates:
+    - "deployment.yaml"
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GOMEMLIMIT
+          value: "1MiB"
+- it: convert floating-point memory limit (Gi to Mi)
+  set:
+    resources.limits.memory: 0.5Gi
+  templates:
+    - "deployment.yaml"
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GOMEMLIMIT
+          value: "409MiB"
