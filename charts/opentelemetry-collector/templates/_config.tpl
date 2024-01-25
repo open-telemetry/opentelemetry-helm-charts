@@ -150,7 +150,11 @@ receivers:
     {{- if not .Values.isWindows }}
     root_path: /hostfs
     {{- end }}
+    {{- if .Values.presets.hostMetrics.collectionInterval }}
+    collection_interval: "{{ .Values.presets.hostMetrics.collectionInterval }}"
+    {{- else }}
     collection_interval: 10s
+    {{- end }}
     scrapers:
         cpu:
           metrics:
@@ -214,7 +218,11 @@ receivers:
 {{- define "opentelemetry-collector.clusterMetricsConfig" -}}
 receivers:
   k8s_cluster:
+    {{- if .Values.presets.clusterMetrics.collectionInterval }}
+    collection_interval: "{{ .Values.presets.clusterMetrics.collectionInterval }}"
+    {{- else }}
     collection_interval: 10s
+    {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
@@ -226,7 +234,11 @@ receivers:
 {{- define "opentelemetry-collector.kubeletMetricsConfig" -}}
 receivers:
   kubeletstats:
+    {{- if .Values.presets.kubeletMetrics.collectionInterval }}
+    collection_interval: "{{ .Values.presets.kubeletMetrics.collectionInterval }}"
+    {{- else }}
     collection_interval: 20s
+    {{- end }}
     insecure_skip_verify: true
     auth_type: "serviceAccount"
     endpoint: "${env:K8S_NODE_IP}:10250"
@@ -446,7 +458,11 @@ receivers:
         config:
           username: {{ $instance.username }}
           password: {{ $instance.password }}
+          {{- if $instance.collectionInterval }}
+          collection_interval: "{{ $instance.collectionInterval }}"
+          {{- else }}
           collection_interval: 10s
+          {{- end }}
           statement_events:
             digest_text_limit: 120
             time_limit: 24h
@@ -550,6 +566,11 @@ connectors:
 {{- if .Values.presets.spanMetrics.extraDimensions }}
     dimensions:
 {{- .Values.presets.spanMetrics.extraDimensions | toYaml | nindent 10 }}
+{{- end }}
+{{- if .Values.presets.spanMetrics.collectionInterval }}
+    metrics_flush_interval: "{{ .Values.presets.spanMetrics.collectionInterval }}"
+{{- else }}
+    metrics_flush_interval: 15s
 {{- end }}
 {{- if .Values.presets.spanMetrics.spanNameReplacePattern }}
 processor:

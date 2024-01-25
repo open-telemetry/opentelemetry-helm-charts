@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.79.1
+    helm.sh/chart: opentelemetry-collector-0.79.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.92.0"
@@ -22,6 +22,7 @@ data:
             - 1ms
             - 1s
             - 10s
+        metrics_flush_interval: 30s
     exporters:
       debug: {}
       logging: {}
@@ -159,7 +160,7 @@ data:
         receivers:
           mysql:
             config:
-              collection_interval: 10s
+              collection_interval: 30s
               metrics:
                 mysql.client.network.io:
                   enabled: true
