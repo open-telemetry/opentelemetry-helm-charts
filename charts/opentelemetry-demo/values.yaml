@@ -158,6 +158,10 @@ components:
       - name: wait-for-kafka
         image: busybox:latest
         command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
+    podSecurityContext:
+      runAsGroup: 65534
+      runAsNonRoot: true
+      runAsUser: 65534
 
   adService:
     enabled: true
