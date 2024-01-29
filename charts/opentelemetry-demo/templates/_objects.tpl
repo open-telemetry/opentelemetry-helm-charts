@@ -42,6 +42,10 @@ spec:
       tolerations:
         {{- $schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
       {{- end }}
+      {{- if or .defaultValues.podSecurityContext .podSecurityContext }}
+      securityContext:
+        {{- .podSecurityContext | default .defaultValues.podSecurityContext | toYaml | nindent 8 }}
+      {{- end}}
       containers:
         - name: {{ .name }}
           image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
