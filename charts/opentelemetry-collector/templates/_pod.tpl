@@ -24,9 +24,9 @@ containers:
       {{- toYaml .Values.securityContext | nindent 6 }}
       {{- end }}
     {{- if .Values.image.digest }}
-    image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+    image: "{{ include "common.image.registry" (dict "image" .Values.image "context" .) }}/{{ .Values.image.repository }}@{{ .Values.image.digest }}"
     {{- else }}
-    image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+    image: "{{ include "common.image.registry" (dict "image" .Values.image "context" .) }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
     {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
 

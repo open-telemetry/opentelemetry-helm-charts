@@ -201,3 +201,15 @@ Allow the release namespace to be overridden
 {{- $memlimitBytes := include "opentelemetry-collector.convertMemToBytes" . | mulf 0.8 -}}
 {{- printf "%dMiB" (divf $memlimitBytes 0x1p20 | floor | int64) -}}
 {{- end }}
+
+{{/*
+Return the image registry
+{{ include "common.image.registry" ( dict "image" . "context" $) }}
+*/}}
+{{- define "common.image.registry" -}}
+  {{- if .context.Values.global }}
+    {{- .context.Values.global.imageRegistry | default .image.registry -}}
+  {{- else -}}
+    {{- .image.registry -}}
+  {{- end -}}
+{{- end -}}
