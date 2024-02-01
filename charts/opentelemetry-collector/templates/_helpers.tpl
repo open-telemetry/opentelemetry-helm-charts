@@ -201,3 +201,16 @@ Allow the release namespace to be overridden
 {{- $memlimitBytes := include "opentelemetry-collector.convertMemToBytes" . | mulf 0.8 -}}
 {{- printf "%dMiB" (divf $memlimitBytes 0x1p20 | floor | int64) -}}
 {{- end }}
+
+{{/*
+Get HPA kind from mode.
+The capitialization is important for StatefulSet.
+*/}}
+{{- define "opentelemetry-collector.hpaKind" -}}
+{{- if eq .Values.mode "deployment" -}}
+{{- print "Deployment" -}}
+{{- end -}}
+{{- if eq .Values.mode "statefulset" -}}
+{{- print "StatefulSet" -}}
+{{- end -}}
+{{- end }}
