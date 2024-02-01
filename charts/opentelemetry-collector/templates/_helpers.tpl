@@ -204,7 +204,7 @@ Allow the release namespace to be overridden
 
 {{/*
 Get HPA kind from mode.
-The capitialization is important for StatefulSet.
+The capitalization is important for StatefulSet.
 */}}
 {{- define "opentelemetry-collector.hpaKind" -}}
 {{- if eq .Values.mode "deployment" -}}
