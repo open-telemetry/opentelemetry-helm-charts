@@ -353,6 +353,8 @@ components:
         value: '{{ include "otel-demo.name" . }}-recommendationservice:8080'
       - name: SHIPPING_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
+      - name: OTEL_COLLECTOR_HOST
+        value: $(OTEL_COLLECTOR_NAME)
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: WEB_OTEL_SERVICE_NAME
@@ -429,13 +431,15 @@ components:
         value: "false"
       - name: LOCUST_AUTOSTART
         value: "true"
+      - name: LOCUST_BROWSER_TRAFFIC_ENABLED
+        value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 120Mi
+        memory: 1Gi
 
   paymentService:
     enabled: true
@@ -681,7 +685,7 @@ jaeger:
   allInOne:
     enabled: true
     args:
-      - "--memory.max-traces=8000"
+      - "--memory.max-traces=5000"
       - "--query.base-path=/jaeger/ui"
       - "--prometheus.server-url=http://{{ include \"otel-demo.name\" . }}-prometheus-server:9090"
       - "--prometheus.query.normalize-calls=true"
@@ -823,7 +827,7 @@ opensearch:
   clusterName: demo-cluster
   nodeGroup: otel-demo
   singleNode: true
-  opensearchJavaOpts: "-Xms512m -Xmx512m"
+  opensearchJavaOpts: "-Xms300m -Xmx300m"
   persistence:
     enabled: false
   extraEnvs:
@@ -833,3 +837,6 @@ opensearch:
       value: "true"
     - name: "DISABLE_SECURITY_PLUGIN"
       value: "true"
+  resources:
+    limits:
+      memory: 1Gi

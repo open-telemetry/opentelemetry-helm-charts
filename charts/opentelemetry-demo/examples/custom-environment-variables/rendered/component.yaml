@@ -1136,6 +1136,8 @@ spec:
             value: 'example-recommendationservice:8080'
           - name: SHIPPING_SERVICE_ADDR
             value: 'example-shippingservice:8080'
+          - name: OTEL_COLLECTOR_HOST
+            value: $(OTEL_COLLECTOR_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: WEB_OTEL_SERVICE_NAME
@@ -1375,6 +1377,8 @@ spec:
             value: "false"
           - name: LOCUST_AUTOSTART
             value: "true"
+          - name: LOCUST_BROWSER_TRAFFIC_ENABLED
+            value: "true"
           - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
             value: python
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -1385,7 +1389,7 @@ spec:
             value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
-              memory: 120Mi
+              memory: 1Gi
           volumeMounts:
       volumes:
 ---
