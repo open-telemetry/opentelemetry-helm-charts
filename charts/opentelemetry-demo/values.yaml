@@ -538,9 +538,6 @@ components:
     enabled: true
     useDefault:
       env: true
-    imageOverride:
-      repository: "postgres"
-      tag: "16.1"
     replicas: 1
     ports:
       - name: postgres
@@ -555,10 +552,6 @@ components:
     resources:
       limits:
         memory: 120Mi
-    securityContext:
-      runAsUser: 999  # postgres
-      runAsGroup: 999
-      runAsNonRoot: true
 
   kafka:
     enabled: true
@@ -651,6 +644,12 @@ opentelemetry-collector:
         endpoint: 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090/api/v1/otlp'
         tls:
           insecure: true
+      opensearch:
+        logs_index: otel
+        http:
+          endpoint: "http://otel-demo-opensearch:9200"
+          tls:
+            insecure: true
 
     processors:
       resource:
@@ -658,25 +657,6 @@ opentelemetry-collector:
         - key: service.instance.id
           from_attribute: k8s.pod.uid
           action: insert
-      filter/ottl:
-        error_mode: ignore
-        metrics:
-          metric:
-            # FIXME: remove when a Metrics View is implemented in the checkout and productcatalog components
-            # or when this issue is resolved: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/3071
-            - 'name == "rpc.server.duration"'
-      transform:
-        metric_statements:
-          - context: metric
-            statements:
-              # FIXME: remove when this issue is resolved: https://github.com/open-telemetry/opentelemetry-java/issues/4834
-              - set(description, "") where name == "queueSize"
-              # FIXME: remove when these 2 issues are resolved:
-              # Java: https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/9478
-              # Go: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/4301
-              - set(description, "") where name == "rpc.server.duration"
-              # FIXME: remove when this issue is resolved: https://github.com/open-telemetry/opentelemetry-python-contrib/issues/1958
-              - set(description, "") where name == "http.client.duration"
 
     connectors:
       spanmetrics:
@@ -688,8 +668,11 @@ opentelemetry-collector:
           exporters: [otlp, debug, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]
-          processors: [memory_limiter, filter/ottl, transform, resource, batch]
+          processors: [memory_limiter, resource, batch]
           exporters: [otlphttp/prometheus, debug]
+        logs:
+          processors: [memory_limiter, resource, batch]
+          exporters: [opensearch, debug]
 
 jaeger:
   enabled: true
@@ -775,6 +758,8 @@ grafana:
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       serve_from_sub_path: true
   adminPassword: admin
+  plugins:
+    - grafana-opensearch-datasource
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -800,6 +785,20 @@ grafana:
           url: 'http://{{ include "otel-demo.name" . }}-jaeger-query:16686/jaeger/ui'
           editable: true
           isDefault: false
+
+        - name: OpenSearch
+          type: grafana-opensearch-datasource
+          url: 'http://otel-demo-opensearch:9200/'
+          access: proxy
+          editable: true
+          isDefault: false
+          jsonData:
+            database: otel
+            flavor: opensearch
+            logLevelField: severity
+            logMessageField: body
+            pplEnabled: true
+            timeField: "@timestamp"
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -817,3 +816,20 @@ grafana:
   resources:
     limits:
       memory: 150Mi
+
+opensearch:
+  enabled: true
+  fullnameOverride: otel-demo-opensearch
+  clusterName: demo-cluster
+  nodeGroup: otel-demo
+  singleNode: true
+  opensearchJavaOpts: "-Xms512m -Xmx512m"
+  persistence:
+    enabled: false
+  extraEnvs:
+    - name: "bootstrap.memory_lock"
+      value: "true"
+    - name: "DISABLE_INSTALL_DEMO_CONFIG"
+      value: "true"
+    - name: "DISABLE_SECURITY_PLUGIN"
+      value: "true"

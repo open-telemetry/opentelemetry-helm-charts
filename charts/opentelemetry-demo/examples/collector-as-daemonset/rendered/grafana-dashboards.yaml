@@ -6,17 +6,17 @@ metadata:
   name: example-grafana-dashboards
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-demo-0.28.1
+    helm.sh/chart: opentelemetry-demo-0.29.0
     
     opentelemetry.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/name: example
-    app.kubernetes.io/version: "1.7.0"
+    app.kubernetes.io/version: "1.8.0"
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 data:
   
-  demo-dashboard.json: |-
+  demo-dashboard.json: |
     {
       "annotations": {
         "list": [
@@ -475,7 +475,7 @@ data:
                   "type": "count"
                 }
               ],
-              "query": "search source=otel\n| where serviceName=\"${service}\"\n| stats count() by severityText",
+              "query": "search source=otel\n| where resource.service.name=\"${service}\"\n| stats count() by severity.text",
               "queryType": "PPL",
               "refId": "A",
               "timeField": "time"
@@ -563,7 +563,7 @@ data:
                   "type": "count"
                 }
               ],
-              "query": "search source=otel\n| where serviceName=\"${service}\"",
+              "query": "search source=otel\n| where resource.service.name=\"${service}\"",
               "queryType": "PPL",
               "refId": "A",
               "timeField": "time"
