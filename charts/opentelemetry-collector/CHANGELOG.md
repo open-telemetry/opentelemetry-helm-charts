@@ -2,6 +2,8 @@
 
 ## OpenTelemetry Collector
 
+### v0.79.3 / 2024-02-05
+- [FIX] Fix Target Allocator endpointslices issue
 
 ### v0.78.0 / 2023-12-13
 - [CHORE] Pull upstream changes
