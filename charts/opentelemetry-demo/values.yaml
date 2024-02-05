@@ -559,6 +559,26 @@ components:
       runAsUser: 999  # postgres
       runAsGroup: 999
       runAsNonRoot: true
+    mountedConfigMaps:
+      - name: init-scripts
+        mountPath: /docker-entrypoint-initdb.d
+        data:
+          10-ffs_schema.sql: |
+            CREATE TABLE public.featureflags (
+                name character varying(255),
+                description character varying(255),
+                enabled double precision DEFAULT 0.0 NOT NULL
+            );
+            ALTER TABLE ONLY public.featureflags ADD CONSTRAINT featureflags_pkey PRIMARY KEY (name);
+            CREATE UNIQUE INDEX featureflags_name_index ON public.featureflags USING btree (name);
+          20-ffs_data.sql: |
+            -- Feature Flags created and initialized on startup
+            INSERT INTO public.featureflags (name, description, enabled)
+            VALUES
+                ('productCatalogFailure', 'Fail product catalog service on a specific product', 0),
+                ('recommendationCache', 'Cache recommendations', 0),
+                ('adServiceFailure', 'Fail ad service requests', 0),
+                ('cartServiceFailure', 'Fail cart service requests', 0);
 
   kafka:
     enabled: true
