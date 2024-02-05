@@ -207,9 +207,7 @@ Return the image registry
 {{ include "common.image.registry" ( dict "image" . "context" $) }}
 */}}
 {{- define "common.image.registry" -}}
-  {{- if .context.Values.global }}
-    {{- .context.Values.global.imageRegistry | default .image.registry -}}
-  {{- else -}}
-    {{- .image.registry -}}
+  {{- if (.context.Values.global).imageRegistry }}
+    {{- print .context.Values.global.imageRegistry "/" -}}
   {{- end -}}
 {{- end -}}
