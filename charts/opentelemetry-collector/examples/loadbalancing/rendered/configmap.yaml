@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/configmap-agent.yaml
+# Source: opentelemetry-collector/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.79.4
@@ -16,6 +16,15 @@ data:
   relay: |
     exporters:
       debug: {}
+      loadbalancing:
+        protocol:
+          otlp:
+            tls:
+              insecure: true
+        resolver:
+          dns:
+            hostname: coralogix-opentelemetry-gateway
+        routing_key: traceID
       logging: {}
     extensions:
       health_check: {}
@@ -74,8 +83,9 @@ data:
         traces:
           exporters:
           - debug
+          - loadbalancing
           processors:
-          - memory_limiter
+          - resource
           - batch
           receivers:
           - otlp

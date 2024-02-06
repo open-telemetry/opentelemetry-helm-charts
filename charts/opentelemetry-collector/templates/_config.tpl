@@ -67,6 +67,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.spanMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.loadBalancing.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLoadBalancingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -109,6 +112,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.spanMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.loadBalancing.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLoadBalancingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -582,6 +588,27 @@ processor:
         - replace_pattern(name, "{{ $pattern.regex }}", "{{ $pattern.replacement }}")
         {{- end}}
 {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyLoadBalancingConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.loadBalancingConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "loadbalancing" $config.service.pipelines.traces.exporters)) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "loadbalancing" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.loadBalancingConfig" -}}
+exporters:
+  loadbalancing:
+    routing_key: "{{ .Values.presets.loadBalancing.routingKey }}"
+    protocol:
+      otlp:
+        tls:
+          insecure: true
+    resolver:
+      dns:
+        hostname: "{{ .Values.presets.loadBalancing.hostname }}"
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
