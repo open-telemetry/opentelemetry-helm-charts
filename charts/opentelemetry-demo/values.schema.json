@@ -166,8 +166,11 @@
           "type": "array",
           "items": {}
         },
-        "configuration": {
-          "type": "object"
+        "mountedConfigMaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MountedConfigMap"
+          }
         },
         "livenessProbe": {
           "$ref": "#/definitions/LivenessProbe"
@@ -182,6 +185,9 @@
           "$ref": "#/definitions/ContainerResources"
         },
         "securityContext": {
+          "$ref": "#/definitions/SecurityContext"
+        },
+        "podSecurityContext": {
           "$ref": "#/definitions/SecurityContext"
         },
         "ingress": {
@@ -271,7 +277,10 @@
           "$ref": "#/definitions/SchedulingRules"
         },
         "securityContext": {
-          "type": "object"
+          "$ref": "#/definitions/SecurityContext"
+        },
+        "podSecurityContext": {
+          "$ref": "#/definitions/SecurityContext"
         }
       },
       "required": [
@@ -737,6 +746,39 @@
           "type": "integer"
         }
       }
+    },
+    "MountedConfigMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        },
+        "subPath": {
+          "type": "string"
+        },
+        "existingConfigMap": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "mountPath"
+      ],
+      "oneOf": [
+        {
+          "required": ["configMap"]
+        },
+        {
+          "required": ["data"]
+        }
+      ]
     }
   }
 }

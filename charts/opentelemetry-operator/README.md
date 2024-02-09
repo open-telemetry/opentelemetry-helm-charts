@@ -18,8 +18,8 @@ certificate that the API server is configured to trust. There are a few differen
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
-  - You can use an automatically generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert` to `true`. Helm will create a self-signed cert and a secret for you.
-  - You can use your own generated self-signed certificate by setting both `admissionWebhooks.certManager.enabled` and `admissionWebhooks.autoGenerateCert` to `false`. You should provide the necessary values to `admissionWebhooks.cert_file`, `admissionWebhooks.key_file`, and `admissionWebhooks.ca_file`.
+  - You can use an automatically generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert.enabled` to `true`. Helm will create a self-signed cert and a secret for you.
+  - You can use your own generated self-signed certificate by setting both `admissionWebhooks.certManager.enabled` and `admissionWebhooks.autoGenerateCert.enabled` to `false`. You should provide the necessary values to `admissionWebhooks.cert_file`, `admissionWebhooks.key_file`, and `admissionWebhooks.ca_file`.
   - You can sideload custom webhooks and certificate by disabling `.Values.admissionWebhooks.create` and `admissionWebhooks.certManager.enabled` while setting your custom cert secret name in `admissionWebhooks.secretName`
   - You can disable webhooks altogether by disabling `.Values.admissionWebhooks.create` and setting env var to `ENABLE_WEBHOOKS: "false"`
 
@@ -94,6 +94,8 @@ The following command will show all the configurable options with detailed comme
 ```console
 $ helm show values open-telemetry/opentelemetry-operator
 ```
+
+When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
 
 ## Install OpenTelemetry Collector
 

@@ -6,11 +6,12 @@ metadata:
   name: example-otelcol
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.73.1
+    helm.sh/chart: opentelemetry-collector-0.78.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.88.0"
+    app.kubernetes.io/version: "0.92.0"
     app.kubernetes.io/managed-by: Helm
+    
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -24,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: d4c84fda488f768523376ba48fd4fff97058a2e39be6f4c4db25701f166209eb
+        checksum/config: d3462234cdafb8ff0ad497c0baa0f38fff6dc510169bf167bcdabf5f14705078
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
@@ -45,7 +46,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.88.0"
+          image: "otel/opentelemetry-collector-contrib:0.92.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -79,6 +80,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: GOMEMLIMIT
+              value: 160MiB
           livenessProbe:
             httpGet:
               path: /

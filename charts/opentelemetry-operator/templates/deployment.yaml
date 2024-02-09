@@ -82,7 +82,7 @@ spec:
               value: {{ $value | quote -}}
             {{- end }}
           {{- end }}
-          image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
+          image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag | default .Chart.AppVersion }}"
           name: manager
           ports:
             - containerPort: {{ .Values.manager.ports.metricsPort }}

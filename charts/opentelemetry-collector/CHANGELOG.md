@@ -2,6 +2,12 @@
 
 ## OpenTelemetry Collector
 
+### v0.80.0 / 2024-02-09
+- [CHORE] Pull upstream changes
+- [CHORE] Bump Collector to 0.93.0
+- [Fix] Go memory limit
+- [Feat] Log Collector retry on failure enabled.
+
 ### v0.79.3 / 2024-02-05
 - [FIX] Fix Target Allocator endpointslices issue
 

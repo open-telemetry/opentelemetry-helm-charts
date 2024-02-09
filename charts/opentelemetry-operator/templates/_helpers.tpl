@@ -97,7 +97,9 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- $caCertEnc = index $prevSecret "data" "ca.crt" }}
 {{- if not $caCertEnc }}
 {{- $prevHook := (lookup "admissionregistration.k8s.io/v1" "MutatingWebhookConfiguration" .Release.Namespace (print (include "opentelemetry-operator.MutatingWebhookName" . ) "-mutation")) }}
+{{- if not (eq (toString $prevHook) "<nil>") }}
 {{- $caCertEnc = (first $prevHook.webhooks).clientConfig.caBundle }}
+{{- end }}
 {{- end }}
 {{- else }}
 {{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) -}}

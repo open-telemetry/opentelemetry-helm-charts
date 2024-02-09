@@ -1,4 +1,4 @@
-{{- if and .Values.autoscaling.enabled (eq .Values.mode "deployment") }}
+{{- if and .Values.autoscaling.enabled (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -9,7 +9,7 @@ metadata:
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ include "opentelemetry-collector.hpaKind" . }}
     name: {{ include "opentelemetry-collector.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}

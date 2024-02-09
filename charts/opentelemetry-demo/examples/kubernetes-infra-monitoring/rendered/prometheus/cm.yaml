@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/component: server
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: v2.47.2
-    helm.sh/chart: prometheus-25.4.0
+    app.kubernetes.io/version: v2.48.1
+    helm.sh/chart: prometheus-25.8.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: prometheus
   name: example-prometheus-server
@@ -21,15 +21,26 @@ data:
     {}
   prometheus.yml: |
     global:
-      evaluation_interval: 1m
-      scrape_interval: 1m
-      scrape_timeout: 10s
+      evaluation_interval: 30s
+      scrape_interval: 5s
+      scrape_timeout: 3s
     rule_files:
     - /etc/config/recording_rules.yml
     - /etc/config/alerting_rules.yml
     - /etc/config/rules
     - /etc/config/alerts
-    scrape_configs: []
+    scrape_configs:
+    - honor_labels: true
+      job_name: otel-collector
+      kubernetes_sd_configs:
+      - namespaces:
+          own_namespace: true
+        role: pod
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_pod_annotation_opentelemetry_community_demo
   recording_rules.yml: |
     {}
   rules: |

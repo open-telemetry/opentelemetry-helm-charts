@@ -68,7 +68,7 @@ containers:
       {{- end }}
       {{- if and (.Values.useGOMEMLIMIT) ((((.Values.resources).limits).memory))  }}
       - name: GOMEMLIMIT
-        value: {{ div (mul (include "opentelemetry-collector.convertMemToMib" .Values.resources.limits.memory) 80) 100 }}MiB
+        value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
       {{- end }}
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}

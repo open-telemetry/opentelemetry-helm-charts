@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.79.4
+    helm.sh/chart: opentelemetry-collector-0.80.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.92.0"
+    app.kubernetes.io/version: "0.93.0"
     app.kubernetes.io/managed-by: Helm
     
 data:
@@ -27,7 +27,8 @@ data:
       debug: {}
       logging: {}
     extensions:
-      health_check: {}
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
       k8s_observer:
         auth_type: serviceAccount
         node: ${env:K8S_NODE_NAME}
@@ -133,6 +134,8 @@ data:
             [0-9]{2}:[0-9]{2}:[0-9]{2})"
           source_identifier: attributes["log.file.path"]
           type: recombine
+        retry_on_failure:
+          enabled: true
         start_at: beginning
       jaeger:
         protocols:

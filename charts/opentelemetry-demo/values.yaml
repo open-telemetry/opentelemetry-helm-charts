@@ -120,10 +120,19 @@ components:
   #         - secretName: demo-tls
   #           hosts:
   #             - demo.example.com
-  # # Command to use in the container spec, in case you don't want to go with the default command from the image.
+  ## Command to use in the container spec, in case you don't want to go with the default command from the image.
   #   command: []
-  # # Configuration to for this service; will create a ConfigMap, Volume, and Mount it into the container being spun up/.
-  #   configuration: {}
+  ## Configuration to for this component; will create a Volume, and Mount backed by an optionally created ConfigMap.
+  ## The name, mountPath are required, and one of existingConfigMap or data is required.
+  ## If an existing ConfigMap is not provided, the contents under data will be used for the created ConfigMap.
+  #   mountedConfigMaps: []
+  #     - name: my-config
+  #       mountPath: /etc/config
+  #       subPath:
+  #       exsitingConfigMap: my-configmap
+  #       data:
+  #         my-config.yaml: |
+  #           key: value
   # # Kubernetes container health check options
   #   livenessProbe: {}
   # # Optional init container to run before the pod starts.
@@ -133,6 +142,15 @@ components:
   #       command: [list of commands for the init container to run]
   # # Replicas for the component
   #  replicas: 1
+  # # Optional pod security context for setting user ID (UID), group ID (GID) and other security policies
+  # # This will be applied at pod level, can be applied globally for all pods: .Values.default.podSecurityContext
+  # # Or it can be applied to a specific component: .Values.components.<component-name>.podSecurityContext
+  #    podSecurityContext:
+  #      runAsGroup: 65534
+  #      runAsNonRoot: true
+  #      runAsUser: 65534
+
+
   accountingService:
     enabled: true
     useDefault:
@@ -522,7 +540,7 @@ components:
       env: true
     imageOverride:
       repository: "postgres"
-      tag: "14"
+      tag: "16.1"
     replicas: 1
     ports:
       - name: postgres
@@ -573,7 +591,7 @@ components:
       env: true
     imageOverride:
       repository: "redis"
-      tag: "alpine"
+      tag: "7.2-alpine"
     replicas: 1
     ports:
       - name: redis
@@ -679,8 +697,6 @@ jaeger:
     cassandra: false
   allInOne:
     enabled: true
-    # FIXME: Remove this tag after the Jaeger Helm chart supports appVersion >= "1.50"
-    tag: "1.50"
     args:
       - "--memory.max-traces=8000"
       - "--query.base-path=/jaeger/ui"
@@ -720,6 +736,10 @@ prometheus:
     extraFlags:
       - "enable-feature=exemplar-storage"
       - "enable-feature=otlp-write-receiver"
+    global:
+      scrape_interval: 5s
+      scrape_timeout: 3s
+      evaluation_interval: 30s
     persistentVolume:
       enabled: false
     service:
@@ -730,7 +750,17 @@ prometheus:
 
   serverFiles:
     prometheus.yml:
-      scrape_configs: []
+      scrape_configs:
+        - job_name: 'otel-collector'
+          honor_labels: true
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                own_namespace: true
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+              action: keep
+              regex: true
 
 grafana:
   enabled: true

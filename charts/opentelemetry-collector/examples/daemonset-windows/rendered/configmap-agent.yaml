@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.79.4
+    helm.sh/chart: opentelemetry-collector-0.80.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.92.0"
+    app.kubernetes.io/version: "0.93.0"
     app.kubernetes.io/managed-by: Helm
     
 data:
@@ -20,7 +20,8 @@ data:
     extensions:
       file_storage:
         directory: /var/lib/otelcol
-      health_check: {}
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
     processors:
       batch: {}
       memory_limiter:
@@ -112,6 +113,8 @@ data:
         - from: attributes.log
           to: body
           type: move
+        retry_on_failure:
+          enabled: true
         start_at: beginning
         storage: file_storage
       hostmetrics:

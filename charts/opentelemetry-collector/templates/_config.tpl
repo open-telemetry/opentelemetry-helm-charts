@@ -283,6 +283,8 @@ receivers:
     {{- end }}
     {{- end }}
     start_at: beginning
+    retry_on_failure:
+        enabled: true
     {{- if .Values.presets.logsCollection.storeCheckpoints}}
     storage: file_storage
     {{- end }}
