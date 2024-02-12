@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.80.1 / 2024-02-12
+- [Feat] Exclude collector's debug / logging exporters logs, when collecting collector logs.
+
 ### v0.80.0 / 2024-02-09
 - [CHORE] Pull upstream changes
 - [CHORE] Bump Collector to 0.93.0

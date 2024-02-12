@@ -378,6 +378,15 @@ receivers:
       - type: move
         from: attributes.log
         to: body
+      {{- if .Values.presets.logsCollection.includeCollectorLogs }}
+      # Filter out the collector logs that contain logRecord or ResourceLog
+      # This is the typical output of debug / logging exporters
+      # This prevents the collector from looping over its own logs
+      - type: filter
+        drop_ratio: 1.0
+        expr: '(attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/.*.log") and ((body contains "logRecord") or (body contains "ResourceLog"))'
+# (body startsWith "{\"level\":\"debug") or
+      {{- end }}
       {{- if .Values.presets.logsCollection.extraFilelogOperators }}
       {{- .Values.presets.logsCollection.extraFilelogOperators | toYaml | nindent 6 }}
       {{- end }}
