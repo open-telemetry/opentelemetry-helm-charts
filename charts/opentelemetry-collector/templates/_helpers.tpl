@@ -204,7 +204,6 @@ Allow the release namespace to be overridden
 
 {{/*
 Return the image registry
-{{ include "common.image.registry" ( dict "image" . "context" $) }}
 */}}
 {{- define "common.image.registry" -}}
   {{- if (.context.Values.global).imageRegistry }}
