@@ -180,7 +180,7 @@ components:
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_LOGS_EXPORTER
         value: otlp
     resources:
@@ -256,6 +256,8 @@ components:
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: VERSION
+        value: "{{ .Chart.AppVersion }}"
     resources:
       limits:
         memory: 20Mi
@@ -319,7 +321,7 @@ components:
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+        value: http://$(OTEL_COLLECTOR_NAME):4318
     resources:
       limits:
         memory: 200Mi
@@ -571,7 +573,7 @@ components:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: 'PLAINTEXT://{{ include "otel-demo.name" . }}-kafka:9092'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx200M -Xms200M"
     resources:
@@ -695,7 +697,7 @@ jaeger:
         value: prometheus
     resources:
       limits:
-        memory: 300Mi
+        memory: 400Mi
   storage:
     type: none
   agent:
@@ -802,7 +804,8 @@ grafana:
             logLevelField: severity
             logMessageField: body
             pplEnabled: true
-            timeField: "@timestamp"
+            timeField: observedTimestamp
+            version: 2.11.1
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
