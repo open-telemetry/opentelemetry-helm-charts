@@ -6,10 +6,10 @@ metadata:
   name: example-otelcol
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.78.0
+    helm.sh/chart: opentelemetry-collector-0.80.1
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.92.0"
+    app.kubernetes.io/version: "0.93.0"
     app.kubernetes.io/managed-by: Helm
     
 data:
@@ -19,6 +19,12 @@ data:
     exporters:
       debug: {}
       logging: {}
+      opensearch:
+        http:
+          endpoint: http://otel-demo-opensearch:9200
+          tls:
+            insecure: true
+        logs_index: otel
       otlp:
         endpoint: 'example-jaeger-collector:4317'
         tls:
@@ -28,7 +34,8 @@ data:
         tls:
           insecure: true
     extensions:
-      health_check: {}
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
     processors:
       attributes:
         actions:
@@ -40,11 +47,6 @@ data:
           services:
           - frontend-proxy
       batch: {}
-      filter/ottl:
-        error_mode: ignore
-        metrics:
-          metric:
-          - name == "rpc.server.duration"
       k8sattributes:
         extract:
           metadata:
@@ -77,13 +79,6 @@ data:
         - action: insert
           from_attribute: k8s.pod.uid
           key: service.instance.id
-      transform:
-        metric_statements:
-        - context: metric
-          statements:
-          - set(description, "") where name == "queueSize"
-          - set(description, "") where name == "rpc.server.duration"
-          - set(description, "") where name == "http.client.duration"
     receivers:
       jaeger:
         protocols:
@@ -119,10 +114,12 @@ data:
       pipelines:
         logs:
           exporters:
+          - opensearch
           - debug
           processors:
           - k8sattributes
           - memory_limiter
+          - resource
           - batch
           receivers:
           - otlp
@@ -133,8 +130,6 @@ data:
           processors:
           - k8sattributes
           - memory_limiter
-          - filter/ottl
-          - transform
           - resource
           - batch
           receivers:

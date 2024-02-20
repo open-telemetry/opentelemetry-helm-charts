@@ -5,10 +5,10 @@ kind: Deployment
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: jaeger-0.73.1
+    helm.sh/chart: jaeger-1.0.0
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "1.51.0"
+    app.kubernetes.io/version: "1.53.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: all-in-one
     prometheus.io/port: "14269"
@@ -44,11 +44,11 @@ spec:
               value: "false"
             - name: COLLECTOR_OTLP_ENABLED
               value: "true"
-          image: jaegertracing/all-in-one:1.51.0
+          image: jaegertracing/all-in-one:1.53.0
           imagePullPolicy: IfNotPresent
           name: jaeger
           args:
-            - "--memory.max-traces=8000"
+            - "--memory.max-traces=5000"
             - "--query.base-path=/jaeger/ui"
             - "--prometheus.server-url=http://example-prometheus-server:9090"
             - "--prometheus.query.normalize-calls=true"
@@ -94,7 +94,7 @@ spec:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 300Mi
+              memory: 400Mi
           volumeMounts:
       serviceAccountName: example-jaeger
       volumes:
