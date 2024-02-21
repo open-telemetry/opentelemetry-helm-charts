@@ -6,6 +6,10 @@ imagePullSecrets:
 serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}
 securityContext:
   {{- toYaml .Values.podSecurityContext | nindent 2 }}
+{{- with .Values.hostAliases }}
+hostAliases:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     command:
