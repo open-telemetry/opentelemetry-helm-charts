@@ -14,7 +14,7 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 In Kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
 certificate that the API server is configured to trust. There are a few different ways you can use to generate/configure the required TLS certificate.
 
-  - The easiest and default method is to install the [cert-manager](https://cert-manager.io/docs/) and set `admissionWebhooks.certManager.create` to `true`.
+  - The easiest and default method is to install the [cert-manager](https://cert-manager.io/docs/) and set `admissionWebhooks.certManager.enabled` to `true`.
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
