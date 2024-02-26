@@ -45,22 +45,8 @@ jobs:
           appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
 
-      - name: Use public target-allocator image in tests
-        run: |
-          appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
-          LOCAL_TARGET_ALLOCATOR_IMG="local\/opentelemetry-operator-targetallocator:e2e"
-          PUBLIC_TARGET_ALLOCATOR_IMG="ghcr.io\/open-telemetry\/opentelemetry-operator\/target-allocator:$appVersion"
-
-          sed -i "s/$LOCAL_TARGET_ALLOCATOR_IMG/${PUBLIC_TARGET_ALLOCATOR_IMG}/g" ./opentelemetry-operator/tests/e2e/smoke-targetallocator/*.yaml
-          sed -i "s/$LOCAL_TARGET_ALLOCATOR_IMG/${PUBLIC_TARGET_ALLOCATOR_IMG}/g" ./opentelemetry-operator/tests/e2e/targetallocator-features/00-install.yaml
-          sed -i "s/$LOCAL_TARGET_ALLOCATOR_IMG/${PUBLIC_TARGET_ALLOCATOR_IMG}/g" ./opentelemetry-operator/tests/e2e/prometheus-config-validation/*.yaml
-          sed -i "s/$LOCAL_TARGET_ALLOCATOR_IMG/${PUBLIC_TARGET_ALLOCATOR_IMG}/g" ./opentelemetry-operator/tests/e2e/targetallocator-prometheuscr/00-install.yaml
-
-      - name: Install kuttl
-        run: |
-          sudo curl -Lo /usr/local/bin/kubectl-kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.12.1/kubectl-kuttl_0.12.1_linux_x86_64
-          sudo chmod +x /usr/local/bin/kubectl-kuttl
-          export PATH=$PATH:/usr/local/bin
+      - name: Install chainsaw
+        uses: kyverno/action-install-chainsaw@v0.1.6
 
       - name: Install metrics-server
         run: |
@@ -75,4 +61,4 @@ jobs:
 
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
-        run:  kubectl kuttl test ./tests/e2e --config ../charts/opentelemetry-operator/kuttl-test.yaml --crd-dir ../charts/opentelemetry-operator/crds
+        run:  chainsaw test --test-dir ./tests/e2e
