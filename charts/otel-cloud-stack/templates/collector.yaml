@@ -1,0 +1,227 @@
+{{- if .Values.collector.enabled -}}
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  managementState: {{ .Values.collector.managementState }}
+  mode: {{ .Values.collector.mode }}
+  config: |
+    {{- toYaml .Values.collector.config | nindent 4 }}
+  {{- if .Values.collector.replicas }}
+  replicas: {{ .Values.collector.replicas }}
+  {{- end }}
+  {{- if .Values.collector.serviceAccount }}
+  serviceAccount: {{ .Values.collector.serviceAccount }}
+  {{- end }}
+  {{- if .Values.collector.image }}
+  image: {{ .Values.collector.image }}
+  {{- end }}
+  {{- if .Values.collector.upgradeStrategy }}
+  upgradeStrategy: {{ .Values.collector.upgradeStrategy }}
+  {{- end }}
+  {{- if .Values.collector.imagePullPolicy }}
+  imagePullPolicy: {{ .Values.collector.imagePullPolicy }}
+  {{- end }}
+  {{- if .Values.collector.hostNetwork }}
+  hostNetwork: {{ .Values.collector.hostNetwork }}
+  {{- end }}
+  {{- if .Values.collector.shareProcessNamespace }}
+  shareProcessNamespace: {{ .Values.collector.shareProcessNamespace }}
+  {{- end }}
+  {{- if .Values.collector.priorityClassName }}
+  priorityClassName: {{ .Values.collector.priorityClassName }}
+  {{- end }}
+  {{- if .Values.collector.terminationGracePeriodSeconds }}
+  terminationGracePeriodSeconds: {{ .Values.collector.terminationGracePeriodSeconds }}
+  {{- end }}
+  {{- with .Values.collector.resources }}
+  # Resources v1.ResourceRequirements `json:"resources,omitempty"`
+  resources:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.nodeSelector }}
+  # NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+  nodeSelector:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.args }}
+  # Args map[string]string `json:"args,omitempty"`
+  args:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.autoscaler }}
+  # Autoscaler *AutoscalerSpec `json:"autoscaler,omitempty"`
+  autoscaler:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.podDisruptionBudget }}
+  # PodDisruptionBudget *PodDisruptionBudgetSpec `json:"podDisruptionBudget,omitempty"`
+  podDisruptionBudget:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.securityContext }}
+  # SecurityContext *v1.SecurityContext `json:"securityContext,omitempty"`
+  securityContext:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.podSecurityContext }}
+  # PodSecurityContext *v1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+  podSecurityContext:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.podAnnotations }}
+  # PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+  podAnnotations:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.targetAllocator }}
+  # TargetAllocator OpenTelemetryTargetAllocator `json:"targetAllocator,omitempty"`
+  targetAllocator:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.ingress }}
+  # Ingress Ingress `json:"ingress,omitempty"`
+  ingress:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.affinity }}
+  # Affinity *v1.Affinity `json:"affinity,omitempty"`
+  affinity:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.lifecycle }}
+  # Lifecycle *v1.Lifecycle `json:"lifecycle,omitempty"`
+  lifecycle:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.livenessProbe }}
+  # LivenessProbe *Probe `json:"livenessProbe,omitempty"`
+  livenessProbe:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.observability }}
+  # Observability ObservabilitySpec `json:"observability,omitempty"`
+  observability:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.updateStrategy }}
+  # UpdateStrategy appsv1.DaemonSetUpdateStrategy `json:"updateStrategy,omitempty"`
+  updateStrategy:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.collector.deploymentUpdateStrategy }}
+  # DeploymentUpdateStrategy appsv1.DeploymentStrategy `json:"deploymentUpdateStrategy,omitempty"`
+  deploymentUpdateStrategy:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  # VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
+  {{- if .Values.collector.volumeMounts }}
+  volumeMounts:
+    {{- range .Values.collector.volumeMounts }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # Ports []v1.ServicePort `json:"ports,omitempty"`
+  {{- if .Values.collector.ports }}
+  ports:
+    {{- range .Values.collector.ports }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # Env []v1.EnvVar `json:"env,omitempty"`
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_UID
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.uid
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name={{ $.Values.clusterName }}"
+  {{- range .Values.collector.env }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  # EnvFrom []v1.EnvFromSource `json:"envFrom,omitempty"`
+  {{- if .Values.collector.envFrom }}
+  envFrom:
+    {{- range .Values.collector.envFrom }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # VolumeClaimTemplates []v1.PersistentVolumeClaim `json:"volumeClaimTemplates,omitempty"`
+  {{- if .Values.collector.volumeClaimTemplates }}
+  volumeClaimTemplates:
+    {{- range .Values.collector.volumeClaimTemplates }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # Tolerations []v1.Toleration `json:"tolerations,omitempty"`
+  {{- if .Values.collector.tolerations }}
+  tolerations:
+    {{- range .Values.collector.tolerations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # Volumes []v1.Volume `json:"volumes,omitempty"`
+  {{- if .Values.collector.volumes }}
+  volumes:
+    {{- range .Values.collector.volumes }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # InitContainers []v1.Container `json:"initContainers,omitempty"`
+  {{- if .Values.collector.initContainers }}
+  initContainers:
+    {{- range .Values.collector.initContainers }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # AdditionalContainers []v1.Container `json:"additionalContainers,omitempty"`
+  {{- if .Values.collector.additionalContainers }}
+  additionalContainers:
+    {{- range .Values.collector.additionalContainers }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # TopologySpreadConstraints []v1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
+  {{- if .Values.collector.topologySpreadConstraints }}
+  topologySpreadConstraints:
+    {{- range .Values.collector.topologySpreadConstraints }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  # ConfigMaps []ConfigMapsSpec `json:"configmaps,omitempty"`
+  {{- if .Values.collector.configmaps }}
+  configmaps:
+    {{- range .Values.collector.configmaps }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
