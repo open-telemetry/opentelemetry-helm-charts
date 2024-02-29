@@ -62,6 +62,13 @@ Create the name of the clusterRole to use
 {{- end }}
 
 {{/*
+Create the name of the instrumentation to use
+*/}}
+{{- define "opentelemetry-collector.instrumentation" -}}
+{{- default .Release.Name .Values.instrumentation.name }}
+{{- end }}
+
+{{/*
 Create the name of the clusterRoleBinding to use
 */}}
 {{- define "opentelemetry-collector.clusterRoleBindingName" -}}
