@@ -1,0 +1,72 @@
+{{- if .Values.collector.enabled -}}
+{{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $.Values.collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+{{- $fullname := (include "opentelemetry-collector.fullname" $merged) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $fullname }}
+rules:
+- apiGroups: [""]
+  resources:
+  - namespaces
+  - nodes
+  - nodes/proxy
+  - nodes/metrics
+  - services
+  - endpoints
+  - pods
+  - events
+  - secrets
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["monitoring.coreos.com"]
+  resources:
+  - servicemonitors
+  - podmonitors
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources:
+  - endpointslices
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+  verbs: ["get"]
+{{- if .Values.collector.extraRbac }}
+{{ toYaml .Values.collector.extraRbac }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $fullname }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $fullname }}
+subjects:
+- kind: ServiceAccount
+  # quirk of the Operator
+  name: "{{ $fullname }}-collector"
+  namespace: {{ $.Release.Namespace }}
+{{- if eq .Values.collector.mode "statefulset" }}
+- kind: ServiceAccount
+  name: {{ .Values.collectorName }}-targetallocator
+  namespace: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}

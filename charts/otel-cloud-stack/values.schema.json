@@ -1282,6 +1282,15 @@
         "enabled": {
           "type": "boolean"
         },
+        "name": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "labels": {
+          "type": "object"
+        },
         "managementState": {
           "type": "string"
         },
@@ -2678,11 +2687,54 @@
     }
   },
   "properties": {
+    "fullnameOverride": {
+      "type": "string"
+    },
     "collector": {
       "$ref": "#/$defs/OpenTelemetryCollectorSpec"
     },
     "clusterName": {
       "type": "string"
+    },
+    "clusterRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "clusterRoleBinding": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "type": "object"
+            },
+            "name": {
+              "type": "string"
+            },
+            "collectors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": ["enabled"]
     }
   }
 }

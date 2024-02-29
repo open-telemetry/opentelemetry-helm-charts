@@ -2,26 +2,11 @@
 Expand the name of the chart.
 */}}
 {{- define "opentelemetry-collector.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .collector.name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{- define "opentelemetry-collector.lowercase_chartname" -}}
 {{- default .Chart.Name | lower }}
-{{- end }}
-
-{{/*
-Get component name
-*/}}
-{{- define "opentelemetry-collector.component" -}}
-{{- if eq .Values.mode "deployment" -}}
-component: standalone-collector
-{{- end -}}
-{{- if eq .Values.mode "daemonset" -}}
-component: agent-collector
-{{- end -}}
-{{- if eq .Values.mode "statefulset" -}}
-component: statefulset-collector
-{{- end -}}
 {{- end }}
 
 {{/*
@@ -30,10 +15,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "opentelemetry-collector.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- if .fullnameOverride }}
+{{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- $name := default .Chart.Name .collector.name }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -65,21 +50,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "opentelemetry-collector.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "opentelemetry-collector.name" . }}
+app.kubernetes.io/name: {{ include "opentelemetry-collector.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "opentelemetry-collector.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "opentelemetry-collector.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
 
 {{/*
 Create the name of the clusterRole to use
@@ -94,75 +67,6 @@ Create the name of the clusterRoleBinding to use
 {{- define "opentelemetry-collector.clusterRoleBindingName" -}}
 {{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
-
-{{/*
-Create the name of the priorityClass to use
-*/}}
-{{- define "opentelemetry-collector.priorityClassName" -}}
-{{- default (include "opentelemetry-collector.fullname" .) .Values.priorityClass.name }}
-{{- end }}
-
-{{- define "opentelemetry-collector.podAnnotations" -}}
-{{- if .Values.podAnnotations }}
-{{- tpl (.Values.podAnnotations | toYaml) . }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.podLabels" -}}
-{{- if .Values.podLabels }}
-{{- tpl (.Values.podLabels | toYaml) . }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-target-allocator.podMonitorSelector" -}}
-{{- if .Values.collectorCRD.targetAllocator.prometheusCR.podMonitorSelector }}
-{{- tpl (.Values.collectorCRD.targetAllocator.prometheusCR.podMonitorSelector | toYaml) . }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-target-allocator.serviceMonitorSelector" -}}
-{{- if .Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector }}
-{{- tpl (.Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector | toYaml) . }}
-{{- end }}
-{{- end }}
-
-{{/*
-Return the appropriate apiVersion for podDisruptionBudget.
-*/}}
-{{- define "podDisruptionBudget.apiVersion" -}}
-  {{- if and (.Capabilities.APIVersions.Has "policy/v1") (semverCompare ">= 1.21-0" .Capabilities.KubeVersion.Version) -}}
-    {{- print "policy/v1" -}}
-  {{- else -}}
-    {{- print "policy/v1beta1" -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Compute Service creation on mode
-*/}}
-{{- define "opentelemetry-collector.serviceEnabled" }}
-  {{- $serviceEnabled := true }}
-  {{- if not (eq (toString .Values.service.enabled) "<nil>") }}
-    {{- $serviceEnabled = .Values.service.enabled -}}
-  {{- end }}
-  {{- if or (and (eq .Values.mode "daemonset") (not .Values.service.enabled)) (.Values.collectorCRD.generate) }}
-    {{- $serviceEnabled = false -}}
-  {{- end }}
-
-  {{- print $serviceEnabled }}
-{{- end -}}
-
-
-{{/*
-Compute InternalTrafficPolicy on Service creation
-*/}}
-{{- define "opentelemetry-collector.serviceInternalTrafficPolicy" }}
-  {{- if and (eq .Values.mode "daemonset") (eq .Values.service.enabled true) }}
-    {{- print (.Values.service.internalTrafficPolicy | default "Local") -}}
-  {{- else }}
-    {{- print (.Values.service.internalTrafficPolicy | default "Cluster") -}}
-  {{- end }}
-{{- end -}}
 
 {{/*
 Allow the release namespace to be overridden
