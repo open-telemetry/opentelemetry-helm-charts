@@ -58,7 +58,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the clusterRole to use
 */}}
 {{- define "opentelemetry-collector.clusterRoleName" -}}
-{{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.name }}
+{{- default .Release.Name .Values.clusterRole.name }}
 {{- end }}
 
 {{/*

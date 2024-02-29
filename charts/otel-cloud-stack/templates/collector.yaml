@@ -1,5 +1,6 @@
-{{- if .Values.collector.enabled -}}
-{{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $.Values.collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+{{ range $_, $collector := $.Values.collectors -}}
+{{- if $collector.enabled -}}
+{{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
 {{- $fullname := (include "opentelemetry-collector.fullname" $merged) }}
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
@@ -7,122 +8,122 @@ metadata:
   name: {{ $fullname }}
   labels:
     {{- include "opentelemetry-collector.labels" $merged | nindent 4 }}
-    {{- with .Values.collector.labels }}
+    {{- with $collector.labels }}
     {{- range $key, $value := . }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
     {{- end }}
-  {{- with .Values.collector.annotations }}
+  {{- with $collector.annotations }}
   annotations:
     {{- range $key, $value := . }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
   {{- end }}
 spec:
-  managementState: {{ .Values.collector.managementState }}
-  mode: {{ .Values.collector.mode }}
+  managementState: {{ $collector.managementState }}
+  mode: {{ $collector.mode }}
   config: |
-    {{- toYaml .Values.collector.config | nindent 4 }}
-  {{- if .Values.collector.replicas }}
-  replicas: {{ .Values.collector.replicas }}
+    {{- toYaml $collector.config | nindent 4 }}
+  {{- if $collector.replicas }}
+  replicas: {{ $collector.replicas }}
   {{- end }}
-  {{- if .Values.collector.serviceAccount }}
-  serviceAccount: {{ .Values.collector.serviceAccount }}
+  {{- if $collector.serviceAccount }}
+  serviceAccount: {{ $collector.serviceAccount }}
   {{- end }}
-  {{- if .Values.collector.image }}
-  image: {{ .Values.collector.image }}
+  {{- if $collector.image }}
+  image: {{ $collector.image }}
   {{- end }}
-  {{- if .Values.collector.upgradeStrategy }}
-  upgradeStrategy: {{ .Values.collector.upgradeStrategy }}
+  {{- if $collector.upgradeStrategy }}
+  upgradeStrategy: {{ $collector.upgradeStrategy }}
   {{- end }}
-  {{- if .Values.collector.imagePullPolicy }}
-  imagePullPolicy: {{ .Values.collector.imagePullPolicy }}
+  {{- if $collector.imagePullPolicy }}
+  imagePullPolicy: {{ $collector.imagePullPolicy }}
   {{- end }}
-  {{- if .Values.collector.hostNetwork }}
-  hostNetwork: {{ .Values.collector.hostNetwork }}
+  {{- if $collector.hostNetwork }}
+  hostNetwork: {{ $collector.hostNetwork }}
   {{- end }}
-  {{- if .Values.collector.shareProcessNamespace }}
-  shareProcessNamespace: {{ .Values.collector.shareProcessNamespace }}
+  {{- if $collector.shareProcessNamespace }}
+  shareProcessNamespace: {{ $collector.shareProcessNamespace }}
   {{- end }}
-  {{- if .Values.collector.priorityClassName }}
-  priorityClassName: {{ .Values.collector.priorityClassName }}
+  {{- if $collector.priorityClassName }}
+  priorityClassName: {{ $collector.priorityClassName }}
   {{- end }}
-  {{- if .Values.collector.terminationGracePeriodSeconds }}
-  terminationGracePeriodSeconds: {{ .Values.collector.terminationGracePeriodSeconds }}
+  {{- if $collector.terminationGracePeriodSeconds }}
+  terminationGracePeriodSeconds: {{ $collector.terminationGracePeriodSeconds }}
   {{- end }}
-  {{- with .Values.collector.resources }}
+  {{- with $collector.resources }}
   resources:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.nodeSelector }}
+  {{- with $collector.nodeSelector }}
   nodeSelector:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.args }}
+  {{- with $collector.args }}
   args:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.autoscaler }}
+  {{- with $collector.autoscaler }}
   autoscaler:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.podDisruptionBudget }}
+  {{- with $collector.podDisruptionBudget }}
   podDisruptionBudget:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.securityContext }}
+  {{- with $collector.securityContext }}
   securityContext:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.podSecurityContext }}
+  {{- with $collector.podSecurityContext }}
   podSecurityContext:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.podAnnotations }}
+  {{- with $collector.podAnnotations }}
   podAnnotations:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.targetAllocator }}
+  {{- with $collector.targetAllocator }}
   targetAllocator:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.ingress }}
+  {{- with $collector.ingress }}
   ingress:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.affinity }}
+  {{- with $collector.affinity }}
   affinity:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.lifecycle }}
+  {{- with $collector.lifecycle }}
   lifecycle:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.livenessProbe }}
+  {{- with $collector.livenessProbe }}
   livenessProbe:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.observability }}
+  {{- with $collector.observability }}
   observability:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.updateStrategy }}
+  {{- with $collector.updateStrategy }}
   updateStrategy:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with .Values.collector.deploymentUpdateStrategy }}
+  {{- with $collector.deploymentUpdateStrategy }}
   deploymentUpdateStrategy:
   	{{- toYaml . | nindent 4}}
   {{- end }}
-  {{- if .Values.collector.volumeMounts }}
+  {{- if $collector.volumeMounts }}
   volumeMounts:
-  {{- with .Values.collector.volumeMounts }}
+  {{- with $collector.volumeMounts }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.ports }}
+  {{- if $collector.ports }}
   ports:
-  {{- with .Values.collector.ports }}
+  {{- with $collector.ports }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -153,55 +154,56 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name={{ $.Values.clusterName }}"
-  {{- with .Values.collector.env }}
+  {{- with $collector.env }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
-  {{- if .Values.collector.envFrom }}
+  {{- if $collector.envFrom }}
   envFrom:
-  {{- with .Values.collector.envFrom }}
+  {{- with $collector.envFrom }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.volumeClaimTemplates }}
+  {{- if $collector.volumeClaimTemplates }}
   volumeClaimTemplates:
-  {{- with .Values.collector.volumeClaimTemplates }}
+  {{- with $collector.volumeClaimTemplates }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.tolerations }}
+  {{- if $collector.tolerations }}
   tolerations:
-  {{- with .Values.collector.tolerations }}
+  {{- with $collector.tolerations }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.volumes }}
+  {{- if $collector.volumes }}
   volumes:
-  {{- with .Values.collector.volumes }}
+  {{- with $collector.volumes }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.initContainers }}
+  {{- if $collector.initContainers }}
   initContainers:
-  {{- with .Values.collector.initContainers }}
+  {{- with $collector.initContainers }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.additionalContainers }}
+  {{- if $collector.additionalContainers }}
   additionalContainers:
-  {{- with .Values.collector.additionalContainers }}
+  {{- with $collector.additionalContainers }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.topologySpreadConstraints }}
+  {{- if $collector.topologySpreadConstraints }}
   topologySpreadConstraints:
-  {{- with .Values.collector.topologySpreadConstraints }}
+  {{- with $collector.topologySpreadConstraints }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- if .Values.collector.configmaps }}
+  {{- if $collector.configmaps }}
   configmaps:
-  {{- with .Values.collector.configmaps }}
+  {{- with $collector.configmaps }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
   {{- end }}
+{{- end }}

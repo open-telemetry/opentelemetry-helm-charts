@@ -1282,6 +1282,18 @@
         "enabled": {
           "type": "boolean"
         },
+        "clusterRoleBinding": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": "true"
+            },
+            "clusterRoleName": {
+              "type": "string"
+            }
+          }
+        },
         "name": {
           "type": "string"
         },
@@ -2690,8 +2702,11 @@
     "fullnameOverride": {
       "type": "string"
     },
-    "collector": {
-      "$ref": "#/$defs/OpenTelemetryCollectorSpec"
+    "collectors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/OpenTelemetryCollectorSpec"
+      }
     },
     "clusterName": {
       "type": "string"

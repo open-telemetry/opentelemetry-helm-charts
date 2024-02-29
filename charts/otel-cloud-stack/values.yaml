@@ -1,57 +1,29 @@
 fullnameOverride: ""
 clusterName: test
-collector:
-  enabled: true
-  name: "test"
-  annotations:
-    io.opentelemetry.com/resource: hello
-  labels:
-    app: otc
-  managementState: managed
-  replicas: 3
-  mode: deployment
-  serviceAccount: my-service-account
-  image: myregistry/myimage:latest
-  upgradeStrategy: rollingUpdate
-  imagePullPolicy: Always
-  config:
-    key: value
-    another_key: another_value
-  hostNetwork: true
-  shareProcessNamespace: false
-  priorityClassName: high-priority
-  terminationGracePeriodSeconds: 30
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "250m"
-    limits:
-      memory: "128Mi"
-      cpu: "500m"
-  nodeSelector:
-    nodeType: worker
-  args:
-    arg1: value1
-    arg2: value2
-  autoscaler:
-    minReplicas: 1
-    maxReplicas: 10
-    targetCPUUtilization: 50
-  podDisruptionBudget:
-    maxUnavailable: 1
-  securityContext:
-    runAsUser: 1000
-    capabilities:
-      drop:
-        - ALL
-  podSecurityContext:
-    runAsUser: 1000
-  podAnnotations:
-    prometheus.io/scrape: "true"
-  targetAllocator:
+collectors:
+  - enabled: true
+    name: "test"
+    annotations:
+      io.opentelemetry.com/resource: hello
+    labels:
+      app: otc
+    managementState: managed
+    clusterRoleBinding:
+      enabled: true
+      clusterRoleName: ""
     replicas: 3
-    nodeSelector:
-      nodeType: worker
+    mode: deployment
+    serviceAccount: my-service-account
+    image: myregistry/myimage:latest
+    upgradeStrategy: rollingUpdate
+    imagePullPolicy: Always
+    config:
+      key: value
+      another_key: another_value
+    hostNetwork: true
+    shareProcessNamespace: false
+    priorityClassName: high-priority
+    terminationGracePeriodSeconds: 30
     resources:
       requests:
         memory: "64Mi"
@@ -59,11 +31,87 @@ collector:
       limits:
         memory: "128Mi"
         cpu: "500m"
-    allocationStrategy: consistent-hashing
-    filterStrategy: relabel-config
-    serviceAccount: my-service-account
-    image: myregistry/myimage:latest
-    enabled: true
+    nodeSelector:
+      nodeType: worker
+    args:
+      arg1: value1
+      arg2: value2
+    autoscaler:
+      minReplicas: 1
+      maxReplicas: 10
+      targetCPUUtilization: 50
+    podDisruptionBudget:
+      maxUnavailable: 1
+    securityContext:
+      runAsUser: 1000
+      capabilities:
+        drop:
+          - ALL
+    podSecurityContext:
+      runAsUser: 1000
+    podAnnotations:
+      prometheus.io/scrape: "true"
+    targetAllocator:
+      replicas: 3
+      nodeSelector:
+        nodeType: worker
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      allocationStrategy: consistent-hashing
+      filterStrategy: relabel-config
+      serviceAccount: my-service-account
+      image: myregistry/myimage:latest
+      enabled: true
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/e2e-az-name
+                    operator: In
+                    values:
+                      - e2e-az1
+                      - e2e-az2
+      prometheusCR:
+        enabled: true
+        scrapeInterval: 30s
+        podMonitorSelector:
+          key1: value1
+          key2: value2
+        serviceMonitorSelector:
+          key1: value1
+          key2: value2
+      securityContext:
+        runAsUser: 1000
+        capabilities:
+          drop:
+            - ALL
+      podSecurityContext:
+        runAsUser: 1000
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+      tolerations:
+        - key: "key"
+          operator: "Equal"
+          value: "value"
+          effect: "NoSchedule"
+      env:
+        - name: ENV_VAR1
+          value: value1
+        - name: ENV_VAR2
+          value: value2
+      observability:
+        metrics:
+          enableMetrics: true
+      podDisruptionBudget:
+        maxUnavailable: 1
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -74,123 +122,74 @@ collector:
                   values:
                     - e2e-az1
                     - e2e-az2
-    prometheusCR:
-      enabled: true
-      scrapeInterval: 30s
-      podMonitorSelector:
-        key1: value1
-        key2: value2
-      serviceMonitorSelector:
-        key1: value1
-        key2: value2
-    securityContext:
-      runAsUser: 1000
-      capabilities:
-        drop:
-          - ALL
-    podSecurityContext:
-      runAsUser: 1000
-    topologySpreadConstraints:
-      - maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: DoNotSchedule
-    tolerations:
-      - key: "key"
-        operator: "Equal"
-        value: "value"
-        effect: "NoSchedule"
+    lifecycle:
+      preStop:
+        exec:
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "echo Hello from the preStop handler > /dev/termination-log",
+            ]
+    livenessProbe:
+      initialDelaySeconds: 3
+      periodSeconds: 5
+      timeoutSeconds: 2
+      failureThreshold: 5
+    observability:
+      metrics:
+        enableMetrics: true
+    updateStrategy:
+      type: RollingUpdate
+    volumeMounts:
+      - name: data
+        mountPath: /data
+    ports:
+      - name: http
+        protocol: TCP
+        port: 80
+        targetPort: 8080
     env:
       - name: ENV_VAR1
         value: value1
       - name: ENV_VAR2
         value: value2
-    observability:
-      metrics:
-        enableMetrics: true
-    podDisruptionBudget:
-      maxUnavailable: 1
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: kubernetes.io/e2e-az-name
-                operator: In
-                values:
-                  - e2e-az1
-                  - e2e-az2
-  lifecycle:
-    preStop:
-      exec:
-        command:
-          [
-            "/bin/sh",
-            "-c",
-            "echo Hello from the preStop handler > /dev/termination-log",
-          ]
-  livenessProbe:
-    initialDelaySeconds: 3
-    periodSeconds: 5
-    timeoutSeconds: 2
-    failureThreshold: 5
-  observability:
-    metrics:
-      enableMetrics: true
-  updateStrategy:
-    type: RollingUpdate
-  volumeMounts:
-    - name: data
-      mountPath: /data
-  ports:
-    - name: http
-      protocol: TCP
-      port: 80
-      targetPort: 8080
-  env:
-    - name: ENV_VAR1
-      value: value1
-    - name: ENV_VAR2
-      value: value2
-  volumeClaimTemplates:
-    - metadata:
-        name: storage
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
-  tolerations:
-    - key: "key"
-      operator: "Equal"
-      value: "value"
-      effect: "NoSchedule"
-  volumes:
-    - name: config-volume
-      configMap:
-        name: config
-  initContainers:
-    - name: init-nginx
-      image: nginx
-  additionalContainers:
-    - name: additional-container
-      image: busybox
-  topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: kubernetes.io/hostname
-      whenUnsatisfiable: DoNotSchedule
-      labelSelector:
-        matchLabels:
-          app: my-app
-  configmaps:
-    - name: config
-      mountPath: /etc/config
+    volumeClaimTemplates:
+      - metadata:
+          name: storage
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+    tolerations:
+      - key: "key"
+        operator: "Equal"
+        value: "value"
+        effect: "NoSchedule"
+    volumes:
+      - name: config-volume
+        configMap:
+          name: config
+    initContainers:
+      - name: init-nginx
+        image: nginx
+    additionalContainers:
+      - name: additional-container
+        image: busybox
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: my-app
+    configmaps:
+      - name: config
+        mountPath: /etc/config
 
 clusterRole:
   enabled: true
   annotations: {}
   # name: ""
   rules: []
-  clusterRoleBinding:
-    annotations: {}
-    # name: ""
-    collectors: []
