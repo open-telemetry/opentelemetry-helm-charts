@@ -2696,11 +2696,269 @@
       },
       "additionalProperties": false,
       "type": "object"
+    },
+    "ApacheHttpd": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "attrs": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "version": {
+          "type": "string"
+        },
+        "configPath": {
+          "type": "string"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DotNet": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Exporter": {
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Go": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "InstrumentationSpec": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "exporter": {
+          "$ref": "#/$defs/Exporter"
+        },
+        "resource": {
+          "$ref": "#/$defs/Resource"
+        },
+        "propagators": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sampler": {
+          "$ref": "#/$defs/Sampler"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "java": {
+          "$ref": "#/$defs/Java"
+        },
+        "nodejs": {
+          "$ref": "#/$defs/NodeJS"
+        },
+        "python": {
+          "$ref": "#/$defs/Python"
+        },
+        "dotnet": {
+          "$ref": "#/$defs/DotNet"
+        },
+        "go": {
+          "$ref": "#/$defs/Go"
+        },
+        "apacheHttpd": {
+          "$ref": "#/$defs/ApacheHttpd"
+        },
+        "nginx": {
+          "$ref": "#/$defs/Nginx"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Java": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Nginx": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "attrs": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "configFile": {
+          "type": "string"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NodeJS": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Python": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Resource": {
+      "properties": {
+        "resourceAttributes": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "addK8sUIDAttributes": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Sampler": {
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "argument": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
     }
   },
   "properties": {
     "fullnameOverride": {
       "type": "string"
+    },
+    "instrumentation": {
+      "$ref": "#/$defs/InstrumentationSpec"
     },
     "collectors": {
       "type": "array",

@@ -1,5 +1,9 @@
 fullnameOverride: ""
 clusterName: test
+opentelemetry-operator:
+  enabled: false
+  admissionWebhooks:
+    failurePolicy: "Ignore"
 collectors:
   - enabled: true
     name: "test"
@@ -193,3 +197,128 @@ clusterRole:
   annotations: {}
   # name: ""
   rules: []
+instrumentation:
+  enabled: true
+  exporter:
+    endpoint: http://collector:55678
+  resource:
+    resourceAttributes:
+      environment: dev
+    addK8sUIDAttributes: true
+  propagators:
+    - tracecontext
+    - baggage
+    - b3
+    - b3multi
+    - jaeger
+    - xray
+    - ottrace
+    - none
+  sampler:
+    type: parentbased_always_on
+    argument: "0.25"
+  env:
+    - name: ENV_VAR1
+      value: value1
+    - name: ENV_VAR2
+      value: value2
+  java:
+    image: myregistry/java-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: JAVA_ENV_VAR
+        value: java_value
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  nodejs:
+    image: myregistry/nodejs-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: NODEJS_ENV_VAR
+        value: nodejs_value
+    resourceRequirements:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  python:
+    image: myregistry/python-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: PYTHON_ENV_VAR
+        value: python_value
+    resourceRequirements:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  dotnet:
+    image: myregistry/dotnet-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: DOTNET_ENV_VAR
+        value: dotnet_value
+    resourceRequirements:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  go:
+    image: myregistry/go-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: GO_ENV_VAR
+        value: go_value
+    resourceRequirements:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  apacheHttpd:
+    image: myregistry/apache-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: APACHE_ENV_VAR
+        value: apache_value
+    attrs:
+      - name: ATTRIBUTE_VAR
+        value: attribute_value
+    version: "2.4"
+    configPath: "/usr/local/apache2/conf"
+    resourceRequirements:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  nginx:
+    image: myregistry/nginx-agent:latest
+    volumeLimitSize: 200Mi
+    env:
+      - name: NGINX_ENV_VAR
+        value: nginx_value
+    attrs:
+      - name: ATTRIBUTE_VAR
+        value: attribute_value
+    configFile: "/etc/nginx/nginx.conf"
+    resourceRequirements:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
