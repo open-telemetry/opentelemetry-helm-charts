@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	s := jsonschema.Reflect(&v1alpha1.InstrumentationSpec{})
+	s := jsonschema.Reflect(&v1alpha1.OpAMPBridgeSpec{})
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		panic(err.Error())

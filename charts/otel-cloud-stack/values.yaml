@@ -322,3 +322,89 @@ instrumentation:
       limits:
         memory: "128Mi"
         cpu: "500m"
+opAMPBridge:
+  enabled: true
+  endpoint: http://opamp-server:8080
+  headers:
+    Authorization: Bearer your_access_token
+    Custom-Header: Custom-Value
+  capabilities:
+    AcceptsOpAMPConnectionSettings: true
+    AcceptsOtherConnectionSettings: true
+    AcceptsRemoteConfig: true
+    AcceptsRestartCommand: true
+    ReportsEffectiveConfig: true
+    ReportsHealth: true
+    ReportsOwnLogs: true
+    ReportsOwnMetrics: true
+    ReportsOwnTraces: true
+    ReportsRemoteConfig: true
+    ReportsStatus: true
+  componentsAllowed:
+    receiver:
+      - otlp
+      - prometheus
+    processor:
+      - batch
+      - memory_limiter
+    exporter:
+      - prometheusremotewrite
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+  replicas: 1
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+  podSecurityContext:
+    fsGroup: 1000
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+  serviceAccount: opamp-service-account
+  image: your_opampbridge_image:tag
+  upgradeStrategy: RollingUpdate
+  imagePullPolicy: IfNotPresent
+  volumeMounts:
+    - name: data
+      mountPath: /data
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+  env:
+    - name: ENVIRONMENT
+      value: production
+  envFrom:
+    - configMapRef:
+        name: opamp-config
+  tolerations:
+    - key: "opamp"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+  volumes:
+    - name: data
+      emptyDir: {}
+  hostNetwork: false
+  priorityClassName: high-priority
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: opamp
+                operator: In
+                values:
+                  - "true"
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: "kubernetes.io/hostname"
+      whenUnsatisfiable: "DoNotSchedule"
+      labelSelector:
+        matchLabels:
+          opamp: "true"

@@ -2954,11 +2954,141 @@
       },
       "additionalProperties": false,
       "type": "object"
+    },
+    "OpAMPBridgeSpec": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "headers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "capabilities": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "type": "object"
+        },
+        "componentsAllowed": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceRequirements"
+        },
+        "nodeSelector": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "securityContext": {
+          "$ref": "#/$defs/SecurityContext"
+        },
+        "podSecurityContext": {
+          "$ref": "#/$defs/PodSecurityContext"
+        },
+        "podAnnotations": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "serviceAccount": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "upgradeStrategy": {
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "type": "string"
+        },
+        "volumeMounts": {
+          "items": {
+            "$ref": "#/$defs/VolumeMount"
+          },
+          "type": "array"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/$defs/ServicePort"
+          },
+          "type": "array"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "envFrom": {
+          "items": {
+            "$ref": "#/$defs/EnvFromSource"
+          },
+          "type": "array"
+        },
+        "tolerations": {
+          "items": {
+            "$ref": "#/$defs/Toleration"
+          },
+          "type": "array"
+        },
+        "volumes": {
+          "items": {
+            "$ref": "#/$defs/Volume"
+          },
+          "type": "array"
+        },
+        "hostNetwork": {
+          "type": "boolean"
+        },
+        "priorityClassName": {
+          "type": "string"
+        },
+        "affinity": {
+          "$ref": "#/$defs/Affinity"
+        },
+        "topologySpreadConstraints": {
+          "items": {
+            "$ref": "#/$defs/TopologySpreadConstraint"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["endpoint", "capabilities", "upgradeStrategy"]
     }
   },
   "properties": {
     "fullnameOverride": {
       "type": "string"
+    },
+    "opAMPBridge": {
+      "$ref": "#/$defs/OpAMPBridgeSpec"
     },
     "instrumentation": {
       "$ref": "#/$defs/InstrumentationSpec"
