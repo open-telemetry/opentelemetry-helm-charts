@@ -1001,7 +1001,7 @@ clusterRole:
 # Instrumentation configuration
 instrumentation:
   # Whether instrumentation is enabled or not
-  enabled: true
+  enabled: false
 
   # Exporter configuration
   exporter:
@@ -1164,9 +1164,9 @@ opAMPBridge:
   endpoint: http://opamp-server:8080
 
   # Headers configuration for OpAMP bridge
-  headers:
-    Authorization: Bearer your_access_token
-    Custom-Header: Custom-Value
+  headers: {}
+  # Authorization: Bearer your_access_token
+  # Custom-Header: Custom-Value
 
   # Capabilities of OpAMP bridge
   capabilities:
@@ -1183,15 +1183,15 @@ opAMPBridge:
     ReportsStatus: true
 
   # Components allowed for OpAMP bridge
-  componentsAllowed:
-    receiver:
-      - otlp
-      - prometheus
-    processor:
-      - batch
-      - memory_limiter
-    exporter:
-      - prometheusremotewrite
+  componentsAllowed: {}
+  # receiver:
+  #   - otlp
+  #   - prometheus
+  # processor:
+  #   - batch
+  #   - memory_limiter
+  # exporter:
+  #   - prometheusremotewrite
 
   # Resources configuration for OpAMP bridge
   resources:
@@ -1215,80 +1215,83 @@ opAMPBridge:
     fsGroup: 1000
 
   # Pod annotations for OpAMP bridge
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
+  podAnnotations: {}
+  # prometheus.io/scrape: "true"
+  # prometheus.io/port: "8080"
 
   # Service account for OpAMP bridge
-  serviceAccount: opamp-service-account
+  serviceAccount: ""
 
   # Image for OpAMP bridge
-  image: your_opampbridge_image:tag
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-operator/operator-opamp-bridge
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+    # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+    digest: ""
 
   # Upgrade strategy for OpAMP bridge
   upgradeStrategy: RollingUpdate
 
-  # Image pull policy for OpAMP bridge
-  imagePullPolicy: IfNotPresent
-
   # Volume mounts for OpAMP bridge
-  volumeMounts:
-    - name: data
-      mountPath: /data
+  volumeMounts: []
+  # - name: data
+  #   mountPath: /data
 
   # Ports configuration for OpAMP bridge
-  ports:
-    - name: http
-      port: 8080
-      protocol: TCP
+  ports: []
+  # - name: http
+  #   port: 8080
+  #   protocol: TCP
 
   # Environment variables for OpAMP bridge
-  env:
-    - name: ENVIRONMENT
-      value: production
+  env: []
+  # - name: ENVIRONMENT
+  #   value: production
 
   # Environment variables from config map for OpAMP bridge
-  envFrom:
-    - configMapRef:
-        name: opamp-config
+  envFrom: []
+  # - configMapRef:
+  #     name: opamp-config
 
   # Tolerations for OpAMP bridge
-  tolerations:
-    - key: "opamp"
-      operator: "Equal"
-      value: "true"
-      effect: "NoSchedule"
+  tolerations: []
+  # - key: "opamp"
+  #   operator: "Equal"
+  #   value: "true"
+  #   effect: "NoSchedule"
 
   # Volumes for OpAMP bridge
-  volumes:
-    - name: data
-      emptyDir: {}
+  volumes: []
+  # - name: data
+  #   emptyDir: {}
 
   # Whether to use host network for OpAMP bridge
   hostNetwork: false
 
   # Priority class name for OpAMP bridge
-  priorityClassName: high-priority
+  priorityClassName: ""
 
   # Affinity configuration for OpAMP bridge
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: opamp
-                operator: In
-                values:
-                  - "true"
+  affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #       - matchExpressions:
+  #           - key: opamp
+  #             operator: In
+  #             values:
+  #               - "true"
 
   # Topology spread constraints for OpAMP bridge
-  topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: "kubernetes.io/hostname"
-      whenUnsatisfiable: "DoNotSchedule"
-      labelSelector:
-        matchLabels:
-          opamp: "true"
+  topologySpreadConstraints: {}
+  # - maxSkew: 1
+  #   topologyKey: "kubernetes.io/hostname"
+  #   whenUnsatisfiable: "DoNotSchedule"
+  #   labelSelector:
+  #     matchLabels:
+  #       opamp: "true"
 
 # Bridge cluster role configuration
 bridgeClusterRole:
