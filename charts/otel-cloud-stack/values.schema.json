@@ -474,24 +474,6 @@
         "honorTimestamps": {
           "type": "boolean"
         },
-        "sampleLimit": {
-          "type": "integer"
-        },
-        "targetLimit": {
-          "type": "integer"
-        },
-        "labelLimit": {
-          "type": "integer"
-        },
-        "labelNameLengthLimit": {
-          "type": "integer"
-        },
-        "labelValueLengthLimit": {
-          "type": "integer"
-        },
-        "proxyUrl": {
-          "type": "string"
-        },
         "https": {
           "type": "boolean"
         },
@@ -500,79 +482,15 @@
         },
         "probes": {
           "type": "boolean"
-        },
-        "resource": {
-          "type": "boolean"
-        },
-        "resourcePath": {
-          "type": "string"
-        },
-        "cAdvisorMetricRelabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MetricRelabeling"
-          }
-        },
-        "probesMetricRelabelings": {
-          "type": "array",
-          "items": {}
-        },
-        "cAdvisorRelabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Relabeling"
-          }
-        },
-        "probesRelabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Relabeling"
-          }
-        },
-        "resourceRelabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Relabeling"
-          }
-        },
-        "metricRelabelings": {
-          "type": "array",
-          "items": {}
-        },
-        "relabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Relabeling"
-          }
-        },
-        "additionalLabels": {
-          "$ref": "#/$defs/AdditionalLabels"
         }
       },
       "required": [
-        "additionalLabels",
-        "attachMetadata",
         "cAdvisor",
-        "cAdvisorMetricRelabelings",
-        "cAdvisorRelabelings",
         "honorLabels",
         "honorTimestamps",
         "https",
         "interval",
-        "labelLimit",
-        "labelNameLengthLimit",
-        "labelValueLengthLimit",
-        "metricRelabelings",
-        "probes",
-        "probesMetricRelabelings",
-        "probesRelabelings",
-        "proxyUrl",
-        "relabelings",
-        "resource",
-        "resourcePath",
-        "resourceRelabelings",
-        "sampleLimit",
-        "targetLimit"
+        "probes"
       ],
       "title": "KubeletServiceMonitor"
     },
@@ -2015,6 +1933,10 @@
         "managementState": {
           "type": "string"
         },
+        "scrape_configs_file": {
+          "type": "string",
+          "default": ""
+        },
         "resources": {
           "$ref": "#/$defs/ResourceRequirements"
         },
@@ -2067,12 +1989,29 @@
           "type": "string"
         },
         "image": {
-          "type": "string"
+          "description": "Image use in both standalone and agent configs",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "registry": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": ["IfNotPresent", "Always", "Never"]
+            }
+          }
         },
         "upgradeStrategy": {
-          "type": "string"
-        },
-        "imagePullPolicy": {
           "type": "string"
         },
         "config": {
@@ -2178,9 +2117,8 @@
           "$ref": "#/$defs/DeploymentStrategy"
         }
       },
-      "additionalProperties": false,
-      "type": "object",
-      "required": ["upgradeStrategy"]
+      "additionalProperties": true,
+      "type": "object"
     },
     "OpenTelemetryTargetAllocator": {
       "properties": {
@@ -3669,6 +3607,12 @@
         "enabled": {
           "type": "boolean"
         },
+        "addReportingLabel": {
+          "type": "boolean"
+        },
+        "addManagedLabel": {
+          "type": "boolean"
+        },
         "endpoint": {
           "type": "string"
         },
@@ -3808,10 +3752,15 @@
     "instrumentation": {
       "$ref": "#/$defs/InstrumentationSpec"
     },
+    "defaultCollectorConfig": {
+      "$ref": "#/$defs/OpenTelemetryCollectorSpec"
+    },
     "collectors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/OpenTelemetryCollectorSpec"
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]+[a-zA-Z0-9]+$": {
+          "$ref": "#/$defs/OpenTelemetryCollectorSpec"
+        }
       }
     },
     "clusterName": {

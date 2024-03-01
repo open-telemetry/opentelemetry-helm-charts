@@ -1,7 +1,9 @@
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $collector.enabled -}}
+{{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCollectorConfig) $collector) }}
 {{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
 {{- $fullname := (include "opentelemetry-collector.fullname" $merged) }}
+---
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
@@ -13,6 +15,12 @@ metadata:
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
     {{- end }}
+    {{- if $.Values.opAMPBridge.addReportingLabel }}
+    opentelemetry.io/opamp-reporting: true
+    {{- end }}
+    {{- if $.Values.opAMPBridge.addManagedLabel }}
+    opentelemetry.io/opamp-managed: true
+    {{- end }}
   {{- with $collector.annotations }}
   annotations:
     {{- range $key, $value := . }}
@@ -23,6 +31,14 @@ spec:
   managementState: {{ $collector.managementState }}
   mode: {{ $collector.mode }}
   config: |
+    {{- if $collector.scrape_configs_file }}
+    prometheus/file:
+      config:
+        scrape_configs:
+        {{- if $collector.scrape_configs_file }}
+        {{ tpl ($.Files.Get $collector.scrape_configs_file) $ | nindent 10 }}
+        {{- end }}
+    {{- end }}
     {{- toYaml $collector.config | nindent 4 }}
   {{- if $collector.replicas }}
   replicas: {{ $collector.replicas }}
@@ -30,14 +46,14 @@ spec:
   {{- if $collector.serviceAccount }}
   serviceAccount: {{ $collector.serviceAccount }}
   {{- end }}
-  {{- if $collector.image }}
-  image: {{ $collector.image }}
+  {{- if $collector.image.digest }}
+  image: "{{ $collector.image.repository }}@{{ $collector.image.digest }}"
+  {{- else }}
+  image: "{{ $collector.image.repository }}:{{ $collector.image.tag | default $.Chart.AppVersion }}"
   {{- end }}
+  imagePullPolicy: {{ $collector.image.pullPolicy }}
   {{- if $collector.upgradeStrategy }}
   upgradeStrategy: {{ $collector.upgradeStrategy }}
-  {{- end }}
-  {{- if $collector.imagePullPolicy }}
-  imagePullPolicy: {{ $collector.imagePullPolicy }}
   {{- end }}
   {{- if $collector.hostNetwork }}
   hostNetwork: {{ $collector.hostNetwork }}
