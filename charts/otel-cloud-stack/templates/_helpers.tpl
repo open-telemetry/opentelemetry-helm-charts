@@ -1,6 +1,111 @@
 {{/*
 Expand the name of the chart.
 */}}
+{{- define "otel-cloud-stack.name" -}}
+{{- default .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "otel-cloud-stack.fullname" -}}
+{{- if .fullnameOverride }}
+{{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Allow the release namespace to be overridden
+*/}}
+{{- define "otel-cloud-stack.namespace" -}}
+  {{- if .Values.namespaceOverride -}}
+    {{- .Values.namespaceOverride -}}
+  {{- else -}}
+    {{- .Release.Namespace -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "otel-cloud-stack.labels" -}}
+helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+
+{{/* Sets default scrape limits for servicemonitor */}}
+{{- define "servicemonitor.scrapeLimits" -}}
+{{- with .sampleLimit }}
+sampleLimit: {{ . }}
+{{- end }}
+{{- with .targetLimit }}
+targetLimit: {{ . }}
+{{- end }}
+{{- with .labelLimit }}
+labelLimit: {{ . }}
+{{- end }}
+{{- with .labelNameLengthLimit }}
+labelNameLengthLimit: {{ . }}
+{{- end }}
+{{- with .labelValueLengthLimit }}
+labelValueLengthLimit: {{ . }}
+{{- end }}
+{{- end -}}
+
+
+{{/* Prometheus specific stuff. */}}
+{{/* Allow KubeVersion to be overridden. */}}
+{{- define "otel-cloud-stack.kubeVersion" -}}
+  {{- default .Capabilities.KubeVersion.Version .Values.kubeVersionOverride -}}
+{{- end -}}
+
+{{/* Get value based on current Kubernetes version */}}
+{{- define "otel-cloud-stack.kubeVersionDefaultValue" -}}
+  {{- $values := index . 0 -}}
+  {{- $kubeVersion := index . 1 -}}
+  {{- $old := index . 2 -}}
+  {{- $new := index . 3 -}}
+  {{- $default := index . 4 -}}
+  {{- if kindIs "invalid" $default -}}
+    {{- if semverCompare $kubeVersion (include "otel-cloud-stack.kubeVersion" $values) -}}
+      {{- print $new -}}
+    {{- else -}}
+      {{- print $old -}}
+    {{- end -}}
+  {{- else -}}
+    {{- print $default }}
+  {{- end -}}
+{{- end -}}
+
+{{/* Get value for kube-controller-manager depending on insecure scraping availability */}}
+{{- define "otel-cloud-stack.kubeControllerManager.insecureScrape" -}}
+  {{- $values := index . 0 -}}
+  {{- $insecure := index . 1 -}}
+  {{- $secure := index . 2 -}}
+  {{- $userValue := index . 3 -}}
+  {{- include "otel-cloud-stack.kubeVersionDefaultValue" (list $values ">= 1.22-0" $insecure $secure $userValue) -}}
+{{- end -}}
+
+{{/* Get value for kube-scheduler depending on insecure scraping availability */}}
+{{- define "otel-cloud-stack.kubeScheduler.insecureScrape" -}}
+  {{- $values := index . 0 -}}
+  {{- $insecure := index . 1 -}}
+  {{- $secure := index . 2 -}}
+  {{- $userValue := index . 3 -}}
+  {{- include "otel-cloud-stack.kubeVersionDefaultValue" (list $values ">= 1.23-0" $insecure $secure $userValue) -}}
+{{- end -}}
+
+{{/*
+Expand the name of the chart.
+*/}}
 {{- define "opentelemetry-collector.name" -}}
 {{- default .Chart.Name .collector.name | trunc 63 | trimSuffix "-" }}
 {{- end }}
@@ -18,7 +123,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .fullnameOverride }}
 {{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .collector.name }}
+{{- $name := default .Chart.Name (coalesce .collector.name "") }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}

@@ -2,6 +2,715 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1/open-telemetry-collector-spec",
   "$defs": {
+    "CoreDNS": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "service": {
+          "$ref": "#/$defs/CoreDNSService"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/CoreDNSServiceMonitor"
+        }
+      },
+      "required": ["enabled", "service", "serviceMonitor"],
+      "title": "CoreDNS"
+    },
+    "CoreDNSService": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "port": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetPort": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["enabled", "port", "targetPort"],
+      "title": "CoreDNSService"
+    },
+    "CoreDNSServiceMonitor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "sampleLimit": {
+          "type": "integer"
+        },
+        "targetLimit": {
+          "type": "integer"
+        },
+        "labelLimit": {
+          "type": "integer"
+        },
+        "labelNameLengthLimit": {
+          "type": "integer"
+        },
+        "labelValueLengthLimit": {
+          "type": "integer"
+        },
+        "proxyUrl": {
+          "type": "string"
+        },
+        "port": {
+          "type": "string"
+        },
+        "jobLabel": {
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/$defs/AdditionalLabels"
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "relabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "additionalLabels": {
+          "$ref": "#/$defs/AdditionalLabels"
+        },
+        "https": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "insecureSkipVerify": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serverName": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "dnsmasqMetricRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "dnsmasqRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "scheme": {
+          "type": "string"
+        },
+        "caFile": {
+          "type": "string"
+        },
+        "certFile": {
+          "type": "string"
+        },
+        "keyFile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "additionalLabels",
+        "interval",
+        "jobLabel",
+        "labelLimit",
+        "labelNameLengthLimit",
+        "labelValueLengthLimit",
+        "metricRelabelings",
+        "proxyUrl",
+        "relabelings",
+        "sampleLimit",
+        "selector",
+        "targetLimit"
+      ],
+      "title": "CoreDNSServiceMonitor"
+    },
+    "AdditionalLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "AdditionalLabels"
+    },
+    "KubeStateMetrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "namespaceOverride": {
+          "type": "string"
+        },
+        "rbac": {
+          "$ref": "#/$defs/KubeStateMetricsRbac"
+        },
+        "releaseLabel": {
+          "type": "boolean"
+        },
+        "prometheus": {
+          "$ref": "#/$defs/Prometheus"
+        },
+        "selfMonitor": {
+          "$ref": "#/$defs/KubeStateMetricsClass"
+        }
+      },
+      "required": [
+        "namespaceOverride",
+        "prometheus",
+        "rbac",
+        "releaseLabel",
+        "selfMonitor"
+      ],
+      "title": "KubeStateMetrics"
+    },
+    "Prometheus": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "monitor": {
+          "$ref": "#/$defs/Monitor"
+        }
+      },
+      "required": ["monitor"],
+      "title": "Prometheus"
+    },
+    "Monitor": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "sampleLimit": {
+          "type": "integer"
+        },
+        "targetLimit": {
+          "type": "integer"
+        },
+        "labelLimit": {
+          "type": "integer"
+        },
+        "labelNameLengthLimit": {
+          "type": "integer"
+        },
+        "labelValueLengthLimit": {
+          "type": "integer"
+        },
+        "scrapeTimeout": {
+          "type": "string"
+        },
+        "proxyUrl": {
+          "type": "string"
+        },
+        "honorLabels": {
+          "type": "boolean"
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
+        },
+        "relabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "jobLabel": {
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/$defs/Selector"
+        },
+        "additionalLabels": {
+          "$ref": "#/$defs/AdditionalLabels"
+        }
+      },
+      "required": [
+        "interval",
+        "labelLimit",
+        "labelNameLengthLimit",
+        "labelValueLengthLimit",
+        "metricRelabelings",
+        "proxyUrl",
+        "relabelings",
+        "sampleLimit",
+        "targetLimit"
+      ],
+      "title": "Monitor"
+    },
+    "MetricRelabeling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "regex": {
+          "type": "string"
+        },
+        "sourceLabels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["action", "regex", "sourceLabels"],
+      "title": "MetricRelabeling"
+    },
+    "Selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "matchLabels": {
+          "$ref": "#/$defs/MatchLabels"
+        }
+      },
+      "required": ["matchLabels"],
+      "title": "Selector"
+    },
+    "MatchLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        }
+      },
+      "required": ["component", "provider"],
+      "title": "MatchLabels"
+    },
+    "KubeStateMetricsRbac": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        }
+      },
+      "required": ["create"],
+      "title": "KubeStateMetricsRbac"
+    },
+    "KubeStateMetricsClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": ["enabled"],
+      "title": "KubeStateMetricsClass"
+    },
+    "KubeAPIServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "tlsConfig": {
+          "$ref": "#/$defs/TLSConfig"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/Monitor"
+        }
+      },
+      "required": ["enabled", "serviceMonitor", "tlsConfig"],
+      "title": "KubeAPIServer"
+    },
+    "TLSConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serverName": {
+          "type": "string"
+        },
+        "insecureSkipVerify": {
+          "type": "boolean"
+        }
+      },
+      "required": ["insecureSkipVerify", "serverName"],
+      "title": "TLSConfig"
+    },
+    "Kube": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {}
+        },
+        "service": {
+          "$ref": "#/$defs/CoreDNSService"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/CoreDNSServiceMonitor"
+        }
+      },
+      "required": ["enabled", "endpoints", "service", "serviceMonitor"],
+      "title": "Kube"
+    },
+    "KubeDNS": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "service": {
+          "$ref": "#/$defs/KubeDNSService"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/CoreDNSServiceMonitor"
+        }
+      },
+      "required": ["enabled", "service", "serviceMonitor"],
+      "title": "KubeDNS"
+    },
+    "KubeDNSService": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dnsmasq": {
+          "$ref": "#/$defs/Dnsmasq"
+        },
+        "skydns": {
+          "$ref": "#/$defs/Dnsmasq"
+        }
+      },
+      "required": ["dnsmasq", "skydns"],
+      "title": "KubeDNSService"
+    },
+    "Dnsmasq": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "targetPort": {
+          "type": "integer"
+        }
+      },
+      "required": ["port", "targetPort"],
+      "title": "Dnsmasq"
+    },
+    "Kubelet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/KubeletServiceMonitor"
+        }
+      },
+      "required": ["enabled", "namespace", "serviceMonitor"],
+      "title": "Kubelet"
+    },
+    "KubeletServiceMonitor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attachMetadata": {
+          "$ref": "#/$defs/AttachMetadata"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "honorLabels": {
+          "type": "boolean"
+        },
+        "honorTimestamps": {
+          "type": "boolean"
+        },
+        "sampleLimit": {
+          "type": "integer"
+        },
+        "targetLimit": {
+          "type": "integer"
+        },
+        "labelLimit": {
+          "type": "integer"
+        },
+        "labelNameLengthLimit": {
+          "type": "integer"
+        },
+        "labelValueLengthLimit": {
+          "type": "integer"
+        },
+        "proxyUrl": {
+          "type": "string"
+        },
+        "https": {
+          "type": "boolean"
+        },
+        "cAdvisor": {
+          "type": "boolean"
+        },
+        "probes": {
+          "type": "boolean"
+        },
+        "resource": {
+          "type": "boolean"
+        },
+        "resourcePath": {
+          "type": "string"
+        },
+        "cAdvisorMetricRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
+        },
+        "probesMetricRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "cAdvisorRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relabeling"
+          }
+        },
+        "probesRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relabeling"
+          }
+        },
+        "resourceRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relabeling"
+          }
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "relabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relabeling"
+          }
+        },
+        "additionalLabels": {
+          "$ref": "#/$defs/AdditionalLabels"
+        }
+      },
+      "required": [
+        "additionalLabels",
+        "attachMetadata",
+        "cAdvisor",
+        "cAdvisorMetricRelabelings",
+        "cAdvisorRelabelings",
+        "honorLabels",
+        "honorTimestamps",
+        "https",
+        "interval",
+        "labelLimit",
+        "labelNameLengthLimit",
+        "labelValueLengthLimit",
+        "metricRelabelings",
+        "probes",
+        "probesMetricRelabelings",
+        "probesRelabelings",
+        "proxyUrl",
+        "relabelings",
+        "resource",
+        "resourcePath",
+        "resourceRelabelings",
+        "sampleLimit",
+        "targetLimit"
+      ],
+      "title": "KubeletServiceMonitor"
+    },
+    "AttachMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node": {
+          "type": "boolean"
+        }
+      },
+      "required": ["node"],
+      "title": "AttachMetadata"
+    },
+    "Relabeling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "sourceLabels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetLabel": {
+          "type": "string"
+        }
+      },
+      "required": ["action", "sourceLabels", "targetLabel"],
+      "title": "Relabeling"
+    },
+    "NodeExporter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "operatingSystems": {
+          "$ref": "#/$defs/OperatingSystems"
+        },
+        "forceDeployDashboards": {
+          "type": "boolean"
+        }
+      },
+      "required": ["enabled", "forceDeployDashboards", "operatingSystems"],
+      "title": "NodeExporter"
+    },
+    "OperatingSystems": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "linux": {
+          "$ref": "#/$defs/KubeStateMetricsClass"
+        },
+        "darwin": {
+          "$ref": "#/$defs/KubeStateMetricsClass"
+        }
+      },
+      "required": ["darwin", "linux"],
+      "title": "OperatingSystems"
+    },
+    "PrometheusNodeExporter": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "namespaceOverride": {
+          "type": "string"
+        },
+        "podLabels": {
+          "$ref": "#/$defs/PodLabels"
+        },
+        "releaseLabel": {
+          "type": "boolean"
+        },
+        "extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "service": {
+          "$ref": "#/$defs/PrometheusNodeExporterService"
+        },
+        "prometheus": {
+          "$ref": "#/$defs/Prometheus"
+        },
+        "rbac": {
+          "$ref": "#/$defs/PrometheusNodeExporterRbac"
+        }
+      },
+      "required": [
+        "extraArgs",
+        "namespaceOverride",
+        "podLabels",
+        "prometheus",
+        "rbac",
+        "releaseLabel",
+        "service"
+      ],
+      "title": "PrometheusNodeExporter"
+    },
+    "PodLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "jobLabel": {
+          "type": "string"
+        }
+      },
+      "required": ["jobLabel"],
+      "title": "PodLabels"
+    },
+    "PrometheusNodeExporterRbac": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "pspEnabled": {
+          "type": "boolean"
+        }
+      },
+      "required": ["pspEnabled"],
+      "title": "PrometheusNodeExporterRbac"
+    },
+    "PrometheusNodeExporterService": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "portName": {
+          "type": "string"
+        }
+      },
+      "required": ["portName"],
+      "title": "PrometheusNodeExporterService"
+    },
     "AWSElasticBlockStoreVolumeSource": {
       "properties": {
         "volumeID": {
@@ -3087,6 +3796,12 @@
     "fullnameOverride": {
       "type": "string"
     },
+    "namespaceOverride": {
+      "type": "string"
+    },
+    "kubeVersionOverride": {
+      "type": "string"
+    },
     "opAMPBridge": {
       "$ref": "#/$defs/OpAMPBridgeSpec"
     },
@@ -3181,6 +3896,62 @@
         }
       },
       "required": ["enabled"]
+    },
+    "prometheus": {
+      "type": "object",
+      "properties": {
+        "customResources": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        },
+        "ignoreNamespaceSelectors": {
+          "type": "boolean",
+          "default": "false"
+        }
+      }
+    },
+    "kubernetesServiceMonitors": {
+      "$ref": "#/$defs/KubeStateMetricsClass"
+    },
+    "kubeApiServer": {
+      "$ref": "#/$defs/KubeAPIServer"
+    },
+    "kubelet": {
+      "$ref": "#/$defs/Kubelet"
+    },
+    "kubeControllerManager": {
+      "$ref": "#/$defs/Kube"
+    },
+    "coreDns": {
+      "$ref": "#/$defs/CoreDNS"
+    },
+    "kubeDns": {
+      "$ref": "#/$defs/KubeDNS"
+    },
+    "kubeEtcd": {
+      "$ref": "#/$defs/Kube"
+    },
+    "kubeScheduler": {
+      "$ref": "#/$defs/Kube"
+    },
+    "kubeProxy": {
+      "$ref": "#/$defs/Kube"
+    },
+    "kubeStateMetrics": {
+      "$ref": "#/$defs/KubeStateMetricsClass"
+    },
+    "kube-state-metrics": {
+      "$ref": "#/$defs/KubeStateMetrics"
+    },
+    "nodeExporter": {
+      "$ref": "#/$defs/NodeExporter"
+    },
+    "prometheus-node-exporter": {
+      "$ref": "#/$defs/PrometheusNodeExporter"
     }
   }
 }
