@@ -63,7 +63,7 @@ defaultCollectorConfig:
     digest: ""
 
   # Upgrade strategy for the collector
-  upgradeStrategy: rollingUpdate
+  upgradeStrategy: automatic
 
   # Configuration options for the collector
   config: {}
@@ -594,17 +594,17 @@ collectors:
               timestamp:
                 parse_from: attributes.time
                 layout: "%Y-%m-%dT%H:%M:%S.%LZ"
-            - type: move
-              from: attributes.log
-              to: body
             # Extract metadata from file path
             - type: regex_parser
               id: extract_metadata_from_filepath
               regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
               parse_from: attributes["log.file.path"]
               cache:
-                # default maximum amount of Pods per Node is 110
-                size: 128
+                size: 128 # default maximum amount of Pods per Node is 110
+            # Update body field after finishing all parsing
+            - type: move
+              from: attributes.log
+              to: body
             # Rename attributes
             - type: move
               from: attributes.stream
@@ -881,7 +881,7 @@ collectors:
 
       service:
         pipelines:
-          metrics/k8s_cluster:
+          metrics:
             receivers: [k8s_cluster]
             processors: [resourcedetection/env, k8sattributes, batch]
             exporters: [otlp, debug]
@@ -1232,7 +1232,7 @@ opAMPBridge:
     digest: ""
 
   # Upgrade strategy for OpAMP bridge
-  upgradeStrategy: RollingUpdate
+  upgradeStrategy: automatic
 
   # Volume mounts for OpAMP bridge
   volumeMounts: []
@@ -1285,7 +1285,7 @@ opAMPBridge:
   #               - "true"
 
   # Topology spread constraints for OpAMP bridge
-  topologySpreadConstraints: {}
+  topologySpreadConstraints: []
   # - maxSkew: 1
   #   topologyKey: "kubernetes.io/hostname"
   #   whenUnsatisfiable: "DoNotSchedule"

@@ -15,11 +15,11 @@ metadata:
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
     {{- end }}
-    {{- if $.Values.opAMPBridge.addReportingLabel }}
-    opentelemetry.io/opamp-reporting: true
+    {{- if and $.Values.opAMPBridge.enabled $.Values.opAMPBridge.addReportingLabel }}
+    opentelemetry.io/opamp-reporting: "true"
     {{- end }}
-    {{- if $.Values.opAMPBridge.addManagedLabel }}
-    opentelemetry.io/opamp-managed: true
+    {{- if and $.Values.opAMPBridge.enabled $.Values.opAMPBridge.addManagedLabel }}
+    opentelemetry.io/opamp-managed: "true"
     {{- end }}
   {{- with $collector.annotations }}
   annotations:
@@ -32,14 +32,13 @@ spec:
   mode: {{ $collector.mode }}
   config: |
     {{- if $collector.scrape_configs_file }}
-    prometheus/file:
-      config:
-        scrape_configs:
-        {{- if $collector.scrape_configs_file }}
-        {{ tpl ($.Files.Get $collector.scrape_configs_file) $ | nindent 10 }}
-        {{- end }}
-    {{- end }}
+    {{- $loaded_config := (fromYamlArray (tpl ($.Files.Get $collector.scrape_configs_file) $)) }}
+    {{- $prom_override := (dict "receivers" (dict "prometheus/file" (dict "config" (dict "scrape_configs" $loaded_config))))}}
+    {{- $new_config := (mergeOverwrite $collector.config $prom_override)}}
+    {{- toYaml $new_config | nindent 4 }}
+    {{- else }}
     {{- toYaml $collector.config | nindent 4 }}
+    {{- end }}
   {{- if $collector.replicas }}
   replicas: {{ $collector.replicas }}
   {{- end }}
@@ -148,6 +147,10 @@ spec:
     valueFrom:
       fieldRef:
         fieldPath: spec.nodeName
+  - name: K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
   - name: OTEL_K8S_NAMESPACE
     valueFrom:
       fieldRef:
