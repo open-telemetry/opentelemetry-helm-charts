@@ -93,10 +93,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Create the name of the clusterRole to use for the opampbridge
+*/}}
+{{- define "opentelemetry-opamp-bridge.clusterRoleName" -}}
+{{- default (printf "%s-bridge" .Release.Name) .Values.bridgeClusterRole.name }}
+{{- end }}
+
+{{/*
 Create the name of the clusterRole to use
 */}}
 {{- define "opentelemetry-collector.clusterRoleName" -}}
-{{- default .Release.Name .Values.clusterRole.name }}
+{{- default (printf "%s-collector" .Release.Name) .Values.clusterRole.name }}
 {{- end }}
 
 {{/*
