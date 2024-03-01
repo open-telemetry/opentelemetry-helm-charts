@@ -44,8 +44,10 @@ spec:
   {{- if $.Values.opAMPBridge.serviceAccount }}
   serviceAccount: {{ $.Values.opAMPBridge.serviceAccount }}
   {{- end }}
-  {{- if $.Values.opAMPBridge.image }}
-  image: {{ $.Values.opAMPBridge.image }}
+  {{- if $.Values.opAMPBridge.image.digest }}
+  image: "{{ $.Values.opAMPBridge.image.repository }}@{{ $.Values.opAMPBridge.image.digest }}"
+  {{- else }}
+  image: "{{ $.Values.opAMPBridge.image.repository }}:{{ $.Values.opAMPBridge.image.tag | default $.Chart.AppVersion }}"
   {{- end }}
   {{- if $.Values.opAMPBridge.upgradeStrategy }}
   upgradeStrategy: {{ $.Values.opAMPBridge.upgradeStrategy }}

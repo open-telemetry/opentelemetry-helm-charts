@@ -61,7 +61,7 @@
       target_label: __tmp_prometheus_job_name
   static_configs:
     - targets:
-        - ${K8S_NODE_NAME}:9100
+        - ${OTEL_K8S_NODE_IP}:9100
 # We still need to scrape kubelet's CAdvisor which isn't supported
 - authorization:
     credentials_file: "/var/run/secrets/kubernetes.io/serviceaccount/token"
@@ -73,10 +73,10 @@
   kubernetes_sd_configs:
     - follow_redirects: true
       role: node
-      # selectors:
-      # - role: node
-      #   # only scrape data from pods running on the same node as collector
-      #   field: "metadata.name=$K8S_NODE_NAME"
+      selectors:
+        - role: node
+          # only scrape data from pods running on the same node as collector
+          field: "metadata.name=$OTEL_K8S_NODE_NAME"
   metric_relabel_configs:
     - action: drop
       regex: container_cpu_(load_average_10s|system_seconds_total|user_seconds_total)
