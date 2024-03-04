@@ -14,7 +14,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .fullnameOverride }}
 {{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 

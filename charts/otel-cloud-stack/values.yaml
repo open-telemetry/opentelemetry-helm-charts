@@ -746,7 +746,7 @@ collectors:
               - k8sattributes
               - batch
             receivers:
-              - prometheus/file
+              - prometheus
               - otlp
               - kubeletstats
               - hostmetrics
@@ -902,13 +902,13 @@ collectors:
     name: metrics
     enabled: false
     mode: statefulset
-    replicas: 3
+    replicas: 1
     autoscaler:
-      minReplicas: 3
+      minReplicas: 1
       maxReplicas: 10
       targetMemoryUtilization: 70
     scrape_configs_file: "kubelet_scrape_configs.yaml"
-    targetallocator:
+    targetAllocator:
       enabled: true
       allocationStrategy: "consistent-hashing"
       replicas: 2
@@ -983,8 +983,7 @@ collectors:
         debug: {}
 
       service:
-        extensions:
-          - health_check
+        extensions: []
         pipelines:
           metrics:
             receivers: [prometheus, otlp]

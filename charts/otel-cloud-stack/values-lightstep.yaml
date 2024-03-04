@@ -1,0 +1,59 @@
+clusterName: jacob-kind
+opentelemetry-operator:
+  enabled: true
+collectors:
+  tracing:
+    env:
+      - name: LS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: LS_TOKEN
+            name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.lightstep.com:443
+          headers:
+            "lightstep-access-token": "${LS_TOKEN}"
+      service:
+        pipelines:
+          traces:
+            exporters: [otlp]
+  daemon:
+    env:
+      - name: LS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: LS_TOKEN
+            name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.lightstep.com:443
+          headers:
+            "lightstep-access-token": "${LS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [otlp]
+          logs:
+            exporters: [otlp]
+  cluster:
+    env:
+      - name: LS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: LS_TOKEN
+            name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.lightstep.com:443
+          headers:
+            "lightstep-access-token": "${LS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [otlp]
+opAMPBridge:
+  enabled: false

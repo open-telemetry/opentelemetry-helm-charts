@@ -1,0 +1,67 @@
+clusterName: jacob-kind
+opentelemetry-operator:
+  enabled: true
+  manager:
+    serviceMonitor:
+      enabled: true
+    extraArgs:
+      - "--feature-gates=operator.observability.prometheus"
+    image:
+      tag: "v0.95.0"
+collectors:
+  tracing:
+    enabled: false
+  daemon:
+    enabled: false
+  cluster:
+    enabled: false
+  metrics:
+    enabled: true
+    targetAllocator:
+      observability:
+        metrics:
+          enableMetrics: true
+    observability:
+      metrics:
+        enableMetrics: true
+    env:
+      - name: LS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: LS_TOKEN
+            name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.lightstep.com:443
+          headers:
+            "lightstep-access-token": "${LS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [otlp]
+opAMPBridge:
+  enabled: false
+prometheus:
+  customResources:
+    enabled: true
+kubernetesServiceMonitors:
+  enabled: true
+kubeApiServer:
+  enabled: true
+kubelet:
+  enabled: true
+kubeControllerManager:
+  enabled: true
+kubeDns:
+  enabled: true
+kubeEtcd:
+  enabled: true
+kubeScheduler:
+  enabled: true
+kubeProxy:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true

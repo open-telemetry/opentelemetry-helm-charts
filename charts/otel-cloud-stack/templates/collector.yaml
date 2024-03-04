@@ -33,7 +33,8 @@ spec:
   config: |
     {{- if $collector.scrape_configs_file }}
     {{- $loaded_config := (fromYamlArray (tpl ($.Files.Get $collector.scrape_configs_file) $)) }}
-    {{- $prom_override := (dict "receivers" (dict "prometheus/file" (dict "config" (dict "scrape_configs" $loaded_config))))}}
+    # TODO: figure out merging with an existing scrape_configs
+    {{- $prom_override := (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $loaded_config))))}}
     {{- $new_config := (mergeOverwrite $collector.config $prom_override)}}
     {{- toYaml $new_config | nindent 4 }}
     {{- else }}
