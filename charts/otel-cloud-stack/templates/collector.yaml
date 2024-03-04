@@ -33,8 +33,11 @@ spec:
   config: |
     {{- if $collector.scrape_configs_file }}
     {{- $loaded_config := (fromYamlArray (tpl ($.Files.Get $collector.scrape_configs_file) $)) }}
-    # TODO: figure out merging with an existing scrape_configs
     {{- $prom_override := (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $loaded_config))))}}
+    {{- if (dig "receivers" "prometheus" "config" "scrape_configs" false $collector.config) }}
+    {{- $merged_prom_scrape_configs := (concat $collector.config.receivers.prometheus.config.scrape_configs $loaded_config) }}
+    {{- $prom_override = (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $merged_prom_scrape_configs)))) }}
+    {{- end }}
     {{- $new_config := (mergeOverwrite $collector.config $prom_override)}}
     {{- toYaml $new_config | nindent 4 }}
     {{- else }}
