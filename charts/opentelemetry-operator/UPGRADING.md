@@ -1,5 +1,10 @@
 # Upgrade guidelines
 
+## <0.50.0 to 0.50.0
+
+Additional properties are not allowed anymore, so care must be taken that no old or misspelled ones are present anymore.
+`helm show values open-telemetry/opentelemetry-operator --version 0.50.0` can be used to list the allowed values.
+
 ## <0.42.3 to 0.42.3
 
 A type of flag `autoGenerateCert` has been changed, now it is an object with two attributes `enabled` and `recreate`.
