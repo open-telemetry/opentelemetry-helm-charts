@@ -73,6 +73,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -119,7 +120,25 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyBatchProcessorAsLast" -}}
+{{- $config := .config }}
+{{- if and ($config.service.pipelines.logs) (has "batch" $config.service.pipelines.logs.processors) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (without $config.service.pipelines.logs.processors "batch" | uniq)  }}
+{{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "batch" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (has "batch" $config.service.pipelines.metrics.processors) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (without $config.service.pipelines.metrics.processors "batch" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "batch" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (has "batch" $config.service.pipelines.traces.processors) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "batch" | uniq)  }}
+{{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "batch" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyTargetAllocatorConfig" -}}

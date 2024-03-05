@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.80.2 / 2024-03-05
+- [Fix] Ensure batch processor is always the last on in the pipeline.
+
 ### v0.80.1 / 2024-02-12
 - [Feat] Exclude collector's debug / logging exporters logs, when collecting collector logs.
 
