@@ -136,14 +136,14 @@ Create the name of the priorityClass to use
 {{- end }}
 
 {{- define "opentelemetry-target-allocator.podMonitorSelector" -}}
-{{- if .Values.collectorCRD.targetAllocator.prometheusCR.podMonitorSelector }}
-{{- tpl (.Values.collectorCRD.targetAllocator.prometheusCR.podMonitorSelector | toYaml) . }}
+{{- if .Values.targetAllocator.prometheusCR.podMonitorSelector }}
+{{- tpl (.Values.targetAllocator.prometheusCR.podMonitorSelector | toYaml) . }}
 {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-target-allocator.serviceMonitorSelector" -}}
-{{- if .Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector }}
-{{- tpl (.Values.collectorCRD.targetAllocator.prometheusCR.serviceMonitorSelector | toYaml) . }}
+{{- if .Values.targetAllocator.prometheusCR.serviceMonitorSelector }}
+{{- tpl (.Values.targetAllocator.prometheusCR.serviceMonitorSelector | toYaml) . }}
 {{- end }}
 {{- end }}
 

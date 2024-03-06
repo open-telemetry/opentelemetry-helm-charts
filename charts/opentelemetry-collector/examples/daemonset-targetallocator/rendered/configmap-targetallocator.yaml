@@ -6,17 +6,23 @@ metadata:
   name: example-opentelemetry-collector-targetallocator
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.80.3
+    helm.sh/chart: opentelemetry-collector-0.81.0
     app.kubernetes.io/name: opentelemetry-collector-target-allocator
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.93.0"
+    app.kubernetes.io/version: "0.96.0"
     app.kubernetes.io/managed-by: Helm
 data:
   targetallocator.yaml: |
     allocation_strategy: 
     filter_strategy: relabel-config
-    label_selector:
-      app.kubernetes.io/name: opentelemetry-collector
-      app.kubernetes.io/instance: example
+    collector_selector:
+      matchlabels:
+        app.kubernetes.io/name: opentelemetry-collector
+        app.kubernetes.io/instance: example
     prometheus_cr:
       scrape_interval: 30s
+      pod_monitor_selector:
+        matchLabels:
+          app: example-app
+      service_monitor_selector:
+    scrape_configs: []
