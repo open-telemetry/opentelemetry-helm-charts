@@ -129,11 +129,19 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   # quirk of the Operator
+{{- if $collector.serviceAccount }}
+  name: "{{ $collector.serviceAccount }}"
+{{- else }}
   name: "{{ $fullname }}-collector"
+{{- end }}
   namespace: {{ $.Release.Namespace }}
 {{- if eq $collector.mode "statefulset" }}
 - kind: ServiceAccount
+{{- if $collector.targetAllocator.serviceAccount }}
+  name: "{{ $collector.targetAllocator.serviceAccount }}"
+{{- else }}
   name: {{ $fullname }}-targetallocator
+{{- end }}
   namespace: {{ $.Release.Namespace }}
 {{- end }}
 {{- end }}
@@ -171,6 +179,10 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     # quirk of the Operator
+    {{- if $.Values.opAMPBridge.serviceAccount }}
+    name: "{{ $.Values.opAMPBridge.serviceAccount }}"
+    {{- else }}
     name: "{{ (include "opentelemetry-opamp-bridge.fullname" $merged) }}-bridge-opamp-bridge"
+    {{- end }}
     namespace: "{{ $.Release.Namespace }}"
 {{- end }}
