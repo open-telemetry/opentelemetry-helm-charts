@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.80.2
+    helm.sh/chart: opentelemetry-collector-0.80.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.93.0"
@@ -186,6 +186,7 @@ spec:
           to: resource["k8s.pod.uid"]
           type: move
         - from: attributes.log
+          id: clean-up-log-record
           to: body
           type: move
         - drop_ratio: 1

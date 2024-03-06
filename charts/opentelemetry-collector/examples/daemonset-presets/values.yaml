@@ -9,6 +9,28 @@ presets:
       combine_field: body
       source_identifier: attributes["log.file.path"]
       is_first_entry: body matches "^([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})"
+    multilineConfigs:
+    - namespaceName:
+        value: kube-system
+      podName:
+        value: app-.*
+        useRegex: true
+      containerName:
+        value: http
+      firstEntryRegex: ^[^\s].*
+      combineWith: ""
+    - namespaceName:
+        value: default
+      podName:
+        value: app-.*
+        useRegex: true
+      firstEntryRegex: ^[^\s].*
+      combineWith: ""
+    - namespaceName:
+        value: test
+      firstEntryRegex: ^[^\s].*
+      combineWith: ""
+
   mysql:
     metrics:
       enabled: true

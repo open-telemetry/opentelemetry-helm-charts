@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+
+### v0.80.3 / 2024-03-06
+- [Feat] Add support for multiline configs based on namespace name / pod name / container name.
+
 ### v0.80.2 / 2024-03-05
 - [Fix] Ensure batch processor is always the last on in the pipeline.
 

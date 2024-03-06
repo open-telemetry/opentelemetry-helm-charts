@@ -393,8 +393,29 @@ receivers:
       - type: move
         from: attributes.uid
         to: resource["k8s.pod.uid"]
+      {{- if .Values.presets.logsCollection.multilineConfigs }}
+      - type: router
+        routes:
+        {{- range $.Values.presets.logsCollection.multilineConfigs }}
+          - output: {{ include "opentelemetry-collector.newlineKey" . | quote }}
+            expr: {{ include "opentelemetry-collector.newlineExpr" . | quote }}
+        {{- end }}
+        default: clean-up-log-record
+      {{- range $.Values.presets.logsCollection.multilineConfigs }}
+      - type: recombine
+        id: {{ include "opentelemetry-collector.newlineKey" . | quote}}
+        output: clean-up-log-record
+        combine_field: attributes.log
+        is_first_entry: '(attributes.log) matches {{ .firstEntryRegex | quote }}'
+        max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+        {{- if hasKey . "combineWith" }}
+        combine_with: {{ .combineWith | quote }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
       # Clean up log body
       - type: move
+        id: clean-up-log-record
         from: attributes.log
         to: body
       {{- if .Values.presets.logsCollection.includeCollectorLogs }}

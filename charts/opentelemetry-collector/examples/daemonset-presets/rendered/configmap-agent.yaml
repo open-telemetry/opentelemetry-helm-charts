@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.80.2
+    helm.sh/chart: opentelemetry-collector-0.80.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.93.0"
@@ -126,7 +126,40 @@ data:
         - from: attributes.uid
           to: resource["k8s.pod.uid"]
           type: move
+        - default: clean-up-log-record
+          routes:
+          - expr: (resource["k8s.namespace.name"]) == "kube-system" && (resource["k8s.pod.name"])
+              matches "app-.*" && (resource["k8s.container.name"]) == "http"
+            output: kube-system_app-.*_http
+          - expr: (resource["k8s.namespace.name"]) == "default" && (resource["k8s.pod.name"])
+              matches "app-.*"
+            output: default_app-.*
+          - expr: (resource["k8s.namespace.name"]) == "test"
+            output: test
+          type: router
+        - combine_field: attributes.log
+          combine_with: ""
+          id: kube-system_app-.*_http
+          is_first_entry: (attributes.log) matches "^[^\\s].*"
+          max_log_size: 1048576
+          output: clean-up-log-record
+          type: recombine
+        - combine_field: attributes.log
+          combine_with: ""
+          id: default_app-.*
+          is_first_entry: (attributes.log) matches "^[^\\s].*"
+          max_log_size: 1048576
+          output: clean-up-log-record
+          type: recombine
+        - combine_field: attributes.log
+          combine_with: ""
+          id: test
+          is_first_entry: (attributes.log) matches "^[^\\s].*"
+          max_log_size: 1048576
+          output: clean-up-log-record
+          type: recombine
         - from: attributes.log
+          id: clean-up-log-record
           to: body
           type: move
         - drop_ratio: 1
