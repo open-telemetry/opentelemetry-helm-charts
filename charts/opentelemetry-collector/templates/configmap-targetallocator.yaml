@@ -17,13 +17,17 @@ data:
         app.kubernetes.io/instance: {{ .Release.Name }}
     prometheus_cr:
       scrape_interval: 30s
-      pod_monitor_selector:
       {{- if .Values.targetAllocator.prometheusCR.podMonitorSelector }}
+      pod_monitor_selector:
         {{- include "opentelemetry-target-allocator.podMonitorSelector" . | nindent 8 }}
+      {{- else }}
+      pod_monitor_selector: {}
       {{- end }}
-      service_monitor_selector:
       {{- if .Values.targetAllocator.prometheusCR.serviceMonitorSelector }}
+      service_monitor_selector:
         {{- include "opentelemetry-target-allocator.serviceMonitorSelector" . | nindent 8 }}
+      {{- else }}
+      service_monitor_selector: {}
       {{- end }}
     scrape_configs: []
 {{- end }}
