@@ -13,10 +13,13 @@ spec:
   sampler:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.instrumentation.env }}
   env:
+    {{- with $.Values.extraEnvs }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
+    {{- with .Values.instrumentation.env }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- with .Values.instrumentation.resource }}
   resource:
     {{- toYaml . | nindent 4 }}

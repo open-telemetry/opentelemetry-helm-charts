@@ -147,6 +147,9 @@ spec:
   {{- end }}
   {{- end }}
   env:
+  {{- with $.Values.extraEnvs }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
@@ -175,8 +178,10 @@ spec:
       fieldRef:
         apiVersion: v1
         fieldPath: status.podIP
+  {{- if $.Values.clusterName }}
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name={{ $.Values.clusterName }}"
+  {{- end }}
   {{- with $collector.env }}
   {{- toYaml . | nindent 2 }}
   {{- end }}

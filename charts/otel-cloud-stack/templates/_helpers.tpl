@@ -162,19 +162,10 @@ Common labels
 */}}
 {{- define "opentelemetry-collector.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
-{{ include "opentelemetry-collector.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "opentelemetry-collector.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "opentelemetry-collector.fullname" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
@@ -182,19 +173,10 @@ Common labels
 */}}
 {{- define "opentelemetry-opamp-bridge.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
-{{ include "opentelemetry-opamp-bridge.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "opentelemetry-opamp-bridge.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "opentelemetry-opamp-bridge.fullname" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*

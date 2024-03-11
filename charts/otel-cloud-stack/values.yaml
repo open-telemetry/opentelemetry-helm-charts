@@ -6,7 +6,10 @@ namespaceOverride: ""
 kubeVersionOverride: ""
 
 # Top level field specifying the name of the cluster
-clusterName: test
+clusterName: ""
+
+# Extra environment variables to add to each collector, bridge and instrumentation
+extraEnvs: []
 
 # Top level field related to the OpenTelemetry Operator
 opentelemetry-operator:
@@ -44,7 +47,7 @@ defaultCollectorConfig:
     clusterRoleName: ""
 
   # Number of replicas for the collector
-  replicas: 1
+  # replicas: 1
 
   # Mode of deployment for the collector
   mode: deployment
@@ -121,7 +124,7 @@ defaultCollectorConfig:
       cpu: "250m"
     limits:
       memory: "128Mi"
-      cpu: "500m"
+      cpu: "250m"
 
   # Node selector for the collector
   nodeSelector: {}
@@ -917,10 +920,10 @@ collectors:
     resources:
       limits:
         cpu: 250m
-        memory: 500Mi
+        memory: 250Mi
       requests:
         cpu: 250m
-        memory: 500Mi
+        memory: 250Mi
     config:
       receivers:
         otlp:
@@ -972,9 +975,6 @@ collectors:
           send_batch_max_size: 1500
         resource:
           attributes:
-            - key: lightstep.helm_chart
-              value: kube-otel-stack
-              action: insert
             - key: job
               from_attribute: service.name
               action: insert
