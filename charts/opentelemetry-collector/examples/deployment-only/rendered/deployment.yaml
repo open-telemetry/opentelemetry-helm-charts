@@ -6,12 +6,12 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.83.0
+    helm.sh/chart: opentelemetry-collector-0.84.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.96.0"
     app.kubernetes.io/managed-by: Helm
-
+    
 spec:
   replicas: 3
   revisionHistoryLimit: 10
@@ -25,15 +25,15 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ccd56df5b15607602e5d6d04de480597d281ab2cd9b8affe0b91f508608b8001
-
+        checksum/config: 1aec1a719965b4a0940db670420d1001c75243f8bb18dfe860976bb3e8baad99
+        
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: standalone-collector
-
+        
     spec:
-
+      
       serviceAccountName: example-opentelemetry-collector
       securityContext:
         {}
@@ -47,7 +47,7 @@ spec:
           image: "otel/opentelemetry-collector-contrib:0.96.0"
           imagePullPolicy: IfNotPresent
           ports:
-
+            
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
