@@ -18,7 +18,7 @@ spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
-{{- if and ( semverCompare ">= 1.23-0" .Capabilities.KubeVersion.Version ) ( .Values.statefulset.persistentVolumeClaimRetentionPolicy.enabled )  }}
+{{- if .Values.statefulset.persistentVolumeClaimRetentionPolicy.enabled }}
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenDeleted }}
     whenScaled: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenScaled }}
