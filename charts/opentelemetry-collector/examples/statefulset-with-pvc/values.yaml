@@ -24,17 +24,17 @@ statefulset:
           requests:
             storage: "1Gi"
 
-  extraVolumeMounts:
-    - name: queue
-      mountPath: /var/lib/storage/queue
+extraVolumeMounts:
+  - name: queue
+    mountPath: /var/lib/storage/queue
 
-  initContainers:
-    - name: init-fs
-      image: busybox:latest
-      command:
-        - sh
-        - "-c"
-        - "chown -R 10001: /var/lib/storage/queue"
-      volumeMounts:
-        - name: queue
-          mountPath: /var/lib/storage/queue
+initContainers:
+  - name: init-fs
+    image: busybox:latest
+    command:
+      - sh
+      - "-c"
+      - "chown -R 10001: /var/lib/storage/queue"
+    volumeMounts:
+      - name: queue
+        mountPath: /var/lib/storage/queue

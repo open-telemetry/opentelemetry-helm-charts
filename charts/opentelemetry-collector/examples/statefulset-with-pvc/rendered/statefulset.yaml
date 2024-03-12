@@ -93,6 +93,18 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - mountPath: /var/lib/storage/queue
+              name: queue
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - 'chown -R 10001: /var/lib/storage/queue'
+          image: busybox:latest
+          name: init-fs
+          volumeMounts:
+          - mountPath: /var/lib/storage/queue
+            name: queue
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
