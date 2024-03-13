@@ -5,7 +5,7 @@ kind: Service
 metadata:
   name: example-adservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-adservice
     app.kubernetes.io/instance: example
@@ -30,7 +30,7 @@ kind: Service
 metadata:
   name: example-cartservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-cartservice
     app.kubernetes.io/instance: example
@@ -55,7 +55,7 @@ kind: Service
 metadata:
   name: example-checkoutservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-checkoutservice
     app.kubernetes.io/instance: example
@@ -80,7 +80,7 @@ kind: Service
 metadata:
   name: example-currencyservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-currencyservice
     app.kubernetes.io/instance: example
@@ -105,7 +105,7 @@ kind: Service
 metadata:
   name: example-emailservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-emailservice
     app.kubernetes.io/instance: example
@@ -128,54 +128,26 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: example-featureflagservice
+  name: example-flagd
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
-    opentelemetry.io/name: example-featureflagservice
+    opentelemetry.io/name: example-flagd
     app.kubernetes.io/instance: example
-    app.kubernetes.io/component: featureflagservice
-    app.kubernetes.io/name: example-featureflagservice
+    app.kubernetes.io/component: flagd
+    app.kubernetes.io/name: example-flagd
     app.kubernetes.io/version: "1.8.0"
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
   ports:
-    - port: 50053
-      name: grpc
-      targetPort: 50053
-    - port: 8081
-      name: http
-      targetPort: 8081
+    - port: 8013
+      name: tcp-service
+      targetPort: 8013
   selector:
     
-    opentelemetry.io/name: example-featureflagservice
----
-# Source: opentelemetry-demo/templates/component.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: example-ffspostgres
-  labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
-    
-    opentelemetry.io/name: example-ffspostgres
-    app.kubernetes.io/instance: example
-    app.kubernetes.io/component: ffspostgres
-    app.kubernetes.io/name: example-ffspostgres
-    app.kubernetes.io/version: "1.8.0"
-    app.kubernetes.io/part-of: opentelemetry-demo
-    app.kubernetes.io/managed-by: Helm
-spec:
-  type: ClusterIP
-  ports:
-    - port: 5432
-      name: postgres
-      targetPort: 5432
-  selector:
-    
-    opentelemetry.io/name: example-ffspostgres
+    opentelemetry.io/name: example-flagd
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: v1
@@ -183,7 +155,7 @@ kind: Service
 metadata:
   name: example-frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-frontend
     app.kubernetes.io/instance: example
@@ -208,7 +180,7 @@ kind: Service
 metadata:
   name: example-frontendproxy
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-frontendproxy
     app.kubernetes.io/instance: example
@@ -233,7 +205,7 @@ kind: Service
 metadata:
   name: example-kafka
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-kafka
     app.kubernetes.io/instance: example
@@ -261,7 +233,7 @@ kind: Service
 metadata:
   name: example-loadgenerator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-loadgenerator
     app.kubernetes.io/instance: example
@@ -286,7 +258,7 @@ kind: Service
 metadata:
   name: example-paymentservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-paymentservice
     app.kubernetes.io/instance: example
@@ -311,7 +283,7 @@ kind: Service
 metadata:
   name: example-productcatalogservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-productcatalogservice
     app.kubernetes.io/instance: example
@@ -336,7 +308,7 @@ kind: Service
 metadata:
   name: example-quoteservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-quoteservice
     app.kubernetes.io/instance: example
@@ -361,7 +333,7 @@ kind: Service
 metadata:
   name: example-recommendationservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-recommendationservice
     app.kubernetes.io/instance: example
@@ -386,7 +358,7 @@ kind: Service
 metadata:
   name: example-redis
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-redis
     app.kubernetes.io/instance: example
@@ -411,7 +383,7 @@ kind: Service
 metadata:
   name: example-shippingservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-shippingservice
     app.kubernetes.io/instance: example
@@ -436,7 +408,7 @@ kind: Deployment
 metadata:
   name: example-accountingservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-accountingservice
     app.kubernetes.io/instance: example
@@ -501,7 +473,7 @@ kind: Deployment
 metadata:
   name: example-adservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-adservice
     app.kubernetes.io/instance: example
@@ -546,8 +518,8 @@ spec:
             value: cumulative
           - name: AD_SERVICE_PORT
             value: "8080"
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
+          - name: FLAGD_HOST
+            value: 'example-flagd'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4318
           - name: OTEL_LOGS_EXPORTER
@@ -566,7 +538,7 @@ kind: Deployment
 metadata:
   name: example-cartservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-cartservice
     app.kubernetes.io/instance: example
@@ -613,8 +585,8 @@ spec:
             value: "8080"
           - name: ASPNETCORE_URLS
             value: http://*:$(CART_SERVICE_PORT)
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
+          - name: FLAGD_HOST
+            value: 'example-flagd'
           - name: REDIS_ADDR
             value: 'example-redis:6379'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -641,7 +613,7 @@ kind: Deployment
 metadata:
   name: example-checkoutservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-checkoutservice
     app.kubernetes.io/instance: example
@@ -724,7 +696,7 @@ kind: Deployment
 metadata:
   name: example-currencyservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-currencyservice
     app.kubernetes.io/instance: example
@@ -787,7 +759,7 @@ kind: Deployment
 metadata:
   name: example-emailservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-emailservice
     app.kubernetes.io/instance: example
@@ -848,14 +820,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-featureflagservice
+  name: example-flagd
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
-    opentelemetry.io/name: example-featureflagservice
+    opentelemetry.io/name: example-flagd
     app.kubernetes.io/instance: example
-    app.kubernetes.io/component: featureflagservice
-    app.kubernetes.io/name: example-featureflagservice
+    app.kubernetes.io/component: flagd
+    app.kubernetes.io/name: example-flagd
     app.kubernetes.io/version: "1.8.0"
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
@@ -864,27 +836,25 @@ spec:
   selector:
     matchLabels:
       
-      opentelemetry.io/name: example-featureflagservice
+      opentelemetry.io/name: example-flagd
   template:
     metadata:
       labels:
         
-        opentelemetry.io/name: example-featureflagservice
+        opentelemetry.io/name: example-flagd
         app.kubernetes.io/instance: example
-        app.kubernetes.io/component: featureflagservice
-        app.kubernetes.io/name: example-featureflagservice
+        app.kubernetes.io/component: flagd
+        app.kubernetes.io/name: example-flagd
     spec:
       serviceAccountName: example
       containers:
-        - name: featureflagservice
-          image: 'ghcr.io/open-telemetry/demo:1.8.0-featureflagservice'
+        - name: flagd
+          image: 'ghcr.io/open-telemetry/demo:1.8.0-flagd'
           imagePullPolicy: IfNotPresent
           ports:
           
-          - containerPort: 50053
-            name: grpc
-          - containerPort: 8081
-            name: http
+          - containerPort: 8013
+            name: service
           env:
           - name: OTEL_SERVICE_NAME
             valueFrom:
@@ -895,100 +865,18 @@ spec:
             value: my-otel-collector.opentelemetry-ns
           - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
             value: cumulative
-          - name: FEATURE_FLAG_SERVICE_PORT
-            value: "8081"
-          - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-            value: "50053"
-          - name: DATABASE_URL
-            value: ecto://ffs:ffs@example-ffspostgres:5432/ffs
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4317
-          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-            value: grpc
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
           resources:
             limits:
-              memory: 175Mi
-          livenessProbe:
-            httpGet:
-              path: /featureflags/
-              port: 8081
-            initialDelaySeconds: 30
-            periodSeconds: 10
+              memory: 20Mi
           volumeMounts:
+            - name: config
+              mountPath: /etc/flagd
       volumes:
-      initContainers:
-        - command:
-          - sh
-          - -c
-          - until nc -z -v -w30 example-ffspostgres 5432; do echo
-            waiting for ffspostgres; sleep 2; done
-          image: busybox:latest
-          name: wait-for-ffspostgres
----
-# Source: opentelemetry-demo/templates/component.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: example-ffspostgres
-  labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
-    
-    opentelemetry.io/name: example-ffspostgres
-    app.kubernetes.io/instance: example
-    app.kubernetes.io/component: ffspostgres
-    app.kubernetes.io/name: example-ffspostgres
-    app.kubernetes.io/version: "1.8.0"
-    app.kubernetes.io/part-of: opentelemetry-demo
-    app.kubernetes.io/managed-by: Helm
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      
-      opentelemetry.io/name: example-ffspostgres
-  template:
-    metadata:
-      labels:
-        
-        opentelemetry.io/name: example-ffspostgres
-        app.kubernetes.io/instance: example
-        app.kubernetes.io/component: ffspostgres
-        app.kubernetes.io/name: example-ffspostgres
-    spec:
-      serviceAccountName: example
-      containers:
-        - name: ffspostgres
-          image: 'ghcr.io/open-telemetry/demo:1.8.0-ffspostgres'
-          imagePullPolicy: IfNotPresent
-          ports:
-          
-          - containerPort: 5432
-            name: postgres
-          env:
-          - name: OTEL_SERVICE_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.labels['app.kubernetes.io/component']
-          - name: OTEL_COLLECTOR_NAME
-            value: my-otel-collector.opentelemetry-ns
-          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-            value: cumulative
-          - name: POSTGRES_DB
-            value: ffs
-          - name: POSTGRES_USER
-            value: ffs
-          - name: POSTGRES_PASSWORD
-            value: ffs
-          - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
-          resources:
-            limits:
-              memory: 120Mi
-          volumeMounts:
-      volumes:
+        - name: config
+          configMap:
+            name: flagd-config
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
@@ -996,7 +884,7 @@ kind: Deployment
 metadata:
   name: example-frauddetectionservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-frauddetectionservice
     app.kubernetes.io/instance: example
@@ -1061,7 +949,7 @@ kind: Deployment
 metadata:
   name: example-frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-frontend
     app.kubernetes.io/instance: example
@@ -1148,7 +1036,7 @@ kind: Deployment
 metadata:
   name: example-frontendproxy
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-frontendproxy
     app.kubernetes.io/instance: example
@@ -1197,10 +1085,6 @@ spec:
             value: "8080"
           - name: FRONTEND_HOST
             value: 'example-frontend'
-          - name: FEATURE_FLAG_SERVICE_PORT
-            value: "8081"
-          - name: FEATURE_FLAG_SERVICE_HOST
-            value: 'example-featureflagservice'
           - name: LOCUST_WEB_PORT
             value: "8089"
           - name: LOCUST_WEB_HOST
@@ -1237,7 +1121,7 @@ kind: Deployment
 metadata:
   name: example-kafka
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-kafka
     app.kubernetes.io/instance: example
@@ -1306,7 +1190,7 @@ kind: Deployment
 metadata:
   name: example-loadgenerator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-loadgenerator
     app.kubernetes.io/instance: example
@@ -1381,7 +1265,7 @@ kind: Deployment
 metadata:
   name: example-paymentservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-paymentservice
     app.kubernetes.io/instance: example
@@ -1446,7 +1330,7 @@ kind: Deployment
 metadata:
   name: example-productcatalogservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-productcatalogservice
     app.kubernetes.io/instance: example
@@ -1491,8 +1375,8 @@ spec:
             value: cumulative
           - name: PRODUCT_CATALOG_SERVICE_PORT
             value: "8080"
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
+          - name: FLAGD_HOST
+            value: 'example-flagd'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
@@ -1509,7 +1393,7 @@ kind: Deployment
 metadata:
   name: example-quoteservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-quoteservice
     app.kubernetes.io/instance: example
@@ -1576,7 +1460,7 @@ kind: Deployment
 metadata:
   name: example-recommendationservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-recommendationservice
     app.kubernetes.io/instance: example
@@ -1623,8 +1507,8 @@ spec:
             value: "8080"
           - name: PRODUCT_CATALOG_SERVICE_ADDR
             value: 'example-productcatalogservice:8080'
-          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-            value: 'example-featureflagservice:50053'
+          - name: FLAGD_HOST
+            value: 'example-flagd'
           - name: OTEL_PYTHON_LOG_CORRELATION
             value: "true"
           - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
@@ -1645,7 +1529,7 @@ kind: Deployment
 metadata:
   name: example-redis
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-redis
     app.kubernetes.io/instance: example
@@ -1706,7 +1590,7 @@ kind: Deployment
 metadata:
   name: example-shippingservice
   labels:
-    helm.sh/chart: opentelemetry-demo-0.29.1
+    helm.sh/chart: opentelemetry-demo-0.30.0
     
     opentelemetry.io/name: example-shippingservice
     app.kubernetes.io/instance: example

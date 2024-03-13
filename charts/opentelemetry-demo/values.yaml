@@ -130,7 +130,7 @@ components:
   #     - name: my-config
   #       mountPath: /etc/config
   #       subPath:
-  #       exsitingConfigMap: my-configmap
+  #       existingConfigMap: my-configmap
   #       data:
   #         my-config.yaml: |
   #           key: value
@@ -178,8 +178,8 @@ components:
     env:
       - name: AD_SERVICE_PORT
         value: "8080"
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_LOGS_EXPORTER
@@ -199,8 +199,8 @@ components:
         value: "8080"
       - name: ASPNETCORE_URLS
         value: http://*:$(CART_SERVICE_PORT)
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -280,40 +280,6 @@ components:
       limits:
         memory: 100Mi
 
-  featureflagService:
-    enabled: true
-    useDefault:
-      env: true
-    ports:
-      - name: grpc
-        value: 50053
-      - name: http
-        value: 8081
-    env:
-      - name: FEATURE_FLAG_SERVICE_PORT
-        value: "8081"
-      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-        value: "50053"
-      - name: DATABASE_URL
-        value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-        value: grpc
-    resources:
-      limits:
-        memory: 175Mi
-    livenessProbe:
-      httpGet:
-        path: /featureflags/
-        port: 8081
-      initialDelaySeconds: 30
-      periodSeconds: 10
-    initContainers:
-      - name: wait-for-ffspostgres
-        image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for ffspostgres; sleep 2; done']
-
   frauddetectionService:
     enabled: true
     useDefault:
@@ -385,10 +351,6 @@ components:
         value: "8080"
       - name: FRONTEND_HOST
         value: '{{ include "otel-demo.name" . }}-frontend'
-      - name: FEATURE_FLAG_SERVICE_PORT
-        value: "8081"
-      - name: FEATURE_FLAG_SERVICE_HOST
-        value: '{{ include "otel-demo.name" . }}-featureflagservice'
       - name: LOCUST_WEB_PORT
         value: "8089"
       - name: LOCUST_WEB_HOST
@@ -472,8 +434,8 @@ components:
     env:
       - name: PRODUCT_CATALOG_SERVICE_PORT
         value: "8080"
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -512,8 +474,8 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
@@ -541,24 +503,20 @@ components:
       limits:
         memory: 20Mi
 
-  ffsPostgres:
+  flagd:
     enabled: true
     useDefault:
       env: true
     replicas: 1
-    ports:
-      - name: postgres
-        value: 5432
-    env:
-      - name: POSTGRES_DB
-        value: ffs
-      - name: POSTGRES_USER
-        value: ffs
-      - name: POSTGRES_PASSWORD
-        value: ffs
+    service:
+      port: 8013
     resources:
       limits:
-        memory: 120Mi
+        memory: 20Mi
+    mountedConfigMaps:
+      - name: config
+        mountPath: /etc/flagd
+        existingConfigMap: flagd-config
 
   kafka:
     enabled: true
