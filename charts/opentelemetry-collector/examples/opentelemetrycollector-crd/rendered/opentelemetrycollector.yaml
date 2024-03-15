@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.81.1
+    helm.sh/chart: opentelemetry-collector-0.81.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.96.0"
@@ -133,7 +133,7 @@ spec:
           id: crio-recombine
           is_last_entry: attributes.logtag == 'F'
           max_log_size: 1048576
-          output: extract_metadata_from_filepath
+          output: handle_empty_log
           source_identifier: attributes["log.file.path"]
           type: recombine
         - id: parser-containerd
@@ -147,7 +147,7 @@ spec:
           id: containerd-recombine
           is_last_entry: attributes.logtag == 'F'
           max_log_size: 1048576
-          output: extract_metadata_from_filepath
+          output: handle_empty_log
           source_identifier: attributes["log.file.path"]
           type: recombine
         - id: parser-docker
@@ -160,11 +160,15 @@ spec:
           id: docker-recombine
           is_last_entry: attributes.log endsWith "\n"
           max_log_size: 1048576
-          output: extract_metadata_from_filepath
+          output: handle_empty_log
           source_identifier: attributes["log.file.path"]
           type: recombine
-        - id: extract_metadata_from_filepath
-          parse_from: attributes["log.file.path"]
+        - field: attributes.log
+          id: handle_empty_log
+          if: attributes.log == nil
+          type: add
+          value: ""
+        - parse_from: attributes["log.file.path"]
           regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
           type: regex_parser
         - from: attributes.stream

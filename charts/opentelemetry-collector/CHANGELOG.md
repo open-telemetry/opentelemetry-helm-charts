@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+
+### v0.81.2 / 2024-03-15
+- [FIX] Add logsCollection fix for empty log lines.
+
 ### v0.81.1 / 2024-03-06
 - [FIX] Adjust target allocator config to work properly with label pod / service monitor selectors.
 

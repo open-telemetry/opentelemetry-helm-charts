@@ -330,7 +330,7 @@ receivers:
           layout: '2006-01-02T15:04:05.999999999Z07:00'
       - type: recombine
         id: crio-recombine
-        output: extract_metadata_from_filepath
+        output: handle_empty_log
         combine_field: attributes.log
         source_identifier: attributes["log.file.path"]
         is_last_entry: "attributes.logtag == 'F'"
@@ -345,7 +345,7 @@ receivers:
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
       - type: recombine
         id: containerd-recombine
-        output: extract_metadata_from_filepath
+        output: handle_empty_log
         combine_field: attributes.log
         source_identifier: attributes["log.file.path"]
         is_last_entry: "attributes.logtag == 'F'"
@@ -359,15 +359,19 @@ receivers:
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
       - type: recombine
         id: docker-recombine
-        output: extract_metadata_from_filepath
+        output: handle_empty_log
         combine_field: attributes.log
         source_identifier: attributes["log.file.path"]
         is_last_entry: attributes.log endsWith "\n"
         combine_with: ""
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+      - type: add
+        id: handle_empty_log
+        if: attributes.log == nil
+        field: attributes.log
+        value: ""
       # Extract metadata from file path
       - type: regex_parser
-        id: extract_metadata_from_filepath
         {{- if .Values.isWindows }}
         regex: '^C:\\var\\log\\pods\\(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[^\/]+)\\(?P<container_name>[^\._]+)\\(?P<restart_count>\d+)\.log$'
         {{- else }}
