@@ -16,6 +16,9 @@ spec:
   serviceName: example-opentelemetry-collector
   podManagementPolicy: Parallel
   replicas: 2
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Delete
+    whenScaled: Delete
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
@@ -90,6 +93,18 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - mountPath: /var/lib/storage/queue
+              name: queue
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - 'chown -R 10001: /var/lib/storage/queue'
+          image: busybox:latest
+          name: init-fs
+          volumeMounts:
+          - mountPath: /var/lib/storage/queue
+            name: queue
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -98,3 +113,13 @@ spec:
               - key: relay
                 path: relay.yaml
       hostNetwork: false
+  volumeClaimTemplates:
+  - metadata:
+      name: queue
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: standard

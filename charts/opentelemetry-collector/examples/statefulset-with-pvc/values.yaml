@@ -1,0 +1,40 @@
+mode: statefulset
+
+replicaCount: 2
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
+
+statefulset:
+  persistentVolumeClaimRetentionPolicy:
+    enabled: true
+    whenDeleted: Delete
+    whenScaled: Delete
+
+  volumeClaimTemplates:
+    - metadata:
+        name: queue
+      spec:
+        storageClassName: standard
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: "1Gi"
+
+extraVolumeMounts:
+  - name: queue
+    mountPath: /var/lib/storage/queue
+
+initContainers:
+  - name: init-fs
+    image: busybox:latest
+    command:
+      - sh
+      - "-c"
+      - "chown -R 10001: /var/lib/storage/queue"
+    volumeMounts:
+      - name: queue
+        mountPath: /var/lib/storage/queue
