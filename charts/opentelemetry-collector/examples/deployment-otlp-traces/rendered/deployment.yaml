@@ -6,12 +6,12 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.83.1
+    helm.sh/chart: opentelemetry-collector-0.84.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.96.0"
     app.kubernetes.io/managed-by: Helm
-
+    
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -25,15 +25,15 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 81b27d1c9d0d9dde83f410c33c7eb0f121b9ea27f80b159a9d7625dbe85830f7
-
+        checksum/config: fda5939b2876b05c6016090deda17c2f2ebebb80e1e6c64445211792b74f724b
+        
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: standalone-collector
-
+        
     spec:
-
+      
       serviceAccountName: example-opentelemetry-collector
       securityContext:
         {}
@@ -47,7 +47,7 @@ spec:
           image: "otel/opentelemetry-collector-contrib:0.96.0"
           imagePullPolicy: IfNotPresent
           ports:
-
+            
             - name: otlp
               containerPort: 4317
               protocol: TCP
