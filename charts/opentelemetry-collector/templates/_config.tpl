@@ -307,6 +307,7 @@ receivers:
     {{- if .Values.presets.logsCollection.storeCheckpoints}}
     storage: file_storage
     {{- end }}
+    force_flush_period: {{ $.Values.presets.logsCollection.forceFlushPeriod }}
     include_file_path: true
     include_file_name: false
     operators:

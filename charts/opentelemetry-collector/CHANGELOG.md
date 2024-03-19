@@ -2,6 +2,8 @@
 
 ## OpenTelemetry Collector
 
+### v0.81.4 / 2024-03-19
+- [FIX] logsCollection, make force_flush_period configureable and disable by default
 
 ### v0.81.2 / 2024-03-15
 - [FIX] Add logsCollection fix for empty log lines.
