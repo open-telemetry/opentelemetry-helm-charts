@@ -71,6 +71,8 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 
 ```console
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
+$ kubectl delete crd opampbridges.opentelemetry.io
+$ kubectl delete crd instrumentations.opentelemetry.io
 ```
 
 ## Upgrade Chart
