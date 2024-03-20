@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: flagd-config
+  name: example-flagd-config
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-demo-0.30.0
@@ -64,6 +64,24 @@ data:
         },
         "cartServiceFailure": {
           "description": "Fail cart service",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "paymentServiceFailure": {
+          "description": "Fail payment service charge requests",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "paymentServiceUnreachable": {
+          "description": "Payment service is unavailable",
           "state": "ENABLED",
           "variants": {
             "on": true,

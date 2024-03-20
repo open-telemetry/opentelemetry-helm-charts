@@ -520,6 +520,8 @@ spec:
             value: "8080"
           - name: FLAGD_HOST
             value: 'example-flagd'
+          - name: FLAGD_PORT
+            value: "8013"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4318
           - name: OTEL_LOGS_EXPORTER
@@ -587,6 +589,8 @@ spec:
             value: http://*:$(CART_SERVICE_PORT)
           - name: FLAGD_HOST
             value: 'example-flagd'
+          - name: FLAGD_PORT
+            value: "8013"
           - name: REDIS_ADDR
             value: 'example-redis:6379'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -658,6 +662,10 @@ spec:
             value: cumulative
           - name: CHECKOUT_SERVICE_PORT
             value: "8080"
+          - name: FLAGD_HOST
+            value: 'example-flagd'
+          - name: FLAGD_PORT
+            value: "8013"
           - name: CART_SERVICE_ADDR
             value: 'example-cartservice:8080'
           - name: CURRENCY_SERVICE_ADDR
@@ -851,6 +859,11 @@ spec:
         - name: flagd
           image: 'ghcr.io/open-feature/flagd:v0.9.0'
           imagePullPolicy: IfNotPresent
+          command:
+          - /flagd-build
+          - start
+          - --uri
+          - file:./etc/flagd/demo.flagd.json
           ports:
           
           - containerPort: 8013
@@ -876,7 +889,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: flagd-config
+            name: example-flagd-config
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
@@ -1310,6 +1323,10 @@ spec:
             value: cumulative
           - name: PAYMENT_SERVICE_PORT
             value: "8080"
+          - name: FLAGD_HOST
+            value: 'example-flagd'
+          - name: FLAGD_PORT
+            value: "8013"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
@@ -1377,6 +1394,8 @@ spec:
             value: "8080"
           - name: FLAGD_HOST
             value: 'example-flagd'
+          - name: FLAGD_PORT
+            value: "8013"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4317
           - name: OTEL_RESOURCE_ATTRIBUTES
@@ -1509,6 +1528,8 @@ spec:
             value: 'example-productcatalogservice:8080'
           - name: FLAGD_HOST
             value: 'example-flagd'
+          - name: FLAGD_PORT
+            value: "8013"
           - name: OTEL_PYTHON_LOG_CORRELATION
             value: "true"
           - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION

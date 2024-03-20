@@ -180,6 +180,8 @@ components:
         value: "8080"
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_LOGS_EXPORTER
@@ -201,6 +203,8 @@ components:
         value: http://*:$(CART_SERVICE_PORT)
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -222,6 +226,10 @@ components:
     env:
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: CART_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
       - name: CURRENCY_SERVICE_ADDR
@@ -415,6 +423,10 @@ components:
     env:
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -436,6 +448,8 @@ components:
         value: "8080"
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -476,6 +490,8 @@ components:
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
@@ -516,10 +532,15 @@ components:
     resources:
       limits:
         memory: 20Mi
+    command:
+      - "/flagd-build"
+      - "start"
+      - "--uri"
+      - "file:./etc/flagd/demo.flagd.json"
     mountedConfigMaps:
       - name: config
         mountPath: /etc/flagd
-        existingConfigMap: flagd-config
+        existingConfigMap: '{{ include "otel-demo.name" . }}-flagd-config'
 
   kafka:
     enabled: true
