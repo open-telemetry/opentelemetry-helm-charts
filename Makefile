@@ -1,5 +1,5 @@
 TMP_DIRECTORY = ./tmp
-CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf otel-cloud-stack
+CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack
 
 .PHONY: generate-examples
 generate-examples:
