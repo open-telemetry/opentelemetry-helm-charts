@@ -16,6 +16,10 @@ created but the Memory Ballast Extension will still be removed.
 Depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
 the use of `GOMEMLIMIT` may completely replace the Memory Ballast Extension in the future.
 
+## 0.84.0 to 0.85.0
+
+The `loggingexporter` has been removed from the default configuration. Use the `debugexporter` instead.
+
 ## 0.78.2 to 0.78.3
 
 [Update Health Check Extension's endpoints to use Pod IP Instead of 0.0.0.0](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1012)
