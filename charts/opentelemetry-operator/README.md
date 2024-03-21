@@ -49,7 +49,7 @@ $ helm install --namespace opentelemetry-operator-system \
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
-$ helm install  --set admissionWebhooks.certManager.enabled=false --set admissionWebhooks.certManager.autoGenerateCert=true \
+$ helm install  --set admissionWebhooks.certManager.enabled=false --set admissionWebhooks.autoGenerateCert.enabled=true \
   opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
