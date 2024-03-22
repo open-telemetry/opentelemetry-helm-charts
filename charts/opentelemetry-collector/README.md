@@ -62,7 +62,7 @@ By default collector has the following receivers enabled:
 
 The Collector's configuration is set via the `config` section. Default components can be removed with `null`. Remember that lists in helm are not merged, so if you want to modify any default list you must specify all items, including any default items you want to keep.
 
-*Example*: Disable metrics and logging pipelines and non-otlp receivers:
+*Example*: Disable metrics and logs pipelines and non-otlp receivers:
 
 ```yaml
 config:
