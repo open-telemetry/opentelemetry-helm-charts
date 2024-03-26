@@ -73,6 +73,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.spanMetricsMulti.enabled }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -119,6 +122,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.spanMetricsMulti.enabled }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
@@ -645,6 +651,62 @@ processor:
         {{- end}}
 {{- end }}
 {{- end }}
+
+{{- define "opentelemetry-collector.applySpanMetricsMultiConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.spanMetricsMultiConfig" .Values | fromYaml) .config }}
+{{- $tracesPipeline := deepCopy $config.service.pipelines.traces }}
+{{- $_ := set $tracesPipeline "processors" (list "batch") }}
+{{- $_ := set $tracesPipeline "receivers" (list "routing") }}
+{{- range $index, $cfg := .Values.Values.presets.spanMetricsMulti.configs }}
+{{- $pipeline := deepCopy $tracesPipeline}}
+{{- $pipelineKey := (printf "traces/%d" $index) }}
+{{- $_ := set $pipeline "exporters" (append $pipeline.exporters (printf "spanmetrics/%d" $index) ) }}
+{{- $_ := merge $config.service.pipelines (dict $pipelineKey $pipeline )  }}
+{{- end }}
+{{- $pipeline := deepCopy $tracesPipeline}}
+{{- $_ := set $pipeline "exporters" (append $pipeline.exporters "spanmetrics/default" ) }}
+{{- $_ := merge $config.service.pipelines (dict "traces/default" $pipeline )  }}
+{{- if $config.service.pipelines.traces }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (list "routing") }}
+{{- end }}
+{{- if $config.service.pipelines.metrics }}
+{{- range $index, $cfg := .Values.Values.presets.spanMetricsMulti.configs }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers (printf "spanmetrics/%d" $index))  }}
+{{- end }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "spanmetrics/default")  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.spanMetricsMultiConfig" -}}
+connectors:
+  routing:
+    default_pipelines: [traces/default]
+    error_mode: ignore
+    match_once: false
+    table:
+      {{- range $index, $cfg := .Values.presets.spanMetricsMulti.configs }}
+      - statement: {{ $cfg.selector | toYaml }}
+        pipelines: [traces/{{- $index }}]
+      {{- end }}
+  spanmetrics/default:
+    histogram:
+      explicit:
+        buckets: {{ .Values.presets.spanMetricsMulti.defaultHistogramBuckets | toYaml | nindent 12 }}
+    {{- if .Values.presets.spanMetrics.collectionInterval }}
+    metrics_flush_interval: "{{ .Values.presets.spanMetrics.collectionInterval }}"
+    {{- else }}
+    metrics_flush_interval: 15s
+    {{- end }}
+  {{- range $index, $cfg := .Values.presets.spanMetricsMulti.configs }}
+  spanmetrics/{{- $index -}}:
+    histogram:
+      explicit:
+        buckets: {{ $cfg.histogramBuckets | toYaml | nindent 12 }}
+  {{- end }}
+
+{{- end }}
+
 
 {{- define "opentelemetry-collector.applyLoadBalancingConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.loadBalancingConfig" .Values | fromYaml) .config }}

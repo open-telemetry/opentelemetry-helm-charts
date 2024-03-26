@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/configmap.yaml
+# Source: opentelemetry-collector/templates/configmap-agent.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-opentelemetry-collector
+  name: example-opentelemetry-collector-agent
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.81.5
@@ -14,6 +14,47 @@ metadata:
     
 data:
   relay: |
+    connectors:
+      routing:
+        default_pipelines:
+        - traces/default
+        error_mode: ignore
+        match_once: false
+        table:
+        - pipelines:
+          - traces/0
+          statement: route() where attributes["service.name"] == "one"
+        - pipelines:
+          - traces/1
+          statement: route() where attributes["service.name"] == "one"
+      spanmetrics/0:
+        histogram:
+          explicit:
+            buckets:
+            - 1s
+            - 2s
+      spanmetrics/1:
+        histogram:
+          explicit:
+            buckets:
+            - 5s
+            - 10s
+      spanmetrics/default:
+        histogram:
+          explicit:
+            buckets:
+            - 1ms
+            - 4ms
+            - 10ms
+            - 20ms
+            - 50ms
+            - 100ms
+            - 200ms
+            - 500ms
+            - 1s
+            - 2s
+            - 5s
+        metrics_flush_interval: 15s
     exporters:
       debug: {}
       logging: {}
@@ -72,9 +113,12 @@ data:
           receivers:
           - otlp
           - prometheus
+          - spanmetrics/0
+          - spanmetrics/1
+          - spanmetrics/default
         traces:
           exporters:
-          - debug
+          - routing
           processors:
           - memory_limiter
           - batch
@@ -82,6 +126,30 @@ data:
           - otlp
           - jaeger
           - zipkin
+        traces/0:
+          exporters:
+          - debug
+          - spanmetrics/0
+          processors:
+          - batch
+          receivers:
+          - routing
+        traces/1:
+          exporters:
+          - debug
+          - spanmetrics/1
+          processors:
+          - batch
+          receivers:
+          - routing
+        traces/default:
+          exporters:
+          - debug
+          - spanmetrics/default
+          processors:
+          - batch
+          receivers:
+          - routing
       telemetry:
         metrics:
           address: ${env:MY_POD_IP}:8888

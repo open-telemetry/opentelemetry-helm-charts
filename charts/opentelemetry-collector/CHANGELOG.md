@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.81.5 / 2024-03-25
+- [Feat] Add new span metrics preset which supports different buckets per ottl expression.
+
 ### v0.81.4 / 2024-03-19
 - [FIX] logsCollection, make force_flush_period configureable and disable by default
 
