@@ -693,8 +693,8 @@ connectors:
     histogram:
       explicit:
         buckets: {{ .Values.presets.spanMetricsMulti.defaultHistogramBuckets | toYaml | nindent 12 }}
-    {{- if .Values.presets.spanMetrics.collectionInterval }}
-    metrics_flush_interval: "{{ .Values.presets.spanMetrics.collectionInterval }}"
+    {{- if .Values.presets.spanMetricsMulti.collectionInterval }}
+    metrics_flush_interval: "{{ .Values.presets.spanMetricsMulti.collectionInterval }}"
     {{- else }}
     metrics_flush_interval: 15s
     {{- end }}

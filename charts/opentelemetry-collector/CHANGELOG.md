@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+
+### v0.81.6 / 2024-03-26
+- [Fix] Allow setting collectionInterval on spanMetricsMulti preset.
+
 ### v0.81.5 / 2024-03-25
 - [Feat] Add new span metrics preset which supports different buckets per ottl expression.
 
