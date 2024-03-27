@@ -1,0 +1,241 @@
+{{ range $_, $collector := $.Values.collectors -}}
+{{- if $collector.enabled -}}
+{{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCollectorConfig) $collector) }}
+{{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+{{- $fullname := (include "opentelemetry-collector.fullname" $merged) }}
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ $fullname }}
+  namespace: {{ include "opentelemetry-kube-stack.namespace" $ }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
+    {{- with $collector.labels }}
+    {{- range $key, $value := . }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+    {{- end }}
+  {{- with $collector.annotations }}
+  annotations:
+    {{- range $key, $value := . }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  managementState: {{ $collector.managementState }}
+  mode: {{ $collector.mode }}
+  config: |
+    # if the user wants to add an entire scrape config file
+    {{- if $collector.scrape_configs_file }}
+    # template the scrape config file and load it from a YAML Array
+    {{- $loaded_config := (fromYamlArray (tpl ($.Files.Get $collector.scrape_configs_file) $)) }}
+    # create the structure for the prometheus receiver in the otel config
+    {{- $prom_override := (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $loaded_config))))}}
+    # If someone already has some scrape configs present
+    {{- if (dig "receivers" "prometheus" "config" "scrape_configs" false $collector.config) }}
+    # append the file to the set scrape configs
+    {{- $merged_prom_scrape_configs := (concat $collector.config.receivers.prometheus.config.scrape_configs $loaded_config) }}
+    # generate the structure again with the merged configs
+    {{- $prom_override = (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $merged_prom_scrape_configs)))) }}
+    {{- end }}
+    # merge the existing configuration with our override
+    {{- $new_config := (mergeOverwrite $collector.config $prom_override)}}
+    # write the config as yaml
+    {{- toYaml $new_config | nindent 4 }}
+    {{- else }}
+    # otherwise just template whats there
+    {{- toYaml $collector.config | nindent 4 }}
+    {{- end }}
+  {{- if $collector.replicas }}
+  replicas: {{ $collector.replicas }}
+  {{- end }}
+  {{- if $collector.serviceAccount }}
+  serviceAccount: {{ $collector.serviceAccount }}
+  {{- end }}
+  {{- if $collector.image.digest }}
+  image: "{{ $collector.image.repository }}@{{ $collector.image.digest }}"
+  {{- else }}
+  image: "{{ $collector.image.repository }}:{{ $collector.image.tag | default $.Chart.AppVersion }}"
+  {{- end }}
+  imagePullPolicy: {{ $collector.image.pullPolicy }}
+  {{- if $collector.upgradeStrategy }}
+  upgradeStrategy: {{ $collector.upgradeStrategy }}
+  {{- end }}
+  {{- if $collector.hostNetwork }}
+  hostNetwork: {{ $collector.hostNetwork }}
+  {{- end }}
+  {{- if $collector.shareProcessNamespace }}
+  shareProcessNamespace: {{ $collector.shareProcessNamespace }}
+  {{- end }}
+  {{- if $collector.priorityClassName }}
+  priorityClassName: {{ $collector.priorityClassName }}
+  {{- end }}
+  {{- if $collector.terminationGracePeriodSeconds }}
+  terminationGracePeriodSeconds: {{ $collector.terminationGracePeriodSeconds }}
+  {{- end }}
+  {{- with $collector.resources }}
+  resources:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.nodeSelector }}
+  nodeSelector:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.args }}
+  args:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.autoscaler }}
+  autoscaler:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.podDisruptionBudget }}
+  podDisruptionBudget:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.securityContext }}
+  securityContext:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.podSecurityContext }}
+  podSecurityContext:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.podAnnotations }}
+  podAnnotations:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.targetAllocator }}
+  targetAllocator:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.ingress }}
+  ingress:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.affinity }}
+  affinity:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.lifecycle }}
+  lifecycle:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.livenessProbe }}
+  livenessProbe:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.observability }}
+  observability:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.updateStrategy }}
+  updateStrategy:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.deploymentUpdateStrategy }}
+  deploymentUpdateStrategy:
+  	{{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- if $collector.volumeMounts }}
+  volumeMounts:
+  {{- with $collector.volumeMounts }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.ports }}
+  ports:
+  {{- with $collector.ports }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  env:
+  {{- with $.Values.extraEnvs }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_UID
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.uid
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  {{- if $.Values.clusterName }}
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name={{ $.Values.clusterName }}"
+  {{- end }}
+  {{- with $collector.env }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- if $collector.envFrom }}
+  envFrom:
+  {{- with $collector.envFrom }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.volumeClaimTemplates }}
+  volumeClaimTemplates:
+  {{- with $collector.volumeClaimTemplates }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.tolerations }}
+  tolerations:
+  {{- with $collector.tolerations }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.volumes }}
+  volumes:
+  {{- with $collector.volumes }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.initContainers }}
+  initContainers:
+  {{- with $collector.initContainers }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.additionalContainers }}
+  additionalContainers:
+  {{- with $collector.additionalContainers }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.topologySpreadConstraints }}
+  topologySpreadConstraints:
+  {{- with $collector.topologySpreadConstraints }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $collector.configmaps }}
+  configmaps:
+  {{- with $collector.configmaps }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
