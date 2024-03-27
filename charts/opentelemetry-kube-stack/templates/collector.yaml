@@ -1,6 +1,6 @@
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $collector.enabled -}}
-{{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCollectorConfig) $collector) }}
+{{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
 {{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
 {{- $fullname := (include "opentelemetry-collector.fullname" $merged) }}
 ---
