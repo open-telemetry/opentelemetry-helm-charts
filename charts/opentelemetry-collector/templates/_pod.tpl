@@ -131,6 +131,9 @@ containers:
         readOnly: true
         mountPropagation: HostToContainer
       {{- end }}
+      {{- if .Values.volumeMounts }}
+      {{- toYaml .Values.volumeMounts | nindent 6 }}
+      {{- end }}
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
@@ -171,6 +174,9 @@ volumes:
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
+  {{- if .Values.volumes }}
+  {{- toYaml .Values.volumes | nindent 2 }}
   {{- end }}
   {{- if .Values.extraVolumes }}
   {{- toYaml .Values.extraVolumes | nindent 2 }}
