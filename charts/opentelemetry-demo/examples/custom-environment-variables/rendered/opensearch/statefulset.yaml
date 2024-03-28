@@ -5,10 +5,10 @@ kind: StatefulSet
 metadata:
   name: otel-demo-opensearch
   labels:
-    helm.sh/chart: opensearch-2.17.2
+    helm.sh/chart: opensearch-2.18.0
     app.kubernetes.io/name: opensearch
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.11.1"
+    app.kubernetes.io/version: "2.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: otel-demo-opensearch
   annotations:
@@ -27,14 +27,14 @@ spec:
     metadata:
       name: "otel-demo-opensearch"
       labels:
-        helm.sh/chart: opensearch-2.17.2
+        helm.sh/chart: opensearch-2.18.0
         app.kubernetes.io/name: opensearch
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "2.11.1"
+        app.kubernetes.io/version: "2.12.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: otel-demo-opensearch
       annotations:
-        configchecksum: 168039ffc030115a8030f635c84ded4af2a940945fe7335048dcd1ca425966f
+        configchecksum: ec723075fa2fe3316bb92b44a794c9678f67378918efeee9931217460ff1cba
     spec:
       securityContext:
         fsGroup: 1000
@@ -61,7 +61,27 @@ spec:
       - name: config
         configMap:
           name: otel-demo-opensearch-config
+      - emptyDir: {}
+        name: config-emptydir
       enableServiceLinks: true
+      initContainers:
+      - name: configfile
+        image: "opensearchproject/opensearch:2.12.0"
+        imagePullPolicy: "IfNotPresent"
+        command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash
+          cp -r /tmp/configfolder/*  /tmp/config/
+        resources:
+          {}
+        volumeMounts:
+          - mountPath: /tmp/config/
+            name: config-emptydir
+          - name: config
+            mountPath: /tmp/configfolder/opensearch.yml
+            subPath: opensearch.yml
       containers:
       - name: "opensearch"
         securityContext:
@@ -71,7 +91,7 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
 
-        image: "opensearchproject/opensearch:2.11.1"
+        image: "opensearchproject/opensearch:2.12.0"
         imagePullPolicy: "IfNotPresent"
         readinessProbe:
           failureThreshold: 3
@@ -123,6 +143,6 @@ spec:
         - name: DISABLE_SECURITY_PLUGIN
           value: "true"
         volumeMounts:
-        - name: config
+        - name: config-emptydir
           mountPath: /usr/share/opensearch/config/opensearch.yml
           subPath: opensearch.yml
