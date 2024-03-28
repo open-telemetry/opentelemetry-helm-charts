@@ -2,6 +2,8 @@
 
 ## OpenTelemetry Collector
 
+### v0.81.7 / 2024-03-28
+- [Feat] Add new reduceResourceAttributes preset, which removes uids and other unnecessary resource attributes from metrics.
 
 ### v0.81.6 / 2024-03-26
 - [Fix] Allow setting collectionInterval on spanMetricsMulti preset.

@@ -76,6 +76,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.spanMetricsMulti.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.reduceResourceAttributes.enabled }}
+{{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -125,6 +128,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.spanMetricsMulti.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.reduceResourceAttributes.enabled }}
+{{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
@@ -607,6 +613,39 @@ processors:
         value: "{{ .Values.presets.metadata.integrationName }}"
         action: upsert
       {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyReduceResourceAttributesConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.reduceResourceAttributesConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.metrics) (not (has "resource/metadata" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "transform/reduce" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.reduceResourceAttributesConfig" -}}
+processors:
+  transform/reduce:
+    error_mode: ignore
+    metric_statements:
+      - context: resource
+        statements:
+           # Removing UIDS from k8scluster / k8sattributes
+          - delete_key(attributes, "container.id")
+          - delete_key(attributes, "k8s.pod.uid")
+          - delete_key(attributes, "k8s.replicaset.uid")
+          - delete_key(attributes, "k8s.daemonset.uid")
+          - delete_key(attributes, "k8s.deployment.uid")
+          - delete_key(attributes, "k8s.statefulset.uid")
+          - delete_key(attributes, "k8s.cronjob.uid")
+          - delete_key(attributes, "k8s.job.uid")
+          - delete_key(attributes, "k8s.hpa.uid")
+          - delete_key(attributes, "k8s.namespace.uid")
+          - delete_key(attributes, "k8s.node.uid")
+          # Removing Prometheus receiver net.host.name + port as it's available in service.instance.id
+          - delete_key(attributes, "net.host.name")
+          - delete_key(attributes, "net.host.port")
+  
 {{- end }}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}
