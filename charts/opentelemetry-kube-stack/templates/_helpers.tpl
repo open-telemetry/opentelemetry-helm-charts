@@ -85,3 +85,26 @@ Create the name of the clusterRoleBinding to use
 {{- define "opentelemetry-collector.clusterRoleBindingName" -}}
 {{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
+
+{{/*
+Constructs the final config for the given collector
+
+This allows a user to supply a scrape_configs_file. This file is templated and loaded as a yaml array.
+If a user has already supplied a prometheus receiver config, the file's config is appended. Finally,
+the config is written as YAML.
+*/}}
+{{- define "opentelemetry-collector.config" -}}
+{{- if .collector.scrape_configs_file }}
+{{- $loaded_file := (.Files.Get .collector.scrape_configs_file) }}
+{{- $loaded_config := (fromYamlArray (tpl $loaded_file .)) }}
+{{- $prom_override := (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $loaded_config)))) }}
+{{- if (dig "receivers" "prometheus" "config" "scrape_configs" false .collector.config) }}
+{{- $merged_prom_scrape_configs := (concat .collector.config.receivers.prometheus.config.scrape_configs $loaded_config) }}
+{{- $prom_override = (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $merged_prom_scrape_configs)))) }}
+{{- end }}
+{{- $new_config := (mergeOverwrite .collector.config $prom_override)}}
+{{- toYaml $new_config | nindent 4 }}
+{{- else }}
+{{- toYaml .collector.config | nindent 4 }}
+{{- end }}
+{{- end }}

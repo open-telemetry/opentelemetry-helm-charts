@@ -320,7 +320,15 @@ defaultCRConfig:
   # - name: config
   #   mountPath: /etc/config
 
-# Top level field specifying collectors configuration
+# Collectors is a map of collector configurations of the form:
+# collectors:
+#   collectorName:
+#     enabled: true
+#     name: "example"
+# Each collector configuration is layered on top of the `defaultCRConfig`, overriding a default if set.
+# This configuration allows for multiple layers of overrides for different clusters. For example, you could
+# create a collector called test with an OTLP exporter in your values.yaml, and then override the endpoint's
+# destination in a file called values-staging.yaml.
 collectors: {}
 
 # Cluster role configuration
