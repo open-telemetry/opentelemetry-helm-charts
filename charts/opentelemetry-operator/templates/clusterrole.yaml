@@ -72,6 +72,21 @@ rules:
       - patch
       - update
       - watch
+  {{- if .Values.manager.createRbacPermissions }}
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterroles
+      - clusterrolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  {{- end }}
   - apiGroups:
       - batch
     resources:
