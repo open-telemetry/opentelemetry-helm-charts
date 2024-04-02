@@ -12,13 +12,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     
 spec:
-  mode: statefulset
-  targetAllocator:
-    enabled: true
-    prometheusCR:
-      enabled: true
-    serviceAccount: default-targetallocator
-    image: "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.77.0"
+  mode: daemonset
         
   podSecurityContext:
     runAsUser: 0
@@ -26,6 +20,9 @@ spec:
   image: "otel/opentelemetry-collector-contrib:0.96.0"
   imagePullPolicy: IfNotPresent
   ports:
+    - name: jaeger-binary
+      port: 6832
+      protocol: TCP
     - name: jaeger-compact
       port: 6831
       protocol: UDP
@@ -41,6 +38,9 @@ spec:
     - name: otlp-http
       port: 4318
       protocol: TCP
+    - name: statsd
+      port: 8125
+      protocol: UDP
     - name: zipkin
       port: 9411
       protocol: TCP
@@ -50,12 +50,29 @@ spec:
         fieldRef:
           apiVersion: v1
           fieldPath: status.podIP
-    - name: MY_POD_NAME
+    - name: K8S_NODE_NAME
       valueFrom:
         fieldRef:
-          fieldPath: metadata.name
+          fieldPath: spec.nodeName
+    - name: K8S_NODE_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
     - name: GOMEMLIMIT
       value: "152MiB"
+    - name: CORALOGIX_PRIVATE_KEY
+      valueFrom:
+        secretKeyRef:
+          key: PRIVATE_KEY
+          name: coralogix-keys
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: k8s.node.name=$(K8S_NODE_NAME)
+    - name: KUBE_NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
   resources:
       limits:
         cpu: 100m
@@ -73,6 +90,14 @@ spec:
       mountPath: /hostfs
       readOnly: true
       mountPropagation: HostToContainer
+    - mountPath: /etc/machine-id
+      mountPropagation: HostToContainer
+      name: etcmachineid
+      readOnly: true
+    - mountPath: /var/lib/dbus/machine-id
+      mountPropagation: HostToContainer
+      name: varlibdbusmachineid
+      readOnly: true
   volumes:
     - name: varlogpods
       hostPath:
@@ -87,8 +112,12 @@ spec:
     - name: hostfs
       hostPath:
         path: /
-  nodeSelector:
-    kubernetes.io/arch: arm64
+    - hostPath:
+        path: /etc/machine-id
+      name: etcmachineid
+    - hostPath:
+        path: /var/lib/dbus/machine-id
+      name: varlibdbusmachineid
   serviceAccount: default
   hostNetwork: false
   config: |
@@ -100,16 +129,67 @@ spec:
         directory: /var/lib/otelcol
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
-      k8s_observer:
-        auth_type: serviceAccount
-        node: ${env:K8S_NODE_NAME}
-        observe_pods: true
     processors:
       batch: {}
+      k8sattributes:
+        extract:
+          metadata:
+          - k8s.namespace.name
+          - k8s.replicaset.name
+          - k8s.statefulset.name
+          - k8s.daemonset.name
+          - k8s.cronjob.name
+          - k8s.job.name
+          - k8s.node.name
+          - k8s.pod.name
+          - k8s.pod.uid
+          - k8s.pod.start_time
+        filter:
+          node_from_env_var: K8S_NODE_NAME
+        passthrough: false
+        pod_association:
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.ip
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.uid
+        - sources:
+          - from: connection
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resource/metadata:
+        attributes:
+        - action: upsert
+          key: k8s.cluster.name
+          value: 'operator'
+        - action: upsert
+          key: cx.otel_integration.name
+          value: coralogix-integration-helm
+      transform/k8s_attributes:
+        log_statements:
+        - context: resource
+          statements:
+          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
+            "$$1") where attributes["k8s.replicaset.name"] != nil
+          - delete_key(attributes, "k8s.replicaset.name")
+        metric_statements:
+        - context: resource
+          statements:
+          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
+            "$$1") where attributes["k8s.replicaset.name"] != nil
+          - delete_key(attributes, "k8s.replicaset.name")
+        trace_statements:
+        - context: resource
+          statements:
+          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
+          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
+            "$$1") where attributes["k8s.replicaset.name"] != nil
+          - delete_key(attributes, "k8s.replicaset.name")
     receivers:
       filelog:
         exclude: []
@@ -209,7 +289,7 @@ spec:
         start_at: beginning
         storage: file_storage
       hostmetrics:
-        collection_interval: 10s
+        collection_interval: '30s'
         root_path: /hostfs
         scrapers:
           cpu:
@@ -269,6 +349,11 @@ spec:
             endpoint: ${env:MY_POD_IP}:6831
           thrift_http:
             endpoint: ${env:MY_POD_IP}:14268
+      kubeletstats:
+        auth_type: serviceAccount
+        collection_interval: '30s'
+        endpoint: ${env:K8S_NODE_IP}:10250
+        insecure_skip_verify: true
       otlp:
         protocols:
           grpc:
@@ -283,54 +368,21 @@ spec:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
-        target_allocator:
-          collector_id: ${MY_POD_NAME}
-          endpoint: http://example-opentelemetry-collector-targetallocator
-          interval: 30s
-      receiver_creator/mysql:
-        receivers:
-          mysql:
-            config:
-              collection_interval: 10s
-              metrics:
-                mysql.client.network.io:
-                  enabled: true
-                mysql.commands:
-                  enabled: true
-                mysql.connection.errors:
-                  enabled: true
-                mysql.joins:
-                  enabled: true
-                mysql.query.count:
-                  enabled: true
-                mysql.query.slow.count:
-                  enabled: true
-                mysql.sorts:
-                  enabled: true
-                mysql.table_open_cache:
-                  enabled: true
-              password: ${env:MYSQL_PASSWORD}
-              statement_events:
-                digest_text_limit: 120
-                limit: 250
-                time_limit: 24h
-              username: root
-            rule: type == "port" && port == 3306
-        watch_observers:
-        - k8s_observer
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
       extensions:
       - health_check
       - file_storage
-      - k8s_observer
       pipelines:
         logs:
           exporters:
           - debug
           processors:
+          - resource/metadata
+          - k8sattributes
           - memory_limiter
+          - transform/k8s_attributes
           - batch
           receivers:
           - otlp
@@ -339,18 +391,24 @@ spec:
           exporters:
           - debug
           processors:
+          - resource/metadata
+          - k8sattributes
           - memory_limiter
+          - transform/k8s_attributes
           - batch
           receivers:
           - otlp
           - prometheus
-          - receiver_creator/mysql
           - hostmetrics
+          - kubeletstats
         traces:
           exporters:
           - debug
           processors:
+          - resource/metadata
+          - k8sattributes
           - memory_limiter
+          - transform/k8s_attributes
           - batch
           receivers:
           - otlp

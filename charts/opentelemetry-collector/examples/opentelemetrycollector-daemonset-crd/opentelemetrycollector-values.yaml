@@ -1,0 +1,97 @@
+mode: daemonset
+global:
+  domain: "coralogix.com"
+  clusterName: "operator"
+  defaultApplicationName: "otel"
+  defaultSubsystemName: "integration"
+  logLevel: "warn"
+  collectionInterval: "30s"
+
+collectorCRD:
+  generate: true
+
+targetAllocator:
+  enabled: false
+  replicas: 1
+  allocationStrategy: "per-node"
+  prometheusCR:
+    enabled: true
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
+    tag: v0.95.0
+
+presets:
+ metadata:
+   enabled: true
+   clusterName: "{{.Values.global.clusterName}}"
+   integrationName: "coralogix-integration-helm"
+
+ logsCollection:
+   enabled: true
+   includeCollectorLogs: true
+   storeCheckpoints: true
+   maxRecombineLogSize: 1048576
+   extraFilelogOperators: []
+
+ kubernetesAttributes:
+   enabled: true
+ hostMetrics:
+   enabled: true
+   collectionInterval: "{{.Values.global.collectionInterval}}"
+ kubeletMetrics:
+   enabled: true
+   collectionInterval: "{{.Values.global.collectionInterval}}"
+extraVolumes:
+  - name: etcmachineid
+    hostPath:
+      path: /etc/machine-id
+  - name: varlibdbusmachineid
+    hostPath:
+      path: /var/lib/dbus/machine-id
+
+extraVolumeMounts:
+  - mountPath: /etc/machine-id
+    mountPropagation: HostToContainer
+    name: etcmachineid
+    readOnly: true
+  - mountPath: /var/lib/dbus/machine-id
+    mountPropagation: HostToContainer
+    name: varlibdbusmachineid
+    readOnly: true
+extraEnvs:
+  - name: CORALOGIX_PRIVATE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: coralogix-keys
+        key: PRIVATE_KEY
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.node.name=$(K8S_NODE_NAME)"
+  - name: KUBE_NODE_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: spec.nodeName
+
+ports:
+  statsd:
+    enabled: true
+    containerPort: 8125
+    servicePort: 8125
+    hostPort: 8125
+    protocol: UDP
+  jaeger-binary:
+    enabled: true
+    containerPort: 6832
+    servicePort: 6832
+    hostPort: 6832
+    protocol: TCP
+configMap:
+  create: false
+
+serviceAccount:
+  create: false
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

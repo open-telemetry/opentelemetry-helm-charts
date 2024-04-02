@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.81.8 / 2024-04-02
+- [Fix] Operator generate CRD missing environment variables
+
 ### v0.81.7 / 2024-03-28
 - [Feat] Add new reduceResourceAttributes preset, which removes uids and other unnecessary resource attributes from metrics.
 

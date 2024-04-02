@@ -80,11 +80,28 @@ spec:
         fieldRef:
           apiVersion: v1
           fieldPath: status.podIP
-    {{- if or .Values.presets.kubeletMetrics.enabled (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset")) }}
+    {{- if .Values.targetAllocator.enabled }}
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    {{- end }}
+    {{- if and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset") }}
     - name: K8S_NODE_NAME
       valueFrom:
         fieldRef:
           fieldPath: spec.nodeName
+    {{- end }}
+    {{- if .Values.presets.kubeletMetrics.enabled }}
+    - name: K8S_NODE_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
+    {{- end }}
+    {{- if and (.Values.useGOMEMLIMIT) ((((.Values.resources).limits).memory))  }}
+    - name: GOMEMLIMIT
+      value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
     {{- end }}
     {{- with .Values.extraEnvs }}
     {{- . | toYaml | nindent 4 }}
