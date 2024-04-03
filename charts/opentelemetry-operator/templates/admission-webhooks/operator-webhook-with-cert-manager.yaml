@@ -71,6 +71,7 @@ webhooks:
         scope: Namespaced
     sideEffects: None
     timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
+  {{- if .Values.admissionWebhooks.enablePodOperationsWebhook }}
   - admissionReviewVersions:
       - v1
     clientConfig:
@@ -101,6 +102,7 @@ webhooks:
         scope: Namespaced
     sideEffects: None
     timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
+  {{- end }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
