@@ -30,6 +30,13 @@ Allow the release namespace to be overridden
 {{- end -}}
 
 {{/*
+Create the name of the instrumentation to use
+*/}}
+{{- define "opentelemetry-collector.instrumentation" -}}
+{{- default .Release.Name .Values.instrumentation.name }}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "opentelemetry-collector.chart" -}}
