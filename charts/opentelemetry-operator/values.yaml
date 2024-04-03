@@ -4,12 +4,22 @@
 
 replicaCount: 1
 
-## Provide a name in place of opentelemetry-operator.
+## Provide a name in place of opentelemetry-operator (includes the chart's release name).
 ##
 nameOverride: ""
 
+## Fully override the name (excludes the chart's release name).
+##
+fullnameOverride: ""
+
 ## Reference one or more secrets to be used when pulling images from authenticated repositories.
 imagePullSecrets: []
+
+## Kubernetes cluster domain suffix
+clusterDomain: cluster.local
+
+# Common labels to add to all otel-operator resources. Evaluated as a template.
+additionalLabels: {}
 
 ## Pod Disruption Budget configuration
 ##
@@ -32,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: otel/opentelemetry-collector-contrib
-    tag: 0.95.0
+    tag: 0.96.0
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -93,6 +103,11 @@ manager:
     annotations: {}
     metricsEndpoints:
     - port: metrics
+
+  # Adds additional annotations to the manager Deployment
+  deploymentAnnotations: {}
+  # Adds additional annotations to the manager Service
+  serviceAnnotations: {}
 
   podAnnotations: {}
   podLabels: {}
@@ -235,6 +250,9 @@ admissionWebhooks:
   key_file: ""
   ## Path to the CA cert.
   ca_file: ""
+
+  # Adds additional annotations to the admissionWebhook Service
+  serviceAnnotations: {}
 
   ## Secret annotations
   secretAnnotations: {}

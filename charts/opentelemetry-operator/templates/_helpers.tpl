@@ -41,6 +41,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "opentelemetry-operator.additionalLabels" . }}
 {{- end }}
 
 {{/*
@@ -70,6 +71,12 @@ Create the name of the service account to use
 {{- define "opentelemetry-operator.podLabels" -}}
 {{- if .Values.manager.podLabels }}
 {{- .Values.manager.podLabels | toYaml }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-operator.additionalLabels" -}}
+{{- if .Values.additionalLabels }}
+{{- tpl (.Values.additionalLabels | toYaml) . }}
 {{- end }}
 {{- end }}
 
