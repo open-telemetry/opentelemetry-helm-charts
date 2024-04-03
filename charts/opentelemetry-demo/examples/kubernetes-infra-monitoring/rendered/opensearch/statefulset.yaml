@@ -5,10 +5,10 @@ kind: StatefulSet
 metadata:
   name: otel-demo-opensearch
   labels:
-    helm.sh/chart: opensearch-2.18.0
+    helm.sh/chart: opensearch-2.19.0
     app.kubernetes.io/name: opensearch
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.12.0"
+    app.kubernetes.io/version: "2.13.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: otel-demo-opensearch
   annotations:
@@ -27,14 +27,14 @@ spec:
     metadata:
       name: "otel-demo-opensearch"
       labels:
-        helm.sh/chart: opensearch-2.18.0
+        helm.sh/chart: opensearch-2.19.0
         app.kubernetes.io/name: opensearch
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "2.12.0"
+        app.kubernetes.io/version: "2.13.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: otel-demo-opensearch
       annotations:
-        configchecksum: ec723075fa2fe3316bb92b44a794c9678f67378918efeee9931217460ff1cba
+        configchecksum: 1d814a7c5338d5b1509ba8ccc5ef678fb3389662121ff7910d3e5892b3c4493
     spec:
       securityContext:
         fsGroup: 1000
@@ -66,7 +66,7 @@ spec:
       enableServiceLinks: true
       initContainers:
       - name: configfile
-        image: "opensearchproject/opensearch:2.12.0"
+        image: "opensearchproject/opensearch:2.13.0"
         imagePullPolicy: "IfNotPresent"
         command:
         - sh
@@ -91,7 +91,7 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
 
-        image: "opensearchproject/opensearch:2.12.0"
+        image: "opensearchproject/opensearch:2.13.0"
         imagePullPolicy: "IfNotPresent"
         readinessProbe:
           failureThreshold: 3
