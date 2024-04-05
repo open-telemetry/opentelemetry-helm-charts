@@ -163,10 +163,6 @@ Allow the release namespace to be overridden
   {{- end -}}
 {{- end -}}
 
-{{- define "opentelemetry-collector.retrieveNamespace" -}}
-{{- printf .Values.namespaceOverride | default .Release.Namespace -}}
-{{- end -}}
-
 {{/*
   This helper converts the input value of memory to Bytes.
   Input needs to be a valid value as supported by k8s memory resource field.
