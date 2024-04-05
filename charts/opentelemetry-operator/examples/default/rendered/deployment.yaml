@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/version: "0.97.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: example
-    
+
     app.kubernetes.io/component: controller-manager
   name: example-opentelemetry-operator
   namespace: default
@@ -34,7 +34,7 @@ spec:
             - --enable-leader-election
             - --health-probe-addr=:8081
             - --webhook-port=9443
-            - --collector-image=otel/opentelemetry-collector-contrib:0.97.0
+            - --collector-image=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.97.0
           command:
             - /manager
           env:
@@ -61,7 +61,7 @@ spec:
               port: 8081
             initialDelaySeconds: 5
             periodSeconds: 10
-          resources: 
+          resources:
             limits:
               cpu: 100m
               memory: 128Mi
@@ -72,7 +72,7 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
-        
+
         - args:
             - --secure-listen-address=0.0.0.0:8443
             - --upstream=http://127.0.0.1:8080/
@@ -84,7 +84,7 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-          resources: 
+          resources:
             limits:
               cpu: 500m
               memory: 128Mi

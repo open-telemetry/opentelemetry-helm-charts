@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.93.0"
     app.kubernetes.io/managed-by: Helm
-    
+
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -33,9 +33,9 @@ spec:
         app.kubernetes.io/name: otelcol
         app.kubernetes.io/instance: example
         component: standalone-collector
-        
+
     spec:
-      
+
       serviceAccountName: example-otelcol
       securityContext:
         {}
@@ -46,10 +46,10 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.93.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.93.0"
           imagePullPolicy: IfNotPresent
           ports:
-            
+
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
