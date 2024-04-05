@@ -1,5 +1,15 @@
 # Upgrade guidelines
 
+## <0.53.3 to 0.53.3
+[Changes to functionality, and variable names used for providing self-signed certificates](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1121)
+
+Below variables have been renamed to be consistent with the chart's naming format. v0.53.2 also has a bug fix which makes the chart now read the contents of the file paths provided by these variables, instead of just using the value of the variables.
+```
+admissionWebhooks.ca_file -> admissionWebhooks.caFile
+admissionWebhooks.cert_file -> admissionWebhooks.certFile
+admissionWebhooks.key_file -> admissionWebhooks.keyFile
+```
+
 ## <0.50.0 to 0.50.0
 
 Additional properties are not allowed anymore, so care must be taken that no old or misspelled ones are present anymore.
@@ -24,7 +34,7 @@ Some CI/CD tools might create duplicate resources when upgrading from an older v
 `fullnameOverride` can be used to keep `deployment` resource consistent with the same name during an upgrade.
 
 ## 0.16.0 to 0.17.0
- 
+
 The v0.17.0 helm chart version changes OpenTelemetry Collector image to the contrib version. If you want to use the core version, set `manager.collectorImage.repository` to `otel/opentelemetry-collector`.
 
 ## 0.15.0 to 0.16.0
