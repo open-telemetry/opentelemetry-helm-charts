@@ -130,7 +130,7 @@ components:
   #     - name: my-config
   #       mountPath: /etc/config
   #       subPath:
-  #       exsitingConfigMap: my-configmap
+  #       existingConfigMap: my-configmap
   #       data:
   #         my-config.yaml: |
   #           key: value
@@ -178,8 +178,10 @@ components:
     env:
       - name: AD_SERVICE_PORT
         value: "8080"
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_LOGS_EXPORTER
@@ -199,8 +201,10 @@ components:
         value: "8080"
       - name: ASPNETCORE_URLS
         value: http://*:$(CART_SERVICE_PORT)
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -222,6 +226,10 @@ components:
     env:
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: CART_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
       - name: CURRENCY_SERVICE_ADDR
@@ -279,40 +287,6 @@ components:
     resources:
       limits:
         memory: 100Mi
-
-  featureflagService:
-    enabled: true
-    useDefault:
-      env: true
-    ports:
-      - name: grpc
-        value: 50053
-      - name: http
-        value: 8081
-    env:
-      - name: FEATURE_FLAG_SERVICE_PORT
-        value: "8081"
-      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
-        value: "50053"
-      - name: DATABASE_URL
-        value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
-        value: grpc
-    resources:
-      limits:
-        memory: 175Mi
-    livenessProbe:
-      httpGet:
-        path: /featureflags/
-        port: 8081
-      initialDelaySeconds: 30
-      periodSeconds: 10
-    initContainers:
-      - name: wait-for-ffspostgres
-        image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for ffspostgres; sleep 2; done']
 
   frauddetectionService:
     enabled: true
@@ -385,10 +359,6 @@ components:
         value: "8080"
       - name: FRONTEND_HOST
         value: '{{ include "otel-demo.name" . }}-frontend'
-      - name: FEATURE_FLAG_SERVICE_PORT
-        value: "8081"
-      - name: FEATURE_FLAG_SERVICE_HOST
-        value: '{{ include "otel-demo.name" . }}-featureflagservice'
       - name: LOCUST_WEB_PORT
         value: "8089"
       - name: LOCUST_WEB_HOST
@@ -453,6 +423,10 @@ components:
     env:
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -472,8 +446,10 @@ components:
     env:
       - name: PRODUCT_CATALOG_SERVICE_PORT
         value: "8080"
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -512,8 +488,10 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
-      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
@@ -535,30 +513,34 @@ components:
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 20Mi
 
-  ffsPostgres:
+  flagd:
     enabled: true
+    imageOverride:
+      repository: "ghcr.io/open-feature/flagd"
+      tag: "v0.9.0"
     useDefault:
       env: true
     replicas: 1
-    ports:
-      - name: postgres
-        value: 5432
-    env:
-      - name: POSTGRES_DB
-        value: ffs
-      - name: POSTGRES_USER
-        value: ffs
-      - name: POSTGRES_PASSWORD
-        value: ffs
+    service:
+      port: 8013
     resources:
       limits:
-        memory: 120Mi
+        memory: 20Mi
+    command:
+      - "/flagd-build"
+      - "start"
+      - "--uri"
+      - "file:./etc/flagd/demo.flagd.json"
+    mountedConfigMaps:
+      - name: config
+        mountPath: /etc/flagd
+        existingConfigMap: '{{ include "otel-demo.name" . }}-flagd-config'
 
   kafka:
     enabled: true
@@ -806,7 +788,7 @@ grafana:
             logMessageField: body
             pplEnabled: true
             timeField: observedTimestamp
-            version: 2.11.1
+            version: 2.13.0
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
