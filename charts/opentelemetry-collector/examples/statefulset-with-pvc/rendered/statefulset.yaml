@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.97.0"
     app.kubernetes.io/managed-by: Helm
-    
+
 spec:
   serviceName: example-opentelemetry-collector
   podManagementPolicy: Parallel
@@ -30,14 +30,14 @@ spec:
     metadata:
       annotations:
         checksum/config: 596396aea9bcb58f160997cf237a27276e9467f4477de0076f8f18b1f09d72bc
-        
+
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: statefulset-collector
-        
+
     spec:
-      
+
       serviceAccountName: example-opentelemetry-collector
       securityContext:
         {}
@@ -48,10 +48,10 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.97.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.97.0"
           imagePullPolicy: IfNotPresent
           ports:
-            
+
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
