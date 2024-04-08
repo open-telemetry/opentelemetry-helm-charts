@@ -30,16 +30,44 @@ Allow the release namespace to be overridden
 {{- end -}}
 
 {{/*
+Print a map of key values in a YAML block. This is useful for labels and annotations.
+*/}}
+{{- define "opentelemetry-kube-stack.renderkv" -}}
+{{- with . }}
+{{- range $key, $value := . }}
+{{- printf "%s: %s" $key $value }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Render a deduped list of environment variables and 'extraEnvs'
+*/}}
+{{- define "opentelemetry-kube-stack.renderenvs" -}}
+{{- $envMap := dict }}
+{{- range $item := .extraEnvs }}
+{{- $_ := set $envMap $item.name $item.value }}
+{{- end }}
+{{- range $item := .env }}
+{{- $_ := set $envMap $item.name $item.value }}
+{{- end }}
+{{- range $key, $value := $envMap }}
+- name: {{ $key }}
+  value: {{ $value }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the instrumentation to use
 */}}
-{{- define "opentelemetry-collector.instrumentation" -}}
+{{- define "opentelemetry-kube-stack.instrumentation" -}}
 {{- default .Release.Name .Values.instrumentation.name }}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "opentelemetry-collector.chart" -}}
+{{- define "opentelemetry-kube-stack.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -47,7 +75,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "opentelemetry-kube-stack.labels" -}}
-helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
+helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -57,7 +85,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "opentelemetry-collector.name" -}}
+{{- define "opentelemetry-kube-stack.collectorName" -}}
 {{- default .Chart.Name .collector.name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -66,7 +94,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "opentelemetry-collector.fullname" -}}
+{{- define "opentelemetry-kube-stack.collectorFullname" -}}
 {{- if .fullnameOverride }}
 {{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -82,15 +110,15 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create the name of the clusterRole to use
 */}}
-{{- define "opentelemetry-collector.clusterRoleName" -}}
+{{- define "opentelemetry-kube-stack.clusterRoleName" -}}
 {{- default (printf "%s-collector" .Release.Name) .Values.clusterRole.name }}
 {{- end }}
 
 {{/*
 Create the name of the clusterRoleBinding to use
 */}}
-{{- define "opentelemetry-collector.clusterRoleBindingName" -}}
-{{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
+{{- define "opentelemetry-kube-stack.clusterRoleBindingName" -}}
+{{- default (include "opentelemetry-kube-stack.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
 
 {{/*
@@ -100,7 +128,7 @@ This allows a user to supply a scrape_configs_file. This file is templated and l
 If a user has already supplied a prometheus receiver config, the file's config is appended. Finally,
 the config is written as YAML.
 */}}
-{{- define "opentelemetry-collector.config" -}}
+{{- define "opentelemetry-kube-stack.config" -}}
 {{- if .collector.scrape_configs_file }}
 {{- $loaded_file := (.Files.Get .collector.scrape_configs_file) }}
 {{- $loaded_config := (fromYamlArray (tpl $loaded_file .)) }}

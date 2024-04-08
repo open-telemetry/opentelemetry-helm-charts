@@ -3,19 +3,13 @@
 apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
-  name: {{ include "opentelemetry-collector.instrumentation" . }}
+  name: {{ include "opentelemetry-kube-stack.instrumentation" . }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- with .Values.instrumentation.labels }}
-    {{- range $key, $value := . }}
-    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
-    {{- end }}
-    {{- end }}
+    {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | nindent 4 }}
   {{- with .Values.instrumentation.annotations }}
   annotations:
-    {{- range $key, $value := . }}
-    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
-    {{- end }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
   {{- end }}
 spec:
   exporter:
@@ -27,12 +21,7 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   env:
-    {{- with $.Values.extraEnvs }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-    {{- with .Values.instrumentation.env }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.instrumentation.env) | nindent 4 }}
   {{- with .Values.instrumentation.resource }}
   resource:
     {{- toYaml . | nindent 4 }}
