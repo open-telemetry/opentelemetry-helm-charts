@@ -15,7 +15,7 @@ defaultCRConfig:
   enabled: false
 
   # Name of the collector
-  name: "demo"
+  name: "collector"
 
   # Annotations for the collector
   annotations: {}
@@ -341,3 +341,173 @@ clusterRole:
 
   # Rules for the cluster role
   rules: []
+
+# Instrumentation configuration
+instrumentation:
+  # Whether instrumentation is enabled or not
+  enabled: false
+  labels: {}
+  annotations: {}
+
+  # Exporter configuration
+  exporter:
+    # This is the default collector's service
+    # Upon creation of a tracing collector, edit this endpoint.
+    endpoint: http://collector-collector:4317
+
+  # Resource configuration
+  resource:
+    resourceAttributes: {}
+    # environment: dev
+    addK8sUIDAttributes: true
+
+  # Propagators configuration
+  propagators:
+    - tracecontext
+    - baggage
+    - b3
+    - b3multi
+    - jaeger
+    - xray
+    - ottrace
+
+  # Sampler configuration
+  sampler: {}
+  # type: parentbased_always_on
+  # argument: "0.25"
+
+  # Environment variables for instrumentation
+  env: []
+  # - name: ENV_VAR1
+  #   value: value1
+  # - name: ENV_VAR2
+  #   value: value2
+
+  # Java agent configuration
+  java: {}
+  # image: myregistry/java-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  #   - name: JAVA_ENV_VAR
+  #     value: java_value
+  # resources:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
+
+  # NodeJS agent configuration
+  nodejs: {}
+  # image: myregistry/nodejs-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  #   - name: NODEJS_ENV_VAR
+  #     value: nodejs_value
+  # resourceRequirements:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
+
+  # Python agent configuration
+  python: {}
+  # image: myregistry/python-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  # - name: PYTHON_ENV_VAR
+  #   value: python_value
+  # #  Required if endpoint is set to 4317.
+  # #  Python autoinstrumentation uses http/proto by default
+  # #  so data must be sent to 4318 instead of 4317.
+  # - name: OTEL_EXPORTER_OTLP_ENDPOINT
+  #   value: http://otel-collector:4318
+  # resourceRequirements:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
+
+  # .NET agent configuration
+  dotnet: {}
+  # image: myregistry/dotnet-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  #   - name: DOTNET_ENV_VAR
+  #     value: dotnet_value
+  #   # Required if endpoint is set to 4317.
+  #   # Dotnet autoinstrumentation uses http/proto by default
+  #   # See https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/888e2cd216c77d12e56b54ee91dafbc4e7452a52/docs/config.md#otlp
+  #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
+  #     value: http://otel-collector:4318
+  # resourceRequirements:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
+
+  # Go agent configuration
+  go: {}
+  # image: myregistry/go-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  #   - name: GO_ENV_VAR
+  #     value: go_value
+  #   # Required if endpoint is set to 4317.
+  #   # Dotnet autoinstrumentation uses http/proto by default
+  #   # See https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/888e2cd216c77d12e56b54ee91dafbc4e7452a52/docs/config.md#otlp
+  #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
+  #     value: http://otel-collector:4318
+  # resourceRequirements:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
+
+  # Apache HTTPd agent configuration
+  apacheHttpd: {}
+  # image: myregistry/apache-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  #   - name: APACHE_ENV_VAR
+  #     value: apache_value
+  # attrs:
+  #   - name: ATTRIBUTE_VAR
+  #     value: attribute_value
+  # version: "2.4"
+  # configPath: "/usr/local/apache2/conf"
+  # resourceRequirements:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
+
+  # NGINX agent configuration
+  nginx: {}
+  # image: myregistry/nginx-agent:latest
+  # volumeLimitSize: 200Mi
+  # env:
+  #   - name: NGINX_ENV_VAR
+  #     value: nginx_value
+  # attrs:
+  #   - name: ATTRIBUTE_VAR
+  #     value: attribute_value
+  # configFile: "/etc/nginx/nginx.conf"
+  # resourceRequirements:
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "250m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "500m"
