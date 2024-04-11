@@ -1,9 +1,9 @@
 # Upgrade guidelines
 
-## <0.53.3 to 0.53.3
-[Changes to functionality, and variable names used for providing self-signed certificates](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1121)
+## <0.54.0 to 0.54.0
+[Changes to functionality, and variable names used for providing user-managed webhook certificates](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1121)
 
-Below variables have been renamed to be consistent with the chart's naming format. v0.53.2 also has a bug fix which makes the chart now read the contents of the file paths provided by these variables, instead of just using the value of the variables.
+Below variables have been renamed to be consistent with the chart's naming format. v0.54.0 also has a bug fix which makes the chart now read the contents of the file paths provided by these variables, instead of just using the value of the variables.
 ```
 admissionWebhooks.ca_file -> admissionWebhooks.caFile
 admissionWebhooks.cert_file -> admissionWebhooks.certFile
