@@ -1,0 +1,57 @@
+{{- if .Values.instrumentation.enabled }}
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: {{ include "opentelemetry-kube-stack.instrumentation" . }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
+    {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | nindent 4 }}
+  {{- with .Values.instrumentation.annotations }}
+  annotations:
+    {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
+  {{- end }}
+spec:
+  exporter:
+    endpoint: {{ .Values.instrumentation.exporter.endpoint }}
+  propagators:
+    {{- toYaml .Values.instrumentation.propagators | nindent 4 }}
+  {{- with .Values.instrumentation.sampler }}
+  sampler:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  env:
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.instrumentation.env) | nindent 4 }}
+  {{- with .Values.instrumentation.resource }}
+  resource:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.instrumentation.java }}
+  java:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.instrumentation.nodejs }}
+  nodejs:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.instrumentation.python }}
+  python:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.instrumentation.dotnet }}
+  dotnet:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.instrumentation.go }}
+  go:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .Values.instrumentation.apacheHttpd }}
+  apacheHtpd:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.instrumentation.nginx }}
+  nginx:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
+{{- end }}
