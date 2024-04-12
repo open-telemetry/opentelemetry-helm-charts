@@ -511,3 +511,157 @@ instrumentation:
   #   limits:
   #     memory: "128Mi"
   #     cpu: "500m"
+
+# Bridge cluster role configuration
+bridgeClusterRole:
+  # Whether the bridge cluster role is enabled or not
+  enabled: true
+
+  # Annotations for the bridge cluster role
+  annotations: {}
+
+  # Rules for the bridge cluster role
+  rules: []
+
+# OpAMP bridge configuration
+opAMPBridge:
+  # Whether OpAMP bridge is enabled or not
+  enabled: false
+
+  # Adds `opentelemetry.io/opamp-reporting: true` to all collectors
+  addReportingLabel: true
+  # Adds `opentelemetry.io/opamp-managed: true` to all collectors
+  addManagedLabel: false
+
+  # Endpoint for OpAMP server
+  endpoint: http://opamp-server:8080
+
+  # Headers configuration for OpAMP bridge
+  headers: {}
+  # Authorization: Bearer your_access_token
+  # Custom-Header: Custom-Value
+
+  # Capabilities of OpAMP bridge
+  capabilities:
+    AcceptsOpAMPConnectionSettings: true
+    AcceptsOtherConnectionSettings: true
+    AcceptsRemoteConfig: true
+    AcceptsRestartCommand: true
+    ReportsEffectiveConfig: true
+    ReportsHealth: true
+    ReportsOwnLogs: true
+    ReportsOwnMetrics: true
+    ReportsOwnTraces: true
+    ReportsRemoteConfig: true
+    ReportsStatus: true
+
+  # Components allowed for OpAMP bridge
+  componentsAllowed: {}
+  # receiver:
+  #   - otlp
+  #   - prometheus
+  # processor:
+  #   - batch
+  #   - memory_limiter
+  # exporter:
+  #   - prometheusremotewrite
+
+  # Resources configuration for OpAMP bridge
+  resources:
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+
+  # Number of replicas for OpAMP bridge
+  replicas: 1
+
+  # Security context for OpAMP bridge
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  # Pod security context for OpAMP bridge
+  podSecurityContext:
+    fsGroup: 1000
+
+  # Pod annotations for OpAMP bridge
+  podAnnotations: {}
+  # prometheus.io/scrape: "true"
+  # prometheus.io/port: "8080"
+
+  # Service account for OpAMP bridge
+  serviceAccount: ""
+
+  # Image for OpAMP bridge
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-operator/operator-opamp-bridge
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+    # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+    digest: ""
+
+  # Upgrade strategy for OpAMP bridge
+  upgradeStrategy: automatic
+
+  # Volume mounts for OpAMP bridge
+  volumeMounts: []
+  # - name: data
+  #   mountPath: /data
+
+  # Ports configuration for OpAMP bridge
+  ports: []
+  # - name: http
+  #   port: 8080
+  #   protocol: TCP
+
+  # Environment variables for OpAMP bridge
+  env: []
+  # - name: ENVIRONMENT
+  #   value: production
+
+  # Environment variables from config map for OpAMP bridge
+  envFrom: []
+  # - configMapRef:
+  #     name: opamp-config
+
+  # Tolerations for OpAMP bridge
+  tolerations: []
+  # - key: "opamp"
+  #   operator: "Equal"
+  #   value: "true"
+  #   effect: "NoSchedule"
+
+  # Volumes for OpAMP bridge
+  volumes: []
+  # - name: data
+  #   emptyDir: {}
+
+  # Whether to use host network for OpAMP bridge
+  hostNetwork: false
+
+  # Priority class name for OpAMP bridge
+  priorityClassName: ""
+
+  # Affinity configuration for OpAMP bridge
+  affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #       - matchExpressions:
+  #           - key: opamp
+  #             operator: In
+  #             values:
+  #               - "true"
+
+  # Topology spread constraints for OpAMP bridge
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: "kubernetes.io/hostname"
+  #   whenUnsatisfiable: "DoNotSchedule"
+  #   labelSelector:
+  #     matchLabels:
+  #       opamp: "true"
