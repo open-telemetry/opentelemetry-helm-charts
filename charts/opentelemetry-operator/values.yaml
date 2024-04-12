@@ -123,6 +123,8 @@ manager:
     # add annotations on the PrometheusRule
     annotations: {}
 
+  # Whether the operator should create RBAC permissions for collectors
+  createRbacPermissions: false
   ## List of additional cli arguments to configure the manager
   ## for example: --labels, etc.
   extraArgs: []
@@ -242,13 +244,16 @@ admissionWebhooks:
     recreate: true
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
-  ## certManager and autoGenerateCert must be disabled and cert_file, key_file, and ca_file must be set.
+  ## certManager and autoGenerateCert must be disabled and certFile, keyFile, and caFile must be set.
+  ## The chart reads the contents of the file paths with the helm .Files.Get function.
+  ## Refer to this doc https://helm.sh/docs/chart_template_guide/accessing_files/ to understand
+  ## limitations of file paths accessible to the chart.
   ## Path to your own PEM-encoded certificate.
-  cert_file: ""
+  certFile: ""
   ## Path to your own PEM-encoded private key.
-  key_file: ""
+  keyFile: ""
   ## Path to the CA cert.
-  ca_file: ""
+  caFile: ""
 
   # Adds additional annotations to the admissionWebhook Service
   serviceAnnotations: {}

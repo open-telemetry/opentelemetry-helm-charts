@@ -83,7 +83,7 @@ spec:
         - name: {{ .name | lower}}
           configMap:
             {{- if .existingConfigMap }}
-            name: {{ .existingConfigMap }}
+            name: {{ tpl .existingConfigMap $ }}
             {{- else }}
             name: {{ include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
             {{- end }}
