@@ -14,7 +14,7 @@ containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     command:
       - /{{ .Values.command.name }}
-      {{- if or .Values.configMap.create .Values.configMap.mount }}
+      {{- if or .Values.configMap.create .Values.configMap.includeMount }}
       - --config=/conf/relay.yaml
       {{- end }}
       {{- range .Values.command.extraArgs }}
@@ -109,7 +109,7 @@ containers:
       {{- toYaml . | nindent 6 }}
     {{- end }}
     volumeMounts:
-      {{- if or .Values.configMap.create .Values.configMap.mount }}
+      {{- if or .Values.configMap.create .Values.configMap.includeMount }}
       - mountPath: /conf
         name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
       {{- end }}
@@ -145,7 +145,7 @@ initContainers:
 priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
 volumes:
-  {{- if or .Values.configMap.create .Values.configMap.mount }}
+  {{- if or .Values.configMap.create .Values.configMap.includeMount }}
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
     configMap:
       name: {{ include "opentelemetry-collector.fullname" . }}{{ .configmapSuffix }}
