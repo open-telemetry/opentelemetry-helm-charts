@@ -1,7 +1,20 @@
 mode: deployment
+global:
+  image: busybox:latest
 
 resources:
   limits:
     cpu: 100m
     memory: 200M
 
+extraContainers:
+  - name: test
+    command:
+      - cp
+    args:
+      - /bin/sleep
+      - /test/sleep
+    image: "{{ .Values.global.image }}"
+    volumeMounts:
+      - name: test
+        mountPath: /test
