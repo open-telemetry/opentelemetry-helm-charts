@@ -135,7 +135,6 @@ containers:
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
 {{- if .Values.extraContainers }}
-extraContainers:
   {{- tpl (toYaml .Values.extraContainers) . | nindent 2 }}
 {{- end }}
 {{- if .Values.initContainers }}
