@@ -19,7 +19,7 @@ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm
 To install the chart with the release name my-opentelemetry-collector, run the following command:
 
 ```console
-helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value>
+helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value> --set image.repository= "otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s"
 ```
 
 Where the `mode` value needs to be set to one of `daemonset`, `deployment` or `statefulset`.
@@ -87,7 +87,7 @@ The collector can be used to collect logs sent to standard output by Kubernetes 
 This feature is disabled by default. It has the following requirements:
 
 - It needs agent collector to be deployed.
-- It requires the [Filelog receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires the [Filelog receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
 To enable this feature, set the  `presets.logsCollection.enabled` property to `true`.
 Here is an example `values.yaml`:
@@ -147,7 +147,7 @@ The collector can be configured to add Kubernetes metadata, such as pod name and
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires the [Kubernetes Attributes processor](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires the [Kubernetes Attributes processor](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
 To enable this feature, set the  `presets.kubernetesAttributes.enabled` property to `true`.
 Here is an example `values.yaml`:
@@ -169,7 +169,7 @@ The collector can be configured to collect node, pod, and container metrics from
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires the [Kubeletstats receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires the [Kubeletstats receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
 To enable this feature, set the  `presets.kubeletMetrics.enabled` property to `true`.
 Here is an example `values.yaml`:
@@ -187,7 +187,7 @@ The collector can be configured to collects cluster-level metrics from the Kuber
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 - It requires statefulset or deployment mode with a single replica.
 
 To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
@@ -208,7 +208,7 @@ The collector can be configured to collect Kubernetes events.
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires [Kubernetes Objects receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires [Kubernetes Objects receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
 To enable this feature, set the  `presets.kubernetesEvents.enabled` property to `true`.
 Here is an example `values.yaml`:
@@ -227,7 +227,7 @@ The collector can be configured to collect host metrics for Kubernetes nodes.
 
 This feature is disabled by default. It has the following requirements:
 
-- It requires [Host Metrics receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver) to be included in the collector, such as [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) version of the collector image.
+- It requires [Host Metrics receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
 To enable this feature, set the  `presets.hostMetrics.enabled` property to `true`.
 Here is an example `values.yaml`:
