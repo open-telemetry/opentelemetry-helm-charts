@@ -512,18 +512,15 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-# Bridge cluster role configuration
-opAMPBridgeClusterRole:
-  # Whether the bridge cluster role is enabled or not
-  enabled: true
-
-  # Annotations for the bridge cluster role
-  annotations: {}
-
-  # Rules for the bridge cluster role
-  rules: []
-
-# OpAMP bridge configuration
+# OpAMP bridge configuration. The OpAMP Bridge is an OpenTelemetry component
+# that enables enhanced configuration and health monitoring for OpenTelemetry collectors
+# deployed in Kubernetes. The Bridge pulls collector CRDs from the Kubernetes cluster and
+# reports their configuration and status to a remote OpAMP Server. The Bridge will only pull
+# collectors labeled with either
+# * opentelemetry.io/opamp-reporting: true
+# * opentelemetry.io/opamp-managed: true
+# You can learn more about the Bridge's design here:
+# https://docs.google.com/document/d/1M8VLNe_sv1MIfu5bUR5OV_vrMBnAI7IJN-7-IAr37JY
 opAMPBridge:
   # Whether OpAMP bridge is enabled or not
   enabled: false
@@ -542,6 +539,8 @@ opAMPBridge:
   # Custom-Header: Custom-Value
 
   # Capabilities of OpAMP bridge
+  # You can learn more about OpAMP's capabilities here:
+  # https://github.com/open-telemetry/opamp-spec/blob/main/specification.md#agenttoservercapabilities
   capabilities:
     AcceptsOpAMPConnectionSettings: true
     AcceptsOtherConnectionSettings: true
@@ -574,9 +573,6 @@ opAMPBridge:
     requests:
       cpu: "250m"
       memory: "256Mi"
-
-  # Number of replicas for OpAMP bridge
-  replicas: 1
 
   # Security context for OpAMP bridge
   securityContext:
@@ -665,3 +661,16 @@ opAMPBridge:
   #   labelSelector:
   #     matchLabels:
   #       opamp: "true"
+
+  # Bridge cluster role configuration
+  # In order to function the bridge is given its default role to
+  # list and get pods and opentelemetry collectors
+  clusterRole:
+    # Whether the bridge cluster role is enabled or not
+    enabled: true
+
+    # Annotations for the bridge cluster role
+    annotations: {}
+
+    # Rules for the bridge cluster role
+    rules: []

@@ -88,7 +88,7 @@ Create the name of the bridge to create
 Create the name of the clusterRole to use for the opampbridge
 */}}
 {{- define "opentelemetry-opamp-bridge.clusterRoleName" -}}
-{{- default (printf "%s-bridge" .Release.Name) .Values.opAMPBridgeClusterRole.name }}
+{{- default (printf "%s-bridge" .Release.Name) .Values.opAMPBridge.clusterRole.name }}
 {{- end }}
 
 {{/*
