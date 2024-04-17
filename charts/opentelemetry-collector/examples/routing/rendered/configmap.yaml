@@ -15,13 +15,19 @@ metadata:
 data:
   relay: |
     exporters:
+      coralogix:
+        application_name: otel
+        domain: coralogix.com
       debug: {}
       logging: {}
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
-      batch: {}
+      batch:
+        send_batch_max_size: 2048
+        send_batch_size: 1024
+        timeout: 1s
       k8sattributes:
         extract:
           metadata:
@@ -49,6 +55,13 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      routing:
+        default_exporters:
+        - coralogix
+        table:
+        - exporters:
+          - debug
+          statement: route() where resource.attributes["team"] == "debug"
       transform/k8s_attributes:
         log_statements:
         - context: resource
@@ -125,10 +138,11 @@ data:
           exporters:
           - debug
           processors:
-          - resource
           - k8sattributes
+          - resource
           - transform/k8s_attributes
           - batch
+          - routing
           receivers:
           - otlp
           - jaeger

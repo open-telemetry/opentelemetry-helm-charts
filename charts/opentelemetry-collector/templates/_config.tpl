@@ -150,6 +150,19 @@ Build config file for deployment OpenTelemetry Collector
 {{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "batch" | uniq)  }}
 {{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "batch" | uniq)  }}
 {{- end }}
+{{- if and ($config.service.pipelines.logs) (has "routing" $config.service.pipelines.logs.processors) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (without $config.service.pipelines.logs.processors "routing" | uniq)  }}
+{{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "routing" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (has "routing" $config.service.pipelines.metrics.processors) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (without $config.service.pipelines.metrics.processors "routing" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "routing" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (has "routing" $config.service.pipelines.traces.processors) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "routing" | uniq)  }}
+{{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "routing" | uniq)  }}
+{{- end }}
+
 {{- $config | toYaml }}
 {{- end }}
 
@@ -645,7 +658,7 @@ processors:
           # Removing Prometheus receiver net.host.name + port as it's available in service.instance.id
           - delete_key(attributes, "net.host.name")
           - delete_key(attributes, "net.host.port")
-  
+
 {{- end }}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}

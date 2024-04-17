@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.82.1 / 2024-04-17
+- [Fix] When routing processor with batch is used make sure routing is last
+
 ### v0.82.0 / 2024-04-04
 - [Feat] Add metrics expiration configuration to the span metrics preset
 - [Feat] Bump collector version to `0.97.0`
