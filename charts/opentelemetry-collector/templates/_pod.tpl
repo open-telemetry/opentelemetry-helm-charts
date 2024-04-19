@@ -12,6 +12,7 @@ hostAliases:
 {{- end }}
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
+    {{- if .Values.command.name }}
     command:
       - /{{ .Values.command.name }}
       {{- if or .Values.configMap.create .Values.configMap.existingName }}

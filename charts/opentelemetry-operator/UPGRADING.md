@@ -1,6 +1,9 @@
 # Upgrade guidelines
 
-## <0.54.0 to 0.54.0
+## <0.54.0 to 0.55.2
+
+> **_NOTE:_**  Versions 0.54.0 to 0.55.1 of the opentelemetry-operator helm chart should be avoided if providing user-managed certificates as file paths.
+
 [Changes to functionality, and variable names used for providing user-managed webhook certificates](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1121)
 
 Below variables have been renamed to be consistent with the chart's naming format. v0.54.0 also has a bug fix which makes the chart now read the contents of the file paths provided by these variables, instead of just using the value of the variables.
