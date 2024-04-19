@@ -15,6 +15,8 @@ containers:
     {{- if .Values.command.name }}
     command:
       - /{{ .Values.command.name }}
+    {{- end }}
+    args:
       {{- if or .Values.configMap.create .Values.configMap.existingName }}
       - --config=/conf/relay.yaml
       {{- end }}
@@ -149,7 +151,7 @@ volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
     configMap:
-      name: {{ .Values.configMap.existingName | default (printf "%s%s" (include "opentelemetry-collector.fullname" .) .configmapSuffix) }}
+      name: {{ .Values.configMap.existingName | default (printf "%s%s" (include "opentelemetry-collector.fullname" .) (.configmapSuffix)) }}
       items:
         - key: relay
           path: relay.yaml

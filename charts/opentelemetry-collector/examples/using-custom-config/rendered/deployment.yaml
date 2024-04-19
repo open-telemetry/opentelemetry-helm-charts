@@ -1,7 +1,7 @@
 ---
-# Source: opentelemetry-collector/templates/statefulset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   namespace: default
@@ -13,25 +13,24 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     
 spec:
-  serviceName: example-opentelemetry-collector
-  podManagementPolicy: Parallel
-  replicas: 2
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: statefulset-collector
-  updateStrategy:
+      component: standalone-collector
+  strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 5bcb331cf53c3e83f7989cb7c2007890575dc612084a610de19b3da8c25dfa1c
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: statefulset-collector
+        component: standalone-collector
         
     spec:
       
@@ -40,8 +39,6 @@ spec:
         {}
       containers:
         - name: opentelemetry-collector
-          command:
-            - /otelcol-k8s
           args:
             - --config=/conf/relay.yaml
           securityContext:
@@ -74,8 +71,6 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: GOMEMLIMIT
-              value: "152MiB"
           livenessProbe:
             httpGet:
               path: /
@@ -84,17 +79,13 @@ spec:
             httpGet:
               path: /
               port: 13133
-          resources:
-            limits:
-              cpu: 100m
-              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-statefulset
+            name: user-config
             items:
               - key: relay
                 path: relay.yaml
