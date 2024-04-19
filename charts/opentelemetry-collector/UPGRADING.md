@@ -16,9 +16,9 @@ created but the Memory Ballast Extension will still be removed.
 Depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
 the use of `GOMEMLIMIT` may completely replace the Memory Ballast Extension in the future.
 
-## 0.87.2 to 0.88.0
+## 0.88.0 to 0.89.0
 
-As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository and command name. If you are already explicitly setting an image repository and command name this breaking change does not affect you.
+As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.
 
 If you are using a OpenTelemetry Community distribution of the Collector we recommend you use `otel/opentelemetry-collector-k8s`, but carefully review the [components included in this distribution](https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/distributions/otelcol-k8s/manifest.yaml) to make sure it includes all the components you use in your configuration. In the future this distribution will become the default image used for the chart.
 
@@ -27,9 +27,6 @@ You can use the OpenTelemetry Collector Kubernetes Distro by adding these lines 
 ```yaml
 image:
   repository: "otel/opentelemetry-collector-k8s"
-
-command:
-  name: "otelcol-k8s"
 ```
 
 If you want to stick with using the Contrib distribution, add these lines to your values.yaml:
@@ -37,9 +34,6 @@ If you want to stick with using the Contrib distribution, add these lines to you
 ```yaml
 image:
   repository: "otel/opentelemetry-collector-contrib"
-
-command:
-  name: "otelcol-contrib"
 ```
 
 For more details see [#1135](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1135).
