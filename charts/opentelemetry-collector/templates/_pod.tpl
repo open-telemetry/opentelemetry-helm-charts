@@ -151,7 +151,7 @@ volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
     configMap:
-      name: {{ .Values.configMap.existingName | default (printf "%s%s" (include "opentelemetry-collector.fullname" .) (.configmapSuffix)) }}
+      name: {{ include "opentelemetry-collector.configName" . }}
       items:
         - key: relay
           path: relay.yaml
