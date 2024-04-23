@@ -1,0 +1,127 @@
+{{- if .Values.opAMPBridge.enabled }}
+{{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "opAMPBridge" $.Values.opAMPBridge "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpAMPBridge
+metadata:
+  name: {{ include "opentelemetry-opamp-bridge.fullname" $merged }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
+    {{- include "opentelemetry-kube-stack.renderkv" .Values.opAMPBridge.labels | nindent 4 }}
+    {{- with .Values.opAMPBridge.annotations }}
+    annotations:
+      {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
+    {{- end }}
+spec:
+  endpoint: {{ required "opamp endpoint required" $.Values.opAMPBridge.endpoint }}
+  {{- with $.Values.opAMPBridge.headers }}
+  headers:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $.Values.opAMPBridge.capabilities }}
+  capabilities:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $.Values.opAMPBridge.componentsAllowed }}
+  componentsAllowed:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $.Values.opAMPBridge.nodeSelector }}
+  nodeSelector:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  replicas: 1
+  {{- if $.Values.opAMPBridge.serviceAccount }}
+  serviceAccount: {{ $.Values.opAMPBridge.serviceAccount }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.image.digest }}
+  image: "{{ $.Values.opAMPBridge.image.repository }}@{{ $.Values.opAMPBridge.image.digest }}"
+  {{- else }}
+  image: "{{ $.Values.opAMPBridge.image.repository }}:{{ $.Values.opAMPBridge.image.tag | default $.Chart.AppVersion }}"
+  {{- end }}
+  {{- if $.Values.opAMPBridge.upgradeStrategy }}
+  upgradeStrategy: {{ $.Values.opAMPBridge.upgradeStrategy }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.imagePullPolicy }}
+  imagePullPolicy: {{ $.Values.opAMPBridge.imagePullPolicy }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.hostNetwork }}
+  hostNetwork: {{ $.Values.opAMPBridge.hostNetwork }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.priorityClassName }}
+  priorityClassName: {{ $.Values.opAMPBridge.priorityClassName }}
+  {{- end }}
+  {{- with $.Values.opAMPBridge.securityContext }}
+  securityContext:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $.Values.opAMPBridge.podAnnotations }}
+  podAnnotations:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $.Values.opAMPBridge.resources }}
+  resources:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+ {{- with $.Values.opAMPBridge.affinity }}
+  affinity:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.tolerations }}
+  tolerations:
+  {{- with $.Values.opAMPBridge.tolerations }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.volumes }}
+  volumes:
+  {{- with $.Values.opAMPBridge.volumes }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.topologySpreadConstraints }}
+  topologySpreadConstraints:
+  {{- with $.Values.opAMPBridge.topologySpreadConstraints }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.volumeMounts }}
+  volumeMounts:
+  {{- with $.Values.opAMPBridge.volumeMounts }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $.Values.opAMPBridge.ports }}
+  ports:
+  {{- with $.Values.opAMPBridge.ports }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name={{ $.Values.clusterName }}"
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.opAMPBridge.env) | nindent 4 }}
+  {{- with $.Values.opAMPBridge.envFrom }}
+  envFrom:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
