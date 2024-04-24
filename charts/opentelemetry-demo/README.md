@@ -48,7 +48,19 @@ oc create sa opentelemetry-demo
 oc adm policy add-scc-to-user anyuid -z opentelemetry-demo
 ```
 
-4. Install the chart with the following command:
+4. Add `view` role to the service account to allow Prometheus seeing the services pods:
+
+```console
+oc adm policy add-role-to-user view -z opentelemetry-demo
+```
+
+5. Add `privileged` SCC to the service account to allow Grafana to run:
+
+```console
+oc adm policy add-scc-to-user privileged -z opentelemetry-demo
+```
+
+6. Install the chart with the following command:
 
 ```console
 helm install my-otel-demo charts/opentelemetry-demo \

@@ -12,8 +12,11 @@ hostAliases:
 {{- end }}
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
+    {{- if .Values.command.name }}
     command:
       - /{{ .Values.command.name }}
+    {{- end }}
+    args:
       {{- if .Values.configMap.create }}
       - --config=/conf/relay.yaml
       {{- end }}
@@ -134,8 +137,8 @@ containers:
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
-{{- with .Values.extraContainers }}
-{{- toYaml . | nindent 2 }}
+{{- if .Values.extraContainers }}
+  {{- tpl (toYaml .Values.extraContainers) . | nindent 2 }}
 {{- end }}
 {{- if .Values.initContainers }}
 initContainers:

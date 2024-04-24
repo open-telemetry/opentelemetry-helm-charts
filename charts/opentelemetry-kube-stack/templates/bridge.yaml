@@ -98,7 +98,6 @@ spec:
   {{- end }}
   {{- end }}
   env:
-  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.opAMPBridge.env) | nindent 4 }}
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
@@ -120,6 +119,7 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name={{ $.Values.clusterName }}"
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.opAMPBridge.env) | nindent 4 }}
   {{- with $.Values.opAMPBridge.envFrom }}
   envFrom:
   {{- toYaml . | nindent 4 }}
