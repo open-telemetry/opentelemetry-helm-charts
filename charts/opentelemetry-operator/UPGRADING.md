@@ -1,5 +1,30 @@
 # Upgrade guidelines
 
+## 0.55.3 to 0.56.0
+
+> [!WARNING]  
+> As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set a collector image repository. If you are already explicitly setting a collector image repository this breaking change does not affect you.
+
+If you are using a OpenTelemetry Community distribution of the Collector we recommend you use `otel/opentelemetry-collector-k8s`, but carefully review the [components included in this distribution](https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/distributions/otelcol-k8s/manifest.yaml) to make sure it includes all the components you use in your configuration. In the future this distribution will become the default image used for the chart.
+
+You can use the OpenTelemetry Collector Kubernetes Distro by adding these lines to your values.yaml:
+
+```yaml
+manager:
+  collectorImage:
+    repository: "otel/opentelemetry-collector-k8s"
+```
+
+If you want to stick with using the Contrib distribution, add these lines to your values.yaml:
+
+```yaml
+manager:
+  collectorImage:
+    repository: "otel/opentelemetry-collector-contrib"
+```
+
+For more details see [#1153](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1153).
+
 ## <0.54.0 to 0.55.2
 
 > **_NOTE:_**  Versions 0.54.0 to 0.55.1 of the opentelemetry-operator helm chart should be avoided if providing user-managed certificates as file paths.
