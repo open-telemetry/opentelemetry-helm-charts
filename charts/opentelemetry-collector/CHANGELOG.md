@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.83.0 / 2024-04-29
+
+- [Feat] Bump collector version to `0.99.0`
+
 ### v0.82.1 / 2024-04-17
 - [Fix] When routing processor with batch is used make sure routing is last
 
