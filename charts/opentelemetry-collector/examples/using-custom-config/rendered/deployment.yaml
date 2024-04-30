@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/daemonset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.90.1
@@ -13,22 +13,24 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     
 spec:
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: agent-collector
-  updateStrategy:
+      component: standalone-collector
+  strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: ebae76c494b26902e0a8fdb99a5c035830b1bd64117c6077c4f15c71d45fc8e9
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: agent-collector
+        component: standalone-collector
         
     spec:
       
@@ -37,8 +39,6 @@ spec:
         {}
       containers:
         - name: opentelemetry-collector
-          command:
-            - /otelcol-k8s
           args:
             - --config=/conf/relay.yaml
           securityContext:
@@ -50,27 +50,21 @@ spec:
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
-              hostPort: 6831
             - name: jaeger-grpc
               containerPort: 14250
               protocol: TCP
-              hostPort: 14250
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
-              hostPort: 14268
             - name: otlp
               containerPort: 4317
               protocol: TCP
-              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP
-              hostPort: 4318
             - name: zipkin
               containerPort: 9411
               protocol: TCP
-              hostPort: 9411
           env:
             - name: MY_POD_IP
               valueFrom:
@@ -91,7 +85,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-agent
+            name: user-config
             items:
               - key: relay
                 path: relay.yaml

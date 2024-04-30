@@ -214,3 +214,15 @@ The capitalization is important for StatefulSet.
 {{- print "StatefulSet" -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Get ConfigMap name if existingName is defined, otherwise use default name for generated config.
+*/}}
+{{- define "opentelemetry-collector.configName" -}}
+  {{- if .Values.configMap.existingName -}}
+    {{- .Values.configMap.existingName }}
+  {{- else }}
+    {{- printf "%s%s" (include "opentelemetry-collector.fullname" .) (.configmapSuffix) }}
+  {{- end -}}
+{{- end }}
+
