@@ -1,7 +1,7 @@
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $collector.enabled -}}
 {{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
-{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
 ---
 apiVersion: opentelemetry.io/v1alpha1
@@ -21,7 +21,7 @@ spec:
   managementState: {{ $collector.managementState }}
   mode: {{ $collector.mode }}
   config: |
-    {{- include "opentelemetry-collector.config" $merged }}
+    {{- include "opentelemetry-kube-stack.config" $merged }}
   replicas: {{ $collector.replicas }}
   {{- if $collector.serviceAccount }}
   serviceAccount: {{ $collector.serviceAccount }}
@@ -103,8 +103,26 @@ spec:
   deploymentUpdateStrategy:
   {{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with $collector.volumeMounts }}
   volumeMounts:
+  {{- if $collector.presets.logsCollection.enabled }}
+  - name: varlogpods
+    mountPath: /var/log/pods
+    readOnly: true
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  {{- if $collector.presets.logsCollection.storeCheckpoints}}
+  - name: varlibotelcol
+    mountPath: /var/lib/otelcol
+  {{- end }}
+  {{- end }}
+  {{- if $collector.presets.hostMetrics.enabled }}
+  - name: hostfs
+    mountPath: /hostfs
+    readOnly: true
+    mountPropagation: HostToContainer
+  {{- end }}
+  {{- with $collector.volumeMounts }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $collector.ports }}
@@ -152,8 +170,27 @@ spec:
   tolerations:
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $collector.volumes }}
   volumes:
+  {{- if $collector.presets.logsCollection.enabled }}
+  - name: varlogpods
+    hostPath:
+      path: /var/log/pods
+  {{- if $collector.presets.logsCollection.storeCheckpoints}}
+  - name: varlibotelcol
+    hostPath:
+      path: /var/lib/otelcol
+      type: DirectoryOrCreate
+  {{- end }}
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  {{- end }}
+  {{- if $collector.presets.hostMetrics.enabled }}
+  - name: hostfs
+    hostPath:
+      path: /
+  {{- end }}
+  {{- with $collector.volumes }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $collector.initContainers }}

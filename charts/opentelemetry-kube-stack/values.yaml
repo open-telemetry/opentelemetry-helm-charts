@@ -332,6 +332,109 @@ defaultCRConfig:
   # - name: config
   #   mountPath: /etc/config
 
+  # Handles basic configuration of components that
+  # also require k8s modifications to work correctly.
+  # .Values.config can be used to modify/add to a preset
+  # component configuration, but CANNOT be used to remove
+  # preset configuration. If you require removal of any
+  # sections of a preset configuration, you cannot use
+  # the preset. Instead, configure the component manually in
+  # .Values.config and use the other fields supplied in the
+  # values.yaml to configure k8s as necessary.
+  presets:
+    # Configures the collector to collect logs.
+    # Adds the filelog receiver to the logs pipeline
+    # and adds the necessary volumes and volume mounts.
+    # Best used with mode = daemonset.
+    # See https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver for details on the receiver.
+    logsCollection:
+      enabled: true
+      includeCollectorLogs: false
+      # Enabling this writes checkpoints in /var/lib/otelcol/ host directory.
+      # Note this changes collector's user to root, so that it can write to host directory.
+      storeCheckpoints: false
+      # The maximum bytes size of the recombined field.
+      # Once the size exceeds the limit, all received entries of the source will be combined and flushed.
+      maxRecombineLogSize: 102400
+    # Configures the collector to collect host metrics.
+    # Adds the hostmetrics receiver to the metrics pipeline
+    # and adds the necessary volumes and volume mounts.
+    # Best used with mode = daemonset.
+    # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
+    hostMetrics:
+      enabled: true
+    # Configures the Kubernetes Processor to add Kubernetes metadata.
+    # Adds the k8sattributes processor to all the pipelines
+    # and adds the necessary rules to ClusteRole.
+    # Best used with mode = daemonset.
+    # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
+    kubernetesAttributes:
+      enabled: true
+      # When enabled the processor will extra all labels for an associated pod and add them as resource attributes.
+      # The label's exact name will be the key.
+      extractAllPodLabels: false
+      # When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
+      # The annotation's exact name will be the key.
+      extractAllPodAnnotations: false
+    # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
+    # Adds the kubeletstats receiver to the metrics pipeline
+    # and adds the necessary rules to ClusteRole.
+    # Best used with mode = daemonset.
+    # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
+    kubeletMetrics:
+      enabled: true
+    # Configures the collector to collect kubernetes events.
+    # Adds the k8sobject receiver to the logs pipeline
+    # and collects kubernetes events by default.
+    # Best used with mode = deployment or statefulset.
+    # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
+    kubernetesEvents:
+      enabled: true
+    # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
+    # Adds the k8s_cluster receiver to the metrics pipeline
+    # and adds the necessary rules to ClusteRole.
+    # Best used with mode = deployment or statefulset.
+    # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
+    clusterMetrics:
+      enabled: true
+    # Configures the batch processor for telemetry batching prior to sending
+    batchProcessor:
+      enabled: true
+      batchSize: 1000
+      timeout: 1s
+      maxSize: 1500
+    # Configures an OTLP exporter to send all telemetry to
+    otlpExporter:
+      enabled: true
+      endpoint: ingest.example.com
+      sending_queue:
+        enabled: true
+        num_consumers: 4
+        queue_size: 100
+
+      # Retry settings are optional.
+      #
+      # Note that while retries are attempted, this component will
+      # begin to drop arriving data if the queue is not large
+      # enough.
+      retry_on_failure:
+        # We recommend disabling retries, since while the export is
+        # blocked it is likely that arriving spans will drop, and
+        # Otherwise, collectors will need substantial additional
+        # memory to survive transient failures.  Nevertheless, we
+        # recommend a limited retry policy to gracefully occasional
+        # failures, paired with a modest queue size.
+        #
+        # Note there is a persistent storage option inherited from a
+        # common collector component.  When persistent storage is
+        # configured, the default retry configuration is sensible.
+        #
+        # For more details on retry and queue settings, please refer to
+        # https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+        enabled: true
+        max_elapsed_time: 60s
+      timeout: 30s
+
 # Collectors is a map of collector configurations of the form:
 # collectors:
 #   collectorName:
@@ -341,7 +444,73 @@ defaultCRConfig:
 # This configuration allows for multiple layers of overrides for different clusters. For example, you could
 # create a collector called test with an OTLP exporter in your values.yaml, and then override the endpoint's
 # destination in a file called values-staging.yaml.
-collectors: {}
+collectors:
+  cluster:
+    name: cluster-stats
+    replicas: 1
+    mode: deployment
+    enabled: true
+    scrape_configs_file: test.yaml
+    resources:
+      limits:
+        cpu: 100m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 500Mi
+    presets:
+      kubernetesAttributes:
+        enabled: true
+    config:
+      receivers: {}
+      processors:
+        resourcedetection/env:
+          detectors: [env]
+          timeout: 2s
+          override: false
+        batch:
+          send_batch_size: 1000
+          timeout: 1s
+          send_batch_max_size: 1500
+
+      exporters:
+        debug: {}
+        otlp:
+          endpoint: ingest.example.com
+          sending_queue:
+            enabled: true
+            num_consumers: 4
+            queue_size: 100
+
+          # Retry settings are optional.
+          #
+          # Note that while retries are attempted, this component will
+          # begin to drop arriving data if the queue is not large
+          # enough.
+          retry_on_failure:
+            # We recommend disabling retries, since while the export is
+            # blocked it is likely that arriving spans will drop, and
+            # Otherwise, collectors will need substantial additional
+            # memory to survive transient failures.  Nevertheless, we
+            # recommend a limited retry policy to gracefully occasional
+            # failures, paired with a modest queue size.
+            #
+            # Note there is a persistent storage option inherited from a
+            # common collector component.  When persistent storage is
+            # configured, the default retry configuration is sensible.
+            #
+            # For more details on retry and queue settings, please refer to
+            # https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+            enabled: true
+            max_elapsed_time: 60s
+          timeout: 30s
+
+      service:
+        pipelines:
+          metrics:
+            receivers: [k8s_cluster]
+            processors: [resourcedetection/env, k8sattributes, batch]
+            exporters: [otlp, debug]
 
 # Cluster role configuration
 clusterRole:
