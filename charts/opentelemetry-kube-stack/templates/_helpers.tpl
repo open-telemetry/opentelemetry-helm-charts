@@ -147,3 +147,77 @@ Create the name of the clusterRoleBinding to use
 {{- define "opentelemetry-kube-stack.clusterRoleBindingName" -}}
 {{- default (include "opentelemetry-kube-stack.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
+
+{{/*
+Optionally include the RBAC for the k8sCluster receiver
+*/}}
+{{- define "opentelemetry-kube-stack.k8scluster.rules" -}}
+{{- if $.Values.clusterRole.rules }}
+{{ toYaml $.Values.clusterRole.rules }}
+{{- end }}
+{{- $should_create := false }}
+{{ range $_, $collector := $.Values.collectors -}}
+{{- $should_create = (any $should_create (dig "config" "receivers" "k8s_cluster" false $collector)) }}
+{{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
+{{- $should_create = true }}
+{{- end }}
+{{- end }}
+{{- if $should_create }}
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  - namespaces/status
+  - nodes
+  - nodes/spec
+  - pods
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - resourcequotas
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+    - autoscaling
+  resources:
+    - horizontalpodautoscalers
+  verbs:
+    - get
+    - list
+    - watch
+{{- end }}
+{{- end }}
