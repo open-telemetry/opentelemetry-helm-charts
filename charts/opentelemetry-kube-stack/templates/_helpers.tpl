@@ -58,15 +58,29 @@ Render a deduped list of environment variables and 'extraEnvs'
 */}}
 {{- define "opentelemetry-kube-stack.renderenvs" -}}
 {{- $envMap := dict }}
+{{- $valueFromMap := dict }}
 {{- range $item := .extraEnvs }}
+{{- if $item.value }}
 {{- $_ := set $envMap $item.name $item.value }}
+{{- else }}
+{{- $_ := set $valueFromMap $item.name $item.valueFrom }}
+{{- end }}
 {{- end }}
 {{- range $item := .env }}
+{{- if $item.value }}
 {{- $_ := set $envMap $item.name $item.value }}
+{{- else }}
+{{- $_ := set $valueFromMap $item.name $item.valueFrom }}
+{{- end }}
 {{- end }}
 {{- range $key, $value := $envMap }}
 - name: {{ $key }}
   value: {{ $value }}
+{{- end }}
+{{- range $key, $value := $valueFromMap }}
+- name: {{ $key }}
+  valueFrom:
+    {{- $value | toYaml | nindent 4 }}
 {{- end }}
 {{- end }}
 

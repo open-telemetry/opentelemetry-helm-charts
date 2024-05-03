@@ -455,6 +455,10 @@ exporters:
   otlp:
     endpoint: {{ .presets.otlpExporter.endpoint }}
     timeout:  {{ .presets.otlpExporter.timeout }}
+    {{- if .presets.otlpExporter.headers }}
+    headers:
+      {{- .presets.otlpExporter.headers | toYaml | nindent 6 }}
+    {{- end }}
     {{- if .presets.otlpExporter.sending_queue.enabled }}
     sending_queue:
       {{- .presets.otlpExporter.sending_queue | toYaml | nindent 6 }}
