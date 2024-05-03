@@ -7,10 +7,11 @@ metadata:
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
     {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | nindent 4 }}
-  {{- with .Values.instrumentation.annotations }}
   annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    {{- with .Values.instrumentation.annotations }}
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   exporter:
     endpoint: {{ .Values.instrumentation.exporter.endpoint }}

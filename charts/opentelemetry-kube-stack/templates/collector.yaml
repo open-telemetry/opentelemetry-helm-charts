@@ -13,10 +13,11 @@ metadata:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
     {{- include "opentelemetry-kube-stack.renderkv" $collector.labels | nindent 4 }}
     {{- include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values | nindent 4 }}
-  {{- with $collector.annotations }}
   annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    {{- with $collector.annotations }}
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   managementState: {{ $collector.managementState }}
   mode: {{ $collector.mode }}
