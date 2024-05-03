@@ -2736,6 +2736,439 @@
       },
       "additionalProperties": false,
       "type": "object"
+    },
+    "InstrumentationSpec": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "exporter": {
+          "$ref": "#/$defs/Exporter"
+        },
+        "resource": {
+          "$ref": "#/$defs/Resource"
+        },
+        "propagators": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sampler": {
+          "$ref": "#/$defs/Sampler"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "java": {
+          "$ref": "#/$defs/Java"
+        },
+        "nodejs": {
+          "$ref": "#/$defs/NodeJS"
+        },
+        "python": {
+          "$ref": "#/$defs/Python"
+        },
+        "dotnet": {
+          "$ref": "#/$defs/DotNet"
+        },
+        "go": {
+          "$ref": "#/$defs/Go"
+        },
+        "apacheHttpd": {
+          "$ref": "#/$defs/ApacheHttpd"
+        },
+        "nginx": {
+          "$ref": "#/$defs/Nginx"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Java": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Nginx": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "attrs": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "configFile": {
+          "type": "string"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NodeJS": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Python": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Resource": {
+      "properties": {
+        "resourceAttributes": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "addK8sUIDAttributes": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Sampler": {
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "argument": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ApacheHttpd": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "attrs": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "version": {
+          "type": "string"
+        },
+        "configPath": {
+          "type": "string"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DotNet": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Exporter": {
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Go": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "volumeLimitSize": {
+          "type": "string"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "resourceRequirements": {
+          "$ref": "#/$defs/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "OpAMPBridgeSpec": {
+      "properties": {
+        "clusterRole": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "annotations": {
+              "type": "object"
+            },
+            "name": {
+              "type": "string"
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": ["enabled"]
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "addReportingLabel": {
+          "type": "boolean"
+        },
+        "addManagedLabel": {
+          "type": "boolean"
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "headers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "capabilities": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "type": "object"
+        },
+        "componentsAllowed": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceRequirements"
+        },
+        "nodeSelector": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "securityContext": {
+          "$ref": "#/$defs/SecurityContext"
+        },
+        "podSecurityContext": {
+          "$ref": "#/$defs/PodSecurityContext"
+        },
+        "podAnnotations": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "serviceAccount": {
+          "type": "string"
+        },
+        "image": {
+          "description": "Image use in both standalone and agent configs",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "registry": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": ["IfNotPresent", "Always", "Never"]
+            }
+          }
+        },
+        "upgradeStrategy": {
+          "type": "string"
+        },
+        "volumeMounts": {
+          "items": {
+            "$ref": "#/$defs/VolumeMount"
+          },
+          "type": "array"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/$defs/ServicePort"
+          },
+          "type": "array"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/$defs/EnvVar"
+          },
+          "type": "array"
+        },
+        "envFrom": {
+          "items": {
+            "$ref": "#/$defs/EnvFromSource"
+          },
+          "type": "array"
+        },
+        "tolerations": {
+          "items": {
+            "$ref": "#/$defs/Toleration"
+          },
+          "type": "array"
+        },
+        "volumes": {
+          "items": {
+            "$ref": "#/$defs/Volume"
+          },
+          "type": "array"
+        },
+        "hostNetwork": {
+          "type": "boolean"
+        },
+        "priorityClassName": {
+          "type": "string"
+        },
+        "affinity": {
+          "$ref": "#/$defs/Affinity"
+        },
+        "topologySpreadConstraints": {
+          "items": {
+            "$ref": "#/$defs/TopologySpreadConstraint"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["endpoint", "capabilities", "upgradeStrategy"]
     }
   },
   "properties": {
@@ -2781,11 +3214,20 @@
       },
       "required": ["enabled"]
     },
+    "opAMPBridge": {
+      "$ref": "#/$defs/OpAMPBridgeSpec"
+    },
+    "instrumentation": {
+      "$ref": "#/$defs/InstrumentationSpec"
+    },
     "extraEnvs": {
       "type": "array",
       "items": {
         "type": "object"
       }
+    },
+    "opentelemetry-operator": {
+      "type": "object"
     }
   }
 }

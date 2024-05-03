@@ -6,7 +6,7 @@ metadata:
   name: example-flagd-config
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-demo-0.30.4
+    helm.sh/chart: opentelemetry-demo-0.30.5
     
     opentelemetry.io/name: example
     app.kubernetes.io/instance: example
@@ -47,6 +47,15 @@ data:
           },
           "defaultVariant": "off"
         },
+        "adServiceHighCpu": {
+          "description": "Triggers high cpu load in the ad service",
+          "state": "ENABLED",
+          "variants": {
+              "on": true,
+              "off": false
+            },
+            "defaultVariant": "off"
+        },
         "adServiceFailure": {
           "description": "Fail ad service",
           "state": "ENABLED",
@@ -70,6 +79,15 @@ data:
               ]
             ]
           }
+        },
+        "kafakQueueProblems": {
+          "description": "Overloads Kafka queue while simultaneously introducing a consumer side delay leading to a lag spike",
+          "state": "ENABLED",
+          "variants": {
+            "on": 100,
+            "off": 0
+          },
+          "defaultVariant": "off"
         },
         "cartServiceFailure": {
           "description": "Fail cart service",
@@ -95,6 +113,15 @@ data:
           "variants": {
             "on": true,
             "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "loadgeneratorFloodHomepage": {
+          "description": "Flood the frontend with a large amount of requests.",
+          "state": "ENABLED",
+          "variants": {
+            "on": 100,
+            "off": 0
           },
           "defaultVariant": "off"
         }

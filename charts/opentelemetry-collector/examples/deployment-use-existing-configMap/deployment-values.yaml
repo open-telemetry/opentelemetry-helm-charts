@@ -8,8 +8,11 @@ resources:
 configMap:
   create: false
 
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+
 command:
-  name: otelcol-contrib
+  name: "otelcol-k8s"
   extraArgs: ["--config=/conf/config.yaml"]
 
 extraVolumes:
@@ -23,4 +26,3 @@ extraVolumes:
 extraVolumeMounts:
   - name: custom-otelcol-configmap
     mountPath: /conf/config.yaml
-

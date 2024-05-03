@@ -3,7 +3,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "opentelemetry-collector.clusterRoleName" . }}
+  name: {{ include "opentelemetry-kube-stack.clusterRoleName" . }}
 rules:
 - apiGroups: [""]
   resources:
@@ -112,4 +112,44 @@ rules:
     - list
     - watch
 {{- end }}
+{{- end }}
+{{- if and $.Values.opAMPBridge.enabled $.Values.opAMPBridge.clusterRole.enabled }}
+{{- $merged := (dict "Chart" $.Chart "clusterRole" $.Values.clusterRole "opAMPBridge" $.Values.opAMPBridge "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "opentelemetry-opamp-bridge.clusterRoleName" . }}
+rules:
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opentelemetrycollectors
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - 'list'
+      - 'get'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "opentelemetry-opamp-bridge.fullname" $merged }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "{{ include "opentelemetry-opamp-bridge.clusterRoleName" . }}"
+subjects:
+  - kind: ServiceAccount
+    # quirk of the Operator
+    {{- if $.Values.opAMPBridge.serviceAccount }}
+    name: "{{ $.Values.opAMPBridge.serviceAccount }}"
+    {{- else }}
+    name: "{{ (include "opentelemetry-opamp-bridge.fullname" $merged) }}-opamp-bridge"
+    {{- end }}
+    namespace: "{{ $.Release.Namespace }}"
 {{- end }}

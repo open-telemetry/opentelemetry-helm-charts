@@ -293,13 +293,17 @@ components:
     useDefault:
       env: true
     env:
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
     resources:
       limits:
-        memory: 200Mi
+        memory: 300Mi
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
@@ -435,6 +439,10 @@ components:
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
     resources:
       limits:
         memory: 1Gi
@@ -548,7 +556,7 @@ components:
     enabled: true
     imageOverride:
       repository: "ghcr.io/open-feature/flagd"
-      tag: "v0.9.0"
+      tag: "v0.10.1"
     useDefault:
       env: true
     replicas: 1
@@ -556,7 +564,7 @@ components:
       port: 8013
     resources:
       limits:
-        memory: 20Mi
+        memory: 50Mi
     command:
       - "/flagd-build"
       - "start"

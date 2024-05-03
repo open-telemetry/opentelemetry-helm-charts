@@ -117,9 +117,9 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- $caCertEnc = b64enc $ca.Cert }}
 {{- end }}
 {{- else }}
-{{- $certCrtEnc = b64enc .Values.admissionWebhooks.cert_file }}
-{{- $certKeyEnc = b64enc .Values.admissionWebhooks.key_file }}
-{{- $caCertEnc = b64enc .Values.admissionWebhooks.ca_file }}
+{{- $certCrtEnc = .Files.Get .Values.admissionWebhooks.certFile | b64enc }}
+{{- $certKeyEnc = .Files.Get .Values.admissionWebhooks.keyFile | b64enc }}
+{{- $caCertEnc = .Files.Get .Values.admissionWebhooks.caFile | b64enc }}
 {{- end }}
 {{- $result := dict "crt" $certCrtEnc "key" $certKeyEnc "ca" $caCertEnc }}
 {{- $result | toYaml }}

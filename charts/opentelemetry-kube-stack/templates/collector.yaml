@@ -2,7 +2,7 @@
 {{- if $collector.enabled -}}
 {{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
 {{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
-{{- $fullname := (include "opentelemetry-collector.fullname" $merged) }}
+{{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
 ---
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
@@ -11,16 +11,11 @@ metadata:
   namespace: {{ include "opentelemetry-kube-stack.namespace" $ }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- with $collector.labels }}
-    {{- range $key, $value := . }}
-    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
-    {{- end }}
-    {{- end }}
+    {{- include "opentelemetry-kube-stack.renderkv" $collector.labels | nindent 4 }}
+    {{- include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values }}
   {{- with $collector.annotations }}
   annotations:
-    {{- range $key, $value := . }}
-    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
-    {{- end }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
   {{- end }}
 spec:
   managementState: {{ $collector.managementState }}
@@ -117,9 +112,6 @@ spec:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   env:
-  {{- with $.Values.extraEnvs }}
-  {{- toYaml . | nindent 2 }}
-  {{- end }}
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
@@ -147,9 +139,7 @@ spec:
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name={{ $.Values.clusterName }}"
   {{- end }}
-  {{- with $collector.env }}
-  {{- toYaml . | nindent 2 }}
-  {{- end }}
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" $collector.env) | nindent 4 }}
   {{- with $collector.envFrom }}
   envFrom:
   {{- toYaml . | nindent 4 }}
