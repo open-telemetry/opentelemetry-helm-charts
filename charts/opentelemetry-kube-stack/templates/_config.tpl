@@ -64,13 +64,13 @@ the config is written as YAML.
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesAttributesConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sattributes" $config.service.pipelines.logs.processors)) }}
+{{- if (has "k8sattributes" (dig "service" "pipelines" "logs" "processors" list $config)) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "k8sattributes" $config.service.pipelines.metrics.processors)) }}
+{{- if (has "k8sattributes" (dig "service" "pipelines" "metrics" "processors" $config) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "k8sattributes" $config.service.pipelines.traces.processors)) }}
+{{- if (has "k8sattributes" (dig "service" "pipelines" "traces" "processors" $config) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -157,7 +157,7 @@ processors:
 
 {{- define "opentelemetry-kube-stack.collector.applyHostMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.hostMetricsConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "hostmetrics" $config.service.pipelines.metrics.receivers)) }}
+{{- if (has "hostmetrics" (dig "service" "pipelines" "metrics" "receivers" $config) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -224,7 +224,7 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.clusterMetricsConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "k8s_cluster" $config.service.pipelines.metrics.receivers)) }}
+{{- if (has "k8s_cluster" (dig "service" "pipelines" "metrics" "receivers" $config) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "k8s_cluster" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -241,7 +241,7 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyKubeletMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubeletMetricsConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "kubeletstats" $config.service.pipelines.metrics.receivers)) }}
+{{- if (has "kubeletstats" (dig "service" "pipelines" "metrics" "receivers" $config) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -277,7 +277,7 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyLogsCollectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.logsCollectionConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "filelog" $config.service.pipelines.logs.receivers)) }}
+{{- if (has "filelog" (dig "service" "pipelines" "logs" "receivers" $config) }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
 {{- end }}
 {{- if .collector.presets.logsCollection.storeCheckpoints}}
@@ -397,7 +397,7 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesEventsConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sobjects" $config.service.pipelines.logs.receivers)) }}
+{{- if (has "k8sobjects" (dig "service" "pipelines" "logs" "receivers" $config) }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -416,13 +416,13 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyBatchProcessorConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.batchProcessorConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "batch" $config.service.pipelines.logs.processors)) }}
+{{- if (has "batch" (dig "service" "pipelines" "logs" "processors" $config) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "batch" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "batch" $config.service.pipelines.metrics.processors)) }}
+{{- if (has "batch" (dig "service" "pipelines" "metrics" "processors" $config) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "batch" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "batch" $config.service.pipelines.traces.processors)) }}
+{{- if (has "batch" (dig "service" "pipelines" "traces" "processors" $config) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "batch" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -438,13 +438,13 @@ processors:
 
 {{- define "opentelemetry-kube-stack.collector.applyOTLPExporter" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.otlpExporterConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "otlp" $config.service.pipelines.logs.exporters)) }}
+{{- if (has "otlp" (dig "service" "pipelines" "logs" "exporters" $config) }}
 {{- $_ := set $config.service.pipelines.logs "exporters" (prepend $config.service.pipelines.logs.exporters "otlp" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "otlp" $config.service.pipelines.metrics.exporters)) }}
+{{- if (has "otlp" (dig "service" "pipelines" "metrics" "exporters" $config) }}
 {{- $_ := set $config.service.pipelines.metrics "exporters" (prepend $config.service.pipelines.metrics.exporters "otlp" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "otlp" $config.service.pipelines.traces.exporters)) }}
+{{- if (has "otlp" (dig "service" "pipelines" "traces" "exporters" $config) }}
 {{- $_ := set $config.service.pipelines.traces "exporters" (prepend $config.service.pipelines.traces.exporters "otlp" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
