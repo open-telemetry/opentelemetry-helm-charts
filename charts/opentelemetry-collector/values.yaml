@@ -80,6 +80,9 @@ presets:
 configMap:
   # Specifies whether a configMap should be created (true by default)
   create: true
+  # Specifies an existing ConfigMap to be mounted to the pod
+  # The ConfigMap MUST include the collector configuration via a key named 'relay' or the collector will not start.
+  existingName: ""
 
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
@@ -161,7 +164,7 @@ config:
 
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
-  repository: otel/opentelemetry-collector-contrib
+  repository: ""
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -171,7 +174,7 @@ imagePullSecrets: []
 
 # OpenTelemetry Collector executable
 command:
-  name: otelcol-contrib
+  name: ""
   extraArgs: []
 
 serviceAccount:

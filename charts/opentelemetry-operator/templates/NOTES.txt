@@ -1,3 +1,7 @@
+{{- if not .Values.manager.collectorImage.repository }}
+{{ fail "[ERROR] 'manager.collectorImage.repository' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md for instructions." }}
+{{ end }}
+
 {{ $.Chart.Name }} has been installed. Check its status by running:
   kubectl --namespace {{ .Release.Namespace }} get pods -l "release={{ $.Release.Name }}"
 

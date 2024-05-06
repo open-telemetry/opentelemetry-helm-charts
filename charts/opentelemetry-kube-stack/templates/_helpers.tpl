@@ -18,6 +18,19 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+
+{{/*
+Add the opamp labels if they're enabled
+*/}}
+{{- define "opentelemetry-kube-stack.collectorOpAMPLabels" -}}
+{{- if and .opAMPBridge.enabled .opAMPBridge.addReportingLabel }}
+opentelemetry.io/opamp-reporting: "true"
+{{- end }}
+{{- if and .opAMPBridge.enabled .opAMPBridge.addManagedLabel }}
+opentelemetry.io/opamp-managed: "true"
+{{- end }}
+{{- end }}
+
 {{/*
 Allow the release namespace to be overridden
 */}}
@@ -62,6 +75,20 @@ Create the name of the instrumentation to use
 */}}
 {{- define "opentelemetry-kube-stack.instrumentation" -}}
 {{- default .Release.Name .Values.instrumentation.name }}
+{{- end }}
+
+{{/*
+Create the name of the bridge to create
+*/}}
+{{- define "opentelemetry-opamp-bridge.fullname" -}}
+{{- default .Release.Name .opAMPBridge.name }}
+{{- end }}
+
+{{/*
+Create the name of the clusterRole to use for the opampbridge
+*/}}
+{{- define "opentelemetry-opamp-bridge.clusterRoleName" -}}
+{{- default (printf "%s-bridge" .Release.Name) .Values.opAMPBridge.clusterRole.name }}
 {{- end }}
 
 {{/*

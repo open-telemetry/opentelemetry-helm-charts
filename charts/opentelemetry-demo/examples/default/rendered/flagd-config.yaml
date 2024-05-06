@@ -6,7 +6,7 @@ metadata:
   name: example-flagd-config
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-demo-0.30.2
+    helm.sh/chart: opentelemetry-demo-0.30.5
     
     opentelemetry.io/name: example
     app.kubernetes.io/instance: example
@@ -79,6 +79,15 @@ data:
               ]
             ]
           }
+        },
+        "kafakQueueProblems": {
+          "description": "Overloads Kafka queue while simultaneously introducing a consumer side delay leading to a lag spike",
+          "state": "ENABLED",
+          "variants": {
+            "on": 100,
+            "off": 0
+          },
+          "defaultVariant": "off"
         },
         "cartServiceFailure": {
           "description": "Fail cart service",

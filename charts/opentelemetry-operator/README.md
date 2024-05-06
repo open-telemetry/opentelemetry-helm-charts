@@ -35,22 +35,25 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 ## Install Chart
 
 ```console
-$ helm install \
-  opentelemetry-operator open-telemetry/opentelemetry-operator
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+--set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s"
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
-$ helm install --namespace opentelemetry-operator-system \
-  opentelemetry-operator open-telemetry/opentelemetry-operator
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+--namespace opentelemetry-operator-system \
+--set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s"
 ```
 
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
-$ helm install  --set admissionWebhooks.certManager.enabled=false --set admissionWebhooks.autoGenerateCert.enabled=true \
-  opentelemetry-operator open-telemetry/opentelemetry-operator
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+--set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+--set admissionWebhooks.certManager.enabled=false \
+--set admissionWebhooks.autoGenerateCert.enabled=true
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
