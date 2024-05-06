@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.83.1 / 2024-05-06
+
+- [Fix] reduceResourceAttributes preset will now work when metadata preset is manually set in processors.
+
 ### v0.83.0 / 2024-04-29
 
 - [Feat] Bump collector version to `0.99.0`

@@ -630,7 +630,7 @@ processors:
 
 {{- define "opentelemetry-collector.applyReduceResourceAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.reduceResourceAttributesConfig" .Values | fromYaml) .config }}
-{{- if and ($config.service.pipelines.metrics) (not (has "resource/metadata" $config.service.pipelines.metrics.processors)) }}
+{{- if and ($config.service.pipelines.metrics) (not (has "transform/reduce" $config.service.pipelines.metrics.processors)) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "transform/reduce" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
