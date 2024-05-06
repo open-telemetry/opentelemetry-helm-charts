@@ -403,37 +403,6 @@ defaultCRConfig:
       batchSize: 1000
       timeout: 1s
       maxSize: 1500
-    # Configures an OTLP exporter to send all telemetry to
-    otlpExporter:
-      enabled: false
-      endpoint: ingest.example.com
-      sending_queue:
-        enabled: true
-        num_consumers: 4
-        queue_size: 100
-
-      # Retry settings are optional.
-      #
-      # Note that while retries are attempted, this component will
-      # begin to drop arriving data if the queue is not large
-      # enough.
-      retry_on_failure:
-        # We recommend disabling retries, since while the export is
-        # blocked it is likely that arriving spans will drop, and
-        # Otherwise, collectors will need substantial additional
-        # memory to survive transient failures.  Nevertheless, we
-        # recommend a limited retry policy to gracefully occasional
-        # failures, paired with a modest queue size.
-        #
-        # Note there is a persistent storage option inherited from a
-        # common collector component.  When persistent storage is
-        # configured, the default retry configuration is sensible.
-        #
-        # For more details on retry and queue settings, please refer to
-        # https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
-        enabled: true
-        max_elapsed_time: 60s
-      timeout: 30s
 
 # Collectors is a map of collector configurations of the form:
 # collectors:
@@ -473,8 +442,6 @@ collectors:
         enabled: true
       batchProcessor:
         enabled: true
-      otlpExporter:
-        enabled: false
     config:
       receivers:
         otlp:
@@ -533,8 +500,6 @@ collectors:
         enabled: true
       batchProcessors:
         enabled: true
-      otlpExporter:
-        enabled: false
     config:
       receivers: {}
       processors:

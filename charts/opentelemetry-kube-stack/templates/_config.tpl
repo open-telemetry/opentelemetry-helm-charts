@@ -44,10 +44,6 @@ the config is written as YAML.
 {{- $config = (include "opentelemetry-kube-stack.collector.applyBatchProcessorConfig" (dict "collector" $collector) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- if .collector.presets.otlpExporter.enabled }}
-{{- $config = (include "opentelemetry-kube-stack.collector.applyOTLPExporter" (dict "collector" $collector) | fromYaml) -}}
-{{- $_ := set $collector "config" $config }}
-{{- end }}
 {{- toYaml $collector.config | nindent 4 }}
 {{- end }}
 
@@ -434,37 +430,4 @@ processors:
     send_batch_size: {{ .presets.batchProcessor.batchSize }}
     timeout: {{ .presets.batchProcessor.timeout }}
     send_batch_max_size: {{ .presets.batchProcessor.maxSize }}
-{{- end }}
-
-{{- define "opentelemetry-kube-stack.collector.applyOTLPExporter" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.otlpExporterConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "otlp" (dig "service" "pipelines" "logs" "exporters" list $config))) }}
-{{- $_ := set $config.service.pipelines.logs "exporters" (prepend ($config.service.pipelines.logs.exporters | default list) "otlp" | uniq)  }}
-{{- end }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "otlp" (dig "service" "pipelines" "metrics" "exporters" list $config))) }}
-{{- $_ := set $config.service.pipelines.metrics "exporters" (prepend ($config.service.pipelines.metrics.exporters | default list) "otlp" | uniq)  }}
-{{- end }}
-{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "otlp" (dig "service" "pipelines" "traces" "exporters" list $config))) }}
-{{- $_ := set $config.service.pipelines.traces "exporters" (prepend ($config.service.pipelines.traces.exporters | default list) "otlp" | uniq)  }}
-{{- end }}
-{{- $config | toYaml }}
-{{- end }}
-
-{{- define "opentelemetry-kube-stack.collector.otlpExporterConfig" -}}
-exporters:
-  otlp:
-    endpoint: {{ .presets.otlpExporter.endpoint }}
-    timeout:  {{ .presets.otlpExporter.timeout }}
-    {{- if .presets.otlpExporter.headers }}
-    headers:
-      {{- .presets.otlpExporter.headers | toYaml | nindent 6 }}
-    {{- end }}
-    {{- if .presets.otlpExporter.sending_queue.enabled }}
-    sending_queue:
-      {{- .presets.otlpExporter.sending_queue | toYaml | nindent 6 }}
-    {{- end }}
-    {{- if .presets.otlpExporter.retry_on_failure.enabled }}
-    retry_on_failure:
-      {{- .presets.otlpExporter.retry_on_failure | toYaml | nindent 6 }}
-    {{- end }}
 {{- end }}

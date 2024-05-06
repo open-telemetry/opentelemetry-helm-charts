@@ -1,13 +1,6 @@
 clusterName: demo
 opentelemetry-operator:
   enabled: true
-defaultCRConfig:
-  presets:
-    otlpExporter:
-      enabled: true
-      endpoint: ingest.example.com:443
-      headers:
-        "access-token": "${ACCESS_TOKEN}"
 collectors:
   daemon:
     env:
@@ -16,6 +9,20 @@ collectors:
           secretKeyRef:
             key: access_token
             name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:443
+          headers:
+            "access-token": "${ACCESS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [debug, otlp]
+          traces:
+            exporters: [debug, otlp]
+          logs:
+            exporters: [debug, otlp]
   cluster:
     env:
       - name: ACCESS_TOKEN
@@ -23,7 +30,16 @@ collectors:
           secretKeyRef:
             key: access_token
             name: otel-collector-secret
-
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:443
+          headers:
+            "access-token": "${ACCESS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [debug, otlp]
 instrumentation:
   enabled: true
   env:

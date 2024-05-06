@@ -20,6 +20,10 @@ spec:
   config: |
     exporters:
       debug: {}
+      otlp:
+        endpoint: ingest.example.com:443
+        headers:
+          access-token: ${ACCESS_TOKEN}
     processors:
       k8sattributes:
         extract:
@@ -104,6 +108,7 @@ spec:
         metrics:
           exporters:
           - debug
+          - otlp
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -179,6 +184,10 @@ spec:
   config: |
     exporters:
       debug: {}
+      otlp:
+        endpoint: ingest.example.com:443
+        headers:
+          access-token: ${ACCESS_TOKEN}
     processors:
       batch:
         send_batch_max_size: 1500
@@ -615,6 +624,7 @@ spec:
         logs:
           exporters:
           - debug
+          - otlp
           processors:
           - batch
           - k8sattributes
@@ -626,6 +636,7 @@ spec:
         metrics:
           exporters:
           - debug
+          - otlp
           processors:
           - batch
           - k8sattributes
@@ -637,6 +648,7 @@ spec:
         traces:
           exporters:
           - debug
+          - otlp
           processors:
           - batch
           - k8sattributes
