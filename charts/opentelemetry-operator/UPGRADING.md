@@ -2,12 +2,15 @@
 
 ## 0.56.0 to 0.57.0
 
-This Chart now installs CRDs as templates. OpenTelemetry Operator is rolling out a new version of the OpenTelemetryCollector CRD. For information
-about this change, see the [following document](https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1).
+This Chart now installs CRDs as templates. If you were managing CRDs separately by using the `--skip-crds` Helm flag, you need to set `crds.create=false` in your values.yaml.
 
-This change includes a conversion webhook, which needs to reference a namespaced webhook Service, and therefore needs to include the release namespace. See [the following issue](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1167) for more information on the CRD change.
+The reason for this change is OpenTelemetry Operator rolling out a new version of the OpenTelemetryCollector CRD. For information
+about this, see the [following document](https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1). The new CRD version includes a conversion webhook, which needs to reference a namespaced webhook Service, and therefore needs to include the release namespace. See [the following issue](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1167) for more information on the CRD change.
 
-As a result, manual steps are necessary to convince Helm to manage existing CRDs. This involves adding some annotations and labels. Set `RELEASE_NAME` and `RELEASE_NAMESPACE` to the values you're using for your Helm release, respectively:
+As a result, manual steps are necessary to convince Helm to manage existing CRDs. This involves adding some annotations and labels, and needs to
+be done before upgrading - otherwise the upgrade will fail.
+
+Set `RELEASE_NAME` and `RELEASE_NAMESPACE` to the values you're using for your Helm release, respectively:
 
 ```bash
 RELEASE_NAME=my-opentelemetry-operator

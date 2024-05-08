@@ -1,5 +1,6 @@
 TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack
+OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')"
 
 .PHONY: generate-examples
 generate-examples:
@@ -55,24 +56,16 @@ check-examples:
 
 .PHONY: update-operator-crds
 update-operator-crds:
-	APP_VERSION=$$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p') ; \
-	curl -s -o ./charts/opentelemetry-operator/templates/crds/crd-opentelemetrycollector.yaml https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$${APP_VERSION}/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml ; \
-	curl -s -o ./charts/opentelemetry-operator/templates/crds/crd-opentelemetryinstrumentation.yaml https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$${APP_VERSION}/bundle/manifests/opentelemetry.io_instrumentations.yaml ; \
-	curl -s -o ./charts/opentelemetry-operator/templates/crds/crd-opentelemetry.io_opampbridges.yaml https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$${APP_VERSION}/bundle/manifests/opentelemetry.io_opampbridges.yaml
-	sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}#g' ./charts/opentelemetry-operator/templates/crds/crd-opentelemetrycollector.yaml
-	sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" ./charts/opentelemetry-operator/templates/crds/crd-opentelemetrycollector.yaml
-	sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' ./charts/opentelemetry-operator/templates/crds/crd-opentelemetrycollector.yaml
+	$(call get-crd,./charts/opentelemetry-operator/templates/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
+	$(call get-crd,./charts/opentelemetry-operator/templates/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_instrumentations.yaml)
+	$(call get-crd,./charts/opentelemetry-operator/templates/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opampbridges.yaml)
 
 .PHONY: check-operator-crds
 check-operator-crds:
-	APP_VERSION=$$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p'); \
-	mkdir -p ${TMP_DIRECTORY}/crds; \
-	curl -s -o "${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml" https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$${APP_VERSION}/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml; \
-	curl -s -o "${TMP_DIRECTORY}/crds/crd-opentelemetryinstrumentation.yaml" https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$${APP_VERSION}/bundle/manifests/opentelemetry.io_instrumentations.yaml; \
-	curl -s -o "${TMP_DIRECTORY}/crds/crd-opentelemetry.io_opampbridges.yaml" https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$${APP_VERSION}/bundle/manifests/opentelemetry.io_opampbridges.yaml; \
-	sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}#g' "${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml"
-	sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" "${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml"
-	sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' "${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml"
+	mkdir -p ${TMP_DIRECTORY}/crds
+	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
+	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_instrumentations.yaml)
+	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opampbridges.yaml)
 	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/templates/crds > /dev/null; then \
 		echo "Passed"; \
 		rm -rf ${TMP_DIRECTORY}; \
@@ -81,3 +74,12 @@ check-operator-crds:
 		rm -rf ${TMP_DIRECTORY}; \
 		exit 1; \
 	fi; \
+
+define get-crd
+@curl -s -o $(1) $(2)
+@sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}#g' $(1)
+@sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
+@sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
+@sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
+@echo '{{- end }}' >> $(1)
+endef
