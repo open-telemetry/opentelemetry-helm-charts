@@ -34,6 +34,9 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ## Install Chart
 
+> [!NOTE]  
+> This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Set `crds.create=false` instead.
+
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
 --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s"
