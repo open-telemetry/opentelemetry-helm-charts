@@ -77,7 +77,7 @@ check-operator-crds:
 
 define get-crd
 @curl -s -o $(1) $(2)
-@sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ printf "%s/%s-serving-cert" .Release.Namespace (include "opentelemetry-operator.fullname" .) }}#g' $(1)
+@sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
 @sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
 @sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
 @sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
