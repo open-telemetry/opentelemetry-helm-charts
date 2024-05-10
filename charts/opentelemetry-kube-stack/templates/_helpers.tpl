@@ -46,11 +46,11 @@ Allow the release namespace to be overridden
 Print a map of key values in a YAML block. This is useful for labels and annotations.
 */}}
 {{- define "opentelemetry-kube-stack.renderkv" -}}
-{{- with . }}
-{{- range $key, $value := . }}
+{{- with . -}}
+{{- range $key, $value := . -}}
 {{- printf "%s: %s" $key $value }}
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 {{- end }}
 
 {{/*

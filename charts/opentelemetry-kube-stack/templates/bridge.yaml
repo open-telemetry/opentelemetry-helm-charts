@@ -8,11 +8,11 @@ metadata:
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
     {{- include "opentelemetry-kube-stack.renderkv" .Values.opAMPBridge.labels | nindent 4 }}
-    annotations:
-      "helm.sh/hook": post-install,post-upgrade
-      {{- with .Values.opAMPBridge.annotations }}
-      {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
-      {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    {{- with .Values.opAMPBridge.annotations }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
+    {{- end }}
 spec:
   endpoint: {{ required "opamp endpoint required" $.Values.opAMPBridge.endpoint }}
   {{- with $.Values.opAMPBridge.headers }}
