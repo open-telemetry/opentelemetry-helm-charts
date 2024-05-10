@@ -56,9 +56,9 @@ check-examples:
 
 .PHONY: update-operator-crds
 update-operator-crds:
-	$(call get-crd,./charts/opentelemetry-operator/templates/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
-	$(call get-crd,./charts/opentelemetry-operator/templates/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_instrumentations.yaml)
-	$(call get-crd,./charts/opentelemetry-operator/templates/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opampbridges.yaml)
+	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
+	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_instrumentations.yaml)
+	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opampbridges.yaml)
 
 .PHONY: check-operator-crds
 check-operator-crds:
@@ -66,7 +66,7 @@ check-operator-crds:
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_instrumentations.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/manifests/opentelemetry.io_opampbridges.yaml)
-	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/templates/crds > /dev/null; then \
+	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/conf/crds > /dev/null; then \
 		echo "Passed"; \
 		rm -rf ${TMP_DIRECTORY}; \
 	else \
@@ -77,6 +77,7 @@ check-operator-crds:
 
 define get-crd
 @curl -s -o $(1) $(2)
+@sed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
 @sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
 @sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
 @sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)

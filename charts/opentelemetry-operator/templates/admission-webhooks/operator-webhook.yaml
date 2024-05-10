@@ -266,4 +266,17 @@ webhooks:
         scope: Namespaced
     sideEffects: None
     timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
+---
+{{- $contextWithCaBundle := merge $ (dict "caBundle" $caCertEnc) }}
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_opampbridges.yaml") $contextWithCaBundle }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetrycollector.yaml") $contextWithCaBundle }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetryinstrumentation.yaml") $contextWithCaBundle }}
+{{- else }}
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_opampbridges.yaml") . }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetrycollector.yaml") . }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetryinstrumentation.yaml") . }}
 {{- end }}
