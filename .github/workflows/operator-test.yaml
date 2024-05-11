@@ -46,7 +46,7 @@ jobs:
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
 
       - name: Install chainsaw
-        uses: kyverno/action-install-chainsaw@v0.1.9
+        uses: kyverno/action-install-chainsaw@v0.2.0
 
       - name: Install metrics-server
         run: |
@@ -61,4 +61,58 @@ jobs:
 
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
-        run:  chainsaw test --test-dir ./tests/e2e
+        # see https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1180 for flaky test
+        run:  chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps"
+
+  operator-test-no-certmanager:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "true"
+
+      - name: Check CRDs
+        run: make check-operator-crds
+
+      - name: Install Openshift route crd
+        run: kubectl apply -f https://raw.githubusercontent.com/openshift/router/master/deploy/route_crd.yaml
+
+      - name: Install Prometheus CRDs
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+
+      - name: Run chart-testing (install)
+        run: ct install --charts charts/opentelemetry-operator --helm-extra-set-args "--set=admissionWebhooks.certManager.enabled=false"
+
+      - name: Get opentelemetry-operator repository
+        run: |
+          appVersion=$(cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
+          git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
+
+      - name: Install chainsaw
+        uses: kyverno/action-install-chainsaw@v0.2.0
+
+      - name: Install metrics-server
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl patch deployment -n kube-system metrics-server --type "json" -p '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": --kubelet-insecure-tls}]'
+          kubectl wait --for=condition=available deployment/metrics-server -n kube-system  --timeout=5m
+
+      - name: Install opentelemetry-operator chart
+        run: |
+          helm install --namespace=opentelemetry-operator-system --create-namespace my-opentelemetry-operator ./charts/opentelemetry-operator \
+            --set "manager.featureGates=operator.autoinstrumentation.go" \
+            --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+            --set "admissionWebhooks.certManager.enabled=false"
+          kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
+
+      - name: Run e2e tests
+        working-directory: ./opentelemetry-operator
+        # see https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1180 for flaky test
+        run:  chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps"
