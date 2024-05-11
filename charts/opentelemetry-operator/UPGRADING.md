@@ -1,5 +1,28 @@
 # Upgrade guidelines
 
+## 0.56.0 to 0.57.0
+
+This Chart now installs CRDs as templates. If you were managing CRDs separately by using the `--skip-crds` Helm flag, you need to set `crds.create=false` in your values.yaml.
+
+The reason for this change is OpenTelemetry Operator rolling out a new version of the OpenTelemetryCollector CRD. For information
+about this, see the [following document](https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1). The new CRD version includes a conversion webhook, which needs to reference a namespaced webhook Service, and therefore needs to include the release namespace. See [the following issue](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1167) for more information on the CRD change.
+
+As a result, manual steps are necessary to convince Helm to manage existing CRDs. This involves adding some annotations and labels, and needs to
+be done before upgrading - otherwise the upgrade will fail.
+
+Set `RELEASE_NAME` and `RELEASE_NAMESPACE` to the values you're using for your Helm release, respectively:
+
+```bash
+RELEASE_NAME=my-opentelemetry-operator
+RELEASE_NAMESPACE=opentelemetry-operator-system
+kubectl annotate crds instrumentations.opentelemetry.io opentelemetrycollectors.opentelemetry.io opampbridges.opentelemetry.io \
+  meta.helm.sh/release-name=${RELEASE_NAME} \
+  meta.helm.sh/release-namespace=${RELEASE_NAMESPACE}
+kubectl label crds instrumentations.opentelemetry.io opentelemetrycollectors.opentelemetry.io opampbridges.opentelemetry.io app.kubernetes.io/managed-by=Helm
+```
+
+You can also delete the CRDs and let Helm recreate them, but doing so will also delete any Custom Resources in your cluster.
+
 ## 0.55.3 to 0.56.0
 
 > [!WARNING]  
