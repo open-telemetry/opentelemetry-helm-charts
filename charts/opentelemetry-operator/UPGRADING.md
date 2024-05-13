@@ -2,7 +2,7 @@
 
 ## 0.57.0 to 0.58.0
 
-OpenTelemetry Operator [0.99.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.99.0) includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions. Please make sure you also follow the [upgrade instructions](./UPGRADING.md#0560-to-0570) for 0.57.0.
+OpenTelemetry Operator [0.99.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.99.0) includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions for the new Operator CRD. Please make sure you also follow the [helm upgrade instructions](./UPGRADING.md#0560-to-0570) for helm chart 0.57.0.
 
 ## 0.56.0 to 0.57.0
 

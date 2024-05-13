@@ -1,7 +1,7 @@
 # OpenTelemetry Operator Helm Chart
 
 > [!WARNING]  
-> Version 0.58.0 of this Chart includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions. Please make sure you also follow the [upgrade instructions](./UPGRADING.md#0560-to-0570) for 0.57.0.
+> Version 0.58.0 of this Chart includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions for the new Operator CRD. Please make sure you also follow the [helm upgrade instructions](./UPGRADING.md#0560-to-0570) for helm chart 0.57.0.
 
 The Helm chart installs [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) in Kubernetes cluster.
 The OpenTelemetry Operator is an implementation of a [Kubernetes Operator](https://www.openshift.com/learn/topics/operators).
