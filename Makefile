@@ -80,6 +80,7 @@ define get-crd
 @sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
 @sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
 @sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
+@sed -i 's/labels:/labels:\n    {{- include "opentelemetry-operator.labels" . | nindent 4 }}/' $(1)
 @sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
 @echo '{{- end }}' >> $(1)
 endef
