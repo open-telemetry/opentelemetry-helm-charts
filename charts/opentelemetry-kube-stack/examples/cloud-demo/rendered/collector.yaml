@@ -25,6 +25,10 @@ spec:
         headers:
           access-token: ${ACCESS_TOKEN}
     processors:
+      batch:
+        send_batch_max_size: 1500
+        send_batch_size: 1000
+        timeout: 1s
       k8sattributes:
         extract:
           labels:
@@ -110,6 +114,7 @@ spec:
           - debug
           - otlp
           processors:
+          - batch
           - k8sattributes
           - resourcedetection/env
           receivers:
@@ -128,6 +133,8 @@ spec:
     requests:
       cpu: 100m
       memory: 500Mi
+  securityContext:
+    {}
   volumeMounts:
   env:
   - name: OTEL_K8S_NODE_NAME
@@ -262,6 +269,7 @@ spec:
         timeout: 2s
     receivers:
       filelog:
+        exclude: /var/log/pods/default_example-daemon*_*/opentelemetry-kube-stack/*.log
         include:
         - /var/log/pods/*/*/*.log
         include_file_name: false
@@ -287,6 +295,7 @@ spec:
           combine_with: ""
           id: crio-recombine
           is_last_entry: attributes.logtag == 'F'
+          max_log_size: 102400
           output: extract_metadata_from_filepath
           source_identifier: attributes["log.file.path"]
           type: recombine
@@ -300,6 +309,7 @@ spec:
           combine_with: ""
           id: containerd-recombine
           is_last_entry: attributes.logtag == 'F'
+          max_log_size: 102400
           output: extract_metadata_from_filepath
           source_identifier: attributes["log.file.path"]
           type: recombine
@@ -354,7 +364,9 @@ spec:
           if: attributes._log.msg != nil
           to: body
           type: copy
-        start_at: beginning
+        retry_on_failure:
+          enabled: true
+        start_at: end
       hostmetrics:
         collection_interval: 10s
         root_path: /hostfs
@@ -668,6 +680,8 @@ spec:
     requests:
       cpu: 100m
       memory: 128Mi
+  securityContext:
+    {}
   volumeMounts:
   - name: varlogpods
     mountPath: /var/log/pods

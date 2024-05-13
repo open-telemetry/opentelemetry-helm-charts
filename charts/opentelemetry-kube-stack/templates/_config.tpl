@@ -17,6 +17,7 @@ the config is written as YAML.
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- if .collector.presets.logsCollection.enabled }}
+{{- $_ := set $collector "exclude" (printf "/var/log/pods/%s_%s*_*/%s/*.log" .namespace (include "opentelemetry-kube-stack.collectorFullname" .) (.Chart.Name | lower)) }}
 {{- $config = (include "opentelemetry-kube-stack.collector.applyLogsCollectionConfig" (dict "collector" $collector) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
@@ -292,7 +293,18 @@ receivers:
   filelog:
     include:
       - /var/log/pods/*/*/*.log
-    start_at: beginning
+    {{- if .presets.logsCollection.includeCollectorLogs }}
+    exclude: []
+    {{- else }}
+    # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
+    exclude: {{ .exclude }}
+    {{- end }}
+    start_at: end
+    retry_on_failure:
+        enabled: true
+    {{- if .presets.logsCollection.storeCheckpoints}}
+    storage: file_storage
+    {{- end }}
     include_file_path: true
     include_file_name: false
     operators:
@@ -320,6 +332,7 @@ receivers:
         source_identifier: attributes["log.file.path"]
         is_last_entry: "attributes.logtag == 'F'"
         combine_with: ""
+        max_log_size: {{ .presets.logsCollection.maxRecombineLogSize }}
       # Parse CRI-Containerd format
       - type: regex_parser
         id: parser-containerd
@@ -334,6 +347,7 @@ receivers:
         source_identifier: attributes["log.file.path"]
         is_last_entry: "attributes.logtag == 'F'"
         combine_with: ""
+        max_log_size: {{ .presets.logsCollection.maxRecombineLogSize }}
       # Parse Docker format
       - type: json_parser
         id: parser-docker
