@@ -2,6 +2,11 @@
 
 ## OpenTelemetry Collector
 
+### v0.84.0 / 2024-05-06
+
+- [Feat] Bump collector version to `0.100.0`
+- [Feat] kubernetesExtraMetrics preset add container cpu throttling metrics.
+
 ### v0.83.1 / 2024-05-06
 
 - [Fix] reduceResourceAttributes preset will now work when metadata preset is manually set in processors.
