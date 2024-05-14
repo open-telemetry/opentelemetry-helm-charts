@@ -1,5 +1,9 @@
 # Upgrade guidelines
 
+## 0.57.0 to 0.58.0
+
+OpenTelemetry Operator [0.99.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.99.0) includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions for the new Operator CRD. Please make sure you also follow the [helm upgrade instructions](./UPGRADING.md#0560-to-0570) for helm chart 0.57.0.
+
 ## 0.56.0 to 0.57.0
 
 This Chart now installs CRDs as templates. If you were managing CRDs separately by using the `--skip-crds` Helm flag, you need to set `crds.create=false` in your values.yaml.
@@ -100,3 +104,5 @@ It is important that the `jaegerremotesampling` extension and the `jaegerreceive
 The ability to use admission webhooks has been moved from `admissionWebhooks.enabled` to `admissionWebhooks.create` as it now supports more use cases.
 
 In order to completely disable admission webhooks you need to explicitly set the environment variable `ENABLE_WEBHOOKS: "false"` in `.Values.manager.env` .
+
+[v1beta1_migration]: https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1

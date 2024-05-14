@@ -73,10 +73,10 @@ webhooks:
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
-        path: /mutate-opentelemetry-io-v1alpha1-opentelemetrycollector
+        path: /mutate-opentelemetry-io-v1beta1-opentelemetrycollector
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
-    name: mopentelemetrycollector.kb.io
+    name: mopentelemetrycollectorbeta.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
     {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
@@ -89,7 +89,7 @@ webhooks:
       - apiGroups:
           - opentelemetry.io
         apiVersions:
-          - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -210,10 +210,10 @@ webhooks:
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
-        path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
+        path: /validate-opentelemetry-io-v1beta1-opentelemetrycollector
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
-    name: vopentelemetrycollectorcreateupdate.kb.io
+    name: vopentelemetrycollectorcreateupdatebeta.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
     {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
@@ -226,7 +226,7 @@ webhooks:
       - apiGroups:
           - opentelemetry.io
         apiVersions:
-          - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -242,10 +242,10 @@ webhooks:
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
-        path: /validate-opentelemetry-io-v1alpha1-opentelemetrycollector
+        path: /validate-opentelemetry-io-v1beta1-opentelemetrycollector
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: Ignore
-    name: vopentelemetrycollectordelete.kb.io
+    name: vopentelemetrycollectordeletebeta.kb.io
     {{- if .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
     {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
@@ -258,7 +258,7 @@ webhooks:
       - apiGroups:
           - opentelemetry.io
         apiVersions:
-          - v1alpha1
+          - v1beta1
         operations:
           - DELETE
         resources:
@@ -266,4 +266,17 @@ webhooks:
         scope: Namespaced
     sideEffects: None
     timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
+---
+{{- $contextWithCaBundle := merge $ (dict "caBundle" $caCertEnc) }}
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_opampbridges.yaml") $contextWithCaBundle }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetrycollector.yaml") $contextWithCaBundle }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetryinstrumentation.yaml") $contextWithCaBundle }}
+{{- else }}
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_opampbridges.yaml") . }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetrycollector.yaml") . }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetryinstrumentation.yaml") . }}
 {{- end }}
