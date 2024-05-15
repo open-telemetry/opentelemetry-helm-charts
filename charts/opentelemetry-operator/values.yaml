@@ -42,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.98.0
+    tag: 0.99.0
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -263,6 +263,12 @@ admissionWebhooks:
   secretAnnotations: {}
   ## Secret labels
   secretLabels: {}
+
+## Install CRDS with the right webhook settings
+## These are installed as templates, so they will clash with existing OpenTelemetry Operator CRDs in your cluster that are not already managed by the helm chart.
+## See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md#0560-to-0570 for more details.
+crds:
+  create: true
 
 ## Create the provided Roles and RoleBindings
 ##
