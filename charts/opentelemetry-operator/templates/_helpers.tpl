@@ -142,3 +142,10 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 {{- printf "%s/%s" .Release.Namespace (include "opentelemetry-operator.webhookCertName" .) }}
 {{- end }}
 {{- end }}
+
+{{/*
+The image to use for opentelemetry-operator.
+*/}}
+{{- define "opentelemetry-operator.image" -}}
+{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
+{{- end }}

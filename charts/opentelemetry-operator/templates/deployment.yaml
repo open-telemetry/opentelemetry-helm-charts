@@ -89,7 +89,7 @@ spec:
               value: {{ $value | quote -}}
             {{- end }}
           {{- end }}
-          image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "opentelemetry-operator.image" . | quote }}
           name: manager
           ports:
             - containerPort: {{ .Values.manager.ports.metricsPort }}
