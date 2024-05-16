@@ -566,10 +566,10 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
-        value: "-Xmx200M -Xms200M"
+        value: "-Xmx400M -Xms400M"
     resources:
       limits:
-        memory: 500Mi
+        memory: 600Mi
     securityContext:
       runAsUser: 1000  # appuser
       runAsGroup: 1000
@@ -595,6 +595,8 @@ components:
       runAsNonRoot: true
 
 opentelemetry-collector:
+  image:
+    repository: "otel/opentelemetry-collector-contrib"
   enabled: true
   nameOverride: otelcol
   mode: deployment
@@ -690,7 +692,7 @@ jaeger:
       limits:
         memory: 400Mi
   storage:
-    type: none
+    type: memory
   agent:
     enabled: false
   collector:
