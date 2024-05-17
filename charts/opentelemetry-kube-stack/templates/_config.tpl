@@ -169,17 +169,17 @@ receivers:
         cpu:
           metrics:
             system.cpu.utilization:
-              enabled: true
-        load:
+                enabled: true
+        load: {}
         memory:
           metrics:
             system.memory.utilization:
-              enabled: true
-        disk:
+                enabled: true
+        disk: {}
         filesystem:
           metrics:
             system.filesystem.utilization:
-              enabled: true
+                enabled: true
           exclude_mount_points:
             mount_points:
               - /dev/*
@@ -216,7 +216,7 @@ receivers:
               - sysfs
               - tracefs
             match_type: strict
-        network:
+        network: {}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" -}}
@@ -265,6 +265,10 @@ receivers:
     metrics:
         # k8s.pod.cpu.utilization is being deprecated
         k8s.pod.cpu.usage:
+            enabled: true
+        container.cpu.usage:
+            enabled: true
+        k8s.node.cpu.usage:
             enabled: true
         k8s.node.uptime:
             enabled: true
@@ -390,19 +394,11 @@ receivers:
         from: attributes.uid
         to: resource["k8s.pod.uid"]
         if: "attributes.uid != nil"
-      - type: json_parser
-        parse_from: attributes.log
-        parse_to: attributes._log
-        on_error: drop
+      # Clean up log body
+      - type: move
+        from: attributes.log
+        to: body
         if: "attributes.log != nil"
-      - type: copy
-        from: attributes._log.body
-        to: body
-        if: "attributes._log.body != nil"
-      - type: copy
-        from: attributes._log.msg
-        to: body
-        if: "attributes._log.msg != nil"
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" -}}

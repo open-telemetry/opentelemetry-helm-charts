@@ -351,19 +351,10 @@ spec:
           if: attributes.uid != nil
           to: resource["k8s.pod.uid"]
           type: move
-        - if: attributes.log != nil
-          on_error: drop
-          parse_from: attributes.log
-          parse_to: attributes._log
-          type: json_parser
-        - from: attributes._log.body
-          if: attributes._log.body != nil
+        - from: attributes.log
+          if: attributes.log != nil
           to: body
-          type: copy
-        - from: attributes._log.msg
-          if: attributes._log.msg != nil
-          to: body
-          type: copy
+          type: move
         retry_on_failure:
           enabled: true
         start_at: end
@@ -375,7 +366,7 @@ spec:
             metrics:
               system.cpu.utilization:
                 enabled: true
-          disk: null
+          disk: {}
           filesystem:
             exclude_fs_types:
               fs_types:
@@ -416,12 +407,12 @@ spec:
             metrics:
               system.filesystem.utilization:
                 enabled: true
-          load: null
+          load: {}
           memory:
             metrics:
               system.memory.utilization:
                 enabled: true
-          network: null
+          network: {}
       k8sobjects:
         objects:
         - exclude_watch_type:
@@ -445,6 +436,10 @@ spec:
         - volume
         - container
         metrics:
+          container.cpu.usage:
+            enabled: true
+          k8s.node.cpu.usage:
+            enabled: true
           k8s.node.uptime:
             enabled: true
           k8s.pod.cpu.usage:
@@ -728,10 +723,10 @@ spec:
   volumes:
   - name: varlogpods
     hostPath:
-    path: /var/log/pods
+      path: /var/log/pods
   - name: varlibdockercontainers
     hostPath:
-    path: /var/lib/docker/containers
+      path: /var/lib/docker/containers
   - name: hostfs
     hostPath:
-    path: /
+      path: /

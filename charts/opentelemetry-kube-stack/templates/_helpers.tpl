@@ -169,14 +169,19 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- if $.Values.clusterRole.rules }}
 {{ toYaml $.Values.clusterRole.rules }}
 {{- end }}
-{{- $should_create := false }}
+{{- $clusterMetricsEnabled := false }}
+{{- $eventsEnabled := false }}
 {{ range $_, $collector := $.Values.collectors -}}
-{{- $should_create = (any $should_create (dig "config" "receivers" "k8s_cluster" false $collector)) }}
+{{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
-{{- $should_create = true }}
+{{- $clusterMetricsEnabled = true }}
+{{- end }}
+{{- $eventsEnabled = (any $eventsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
+{{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
+{{- $eventsEnabled = true }}
 {{- end }}
 {{- end }}
-{{- if $should_create }}
+{{- if $clusterMetricsEnabled }}
 - apiGroups:
   - ""
   resources:
@@ -233,5 +238,10 @@ Optionally include the RBAC for the k8sCluster receiver
     - get
     - list
     - watch
+{{- end }}
+{{- if $eventsEnabled }}
+- apiGroups: ["events.k8s.io"]
+  resources: ["events"]
+  verbs: ["watch", "list"]
 {{- end }}
 {{- end }}
