@@ -441,7 +441,7 @@ receivers:
 {{- define "opentelemetry-kube-stack.collector.batchProcessorConfig" -}}
 processors:
   batch:
-    send_batch_size: {{ .presets.batchProcessor.batchSize }}
-    timeout: {{ .presets.batchProcessor.timeout }}
-    send_batch_max_size: {{ .presets.batchProcessor.maxSize }}
+    send_batch_size: 1000
+    timeout: 1s
+    send_batch_max_size: 1500
 {{- end }}
