@@ -14,6 +14,8 @@ metadata:
     {{- include "opentelemetry-kube-stack.renderkv" $collector.labels | nindent 4 }}
     {{- include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values | nindent 4 }}
   annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-failed
     {{- with $collector.annotations }}
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
     {{- end }}
