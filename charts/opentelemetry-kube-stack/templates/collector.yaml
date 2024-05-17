@@ -4,7 +4,7 @@
 {{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
 ---
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: {{ $fullname }}
@@ -21,7 +21,7 @@ metadata:
 spec:
   managementState: {{ $collector.managementState }}
   mode: {{ $collector.mode }}
-  config: |
+  config:
     {{- include "opentelemetry-kube-stack.config" $merged }}
   {{- if (not (eq $collector.mode "daemonset" )) }}
   replicas: {{ $collector.replicas }}
