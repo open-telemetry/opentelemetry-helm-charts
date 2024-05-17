@@ -124,3 +124,28 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- $result := dict "crt" $certCrtEnc "key" $certKeyEnc "ca" $caCertEnc }}
 {{- $result | toYaml }}
 {{- end }}
+
+{{/*
+Return the name of cert-manager's Certificate resources for webhooks.
+*/}}
+{{- define "opentelemetry-operator.webhookCertName" -}}
+{{ template "opentelemetry-operator.fullname" . }}-serving-cert
+{{- end }}
+
+{{/*
+Return the name of the cert-manager.io/inject-ca-from annotation for webhooks and CRDs.
+*/}}
+{{- define "opentelemetry-operator.webhookCertAnnotation" -}}
+{{- if not .Values.admissionWebhooks.certManager.enabled }}
+{{- "none" }}
+{{- else }}
+{{- printf "%s/%s" .Release.Namespace (include "opentelemetry-operator.webhookCertName" .) }}
+{{- end }}
+{{- end }}
+
+{{/*
+The image to use for opentelemetry-operator.
+*/}}
+{{- define "opentelemetry-operator.image" -}}
+{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
+{{- end }}
