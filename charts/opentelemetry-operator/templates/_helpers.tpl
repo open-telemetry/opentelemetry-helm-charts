@@ -136,9 +136,7 @@ Return the name of cert-manager's Certificate resources for webhooks.
 Return the name of the cert-manager.io/inject-ca-from annotation for webhooks and CRDs.
 */}}
 {{- define "opentelemetry-operator.webhookCertAnnotation" -}}
-{{- if not .Values.admissionWebhooks.certManager.enabled }}
-{{- "none" }}
-{{- else }}
+{{- if .Values.admissionWebhooks.certManager.enabled }}
 {{- printf "%s/%s" .Release.Namespace (include "opentelemetry-operator.webhookCertName" .) }}
 {{- end }}
 {{- end }}
