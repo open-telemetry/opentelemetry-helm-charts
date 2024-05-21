@@ -49,6 +49,8 @@ spec:
             {{- end }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
+            {{- else if .Values.manager.collectorImage.repository }}
+            - --collector-image={{ .Values.manager.collectorImage.repository }}
             {{- end }}
             {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
             - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
