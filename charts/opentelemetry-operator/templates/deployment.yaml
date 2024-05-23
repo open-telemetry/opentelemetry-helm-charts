@@ -47,10 +47,12 @@ spec:
             {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
             {{- end }}
-            {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
-            - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
-            {{- else if .Values.manager.collectorImage.repository }}
-            - --collector-image={{ .Values.manager.collectorImage.repository }}
+            {{- if .Values.manager.collectorImage.repository -}}
+            {{- $collectorImageTag := "" -}}
+            {{- if .Values.manager.collectorImage.tag -}}
+            {{- $collectorImageTag = print ":" .Values.manager.collectorImage.tag -}}
+            {{- end }}
+            - --collector-image={{ .Values.manager.collectorImage.repository }}{{ $collectorImageTag }}
             {{- end }}
             {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
             - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
