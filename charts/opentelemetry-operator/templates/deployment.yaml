@@ -48,11 +48,11 @@ spec:
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
             {{- end }}
             {{- if .Values.manager.collectorImage.repository -}}
-            {{- $collectorImageTag := "" -}}
+            {{- $tag := "" -}}
             {{- if .Values.manager.collectorImage.tag -}}
-            {{- $collectorImageTag = print ":" .Values.manager.collectorImage.tag -}}
+            {{- $tag = print ":" .Values.manager.collectorImage.tag -}}
             {{- end }}
-            - --collector-image={{ .Values.manager.collectorImage.repository }}{{ $collectorImageTag }}
+            - --collector-image={{ .Values.manager.collectorImage.repository }}{{ $tag }}
             {{- end }}
             {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
             - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
