@@ -790,6 +790,12 @@ exporters:
     resolver:
       dns:
         hostname: "{{ .Values.presets.loadBalancing.hostname }}"
+        {{- if .Values.presets.loadBalancing.dnsResolverInterval }}
+        interval: "{{ .Values.presets.loadBalancing.dnsResolverInterval }}"
+        {{- end }}
+        {{- if .Values.presets.loadBalancing.dnsResolverTimeout }}
+        timeout: "{{ .Values.presets.loadBalancing.dnsResolverTimeout }}"
+        {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}

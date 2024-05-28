@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.84.1 / 2024-05-06
+- [Feat] loadBalancing preset add dns resolver interval and timeout duration options.
+
 ### v0.84.0 / 2024-05-06
 
 - [Feat] Bump collector version to `0.100.0`
