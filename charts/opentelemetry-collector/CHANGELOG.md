@@ -2,7 +2,11 @@
 
 ## OpenTelemetry Collector
 
-### v0.84.1 / 2024-05-06
+### v0.84.2 / 2024-05-29
+- [Feat] spanMetrics preset allow extraDimensions and apply config to all spanmetrics processors.
+- [Feat] Bump collector version to `0.101.0`
+
+### v0.84.1 / 2024-05-28
 - [Feat] loadBalancing preset add dns resolver interval and timeout duration options.
 
 ### v0.84.0 / 2024-05-06

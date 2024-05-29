@@ -761,11 +761,30 @@ connectors:
     {{- else }}
     metrics_expiration: 0
     {{- end }}
+    {{- if .Values.presets.spanMetricsMulti.extraDimensions }}
+    dimensions:
+    {{- .Values.presets.spanMetricsMulti.extraDimensions | toYaml | nindent 10 }}
+    {{- end }}
+  {{- $root := . }}
   {{- range $index, $cfg := .Values.presets.spanMetricsMulti.configs }}
   spanmetrics/{{- $index -}}:
     histogram:
       explicit:
         buckets: {{ $cfg.histogramBuckets | toYaml | nindent 12 }}
+    {{- if $root.Values.presets.spanMetricsMulti.collectionInterval }}
+    metrics_flush_interval: "{{ $root.Values.presets.spanMetricsMulti.collectionInterval }}"
+    {{- else }}
+    metrics_flush_interval: 15s
+    {{- end }}
+    {{- if $root.Values.presets.spanMetricsMulti.metricsExpiration }}
+    metrics_expiration: "{{ $root.Values.presets.spanMetricsMulti.metricsExpiration }}"
+    {{- else }}
+    metrics_expiration: 0
+    {{- end }}
+    {{- if $root.Values.presets.spanMetricsMulti.extraDimensions }}
+    dimensions:
+    {{- $root.Values.presets.spanMetricsMulti.extraDimensions | toYaml | nindent 10 }}
+    {{- end }}
   {{- end }}
 
 {{- end }}
