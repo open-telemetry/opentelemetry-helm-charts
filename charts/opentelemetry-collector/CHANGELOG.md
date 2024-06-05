@@ -2,7 +2,10 @@
 
 ## OpenTelemetry Collector
 
-### v0.84.2 / 2024-05-29
+### v0.85.1 / 2024-06-05
+- [Fix] add target allocator events and getting secrets permissions.
+
+### v0.85.0 / 2024-05-29
 - [Feat] spanMetrics preset allow extraDimensions and apply config to all spanmetrics processors.
 - [Feat] Bump collector version to `0.101.0`
 
