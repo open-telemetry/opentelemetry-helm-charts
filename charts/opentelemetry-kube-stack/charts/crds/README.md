@@ -4,6 +4,9 @@ This chart contains the CRDs for _*installation*_ only right now for the opentel
 
 This approach is inspired by the kube-prometheus-stack approach which you can see discussion on [here](https://github.com/prometheus-community/helm-charts/issues/3548).
 
+> [!NOTE]
+> This chart explicitly _does not_ support the conversion webhook that is currently in the opentelemetry-operator chart. This is because the opentelemetry-kube-stack chart will only work with v1beta1 CRDs. If you wish to use v1alpha1 CRDs to install collectors, you must disable the operator installation as part of the opentelemetry-kube-stack and install the operator separately.
+
 # Upgrade Notes
 
 Right now, upgrades are NOT handled by this chart, however that could change in the future. This is what is run to bring in the CRDs today.
