@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.86.0 / 2024-06-06
+- [Feat] Bump collector version to `0.102.1`
+
 ### v0.85.1 / 2024-06-05
 - [Fix] add target allocator events and getting secrets permissions.
 
