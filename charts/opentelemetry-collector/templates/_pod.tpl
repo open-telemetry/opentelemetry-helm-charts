@@ -10,6 +10,9 @@ securityContext:
 hostAliases:
   {{- toYaml . | nindent 2 }}
 {{- end }}
+{{- if $.Values.shareProcessNamespace }}
+shareProcessNamespace: true
+{{- end }}
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     {{- if .Values.command.name }}
