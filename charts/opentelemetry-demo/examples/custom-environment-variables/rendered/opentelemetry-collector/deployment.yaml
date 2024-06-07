@@ -6,10 +6,10 @@ metadata:
   name: example-otelcol
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.90.1
+    helm.sh/chart: opentelemetry-collector-0.86.0
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.99.0"
+    app.kubernetes.io/version: "0.97.0"
     app.kubernetes.io/managed-by: Helm
     
 spec:
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: d584c747100a7be17c4a68e4b23fec8cea53f060d2f07db99846f1fa63ebf582
+        checksum/config: 8906a1d742ee8c059e34c075c5682d6c8b0f1b87dd6da45b31672939e5e4375f
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
@@ -41,11 +41,12 @@ spec:
         {}
       containers:
         - name: opentelemetry-collector
-          args:
+          command:
+            - /otelcol-contrib
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.99.0"
+          image: "otel/opentelemetry-collector-contrib:0.97.0"
           imagePullPolicy: IfNotPresent
           ports:
             
