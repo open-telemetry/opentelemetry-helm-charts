@@ -1,4 +1,4 @@
-{{- if and .Values.serviceMonitor.enabled .Values.serviceMonitor.metricsEndpoints (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
+{{- if and (eq (include "opentelemetry-collector.serviceEnabled" .) "true") .Values.serviceMonitor.enabled .Values.serviceMonitor.metricsEndpoints }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
