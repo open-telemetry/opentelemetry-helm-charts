@@ -8,6 +8,10 @@ metadata:
     app: {{ template "opentelemetry-operator.name" . }}-operator
 {{- include "opentelemetry-operator.labels" . | nindent 4 }}
 spec:
+  {{- with .Values.manager.verticalPodAutoscaler.recommenders }}
+  recommenders:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   resourcePolicy:
     containerPolicies:
     - containerName: manager
