@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.86.1 / 2024-06-20
+- [Fix] Remove logging exporter from the list of default exporters
+
 ### v0.86.0 / 2024-06-06
 - [Feat] Bump collector version to `0.102.1`
 
