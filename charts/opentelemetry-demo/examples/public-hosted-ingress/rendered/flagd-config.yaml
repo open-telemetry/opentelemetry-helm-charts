@@ -6,12 +6,12 @@ metadata:
   name: example-flagd-config
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-demo-0.30.6
+    helm.sh/chart: opentelemetry-demo-0.31.0
     
     opentelemetry.io/name: example
     app.kubernetes.io/instance: example
     app.kubernetes.io/name: example
-    app.kubernetes.io/version: "1.9.0"
+    app.kubernetes.io/version: "1.10.0"
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 data:
@@ -42,10 +42,10 @@ data:
           "description": "Triggers full manual garbage collections in the ad service",
           "state": "ENABLED",
           "variants": {
-            "on": true,
-            "off": false
-          },
-          "defaultVariant": "off"
+              "on": true,
+              "off": false
+            },
+            "defaultVariant": "off"
         },
         "adServiceHighCpu": {
           "description": "Triggers high cpu load in the ad service",
@@ -66,28 +66,19 @@ data:
           "defaultVariant": "off",
           "targeting": {
             "fractional": [
-              {
-                "var": "session"
-              },
-              [
-                "on",
-                10
-              ],
-              [
-                "off",
-                90
-              ]
+              ["on", 10],
+              ["off", 90]
             ]
           }
         },
-        "kafakQueueProblems": {
+        "kafkaQueueProblems": {
           "description": "Overloads Kafka queue while simultaneously introducing a consumer side delay leading to a lag spike",
           "state": "ENABLED",
           "variants": {
-            "on": 100,
-            "off": 0
-          },
-          "defaultVariant": "off"
+              "on": 100,
+              "off": 0
+            },
+            "defaultVariant": "off"
         },
         "cartServiceFailure": {
           "description": "Fail cart service",
@@ -121,6 +112,16 @@ data:
           "state": "ENABLED",
           "variants": {
             "on": 100,
+            "off": 0
+          },
+          "defaultVariant": "off"
+        },
+        "imageSlowLoad": {
+          "description": "slow loading images in the frontend",
+          "state": "ENABLED",
+          "variants": {
+            "10sec": 10000,
+            "5sec": 5000,
             "off": 0
           },
           "defaultVariant": "off"
