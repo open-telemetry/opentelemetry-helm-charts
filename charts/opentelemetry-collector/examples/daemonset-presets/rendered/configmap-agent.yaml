@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.86.1
+    helm.sh/chart: opentelemetry-collector-0.86.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.102.1"
@@ -33,12 +33,6 @@ data:
         auth_type: serviceAccount
         node: ${env:K8S_NODE_NAME}
         observe_pods: true
-    processor:
-      transform/span_name:
-        trace_statements:
-        - context: span
-          statements:
-          - replace_pattern(name, "^(.*)$", "$1")
     processors:
       batch: {}
       k8sattributes:
@@ -110,6 +104,11 @@ data:
           - delete_key(attributes, "k8s.node.uid")
           - delete_key(attributes, "net.host.name")
           - delete_key(attributes, "net.host.port")
+      transform/span_name:
+        trace_statements:
+        - context: span
+          statements:
+          - replace_pattern(name, "^(.*)$", "$$1")
     receivers:
       filelog:
         exclude: []
@@ -212,6 +211,7 @@ data:
           id: kube-system_app-.*_http
           is_first_entry: (attributes.log) matches "^[^\\s].*"
           max_log_size: 1048576
+          max_unmatched_batch_size: 1
           output: clean-up-log-record
           type: recombine
         - combine_field: attributes.log
@@ -219,6 +219,7 @@ data:
           id: default_app-.*
           is_first_entry: (attributes.log) matches "^[^\\s].*"
           max_log_size: 1048576
+          max_unmatched_batch_size: 1
           output: clean-up-log-record
           type: recombine
         - combine_field: attributes.log
@@ -226,6 +227,7 @@ data:
           id: test
           is_first_entry: (attributes.log) matches "^[^\\s].*"
           max_log_size: 1048576
+          max_unmatched_batch_size: 1
           output: clean-up-log-record
           type: recombine
         - from: attributes.log

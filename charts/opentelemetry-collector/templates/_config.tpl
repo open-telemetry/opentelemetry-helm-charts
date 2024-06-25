@@ -438,6 +438,7 @@ receivers:
         combine_field: attributes.log
         is_first_entry: '(attributes.log) matches {{ .firstEntryRegex | quote }}'
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+        max_unmatched_batch_size: {{ $.Values.presets.logsCollection.maxUnmatchedBatchSize }}
         {{- if hasKey . "combineWith" }}
         combine_with: {{ .combineWith | quote }}
         {{- end }}
@@ -699,7 +700,7 @@ connectors:
    metrics_expiration: 0
 {{- end }}
 {{- if .Values.presets.spanMetrics.spanNameReplacePattern }}
-processor:
+processors:
   transform/span_name:
     trace_statements:
       - context: span

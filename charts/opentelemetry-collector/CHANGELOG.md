@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.86.2 / 2024-06-25
+- [Fix] Allow configuring max_unmatched_batch_size in multilineConfigs. Default is changed to max_unmatched_batch_size=1.
+- [Fix] Fix spanMetrics.spanNameReplacePattern preset does not work
+
 ### v0.86.1 / 2024-06-20
 - [Fix] Remove logging exporter from the list of default exporters
 
