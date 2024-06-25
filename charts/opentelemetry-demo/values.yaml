@@ -200,8 +200,8 @@ components:
         value: "8080"
       - name: ASPNETCORE_URLS
         value: http://*:$(CART_SERVICE_PORT)
-      - name: REDIS_ADDR
-        value: '{{ include "otel-demo.name" . }}-redis:6379'
+      - name: VALKEY_ADDR
+        value: '{{ include "otel-demo.name" . }}-valkey:6379'
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
       - name: FLAGD_PORT
@@ -212,9 +212,9 @@ components:
       limits:
         memory: 160Mi
     initContainers:
-      - name: wait-for-redis
+      - name: wait-for-valkey
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-redis 6379; do echo waiting for redis; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-valkey 6379; do echo waiting for valkey; sleep 2; done;']
 
   checkoutService:
     enabled: true
@@ -608,22 +608,22 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-  redis:
+  valkey:
     enabled: true
     useDefault:
       env: true
     imageOverride:
-      repository: "redis"
+      repository: "valkey/valkey"
       tag: "7.2-alpine"
     replicas: 1
     ports:
-      - name: redis
+      - name: valkey
         value: 6379
     resources:
       limits:
         memory: 20Mi
     securityContext:
-      runAsUser: 999  # redis
+      runAsUser: 999  # valkey
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -668,7 +668,7 @@ opentelemetry-collector:
         targets:
           - endpoint: 'http://{{ include "otel-demo.name" . }}-frontendproxy:8080'
       redis:
-        endpoint: "redis-cart:6379"
+        endpoint: "valkey-cart:6379"
         collection_interval: 10s
 
     exporters:
