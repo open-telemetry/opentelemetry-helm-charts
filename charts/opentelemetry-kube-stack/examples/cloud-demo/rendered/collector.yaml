@@ -108,8 +108,24 @@ spec:
         - MemoryPressure
         - DiskPressure
         - NetworkUnavailable
+      k8sobjects:
+        objects:
+        - exclude_watch_type:
+          - DELETED
+          group: events.k8s.io
+          mode: watch
+          name: events
     service:
       pipelines:
+        logs:
+          exporters:
+          - debug
+          processors:
+          - batch
+          - k8sattributes
+          - resourcedetection/env
+          receivers:
+          - k8sobjects
         metrics:
           exporters:
           - debug
@@ -277,86 +293,9 @@ spec:
         include_file_name: false
         include_file_path: true
         operators:
-        - id: get-format
-          routes:
-          - expr: body matches "^\\{"
-            output: parser-docker
-          - expr: body matches "^[^ Z]+ "
-            output: parser-crio
-          - expr: body matches "^[^ Z]+Z"
-            output: parser-containerd
-          type: router
-        - id: parser-crio
-          regex: ^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
-          timestamp:
-            layout: 2006-01-02T15:04:05.999999999Z07:00
-            layout_type: gotime
-            parse_from: attributes.time
-          type: regex_parser
-        - combine_field: attributes.log
-          combine_with: ""
-          id: crio-recombine
-          is_last_entry: attributes.logtag == 'F'
+        - id: container-parser
           max_log_size: 102400
-          output: extract_metadata_from_filepath
-          source_identifier: attributes["log.file.path"]
-          type: recombine
-        - id: parser-containerd
-          regex: ^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
-          timestamp:
-            layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-            parse_from: attributes.time
-          type: regex_parser
-        - combine_field: attributes.log
-          combine_with: ""
-          id: containerd-recombine
-          is_last_entry: attributes.logtag == 'F'
-          max_log_size: 102400
-          output: extract_metadata_from_filepath
-          source_identifier: attributes["log.file.path"]
-          type: recombine
-        - id: parser-docker
-          output: extract_metadata_from_filepath
-          timestamp:
-            layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-            parse_from: attributes.time
-          type: json_parser
-        - id: extract_metadata_from_filepath
-          parse_from: attributes["log.file.path"]
-          regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
-          type: regex_parser
-        - from: attributes.log
-          if: attributes.body != nil
-          to: body
-          type: move
-        - from: attributes.stream
-          if: attributes.stream != nil
-          to: attributes["log.iostream"]
-          type: move
-        - from: attributes.container_name
-          if: attributes.container_name != nil
-          to: resource["k8s.container.name"]
-          type: move
-        - from: attributes.namespace
-          if: attributes.namespace != nil
-          to: resource["k8s.namespace.name"]
-          type: move
-        - from: attributes.pod_name
-          if: attributes.pod_name != nil
-          to: resource["k8s.pod.name"]
-          type: move
-        - from: attributes.restart_count
-          if: attributes.restart_count != nil
-          to: resource["k8s.container.restart_count"]
-          type: move
-        - from: attributes.uid
-          if: attributes.uid != nil
-          to: resource["k8s.pod.uid"]
-          type: move
-        - from: attributes.log
-          if: attributes.log != nil
-          to: body
-          type: move
+          type: container
         retry_on_failure:
           enabled: true
         start_at: end
@@ -415,13 +354,6 @@ spec:
               system.memory.utilization:
                 enabled: true
           network: {}
-      k8sobjects:
-        objects:
-        - exclude_watch_type:
-          - DELETED
-          group: events.k8s.io
-          mode: watch
-          name: events
       kubeletstats:
         auth_type: serviceAccount
         collection_interval: 15s
@@ -641,7 +573,6 @@ spec:
           receivers:
           - otlp
           - filelog
-          - k8sobjects
         metrics:
           exporters:
           - debug
@@ -651,6 +582,7 @@ spec:
           - k8sattributes
           - resourcedetection/env
           receivers:
+          - prometheus
           - otlp
           - hostmetrics
           - kubeletstats

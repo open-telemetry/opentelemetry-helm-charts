@@ -124,13 +124,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Expand the name of the chart.
-*/}}
-{{- define "opentelemetry-kube-stack.collectorName" -}}
-{{- default .Chart.Name .collector.name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -138,12 +131,14 @@ If release name contains chart name it will be used as a full name.
 {{- define "opentelemetry-kube-stack.collectorFullname" -}}
 {{- if .fullnameOverride }}
 {{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else if .collector.fullnameOverride }}
+{{- .collector.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name (coalesce .collector.name "") }}
-{{- if contains $name .Release.Name }}
+{{- $suffix := default .Chart.Name (coalesce .collector.suffix "") }}
+{{- if contains $suffix .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Release.Name $suffix | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 {{- end }}

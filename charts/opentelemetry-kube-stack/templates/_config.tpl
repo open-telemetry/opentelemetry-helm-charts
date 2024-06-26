@@ -48,6 +48,14 @@ the config is written as YAML.
 {{- toYaml $collector.config | nindent 4 }}
 {{- end }}
 
+{{/*
+This helper allows a user to load in an external scrape configs file directly from prometheus.
+The helper will load and then append the scrape configs list to an existing prometheus scraper.
+If no prometheus configuration is present, the prometheus configuration is added.
+
+This helper ultimately assists users in getting started with Kubernetes infra metrics from scratch
+OR helps them easily port prometheus to the otel-kube-stack chart with no changes to their prometheus config.
+*/}}
 {{- define "opentelemetry-kube-stack.collector.appendPrometheusScrapeFile" -}}
 {{- $loaded_file := (.Files.Get .collector.scrape_configs_file) }}
 {{- $loaded_config := (fromYamlArray (tpl $loaded_file .)) }}
@@ -55,6 +63,9 @@ the config is written as YAML.
 {{- if (dig "receivers" "prometheus" "config" "scrape_configs" false .collector.config) }}
 {{- $merged_prom_scrape_configs := (concat .collector.config.receivers.prometheus.config.scrape_configs $loaded_config) }}
 {{- $prom_override = (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $merged_prom_scrape_configs)))) }}
+{{- end }}
+{{- if and (dig "service" "pipelines" "metrics" false .collector.config) (not (has "prometheus" (dig "service" "pipelines" "metrics" "receivers" list .collector.config))) }}
+{{- $_ := set .collector.config.service.pipelines.metrics "receivers" (prepend (.collector.config.service.pipelines.metrics.receivers | default list) "prometheus" | uniq)  }}
 {{- end }}
 {{- (mergeOverwrite .collector.config $prom_override) | toYaml }}
 {{- end }}
@@ -312,93 +323,10 @@ receivers:
     include_file_path: true
     include_file_name: false
     operators:
-      - type: router
-        id: get-format
-        routes:
-          - output: parser-docker
-            expr: 'body matches "^\\{"'
-          - output: parser-crio
-            expr: 'body matches "^[^ Z]+ "'
-          - output: parser-containerd
-            expr: 'body matches "^[^ Z]+Z"'
-      # Parse CRI-O format
-      - type: regex_parser
-        id: parser-crio
-        regex: "^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$"
-        timestamp:
-          parse_from: attributes.time
-          layout_type: gotime
-          layout: "2006-01-02T15:04:05.999999999Z07:00"
-      - type: recombine
-        id: crio-recombine
-        output: extract_metadata_from_filepath
-        combine_field: attributes.log
-        source_identifier: attributes["log.file.path"]
-        is_last_entry: "attributes.logtag == 'F'"
-        combine_with: ""
+      # parse container logs
+      - type: container
+        id: container-parser
         max_log_size: {{ .presets.logsCollection.maxRecombineLogSize }}
-      # Parse CRI-Containerd format
-      - type: regex_parser
-        id: parser-containerd
-        regex: "^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$"
-        timestamp:
-          parse_from: attributes.time
-          layout: "%Y-%m-%dT%H:%M:%S.%LZ"
-      - type: recombine
-        id: containerd-recombine
-        output: extract_metadata_from_filepath
-        combine_field: attributes.log
-        source_identifier: attributes["log.file.path"]
-        is_last_entry: "attributes.logtag == 'F'"
-        combine_with: ""
-        max_log_size: {{ .presets.logsCollection.maxRecombineLogSize }}
-      # Parse Docker format
-      - type: json_parser
-        id: parser-docker
-        output: extract_metadata_from_filepath
-        timestamp:
-          parse_from: attributes.time
-          layout: "%Y-%m-%dT%H:%M:%S.%LZ"
-      # Extract metadata from file path
-      - type: regex_parser
-        id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
-        parse_from: attributes["log.file.path"]
-      # Clean up log body
-      - type: move
-        from: attributes.log
-        to: body
-        if: "attributes.body != nil"
-      # Rename attributes
-      - type: move
-        from: attributes.stream
-        to: attributes["log.iostream"]
-        if: "attributes.stream != nil"
-      - type: move
-        from: attributes.container_name
-        to: resource["k8s.container.name"]
-        if: "attributes.container_name != nil"
-      - type: move
-        from: attributes.namespace
-        to: resource["k8s.namespace.name"]
-        if: "attributes.namespace != nil"
-      - type: move
-        from: attributes.pod_name
-        to: resource["k8s.pod.name"]
-        if: "attributes.pod_name != nil"
-      - type: move
-        from: attributes.restart_count
-        to: resource["k8s.container.restart_count"]
-        if: "attributes.restart_count != nil"
-      - type: move
-        from: attributes.uid
-        to: resource["k8s.pod.uid"]
-        if: "attributes.uid != nil"
-      # Clean up log body
-      - type: move
-        from: attributes.log
-        to: body
-        if: "attributes.log != nil"
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" -}}

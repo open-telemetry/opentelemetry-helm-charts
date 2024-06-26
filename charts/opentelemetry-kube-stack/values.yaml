@@ -42,8 +42,11 @@ opentelemetry-operator:
 defaultCRConfig:
   enabled: false
 
-  # Name of the collector
-  name: "collector"
+  # Suffix for the collector pool, by default the release name is prepended
+  suffix: "collector"
+
+  # fullnameOverride allows overriding the collector's name
+  fullnameOverride: ""
 
   # Annotations for the collector
   annotations: {}
@@ -52,6 +55,12 @@ defaultCRConfig:
   # Labels for the collector
   labels: {}
   #   app: otc
+
+  # scrape_configs_file allows the user to load an external file into
+  # the collector's prometheus scrape_configs. This is added to assist users
+  # coming from the prometheus ecosystem by allowing users to simply copy and paste
+  # directly from prometheus into this file to use the same config.
+  scrape_configs_file: ""
 
   # Management state of the collector
   managementState: managed
@@ -403,6 +412,7 @@ defaultCRConfig:
     # Adds the k8sobject receiver to the logs pipeline
     # and collects kubernetes events by default.
     # Best used with mode = deployment or statefulset.
+    # MUST be used by a collector with a single replica.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
     kubernetesEvents:
       enabled: false
@@ -410,6 +420,7 @@ defaultCRConfig:
     # Adds the k8s_cluster receiver to the metrics pipeline
     # and adds the necessary rules to ClusteRole.
     # Best used with mode = deployment or statefulset.
+    # MUST be used by a collector with a single replica.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
     clusterMetrics:
       enabled: false
@@ -428,7 +439,7 @@ defaultCRConfig:
 # destination in a file called values-staging.yaml.
 collectors:
   daemon:
-    name: daemon
+    suffix: daemon
     mode: daemonset
     enabled: true
     resources:
@@ -444,8 +455,6 @@ collectors:
     scrape_configs_file: "daemon_scrape_configs.yaml"
     presets:
       logsCollection:
-        enabled: true
-      kubernetesEvents:
         enabled: true
       kubeletMetrics:
         enabled: true
@@ -495,7 +504,7 @@ collectors:
             exporters:
               - debug
   cluster:
-    name: cluster-stats
+    suffix: cluster-stats
     replicas: 1
     mode: deployment
     enabled: true
@@ -508,6 +517,8 @@ collectors:
         memory: 500Mi
     presets:
       kubernetesAttributes:
+        enabled: true
+      kubernetesEvents:
         enabled: true
       clusterMetrics:
         enabled: true
@@ -526,6 +537,10 @@ collectors:
         pipelines:
           metrics:
             receivers: [k8s_cluster]
+            processors: [resourcedetection/env]
+            exporters: [debug]
+          logs:
+            receivers: [k8sobjects]
             processors: [resourcedetection/env]
             exporters: [debug]
 

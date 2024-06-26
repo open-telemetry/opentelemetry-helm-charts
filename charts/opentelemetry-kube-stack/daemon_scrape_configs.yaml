@@ -1,4 +1,9 @@
-# Collect node metrics
+# Collect all metrics from pods on the daemon set's node with at least this annotation
+# prometheus.io/scrape: 'true'
+# This can be further customized by setting the following annotations:
+# prometheus.io/scheme: 'https'
+# prometheus.io/path: '/data/metrics'
+# prometheus.io/port: '80'
 - job_name: kubernetes-pods
   scrape_interval: 30s
   kubernetes_sd_configs:
@@ -47,6 +52,8 @@
     - action: replace
       source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
       target_label: job
+# This job is setup to scrape the node metrics on the same host as the daemonset
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/29053
 - job_name: node-exporter
   scrape_interval: 30s
   relabel_configs:
@@ -62,7 +69,8 @@
   static_configs:
     - targets:
         - ${OTEL_K8S_NODE_IP}:9100
-# We still need to scrape kubelet's CAdvisor which isn't supported
+# We still need to scrape kubelet's CAdvisor which isn't supported in any otel collector receiver
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/29053
 - authorization:
     credentials_file: "/var/run/secrets/kubernetes.io/serviceaccount/token"
     type: Bearer
