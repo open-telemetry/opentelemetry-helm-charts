@@ -204,82 +204,10 @@ receivers:
     include_file_path: true
     include_file_name: false
     operators:
-      # Find out which format is used by kubernetes
-      - type: router
-        id: get-format
-        routes:
-          - output: parser-docker
-            expr: 'body matches "^\\{"'
-          - output: parser-crio
-            expr: 'body matches "^[^ Z]+ "'
-          - output: parser-containerd
-            expr: 'body matches "^[^ Z]+Z"'
-      # Parse CRI-O format
-      - type: regex_parser
-        id: parser-crio
-        regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
-        timestamp:
-          parse_from: attributes.time
-          layout_type: gotime
-          layout: '2006-01-02T15:04:05.999999999Z07:00'
-      - type: recombine
-        id: crio-recombine
-        output: extract_metadata_from_filepath
-        combine_field: attributes.log
-        source_identifier: attributes["log.file.path"]
-        is_last_entry: "attributes.logtag == 'F'"
-        combine_with: ""
+      # parse container logs
+      - type: container
+        id: container-parser
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
-      # Parse CRI-Containerd format
-      - type: regex_parser
-        id: parser-containerd
-        regex: '^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
-        timestamp:
-          parse_from: attributes.time
-          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-      - type: recombine
-        id: containerd-recombine
-        output: extract_metadata_from_filepath
-        combine_field: attributes.log
-        source_identifier: attributes["log.file.path"]
-        is_last_entry: "attributes.logtag == 'F'"
-        combine_with: ""
-        max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
-      # Parse Docker format
-      - type: json_parser
-        id: parser-docker
-        output: extract_metadata_from_filepath
-        timestamp:
-          parse_from: attributes.time
-          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-      # Extract metadata from file path
-      - type: regex_parser
-        id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
-        parse_from: attributes["log.file.path"]
-      # Rename attributes
-      - type: move
-        from: attributes.stream
-        to: attributes["log.iostream"]
-      - type: move
-        from: attributes.container_name
-        to: resource["k8s.container.name"]
-      - type: move
-        from: attributes.namespace
-        to: resource["k8s.namespace.name"]
-      - type: move
-        from: attributes.pod_name
-        to: resource["k8s.pod.name"]
-      - type: move
-        from: attributes.restart_count
-        to: resource["k8s.container.restart_count"]
-      - type: move
-        from: attributes.uid
-        to: resource["k8s.pod.uid"]
-      # Clean up log body
-      - type: move
-        from: attributes.log
-        to: body
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
