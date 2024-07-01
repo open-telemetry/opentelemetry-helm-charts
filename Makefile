@@ -5,21 +5,23 @@ OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml 
 .PHONY: generate-examples
 generate-examples:
 	for chart_name in $(CHARTS); do \
+		helm dependency build charts/$${chart_name}; \
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
 		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
 			VALUES=$$(find $${EXAMPLES_DIR}/$${example} -name *values.yaml); \
 			rm -rf "$${EXAMPLES_DIR}/$${example}/rendered"; \
 			for value in $${VALUES}; do \
-				helm dependency build charts/$${chart_name}; \
 				helm template example charts/$${chart_name} --namespace default --values $${value} --output-dir "$${EXAMPLES_DIR}/$${example}/rendered"; \
 				mv $${EXAMPLES_DIR}/$${example}/rendered/$${chart_name}/templates/* "$${EXAMPLES_DIR}/$${example}/rendered"; \
 				SUBCHARTS_DIR=$${EXAMPLES_DIR}/$${example}/rendered/$${chart_name}/charts; \
-				SUBCHARTS=$$(find $${SUBCHARTS_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
-				for subchart in $${SUBCHARTS}; do \
-					mkdir -p "$${EXAMPLES_DIR}/$${example}/rendered/$${subchart}"; \
-					mv $${SUBCHARTS_DIR}/$${subchart}/templates/* "$${EXAMPLES_DIR}/$${example}/rendered/$${subchart}"; \
-				done; \
+				if [ -d "$${SUBCHARTS_DIR}" ]; then \
+					SUBCHARTS=$$(find $${SUBCHARTS_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
+					for subchart in $${SUBCHARTS}; do \
+						mkdir -p "$${EXAMPLES_DIR}/$${example}/rendered/$${subchart}"; \
+						mv $${SUBCHARTS_DIR}/$${subchart}/templates/* "$${EXAMPLES_DIR}/$${example}/rendered/$${subchart}"; \
+					done; \
+				fi; \
 				rm -rf $${EXAMPLES_DIR}/$${example}/rendered/$${chart_name}; \
 			done; \
 		done; \
