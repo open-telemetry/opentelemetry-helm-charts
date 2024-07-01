@@ -41,10 +41,6 @@ the config is written as YAML.
 {{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- if .collector.presets.batchProcessor.enabled }}
-{{- $config = (include "opentelemetry-kube-stack.collector.applyBatchProcessorConfig" (dict "collector" $collector) | fromYaml) -}}
-{{- $_ := set $collector "config" $config }}
-{{- end }}
 {{- toYaml $collector.config | nindent 4 }}
 {{- end }}
 
@@ -346,26 +342,4 @@ receivers:
         group: "events.k8s.io"
         exclude_watch_type:
           - "DELETED"
-{{- end }}
-
-{{- define "opentelemetry-kube-stack.collector.applyBatchProcessorConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.batchProcessorConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "batch" (dig "service" "pipelines" "logs" "processors" list $config))) }}
-{{- $_ := set $config.service.pipelines.logs "processors" (prepend ($config.service.pipelines.logs.processors | default list) "batch" | uniq)  }}
-{{- end }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "batch" (dig "service" "pipelines" "metrics" "processors" list $config))) }}
-{{- $_ := set $config.service.pipelines.metrics "processors" (prepend ($config.service.pipelines.metrics.processors | default list) "batch" | uniq)  }}
-{{- end }}
-{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "batch" (dig "service" "pipelines" "traces" "processors" list $config))) }}
-{{- $_ := set $config.service.pipelines.traces "processors" (prepend ($config.service.pipelines.traces.processors | default list) "batch" | uniq)  }}
-{{- end }}
-{{- $config | toYaml }}
-{{- end }}
-
-{{- define "opentelemetry-kube-stack.collector.batchProcessorConfig" -}}
-processors:
-  batch:
-    send_batch_size: 1000
-    timeout: 1s
-    send_batch_max_size: 1500
 {{- end }}
