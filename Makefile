@@ -9,6 +9,7 @@ generate-examples:
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
 		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
+			echo "Generating example: $${example}"; \
 			VALUES=$$(find $${EXAMPLES_DIR}/$${example} -name *values.yaml); \
 			rm -rf "$${EXAMPLES_DIR}/$${example}/rendered"; \
 			for value in $${VALUES}; do \
