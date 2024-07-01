@@ -12,6 +12,12 @@ metadata:
   name: {{ template "opentelemetry-operator.webhookCertName" . }}
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if .Values.admissionWebhooks.certManager.duration }}
+  duration: {{ .Values.admissionWebhooks.certManager.duration }}
+  {{- end }}
+  {{- if .Values.admissionWebhooks.certManager.renewBefore }}
+  renewBefore: {{ .Values.admissionWebhooks.certManager.renewBefore }}
+  {{- end }}
   dnsNames:
     - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc
     - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}
