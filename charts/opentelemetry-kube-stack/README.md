@@ -24,7 +24,7 @@ For example usage of this chart, please look in the examples/ folder where you c
 
 ### Image versioning
 
-Images are upgraded within the chart manually by setting the image tag to the latest release of each image used. This will be the latest patch release for the chart's appVersion. example:
+The appVersion of the chart is aligned to the latest image version of the operator. Images are upgraded within the chart manually by setting the image tag to the latest release of each image used. This will be the latest patch release for the chart's appVersion. example:
 ```
 appVersion: 0.103.0
 collector.image.tag: 0.103.1
