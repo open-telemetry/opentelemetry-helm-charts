@@ -22,6 +22,15 @@ This chart installs the OpenTelemetry Operator and two collector pools with the 
 
 For example usage of this chart, please look in the examples/ folder where you can see how you can set a custom OTLP exporter for your desired destination. The example configuration also shows how to enable Instrumentation and OpAMP Bridge resources.
 
+### Image versioning
+
+Images are upgraded within the chart manually by setting the image tag to the latest release of each image used. This will be the latest patch release for the chart's appVersion. example:
+```
+appVersion: 0.103.0
+collector.image.tag: 0.103.1
+bridge.image.tag: 0.103.0
+```
+
 ### scrape_configs_file Details
 
 By default, the daemonset collector will load in the daemon_scrape_configs.yaml file which collects prometheus metrics from applications on the same node that have the prometheus.io/scrape=true annotation, kubernetes node metrics, and cadvisor metrics. Users can disable this by settings collectors.daemon.scrape_configs_file: "" OR they can provide their own promethues scrape config file for the daemonset by supplying collectors.daemon.scrape_configs_file: "<your-file>.yaml"
