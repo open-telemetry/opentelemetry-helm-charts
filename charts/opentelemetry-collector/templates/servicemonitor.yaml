@@ -16,4 +16,12 @@ spec:
       {{- include "opentelemetry-collector.component" . | nindent 6 }}
   endpoints:
   {{- toYaml .Values.serviceMonitor.metricsEndpoints | nindent 2 }}
+  {{- with .Values.serviceMonitor.relabelings }}
+  relabelings:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.serviceMonitor.metricRelabelings }}
+  metricRelabelings:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
