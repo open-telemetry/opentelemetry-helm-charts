@@ -6,7 +6,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 # Valid values are "daemonset", "deployment", and "statefulset".
-mode: "deployment"
+mode: ""
 
 # Specify which namespace should be used to deploy the resources into
 namespaceOverride: ""
@@ -113,7 +113,9 @@ config:
     otlp:
       protocols:
         grpc:
+          endpoint: ${env:MY_POD_IP}:4317
         http:
+          endpoint: ${env:MY_POD_IP}:4318
     prometheus:
       config:
         scrape_configs:
@@ -162,7 +164,7 @@ config:
 
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
-  repository: otel/opentelemetry-collector-k8s
+  repository: ""
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
