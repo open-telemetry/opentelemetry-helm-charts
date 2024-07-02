@@ -47,70 +47,42 @@ rules:
   verbs: ["get", "list", "watch"]
 - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
   verbs: ["get"]
-{{- if $.Values.clusterRole.rules }}
-{{ toYaml $.Values.clusterRole.rules }}
+{{- include "opentelemetry-kube-stack.k8scluster.rules" . }}
 {{- end }}
-{{- $should_create := false }}
 {{ range $_, $collector := $.Values.collectors -}}
-{{- $should_create = (any $should_create (dig "config" "receivers" "k8s_cluster" false $collector)) }}
+{{- if $collector.enabled -}}
+{{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets) }}
+{{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
+{{- if and $collector.enabled $collector.clusterRoleBinding.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $fullname }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "opentelemetry-kube-stack.clusterRoleName" $ }}
+subjects:
+- kind: ServiceAccount
+  # quirk of the Operator
+{{- if $collector.serviceAccount }}
+  name: "{{ $collector.serviceAccount }}"
+{{- else }}
+  name: "{{ $fullname }}-collector"
 {{- end }}
-{{- if $should_create }}
-- apiGroups:
-  - ""
-  resources:
-  - events
-  - namespaces
-  - namespaces/status
-  - nodes
-  - nodes/spec
-  - pods
-  - pods/status
-  - replicationcontrollers
-  - replicationcontrollers/status
-  - resourcequotas
-  - services
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - daemonsets
-  - deployments
-  - replicasets
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  resources:
-  - daemonsets
-  - deployments
-  - replicasets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  - cronjobs
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-    - autoscaling
-  resources:
-    - horizontalpodautoscalers
-  verbs:
-    - get
-    - list
-    - watch
+  namespace: {{ $.Release.Namespace }}
+{{- if eq $collector.mode "statefulset" }}
+- kind: ServiceAccount
+{{- if $collector.targetAllocator.serviceAccount }}
+  name: "{{ $collector.targetAllocator.serviceAccount }}"
+{{- else }}
+  name: {{ $fullname }}-targetallocator
+{{- end }}
+  namespace: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if and $.Values.opAMPBridge.enabled $.Values.opAMPBridge.clusterRole.enabled }}

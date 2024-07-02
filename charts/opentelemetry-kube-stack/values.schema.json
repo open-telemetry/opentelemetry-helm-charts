@@ -1279,6 +1279,92 @@
     },
     "OpenTelemetryCollectorSpec": {
       "properties": {
+        "presets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "logsCollection": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect logs.",
+                  "type": "boolean"
+                },
+                "includeCollectorLogs": {
+                  "description": "Specifies whether the collector should collect its own logs.",
+                  "type": "boolean"
+                },
+                "storeCheckpoints": {
+                  "description": "Specifies whether logs checkpoints should be stored in /var/lib/otelcol/ host directory.",
+                  "type": "boolean"
+                },
+                "maxRecombineLogSize": {
+                  "description": "Specifies the max recombine log size.",
+                  "type": "integer"
+                }
+              }
+            },
+            "hostMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect host metrics.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "kubeletMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect kubelet metrics.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "kubernetesAttributes": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should add Kubernetes metdata to resource attributes.",
+                  "type": "boolean"
+                },
+                "extractAllPodLabels": {
+                  "description": "Specifies whether the k8sattributes processor should extract all pod labels.",
+                  "type": "boolean"
+                },
+                "extractAllPodAnnotations": {
+                  "description": "Specifies whether the k8sattributes processor should extract all pod annotations.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "kubernetesEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect Kubernetes objects.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "clusterMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect cluster metrics.",
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
         "enabled": {
           "type": "boolean"
         },
@@ -1294,7 +1380,10 @@
             }
           }
         },
-        "name": {
+        "suffix": {
+          "type": "string"
+        },
+        "fullnameOverride": {
           "type": "string"
         },
         "annotations": {
