@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.87.0 / 2024-07-03
+- [Feat] Bump collector version to `0.104.0`
+
 ### v0.86.2 / 2024-06-25
 - [Fix] Allow configuring max_unmatched_batch_size in multilineConfigs. Default is changed to max_unmatched_batch_size=1.
 - [Fix] Fix spanMetrics.spanNameReplacePattern preset does not work

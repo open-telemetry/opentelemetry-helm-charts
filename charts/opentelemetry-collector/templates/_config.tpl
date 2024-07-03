@@ -181,11 +181,11 @@ receivers:
         scrape_interval: 30s
         static_configs:
           - targets:
-              - ${MY_POD_IP}:8888
+              - ${env:MY_POD_IP}:8888
     target_allocator:
       endpoint: http://{{ include "opentelemetry-collector.fullname" . }}-targetallocator
       interval: 30s
-      collector_id: ${MY_POD_NAME}
+      collector_id: ${env:MY_POD_NAME}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
