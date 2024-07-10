@@ -150,6 +150,20 @@ spec:
       memory: 500Mi
   securityContext:
     {}
+  targetAllocator:
+    image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
+    prometheusCR:
+      enabled: true
+      podMonitorSelector:
+        matchLabels:
+          app: my-app
+      scrapeInterval: 30s
+      serviceMonitorSelector:
+        matchExpressions:
+        - key: kubernetes.io/app-name
+          operator: In
+          values:
+          - my-app
   volumeMounts:
   env:
   - name: OTEL_K8S_NODE_NAME
@@ -607,6 +621,20 @@ spec:
       memory: 128Mi
   securityContext:
     {}
+  targetAllocator:
+    image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
+    prometheusCR:
+      enabled: true
+      podMonitorSelector:
+        matchLabels:
+          app: my-app
+      scrapeInterval: 30s
+      serviceMonitorSelector:
+        matchExpressions:
+        - key: kubernetes.io/app-name
+          operator: In
+          values:
+          - my-app
   volumeMounts:
   - name: varlogpods
     mountPath: /var/log/pods
