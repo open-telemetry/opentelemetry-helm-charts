@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "otel-cloud-stack.fullname" . }}-kube-etcd
+  name: {{ template "opentelemetry-kube-stack.fullname" . }}-kube-etcd
   {{- if .Values.prometheus.ignoreNamespaceSelectors }}
   namespace: kube-system
   {{- else }}
@@ -13,7 +13,7 @@ metadata:
   {{- with .Values.kubeEtcd.serviceMonitor.additionalLabels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-{{ include "otel-cloud-stack.labels" . | indent 4 }}
+{{ include "opentelemetry-kube-stack.labels" . | indent 4 }}
 spec:
   jobLabel: {{ .Values.kubeEtcd.serviceMonitor.jobLabel }}
   {{- include "servicemonitor.scrapeLimits" .Values.kubeEtcd.serviceMonitor | nindent 4 }}
