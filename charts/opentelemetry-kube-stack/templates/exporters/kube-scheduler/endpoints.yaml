@@ -4,7 +4,7 @@ kind: Endpoints
 metadata:
   name: {{ template "opentelemetry-kube-stack.fullname" . }}-kube-scheduler
   labels:
-    app: {{ template "otel-cloud-stack.name" . }}-kube-scheduler
+    app: {{ template "opentelemetry-kube-stack.name" . }}-kube-scheduler
     k8s-app: kube-scheduler
 {{ include "opentelemetry-kube-stack.labels" . | indent 4 }}
   namespace: kube-system
@@ -17,6 +17,6 @@ subsets:
       - name: {{ .Values.kubeScheduler.serviceMonitor.port }}
         {{- $kubeSchedulerDefaultInsecurePort := 10251 }}
         {{- $kubeSchedulerDefaultSecurePort := 10259 }}
-        port: {{ include "otel-cloud-stack.kubeScheduler.insecureScrape" (list . $kubeSchedulerDefaultInsecurePort $kubeSchedulerDefaultSecurePort .Values.kubeScheduler.service.port)  }}
+        port: {{ include "opentelemetry-kube-stack.kubeScheduler.insecureScrape" (list . $kubeSchedulerDefaultInsecurePort $kubeSchedulerDefaultSecurePort .Values.kubeScheduler.service.port)  }}
         protocol: TCP
 {{- end }}

@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: {{ template "opentelemetry-kube-stack.fullname" . }}-kube-controller-manager
   labels:
-    app: {{ template "otel-cloud-stack.name" . }}-kube-controller-manager
+    app: {{ template "opentelemetry-kube-stack.name" . }}-kube-controller-manager
     jobLabel: kube-controller-manager
 {{ include "opentelemetry-kube-stack.labels" . | indent 4 }}
   namespace: kube-system
@@ -14,9 +14,9 @@ spec:
     - name: {{ .Values.kubeControllerManager.serviceMonitor.port }}
       {{- $kubeControllerManagerDefaultInsecurePort := 10252 }}
       {{- $kubeControllerManagerDefaultSecurePort := 10257 }}
-      port: {{ include "otel-cloud-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.port) }}
+      port: {{ include "opentelemetry-kube-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.port) }}
       protocol: TCP
-      targetPort: {{ include "otel-cloud-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.targetPort) }}
+      targetPort: {{ include "opentelemetry-kube-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.targetPort) }}
 {{- if .Values.kubeControllerManager.endpoints }}{{- else }}
   selector:
     {{- if .Values.kubeControllerManager.service.selector }}

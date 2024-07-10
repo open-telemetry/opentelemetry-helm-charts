@@ -3,13 +3,13 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "opentelemetry-kube-stack.fullname" . }}-apiserver
-  {{- if .Values.prometheus.ignoreNamespaceSelectors }}
+  {{- if .Values.kubernetesServiceMonitors.ignoreNamespaceSelectors }}
   namespace: default
   {{- else }}
-  namespace: {{ template "otel-cloud-stack.namespace" . }}
+  namespace: {{ template "opentelemetry-kube-stack.namespace" . }}
   {{- end }}
   labels:
-    app: {{ template "otel-cloud-stack.name" . }}-apiserver
+    app: {{ template "opentelemetry-kube-stack.name" . }}-apiserver
   {{- with .Values.kubeApiServer.serviceMonitor.additionalLabels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
