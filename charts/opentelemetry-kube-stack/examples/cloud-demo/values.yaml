@@ -1,26 +1,25 @@
 clusterName: demo
 opentelemetry-operator:
   enabled: true
+defaultCRConfig:
+  targetAllocator:
+    image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
+    observability:
+      metrics:
+        disablePrometheusAnnotations: true
+        enableMetrics: true
+    prometheusCR:
+      enabled: true
+      podMonitorSelector:
+        matchLabels:
+          app: my-app
+      scrapeInterval: "30s"
+      serviceMonitorSelector:
+        matchExpressions:
+          - key: kubernetes.io/app-name
+            operator: In
+            values: ["my-app"]
 collectors:
-  defaultCRConfig:
-    targetAllocator:
-      image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
-      observability:
-        metrics:
-          disablePrometheusAnnotations: true
-          enableMetrics: true
-      prometheusCR:
-        enabled: true
-        podMonitorSelector:
-          matchLabels:
-            app: my-app
-        scrapeInterval: "30s"
-        serviceMonitorSelector:
-          matchExpressions:
-            - key: kubernetes.io/app-name
-              operator: In
-              values: ["my-app"]
-
   daemon:
     env:
       - name: ACCESS_TOKEN
