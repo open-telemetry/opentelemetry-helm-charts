@@ -6,7 +6,7 @@ metadata:
   name: example-cluster-stats
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.0.7
+    helm.sh/chart: opentelemetry-kube-stack-0.0.8
     app.kubernetes.io/version: "0.103.0"
     app.kubernetes.io/managed-by: Helm        
     opentelemetry.io/opamp-reporting: "true"
@@ -150,20 +150,6 @@ spec:
       memory: 500Mi
   securityContext:
     {}
-  targetAllocator:
-    image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
-    prometheusCR:
-      enabled: true
-      podMonitorSelector:
-        matchLabels:
-          app: my-app
-      scrapeInterval: 30s
-      serviceMonitorSelector:
-        matchExpressions:
-        - key: kubernetes.io/app-name
-          operator: In
-          values:
-          - my-app
   volumeMounts:
   env:
   - name: OTEL_K8S_NODE_NAME
@@ -206,7 +192,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.0.7
+    helm.sh/chart: opentelemetry-kube-stack-0.0.8
     app.kubernetes.io/version: "0.103.0"
     app.kubernetes.io/managed-by: Helm        
     opentelemetry.io/opamp-reporting: "true"
@@ -621,20 +607,6 @@ spec:
       memory: 128Mi
   securityContext:
     {}
-  targetAllocator:
-    image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
-    prometheusCR:
-      enabled: true
-      podMonitorSelector:
-        matchLabels:
-          app: my-app
-      scrapeInterval: 30s
-      serviceMonitorSelector:
-        matchExpressions:
-        - key: kubernetes.io/app-name
-          operator: In
-          values:
-          - my-app
   volumeMounts:
   - name: varlogpods
     mountPath: /var/log/pods
