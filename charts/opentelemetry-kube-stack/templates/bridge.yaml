@@ -8,12 +8,10 @@ metadata:
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
     {{- include "opentelemetry-kube-stack.renderkv" .Values.opAMPBridge.labels | indent 4 }}
+  {{- with .Values.opAMPBridge.annotations }}
   annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": hook-failed
-    {{- with .Values.opAMPBridge.annotations }}
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
-    {{- end }}
+  {{- end }}
 spec:
   endpoint: {{ required "opamp endpoint required" $.Values.opAMPBridge.endpoint }}
   {{- with $.Values.opAMPBridge.headers }}
