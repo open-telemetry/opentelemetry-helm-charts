@@ -110,8 +110,9 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- end }}
 {{- else }}
 {{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) -}}
-{{- $ca := genCA "opentelemetry-operator-operator-ca" 365 }}
-{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca }}
+{{- $tmpperioddays := int .Values.admissionWebhooks.autoGenerateCert.certPeriodDays | default 365 }}
+{{- $ca := genCA "opentelemetry-operator-operator-ca" $tmpperioddays }}
+{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames $tmpperioddays $ca }}
 {{- $certCrtEnc = b64enc $cert.Cert }}
 {{- $certKeyEnc = b64enc $cert.Key }}
 {{- $caCertEnc = b64enc $ca.Cert }}
