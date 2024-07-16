@@ -86,7 +86,6 @@ define get-crd
 @sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
 @sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
 @sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
-@sed -i '' '\#path: /convert#a \
-port: {{ .Values.admissionWebhooks.servicePort }}' $(1)
+@sed -i '\#path: /convert#a \nport: {{ .Values.admissionWebhooks.servicePort }}' $(1)
 @echo '{{- end }}' >> $(1)
 endef
