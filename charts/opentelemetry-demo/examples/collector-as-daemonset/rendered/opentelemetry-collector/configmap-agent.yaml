@@ -72,6 +72,52 @@ data:
           from_attribute: k8s.pod.uid
           key: service.instance.id
     receivers:
+      hostmetrics:
+        collection_interval: 10s
+        root_path: /hostfs
+        scrapers:
+          cpu: null
+          disk: null
+          filesystem:
+            exclude_fs_types:
+              fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+              match_type: strict
+            exclude_mount_points:
+              match_type: regexp
+              mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+          load: null
+          memory: null
+          network: null
       httpcheck/frontendproxy:
         targets:
         - endpoint: http://example-frontendproxy:8080
@@ -135,6 +181,7 @@ data:
           - redis
           - otlp
           - spanmetrics
+          - hostmetrics
         traces:
           exporters:
           - otlp

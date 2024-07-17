@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 796a33e3d35c160bfe9d240c78dea101715d2df86ee80296880342727ab5e150
+        checksum/config: e411cd4d9a2683b5f7f3b0fe7df57b59e3092e02f51ae6602161d8f18e96a3cd
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
@@ -95,6 +95,10 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - name: hostfs
+              mountPath: /hostfs
+              readOnly: true
+              mountPropagation: HostToContainer
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -102,4 +106,7 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: hostfs
+          hostPath:
+            path: /
       hostNetwork: false
