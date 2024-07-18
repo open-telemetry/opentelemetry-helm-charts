@@ -128,9 +128,13 @@ manager:
     # Create default rules for monitoring the manager
     defaultRules:
       enabled: false
-    # additional labels on the PrometheusRule
+      ## Additional labels for PrometheusRule alerts
+      additionalRuleLabels: {}
+      ## Additional annotations for PrometheusRule alerts
+      additionalRuleAnnotations: {}
+    # additional labels on the PrometheusRule object
     extraLabels: {}
-    # add annotations on the PrometheusRule
+    # add annotations on the PrometheusRule object
     annotations: {}
 
   # Whether the operator should create RBAC permissions for collectors. See README.md for more information.
@@ -260,6 +264,8 @@ admissionWebhooks:
     enabled: true
     # If set to true, new webhook key/certificate is generated on helm upgrade.
     recreate: true
+    # Cert period time in days. The default is 365 days.
+    certPeriodDays: 365
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
   ## certManager and autoGenerateCert must be disabled and certFile, keyFile, and caFile must be set.

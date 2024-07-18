@@ -162,7 +162,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 50Mi
+        memory: 120Mi
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
@@ -690,6 +690,17 @@ opentelemetry-collector:
             insecure: true
 
     processors:
+      # This processor is used to help limit high cardinality on next.js span names
+      # When this PR is merged (and released) we can remove this transform processor
+      # https://github.com/vercel/next.js/pull/64852
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+              - replace_pattern(name, "\\?.*", "")
+              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
       resource:
         attributes:
         - key: service.instance.id
@@ -702,7 +713,7 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, resource, batch]
+          processors: [memory_limiter, resource, transform, batch]
           exporters: [otlp, debug, spanmetrics]
         metrics:
           receivers: [httpcheck/frontendproxy, redis, otlp, spanmetrics]
