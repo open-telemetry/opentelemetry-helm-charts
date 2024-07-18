@@ -24,9 +24,12 @@ containers:
       {{- end }}
       {{- end }}
     securityContext:
-      {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (.Values.presets.logsCollection.storeCheckpoints) }}
+      {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled)) }}
       runAsUser: 0
       runAsGroup: 0
+      {{- if .Values.presets.hostMetrics.process.enabled }}
+      privileged: true
+      {{- end }}
       {{- else -}}
       {{- toYaml .Values.securityContext | nindent 6 }}
       {{- end }}

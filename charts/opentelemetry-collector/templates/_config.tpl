@@ -257,6 +257,18 @@ receivers:
             match_type: strict
           {{- end }}
         network:
+        {{- if and (.Values.presets.hostMetrics.process.enabled) (not (.Values.isWindows)) }}
+        process:
+          # mutes "error reading username for process \"pause\" /etc/passwd", errors
+          mute_process_user_error: true
+          metrics:
+            process.cpu.utilization:
+              enabled: true
+            process.threads:
+              enabled: true
+            process.memory.utilization:
+              enabled: true
+        {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyClusterMetricsConfig" -}}

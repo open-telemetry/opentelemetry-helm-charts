@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.87.1 / 2024-07-18
+- [Feat] add process option for hostmetrics preset.
+
 ### v0.87.0 / 2024-07-03
 - [Feat] Bump collector version to `0.104.0`
 
