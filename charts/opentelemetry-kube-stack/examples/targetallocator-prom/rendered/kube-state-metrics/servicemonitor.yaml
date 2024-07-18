@@ -1,0 +1,25 @@
+---
+# Source: opentelemetry-kube-stack/charts/kube-state-metrics/templates/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: example-kube-state-metrics
+  namespace: default
+  labels:    
+    helm.sh/chart: kube-state-metrics-5.21.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/part-of: kube-state-metrics
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "2.12.0"
+    release: example
+spec:
+  jobLabel: app.kubernetes.io/name  
+  selector:
+    matchLabels:      
+      app.kubernetes.io/name: kube-state-metrics
+      app.kubernetes.io/instance: example
+  endpoints:
+    - port: http
+      honorLabels: true
