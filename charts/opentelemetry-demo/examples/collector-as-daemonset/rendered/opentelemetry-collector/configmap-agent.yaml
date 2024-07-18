@@ -71,6 +71,13 @@ data:
         - action: insert
           from_attribute: k8s.pod.uid
           key: service.instance.id
+      transform:
+        error_mode: ignore
+        trace_statements:
+        - context: span
+          statements:
+          - replace_pattern(name, "\\?.*", "")
+          - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
       httpcheck/frontendproxy:
         targets:
@@ -144,6 +151,7 @@ data:
           - k8sattributes
           - memory_limiter
           - resource
+          - transform
           - batch
           receivers:
           - otlp
