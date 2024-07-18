@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1/open-telemetry-collector-spec",
+  "$schema": "http://json-schema.org/schema#",
   "$defs": {
     "AWSElasticBlockStoreVolumeSource": {
       "properties": {
@@ -1079,7 +1078,7 @@
         "enableMetrics": {
           "type": "boolean"
         },
-        "DisablePrometheusAnnotations": {
+        "disablePrometheusAnnotations": {
           "type": "boolean"
         }
       },
@@ -1606,27 +1605,7 @@
           "type": "string"
         },
         "image": {
-          "description": "Image use in both standalone and agent configs",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "registry": {
-              "type": "string"
-            },
-            "repository": {
-              "type": "string"
-            },
-            "tag": {
-              "type": "string"
-            },
-            "digest": {
-              "type": "string"
-            },
-            "pullPolicy": {
-              "type": "string",
-              "enum": ["IfNotPresent", "Always", "Never"]
-            }
-          }
+          "type": "string"
         },
         "enabled": {
           "type": "boolean"
@@ -1680,16 +1659,10 @@
           "type": "string"
         },
         "podMonitorSelector": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
+          "$ref": "#/$defs/LabelSelector"
         },
         "serviceMonitorSelector": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
+          "$ref": "#/$defs/LabelSelector"
         }
       },
       "additionalProperties": false,
