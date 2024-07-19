@@ -711,83 +711,103 @@
                     }]
                 },
                 "serviceMonitor": {
-                    "type": "object",
-                    "default": {},
-                    "title": "The serviceMonitor Schema",
-                    "required": [
-                        "enabled",
-                        "extraLabels",
-                        "annotations",
-                        "metricsEndpoints"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "default": false,
-                            "title": "The enabled Schema",
-                            "examples": [
-                                false
-                            ]
-                        },
-                        "extraLabels": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The extraLabels Schema",
-                            "required": [],
-                            "properties": {},
-                            "examples": [{}]
-                        },
-                        "annotations": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The annotations Schema",
-                            "required": [],
-                            "properties": {},
-                            "examples": [{}]
-                        },
-                        "metricsEndpoints": {
-                            "type": "array",
-                            "default": [],
-                            "title": "The metricsEndpoints Schema",
-                            "items": {
-                                "type": "object",
-                                "default": {},
-                                "title": "A Schema",
-                                "required": [
-                                    "port"
-                                ],
-                                "additionalProperties": false,
-                                "properties": {
-                                    "port": {
-                                        "type": "string",
-                                        "default": "",
-                                        "title": "The port Schema",
-                                        "examples": [
-                                            "metrics"
-                                        ]
-                                    }
-                                },
-                                "examples": [{
-                                    "port": "metrics"
-                                }]
-                            },
-                            "examples": [
-                                [{
-                                    "port": "metrics"
-                                }]
-                            ]
-                        }
-                    },
-                    "examples": [{
-                        "enabled": false,
-                        "extraLabels": {},
-                        "annotations": {},
-                        "metricsEndpoints": [{
-                            "port": "metrics"
-                        }]
-                    }]
-                },
+                  "type": "object",
+                  "default": {},
+                  "title": "The serviceMonitor Schema",
+                  "required": [
+                      "enabled",
+                      "extraLabels",
+                      "annotations",
+                      "metricsEndpoints",
+                      "relabelings",
+                      "metricRelabelings"
+                  ],
+                  "properties": {
+                      "enabled": {
+                          "type": "boolean",
+                          "default": false,
+                          "title": "The enabled Schema",
+                          "examples": [
+                              true
+                          ]
+                      },
+                      "extraLabels": {
+                          "type": "object",
+                          "default": {},
+                          "title": "The extraLabels Schema",
+                          "required": [],
+                          "properties": {},
+                          "examples": [{}]
+                      },
+                      "annotations": {
+                          "type": "object",
+                          "default": {},
+                          "title": "The annotations Schema",
+                          "required": [],
+                          "properties": {},
+                          "examples": [{}]
+                      },
+                      "metricsEndpoints": {
+                          "type": "array",
+                          "default": [],
+                          "title": "The metricsEndpoints Schema",
+                          "items": {
+                              "type": "object",
+                              "default": {},
+                              "title": "A Schema",
+                              "required": [
+                                  "port"
+                              ],
+                              "properties": {
+                                  "port": {
+                                      "type": "string",
+                                      "default": "",
+                                      "title": "The port Schema",
+                                      "examples": [
+                                          "metrics"
+                                      ]
+                                  }
+                              },
+                              "examples": [{
+                                  "port": "metrics"
+                              }]
+                          },
+                          "examples": [
+                              [{
+                                  "port": "metrics"
+                              }]
+                          ]
+                      },
+                      "relabelings": {
+                          "type": "array",
+                          "description": "Specify general relabeling",
+                          "default": [],
+                          "items": {}
+                      },
+                      "metricRelabelings": {
+                        "type": "array",
+                        "description": "Specify additional relabeling of metrics",
+                        "default": [],
+                        "items": {}
+                      }
+                  },
+                  "examples": [{
+                      "enabled": true,
+                      "extraLabels": {},
+                      "annotations": {},
+                      "metricsEndpoints": [{
+                          "port": "metrics"
+                      }],
+                      "relabelings": [{
+                          "sourceLabels": [
+                              "__meta_kubernetes_pod_node_name"
+                          ],
+                          "targetLabel": "node",
+                          "replacement": "${1}"
+                      }],
+                      "metricRelabelings": []
+                  }]
+              },
                 "deploymentAnnotations": {
                     "type": "object",
                     "default": {},
