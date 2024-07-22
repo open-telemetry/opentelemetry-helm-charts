@@ -11,6 +11,9 @@ This approach is inspired by the kube-prometheus-stack approach which you can se
 
 Right now, upgrades are NOT handled by this chart, however that could change in the future. This is what is run to bring in the CRDs today.
 
+> [!NOTE]
+> The prometheus operator version should be equal to what is documented in the opentelemetry operator's compatability matrix [here](https://github.com/open-telemetry/opentelemetry-operator?tab=readme-ov-file#opentelemetry-operator-vs-kubernetes-vs-cert-manager-vs-prometheus-operator)
+
 ```bash
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/config/crd/bases/opentelemetry.io_opentelemetrycollectors.yaml
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/config/crd/bases/opentelemetry.io_opampbridges.yaml
