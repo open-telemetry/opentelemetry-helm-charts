@@ -96,7 +96,6 @@ config:
     # The health_check extension can be modified, but should never be removed.
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
-    memory_ballast: {}
   processors:
     batch: {}
     # If set to null, will be overridden with values based on k8s resource limits
@@ -132,7 +131,6 @@ config:
         address: ${env:MY_POD_IP}:8888
     extensions:
       - health_check
-      - memory_ballast
     pipelines:
       logs:
         exporters:
@@ -288,7 +286,13 @@ ports:
     servicePort: 8888
     protocol: TCP
 
-# Resource limits & requests. Update according to your own use case as these values might be too low for a typical deployment.
+# When enabled, the chart will set the GOMEMLIMIT env var to 80% of the configured resources.limits.memory.
+# If no resources.limits.memory are defined then enabling does nothing.
+# It is HIGHLY recommend to enable this setting and set a value for resources.limits.memory.
+useGOMEMLIMIT: true
+
+# Resource limits & requests.
+# It is HIGHLY recommended to set resource limits.
 resources: {}
 # resources:
 #   limits:
@@ -589,14 +593,6 @@ networkPolicy:
   #    ports:
   #      - port: 1234
   #        protocol: TCP
-
-# When enabled, the chart will set the GOMEMLIMIT env var to 80% of the configured
-# resources.limits.memory and remove the memory ballast extension.
-# If no resources.limits.memory are defined enabling does nothing.
-# In a future release this setting will be enabled by default.
-# See https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891
-# for more details.
-useGOMEMLIMIT: true
 
 # Allow containers to share processes across pod namespace
 shareProcessNamespace: false
