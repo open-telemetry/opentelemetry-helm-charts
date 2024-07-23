@@ -899,12 +899,16 @@ opAMPBridge:
 # This configuration sections allows for a direct replacement of the kube-prometheus-stack
 # chart where the collector scrapes the same metrics as the default prometheus installation.
 
+## Controls whether the kube-state-metrics chart should be created.
+## This block matches the configuration for the kube-prometheus-stack chart for compatibility.
+kubeStateMetrics:
+  enabled: false
+
 ## Configuration for kube-state-metrics subchart
 ## The Kube-State-Metrics agent collects cluster-level metrics
 ## Read more here about the chart:
 ## https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics
 kube-state-metrics:
-  enabled: false
   namespaceOverride: ""
   rbac:
     create: true
@@ -971,12 +975,16 @@ kube-state-metrics:
   selfMonitor:
     enabled: false
 
+## Controls whether the prometheus-node-exporter chart should be created.
+## This block matches the configuration for the kube-prometheus-stack chart for compatibility.
+nodeExporter:
+  enabled: false
+
 ## Configuration for prometheus-node-exporter subchart
 ## This will install a daemonset that pulls metric data from each node
 ## Read more here about the chart:
 ## https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
 prometheus-node-exporter:
-  enabled: false
   namespaceOverride: ""
   podLabels:
     ## Add the 'node-exporter' label to be used by serviceMonitor to match standard common usage in rules and grafana dashboards
