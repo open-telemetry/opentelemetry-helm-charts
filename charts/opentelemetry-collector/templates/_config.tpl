@@ -1,25 +1,4 @@
-{{/*
-Default memory limiter configuration for OpenTelemetry Collector based on k8s resource limits.
-*/}}
-{{- define "opentelemetry-collector.memoryLimiter" -}}
-# check_interval is the time between measurements of memory usage.
-check_interval: 5s
-
-# By default limit_mib is set to 80% of ".Values.resources.limits.memory"
-limit_percentage: 80
-
-# By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
-spike_limit_percentage: 25
-{{- end }}
-
-{{/*
-Merge user supplied config into memory limiter config.
-*/}}
 {{- define "opentelemetry-collector.baseConfig" -}}
-{{- $processorsConfig := get .Values.config "processors" }}
-{{- if not $processorsConfig.memory_limiter }}
-{{-   $_ := set $processorsConfig "memory_limiter" (include "opentelemetry-collector.memoryLimiter" . | fromYaml) }}
-{{- end }}
 {{- .Values.config | toYaml }}
 {{- end }}
 
