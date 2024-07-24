@@ -1,18 +1,18 @@
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $collector.enabled -}}
 {{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
-{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride) }}
+{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
 ---
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: {{ $fullname }}
   namespace: {{ include "opentelemetry-kube-stack.namespace" $ }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.renderkv" $collector.labels | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values }}
+    {{- include "opentelemetry-kube-stack.renderkv" $collector.labels | indent 4 }}
+    {{- include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values | indent 4 }}
   {{- with $collector.annotations }}
   annotations:
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
@@ -20,9 +20,11 @@ metadata:
 spec:
   managementState: {{ $collector.managementState }}
   mode: {{ $collector.mode }}
-  config: |
-    {{- include "opentelemetry-collector.config" $merged }}
+  config:
+    {{- include "opentelemetry-kube-stack.config" $merged }}
+  {{- if (not (eq $collector.mode "daemonset" )) }}
   replicas: {{ $collector.replicas }}
+  {{- end }}
   {{- if $collector.serviceAccount }}
   serviceAccount: {{ $collector.serviceAccount }}
   {{- end }}
@@ -59,9 +61,12 @@ spec:
   podDisruptionBudget:
   {{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with $collector.securityContext }}
   securityContext:
-  {{- toYaml . | nindent 4}}
+  {{- if and (not ($collector.securityContext)) ($collector.presets.logsCollection.storeCheckpoints) }}
+    runAsUser: 0
+    runAsGroup: 0
+  {{- else -}}
+  {{- toYaml $collector.securityContext | nindent 4 }}
   {{- end }}
   {{- with $collector.podSecurityContext }}
   podSecurityContext:
@@ -103,8 +108,26 @@ spec:
   deploymentUpdateStrategy:
   {{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with $collector.volumeMounts }}
   volumeMounts:
+  {{- if $collector.presets.logsCollection.enabled }}
+  - name: varlogpods
+    mountPath: /var/log/pods
+    readOnly: true
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  {{- if $collector.presets.logsCollection.storeCheckpoints}}
+  - name: varlibotelcol
+    mountPath: /var/lib/otelcol
+  {{- end }}
+  {{- end }}
+  {{- if $collector.presets.hostMetrics.enabled }}
+  - name: hostfs
+    mountPath: /hostfs
+    readOnly: true
+    mountPropagation: HostToContainer
+  {{- end }}
+  {{- with $collector.volumeMounts }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $collector.ports }}
@@ -139,7 +162,7 @@ spec:
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name={{ $.Values.clusterName }}"
   {{- end }}
-  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" $collector.env) | nindent 4 }}
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" $collector.env) | nindent 2 }}
   {{- with $collector.envFrom }}
   envFrom:
   {{- toYaml . | nindent 4 }}
@@ -152,8 +175,27 @@ spec:
   tolerations:
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $collector.volumes }}
   volumes:
+  {{- if $collector.presets.logsCollection.enabled }}
+  - name: varlogpods
+    hostPath:
+      path: /var/log/pods
+  {{- if $collector.presets.logsCollection.storeCheckpoints}}
+  - name: varlibotelcol
+    hostPath:
+      path: /var/lib/otelcol
+      type: DirectoryOrCreate
+  {{- end }}
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  {{- end }}
+  {{- if $collector.presets.hostMetrics.enabled }}
+  - name: hostfs
+    hostPath:
+      path: /
+  {{- end }}
+  {{- with $collector.volumes }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $collector.initContainers }}

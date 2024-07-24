@@ -21,11 +21,11 @@ jobs:
           create-kind-cluster: "true"
 
       # We'll need this eventually, but for now leave it commented.
-      # - name: Install cert-manager
-      #   run: |
-      #     kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
-      #     kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
-      #     kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
 
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-kube-stack

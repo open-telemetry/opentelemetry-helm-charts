@@ -6,10 +6,10 @@ metadata:
   name: {{ include "opentelemetry-kube-stack.instrumentation" . }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | nindent 4 }}
+    {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | indent 4 }}
   {{- with .Values.instrumentation.annotations }}
   annotations:
-    {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
   {{- end }}
 spec:
   exporter:
@@ -21,7 +21,7 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   env:
-  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.instrumentation.env) | nindent 4 }}
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.instrumentation.env) | indent 4 }}
   {{- with .Values.instrumentation.resource }}
   resource:
     {{- toYaml . | nindent 4 }}

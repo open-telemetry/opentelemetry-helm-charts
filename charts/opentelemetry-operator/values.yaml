@@ -42,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.102.1
+    tag: 0.103.1
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -60,6 +60,9 @@ manager:
       repository: ""
       tag: ""
     dotnet:
+      repository: ""
+      tag: ""
+    apacheHttpd:
       repository: ""
       tag: ""
     # The Go instrumentation support in the operator is disabled by default.
@@ -106,6 +109,10 @@ manager:
     annotations: {}
     metricsEndpoints:
       - port: metrics
+    # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
+    # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+    relabelings: []
+    metricRelabelings: []
 
   # Adds additional annotations to the manager Deployment
   deploymentAnnotations: {}
@@ -121,12 +128,16 @@ manager:
     # Create default rules for monitoring the manager
     defaultRules:
       enabled: false
-    # additional labels on the PrometheusRule
+      ## Additional labels for PrometheusRule alerts
+      additionalRuleLabels: {}
+      ## Additional annotations for PrometheusRule alerts
+      additionalRuleAnnotations: {}
+    # additional labels on the PrometheusRule object
     extraLabels: {}
-    # add annotations on the PrometheusRule
+    # add annotations on the PrometheusRule object
     annotations: {}
 
-  # Whether the operator should create RBAC permissions for collectors
+  # Whether the operator should create RBAC permissions for collectors. See README.md for more information.
   createRbacPermissions: false
   ## List of additional cli arguments to configure the manager
   ## for example: --labels, etc.
@@ -239,6 +250,12 @@ admissionWebhooks:
     ## Annotations for the cert and issuer if cert-manager is enabled.
     certificateAnnotations: {}
     issuerAnnotations: {}
+    # duration must be specified by a Go time.Duration (ending in s, m or h)
+    duration: ""
+    # renewBefore must be specified by a Go time.Duration (ending in s, m or h)
+    # Take care when setting the renewBefore field to be very close to the duration
+    # as this can lead to a renewal loop, where the Certificate is always in the renewal period.
+    renewBefore: ""
 
   ## TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate.
   ## certManager must be disabled and autoGenerateCert must be enabled.
@@ -247,6 +264,8 @@ admissionWebhooks:
     enabled: true
     # If set to true, new webhook key/certificate is generated on helm upgrade.
     recreate: true
+    # Cert period time in days. The default is 365 days.
+    certPeriodDays: 365
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
   ## certManager and autoGenerateCert must be disabled and certFile, keyFile, and caFile must be set.

@@ -71,22 +71,30 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
             - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
             {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            {{- end }}
             {{- if .Values.manager.featureGates }}
             - --feature-gates={{ .Values.manager.featureGates }}
-            {{- end }}
-            {{- if .Values.manager.createRbacPermissions }}
-            - --create-rbac-permissions
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
             {{- .Values.manager.extraArgs | toYaml | nindent 12 }}
             {{-  end  }}
           command:
             - /manager
-          {{- if .Values.manager.env }}
+          {{- if or .Values.manager.env .Values.manager.createRbacPermissions }}
           env:
+            {{- if .Values.manager.env }}
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
               value: {{ $value | quote -}}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.manager.createRbacPermissions }}
+            - name: SERVICE_ACCOUNT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
             {{- end }}
           {{- end }}
           image: {{ include "opentelemetry-operator.image" . | quote }}

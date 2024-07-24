@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1/open-telemetry-collector-spec",
+  "$schema": "http://json-schema.org/schema#",
   "$defs": {
     "AWSElasticBlockStoreVolumeSource": {
       "properties": {
@@ -1079,7 +1078,7 @@
         "enableMetrics": {
           "type": "boolean"
         },
-        "DisablePrometheusAnnotations": {
+        "disablePrometheusAnnotations": {
           "type": "boolean"
         }
       },
@@ -1279,6 +1278,92 @@
     },
     "OpenTelemetryCollectorSpec": {
       "properties": {
+        "presets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "logsCollection": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect logs.",
+                  "type": "boolean"
+                },
+                "includeCollectorLogs": {
+                  "description": "Specifies whether the collector should collect its own logs.",
+                  "type": "boolean"
+                },
+                "storeCheckpoints": {
+                  "description": "Specifies whether logs checkpoints should be stored in /var/lib/otelcol/ host directory.",
+                  "type": "boolean"
+                },
+                "maxRecombineLogSize": {
+                  "description": "Specifies the max recombine log size.",
+                  "type": "integer"
+                }
+              }
+            },
+            "hostMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect host metrics.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "kubeletMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect kubelet metrics.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "kubernetesAttributes": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should add Kubernetes metdata to resource attributes.",
+                  "type": "boolean"
+                },
+                "extractAllPodLabels": {
+                  "description": "Specifies whether the k8sattributes processor should extract all pod labels.",
+                  "type": "boolean"
+                },
+                "extractAllPodAnnotations": {
+                  "description": "Specifies whether the k8sattributes processor should extract all pod annotations.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "kubernetesEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect Kubernetes objects.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "clusterMetrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect cluster metrics.",
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
         "enabled": {
           "type": "boolean"
         },
@@ -1294,7 +1379,10 @@
             }
           }
         },
-        "name": {
+        "suffix": {
+          "type": "string"
+        },
+        "fullnameOverride": {
           "type": "string"
         },
         "annotations": {
@@ -1517,27 +1605,7 @@
           "type": "string"
         },
         "image": {
-          "description": "Image use in both standalone and agent configs",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "registry": {
-              "type": "string"
-            },
-            "repository": {
-              "type": "string"
-            },
-            "tag": {
-              "type": "string"
-            },
-            "digest": {
-              "type": "string"
-            },
-            "pullPolicy": {
-              "type": "string",
-              "enum": ["IfNotPresent", "Always", "Never"]
-            }
-          }
+          "type": "string"
         },
         "enabled": {
           "type": "boolean"
@@ -1591,16 +1659,10 @@
           "type": "string"
         },
         "podMonitorSelector": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
+          "$ref": "#/$defs/LabelSelector"
         },
         "serviceMonitorSelector": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
+          "$ref": "#/$defs/LabelSelector"
         }
       },
       "additionalProperties": false,
@@ -3169,6 +3231,264 @@
       "additionalProperties": false,
       "type": "object",
       "required": ["endpoint", "capabilities", "upgradeStrategy"]
+    },
+    "AdditionalLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "AdditionalLabels"
+    },
+    "EnableConfigBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": ["enabled"],
+      "title": "EnableConfigBlock"
+    },
+    "KubeStateMetrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "namespaceOverride": {
+          "type": "string"
+        },
+        "rbac": {
+          "$ref": "#/$defs/KubeStateMetricsRbac"
+        },
+        "releaseLabel": {
+          "type": "boolean"
+        },
+        "prometheus": {
+          "$ref": "#/$defs/Prometheus"
+        },
+        "selfMonitor": {
+          "$ref": "#/$defs/EnableConfigBlock"
+        }
+      },
+      "required": [
+        "namespaceOverride",
+        "prometheus",
+        "rbac",
+        "releaseLabel",
+        "selfMonitor"
+      ],
+      "title": "KubeStateMetrics"
+    },
+    "Prometheus": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "monitor": {
+          "$ref": "#/$defs/Monitor"
+        }
+      },
+      "required": ["monitor"],
+      "title": "Prometheus"
+    },
+    "Monitor": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "sampleLimit": {
+          "type": "integer"
+        },
+        "targetLimit": {
+          "type": "integer"
+        },
+        "labelLimit": {
+          "type": "integer"
+        },
+        "labelNameLengthLimit": {
+          "type": "integer"
+        },
+        "labelValueLengthLimit": {
+          "type": "integer"
+        },
+        "scrapeTimeout": {
+          "type": "string"
+        },
+        "proxyUrl": {
+          "type": "string"
+        },
+        "honorLabels": {
+          "type": "boolean"
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
+        },
+        "relabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "jobLabel": {
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/$defs/Selector"
+        },
+        "additionalLabels": {
+          "$ref": "#/$defs/AdditionalLabels"
+        }
+      },
+      "required": [
+        "interval",
+        "labelLimit",
+        "labelNameLengthLimit",
+        "labelValueLengthLimit",
+        "metricRelabelings",
+        "proxyUrl",
+        "relabelings",
+        "sampleLimit",
+        "targetLimit"
+      ],
+      "title": "Monitor"
+    },
+    "MetricRelabeling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "regex": {
+          "type": "string"
+        },
+        "sourceLabels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["action", "regex", "sourceLabels"],
+      "title": "MetricRelabeling"
+    },
+    "Selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "matchLabels": {
+          "$ref": "#/$defs/MatchLabels"
+        }
+      },
+      "required": ["matchLabels"],
+      "title": "Selector"
+    },
+    "MatchLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        }
+      },
+      "required": ["component", "provider"],
+      "title": "MatchLabels"
+    },
+    "KubeStateMetricsRbac": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        }
+      },
+      "required": ["create"],
+      "title": "KubeStateMetricsRbac"
+    },
+    "PrometheusNodeExporter": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "namespaceOverride": {
+          "type": "string"
+        },
+        "podLabels": {
+          "$ref": "#/$defs/PodLabels"
+        },
+        "releaseLabel": {
+          "type": "boolean"
+        },
+        "extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "service": {
+          "$ref": "#/$defs/PrometheusNodeExporterService"
+        },
+        "prometheus": {
+          "$ref": "#/$defs/Prometheus"
+        },
+        "rbac": {
+          "$ref": "#/$defs/PrometheusNodeExporterRbac"
+        }
+      },
+      "required": [
+        "extraArgs",
+        "namespaceOverride",
+        "podLabels",
+        "prometheus",
+        "rbac",
+        "releaseLabel",
+        "service"
+      ],
+      "title": "PrometheusNodeExporter"
+    },
+    "PodLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "jobLabel": {
+          "type": "string"
+        }
+      },
+      "required": ["jobLabel"],
+      "title": "PodLabels"
+    },
+    "PrometheusNodeExporterRbac": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "pspEnabled": {
+          "type": "boolean"
+        }
+      },
+      "required": ["pspEnabled"],
+      "title": "PrometheusNodeExporterRbac"
+    },
+    "PrometheusNodeExporterService": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "portName": {
+          "type": "string"
+        }
+      },
+      "required": ["portName"],
+      "title": "PrometheusNodeExporterService"
     }
   },
   "properties": {
@@ -3236,6 +3556,18 @@
     },
     "opentelemetry-operator": {
       "type": "object"
+    },
+    "kubeStateMetrics": {
+      "$ref": "#/$defs/EnableConfigBlock"
+    },
+    "nodeExporter": {
+      "$ref": "#/$defs/EnableConfigBlock"
+    },
+    "kube-state-metrics": {
+      "$ref": "#/$defs/KubeStateMetrics"
+    },
+    "prometheus-node-exporter": {
+      "$ref": "#/$defs/PrometheusNodeExporter"
     }
   }
 }

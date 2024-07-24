@@ -11,7 +11,7 @@ metadata:
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
   annotations:
-    {{- range $key, $value := .Values.manager.serviceMonitor.annotations }}
+    {{- range $key, $value := .Values.manager.prometheusRule.annotations }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
 spec:
@@ -27,16 +27,28 @@ spec:
       for: 5m
       labels:
         severity: warning
+        {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`Reconciliation errors for {{ $labels.controller }} is increasing and has now reached {{ humanize $value }} `}}'
         runbook_url: 'Check manager logs for reasons why this might happen'
+        {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     - alert: WorkqueueDepth
       expr: workqueue_depth{name="opentelemetrycollector"} > 0
       for: 5m
       labels:
         severity: warning
+        {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         description: '{{`Queue depth for {{ $labels.name }} has reached {{ $value }} `}}'
         runbook_url: 'Check manager logs for reasons why this might happen'
+        {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
 {{- end }}
 {{- end }}

@@ -1,0 +1,62 @@
+clusterName: demo
+opentelemetry-operator:
+  enabled: true
+collectors:
+  daemon:
+    args:
+      # We need this for now until 0.105.0 is out with this fix:
+      # https://github.com/open-telemetry/opentelemetry-collector/commit/637b1f42fcb7cbb7ef8a50dcf41d0a089623a8b7
+      feature-gates: -confmap.unifyEnvVarExpansion
+    env:
+      - name: ACCESS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: access_token
+            name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:443
+          headers:
+            "access-token": "${ACCESS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [debug, otlp]
+          traces:
+            exporters: [debug, otlp]
+          logs:
+            exporters: [debug, otlp]
+  cluster:
+    env:
+      - name: ACCESS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: access_token
+            name: otel-collector-secret
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:443
+          headers:
+            "access-token": "${ACCESS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            exporters: [debug, otlp]
+instrumentation:
+  enabled: true
+  env:
+    - name: OTEL_K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  exporter:
+    endpoint: http://${OTEL_K8S_NODE_NAME}:4317
+  python:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://${OTEL_K8S_NODE_NAME}:4318
+opAMPBridge:
+  enabled: true
+  addReportingLabel: true
