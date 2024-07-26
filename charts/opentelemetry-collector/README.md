@@ -136,7 +136,7 @@ it is easy to accidentally feed the exported logs back into the receiver.
 Also note that using the `--verbosity=detailed` option for the `debug` exporter causes it to output
 multiple lines per single received log, which when looped, would amplify the logs exponentially.
 
-To prevent the looping, the default configuration of the receiver excludes logs from the collector's containers by setting `presets.logsCollection.includeCollectorLogs` to `false`.
+To prevent the looping, the default configuration of the receiver excludes logs from the collector's containers.
 
 If you want to include the collector's logs, make sure to replace the `debug` exporter
 with an exporter that does not send logs to collector's standard output.
