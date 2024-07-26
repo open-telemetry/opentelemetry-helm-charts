@@ -76,6 +76,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.spanMetricsMulti.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.kubernetesResources.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesResourcesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.reduceResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -128,6 +131,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.spanMetricsMulti.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.kubernetesResources.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesResourcesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.reduceResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -800,6 +806,156 @@ connectors:
     {{- end }}
   {{- end }}
 
+{{- end }}
+
+{{- define "opentelemetry-collector.applyKubernetesResourcesConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesResourcesConfig" .Values | fromYaml) .config }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.kubernetesResourcesConfig" -}}
+exporters:
+  coralogix/resource_catalog:
+    timeout: "30s"
+    private_key: "${CORALOGIX_PRIVATE_KEY}"
+    domain: "{{.Values.global.domain}}"
+    application_name: "resource"
+    subsystem_name: "catalog"
+    logs:
+      headers:
+        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.global.version }}"
+        x-coralogix-ingress: "metadata-as-otlp-logs/v1alpha1"
+
+receivers:
+  k8sobjects/resource_catalog:
+    objects:
+      - name: namespaces
+        mode: "pull"
+        group: ""
+      - name: nodes
+        mode: "pull"
+        group: ""
+      - name: persistentvolumeclaims
+        mode: "pull"
+        group: ""
+      - name: persistentvolumes
+        mode: "pull"
+        group: ""
+      - name: pods
+        mode: "pull"
+        group: ""
+      - name: services
+        mode: "pull"
+        group: ""
+      - name: daemonsets
+        mode: "pull"
+        group: "apps"
+      - name: deployments
+        mode: "pull"
+        group: "apps"
+      - name: replicasets
+        mode: "pull"
+        group: "apps"
+      - name: statefulsets
+        mode: "pull"
+        group: "apps"
+      - name: horizontalpodautoscalers
+        mode: "pull"
+        group: "autoscaling"
+      - name: cronjobs
+        mode: "pull"
+        group: "batch"
+      - name: jobs
+        mode: "pull"
+        group: "batch"
+      - name: ingresses
+        mode: "pull"
+        group: "extensions"
+      - name: ingresses
+        mode: "pull"
+        group: "networking.k8s.io"
+      - name: poddisruptionbudgets
+        mode: "pull"
+        group: "policy"
+      - name: clusterrolebindings
+        mode: "pull"
+        group: "rbac.authorization.k8s.io"
+      - name: clusterroles
+        mode: "pull"
+        group: "rbac.authorization.k8s.io"
+      - name: rolebindings
+        mode: "pull"
+        group: "rbac.authorization.k8s.io"
+      - name: roles
+        mode: "pull"
+        group: "rbac.authorization.k8s.io"
+      - name: namespaces
+        mode: "watch"
+        group: ""
+      - name: nodes
+        mode: "watch"
+        group: ""
+      - name: persistentvolumeclaims
+        mode: "watch"
+        group: ""
+      - name: persistentvolumes
+        mode: "watch"
+        group: ""
+      - name: pods
+        mode: "watch"
+        group: ""
+      - name: daemonsets
+        mode: "watch"
+        group: "apps"
+      - name: deployments
+        mode: "watch"
+        group: "apps"
+      - name: replicasets
+        mode: "watch"
+        group: "apps"
+      - name: statefulsets
+        mode: "watch"
+        group: "apps"
+      - name: horizontalpodautoscalers
+        mode: "watch"
+        group: "autoscaling"
+      - name: cronjobs
+        mode: "watch"
+        group: "batch"
+      - name: jobs
+        mode: "watch"
+        group: "batch"
+      - name: ingresses
+        mode: "watch"
+        group: "extensions"
+      - name: ingresses
+        mode: "watch"
+        group: "networking.k8s.io"
+      - name: poddisruptionbudgets
+        mode: "watch"
+        group: "policy"
+      - name: clusterrolebindings
+        mode: "watch"
+        group: "rbac.authorization.k8s.io"
+      - name: clusterroles
+        mode: "watch"
+        group: "rbac.authorization.k8s.io"
+      - name: rolebindings
+        mode: "watch"
+        group: "rbac.authorization.k8s.io"
+      - name: roles
+        mode: "watch"
+        group: "rbac.authorization.k8s.io"
+service:
+  pipelines:
+    logs/resource_catalog:
+      exporters:
+        - coralogix/resource_catalog
+      processors:
+        - memory_limiter
+        - batch
+      receivers:
+        - k8sobjects/resource_catalog
 {{- end }}
 
 

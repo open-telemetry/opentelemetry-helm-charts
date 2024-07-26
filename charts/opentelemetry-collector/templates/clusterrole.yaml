@@ -1,4 +1,4 @@
-{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.mysql.metrics.enabled) -}}
+{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.mysql.metrics.enabled) (.Values.presets.kubernetesResources.enabled) -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -55,5 +55,51 @@ rules:
   - apiGroups: ["events.k8s.io"]
     resources: ["events"]
     verbs: ["watch", "list"]
+  {{- end }}
+  {{- if .Values.presets.kubernetesResources.enabled }}
+  - apiGroups: [""]
+    resources:
+    - namespaces
+    - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - pods
+    - services
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+    - daemonsets
+    - deployments
+    - replicasets
+    - statefulsets
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["autoscaling"]
+    resources:
+    - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources:
+    - cronjobs
+    - jobs
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["extensions"]
+    resources:
+    - ingresses
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+    - ingresses
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["policy"]
+    resources:
+    - poddisruptionbudgets
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+    - clusterrolebindings
+    - clusterroles
+    - rolebindings
+    - roles
+    verbs: ["get", "list", "watch"]
   {{- end }}
 {{- end }}

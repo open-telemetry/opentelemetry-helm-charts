@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.87.2 / 2024-07-26
+- [Feat] add kubernetes resource preset
+
 ### v0.87.1 / 2024-07-18
 - [Feat] add process option for hostmetrics preset.
 
