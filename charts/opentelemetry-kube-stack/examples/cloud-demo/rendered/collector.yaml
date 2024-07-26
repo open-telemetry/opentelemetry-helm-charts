@@ -6,7 +6,7 @@ metadata:
   name: example-cluster-stats
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.0.11
+    helm.sh/chart: opentelemetry-kube-stack-0.0.12
     app.kubernetes.io/version: "0.103.0"
     app.kubernetes.io/managed-by: Helm        
     opentelemetry.io/opamp-reporting: "true"
@@ -189,7 +189,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.0.11
+    helm.sh/chart: opentelemetry-kube-stack-0.0.12
     app.kubernetes.io/version: "0.103.0"
     app.kubernetes.io/managed-by: Helm        
     opentelemetry.io/opamp-reporting: "true"
@@ -614,6 +614,12 @@ spec:
     mountPath: /hostfs
     readOnly: true
     mountPropagation: HostToContainer
+  ports:
+    - appProtocol: grpc
+      hostPort: 4317
+      name: otlp-grpc
+      port: 4317
+      protocol: TCP
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:

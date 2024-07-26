@@ -3,6 +3,12 @@ opentelemetry-operator:
   enabled: true
 collectors:
   daemon:
+    ports:
+      - appProtocol: grpc
+        name: otlp-grpc
+        port: 4317
+        protocol: TCP
+        hostPort: 4317 # Force the hostPort
     args:
       # We need this for now until 0.105.0 is out with this fix:
       # https://github.com/open-telemetry/opentelemetry-collector/commit/637b1f42fcb7cbb7ef8a50dcf41d0a089623a8b7
