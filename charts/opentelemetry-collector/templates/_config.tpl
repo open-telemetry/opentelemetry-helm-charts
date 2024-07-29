@@ -79,6 +79,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.kubernetesResources.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesResourcesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.hostEntityEvents.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHostEntityEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.reduceResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -134,6 +137,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.kubernetesResources.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesResourcesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.hostEntityEvents.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHostEntityEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.reduceResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -956,6 +962,54 @@ service:
         - batch
       receivers:
         - k8sobjects/resource_catalog
+{{- end }}
+
+{{- define "opentelemetry-collector.applyHostEntityEventsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostEntityEventsConfig" .Values | fromYaml) .config }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.hostEntityEventsConfig" -}}
+exporters:
+  coralogix/resource_catalog:
+    timeout: "30s"
+    private_key: "${CORALOGIX_PRIVATE_KEY}"
+    domain: "{{.Values.global.domain}}"
+    application_name: "resource"
+    subsystem_name: "catalog"
+    logs:
+      headers:
+        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.global.version }}"
+        x-coralogix-ingress: "metadata-as-otlp-logs/v1alpha1"
+
+processors:
+  transform/entity-event:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["otel.entity.id"]["host.id"], resource.attributes["host.id"])
+          - set(attributes["host.name"], resource.attributes["host.name"])
+          - set(attributes["host.type"], resource.attributes["host.type"])
+          - set(attributes["host.image.id"], resource.attributes["host.image.id"])
+          - set(attributes["host.image.name"], resource.attributes["host.image.name"])
+          - set(attributes["k8s.node.name"], resource.attributes["k8s.node.name"])
+      - context: resource
+        statements:
+          - keep_keys(attributes, [""])
+service:
+  pipelines:
+    logs/resource_catalog:
+      exporters:
+        - coralogix/resource_catalog
+      processors:
+        - memory_limiter
+        - k8sattributes
+        - resourcedetection/env
+        - resourcedetection/region
+        - transform/entity-event
+      receivers:
+        - hostmetrics
 {{- end }}
 
 

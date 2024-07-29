@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.87.3 / 2024-07-29
+- [Feat] add host entity event preset
+
 ### v0.87.2 / 2024-07-26
 - [Feat] add kubernetes resource preset
 

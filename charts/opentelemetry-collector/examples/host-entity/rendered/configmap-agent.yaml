@@ -15,6 +15,16 @@ metadata:
 data:
   relay: |
     exporters:
+      coralogix/resource_catalog:
+        application_name: resource
+        domain: ""
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/
+            x-coralogix-ingress: metadata-as-otlp-logs/v1alpha1
+        private_key: ${CORALOGIX_PRIVATE_KEY}
+        subsystem_name: catalog
+        timeout: 30s
       debug: {}
     extensions:
       health_check:
@@ -25,6 +35,20 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      transform/entity-event:
+        error_mode: ignore
+        log_statements:
+        - context: log
+          statements:
+          - set(attributes["otel.entity.id"]["host.id"], resource.attributes["host.id"])
+          - set(attributes["host.name"], resource.attributes["host.name"])
+          - set(attributes["host.type"], resource.attributes["host.type"])
+          - set(attributes["host.image.id"], resource.attributes["host.image.id"])
+          - set(attributes["host.image.name"], resource.attributes["host.image.name"])
+          - set(attributes["k8s.node.name"], resource.attributes["k8s.node.name"])
+        - context: resource
+          statements:
+          - keep_keys(attributes, [""])
     receivers:
       hostmetrics:
         collection_interval: 10s
@@ -79,15 +103,6 @@ data:
               system.memory.utilization:
                 enabled: true
           network: null
-          process:
-            metrics:
-              process.cpu.utilization:
-                enabled: true
-              process.memory.utilization:
-                enabled: true
-              process.threads:
-                enabled: true
-            mute_process_user_error: true
       jaeger:
         protocols:
           grpc:
@@ -124,6 +139,17 @@ data:
           - batch
           receivers:
           - otlp
+        logs/resource_catalog:
+          exporters:
+          - coralogix/resource_catalog
+          processors:
+          - memory_limiter
+          - k8sattributes
+          - resourcedetection/env
+          - resourcedetection/region
+          - transform/entity-event
+          receivers:
+          - hostmetrics
         metrics:
           exporters:
           - debug
