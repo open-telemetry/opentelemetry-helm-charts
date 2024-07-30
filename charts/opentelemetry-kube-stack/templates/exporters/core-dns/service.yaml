@@ -1,0 +1,24 @@
+{{- if and .Values.coreDns.enabled .Values.coreDns.service.enabled .Values.kubernetesServiceMonitors.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "opentelemetry-kube-stack.fullname" . }}-coredns
+  labels:
+    app: {{ template "opentelemetry-kube-stack.name" . }}-coredns
+    jobLabel: coredns
+{{ include "opentelemetry-kube-stack.labels" . | indent 4 }}
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: {{ .Values.coreDns.serviceMonitor.port }}
+      port: {{ .Values.coreDns.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.coreDns.service.targetPort }}
+  selector:
+    {{- if .Values.coreDns.service.selector }}
+{{ toYaml .Values.coreDns.service.selector | indent 4 }}
+    {{- else}}
+    k8s-app: kube-dns
+    {{- end}}
+{{- end }}
