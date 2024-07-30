@@ -1,8 +1,11 @@
 # OpenTelemetry Kube Stack Helm Chart
 
-> [!CAUTION]
-> This chart is under active development and is not meant to be installed yet.
-> Right now, nothing is included with this deployment.
+| Status        |           |
+| ------------- |-----------|
+| Stability     | [beta]   |
+| Issues        | [![Open issues](https://img.shields.io/github/issues-search/open-telemetry/opentelemetry-helm-charts?query=is%3Aissue+is%3Aopen+label%3Achart%3Akube-stack&label=open&color=orange&logo=opentelemetry)](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aissue+is%3Aopen+label%3Achart%3Akube-stack) [![Closed issues](https://img.shields.io/github/issues-search/open-telemetry/opentelemetry-helm-charts?query=is%3Aissue%20is%3Aclosed%20label%3Achart%3Akube-stack%20&label=closed&color=blue&logo=opentelemetry)](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aclosed+is%3Aissue+label%3Achart%3Akube-stack) |
+| [Code Owners](https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/CONTRIBUTING.md)    | [@jaronoff97](https://www.github.com/jaronoff97) |
+
 
 This Helm chart serves as a quickstart for OpenTelemetry in a Kubernetes environment. The chart installs an [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) and a suite of collectors that help you get started with OpenTelemetry metrics, traces, and logs.
 
