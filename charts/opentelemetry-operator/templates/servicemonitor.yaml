@@ -23,14 +23,14 @@ spec:
       app.kubernetes.io/component: controller-manager
   endpoints:
   {{- toYaml .Values.manager.serviceMonitor.metricsEndpoints | nindent 2 }}
-  {{- with .Values.manager.serviceMonitor.relabelings }}
+    {{- with .Values.manager.serviceMonitor.relabelings }}
     relabelings:
-  {{- toYaml . | nindent 6 }}
-  {{- end }}
-  {{- with .Values.manager.serviceMonitor.metricRelabelings }}
+    {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.manager.serviceMonitor.metricRelabelings }}
     metricRelabelings:
-  {{- toYaml . | nindent 6 }}
-  {{- end }}
+    {{- toYaml . | nindent 6 }}
+    {{- end }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
