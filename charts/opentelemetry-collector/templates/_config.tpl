@@ -218,6 +218,7 @@ processors:
         - "k8s.node.name"
         - "k8s.pod.name"
         - "k8s.pod.uid"
+        - "k8s.pod.ip"
         - "k8s.pod.start_time"
       {{- if .Values.presets.kubernetesAttributes.extractAllPodLabels }}
       labels:
