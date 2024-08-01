@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.88.1 / 2024-08-01
+- [Feat] Bump collector version to `0.106.1`
+
 ### v0.88.0 / 2024-07-31
 - [Feat] Bump collector version to `0.106.0`
 
