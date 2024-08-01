@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.88.2 / 2024-08-01
+- [Fix] ignore exe errors for hostmetrics process preset
+
 ### v0.88.1 / 2024-08-01
 - [Feat] Bump collector version to `0.106.1`
 
