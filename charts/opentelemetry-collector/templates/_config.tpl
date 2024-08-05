@@ -985,16 +985,12 @@ exporters:
 
 processors:
   transform/entity-event:
-    error_mode: ignore
+    error_mode: silent
     log_statements:
       - context: log
         statements:
           - set(attributes["otel.entity.id"]["host.id"], resource.attributes["host.id"])
-          - set(attributes["host.name"], resource.attributes["host.name"])
-          - set(attributes["host.type"], resource.attributes["host.type"])
-          - set(attributes["host.image.id"], resource.attributes["host.image.id"])
-          - set(attributes["host.image.name"], resource.attributes["host.image.name"])
-          - set(attributes["k8s.node.name"], resource.attributes["k8s.node.name"])
+          - merge_maps(attributes, resource.attributes, "insert")
       - context: resource
         statements:
           - keep_keys(attributes, [""])

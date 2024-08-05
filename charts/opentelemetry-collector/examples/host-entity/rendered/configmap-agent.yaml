@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.88.2
+    helm.sh/chart: opentelemetry-collector-0.88.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.106.1"
@@ -36,16 +36,12 @@ data:
         limit_percentage: 80
         spike_limit_percentage: 25
       transform/entity-event:
-        error_mode: ignore
+        error_mode: silent
         log_statements:
         - context: log
           statements:
           - set(attributes["otel.entity.id"]["host.id"], resource.attributes["host.id"])
-          - set(attributes["host.name"], resource.attributes["host.name"])
-          - set(attributes["host.type"], resource.attributes["host.type"])
-          - set(attributes["host.image.id"], resource.attributes["host.image.id"])
-          - set(attributes["host.image.name"], resource.attributes["host.image.name"])
-          - set(attributes["k8s.node.name"], resource.attributes["k8s.node.name"])
+          - merge_maps(attributes, resource.attributes, "insert")
         - context: resource
           statements:
           - keep_keys(attributes, [""])

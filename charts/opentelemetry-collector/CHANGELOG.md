@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.88.3 / 2024-08-05
+- [Feat] add more attributes to host entity event preset
+
 ### v0.88.2 / 2024-08-01
 - [Fix] ignore exe errors for hostmetrics process preset
 
