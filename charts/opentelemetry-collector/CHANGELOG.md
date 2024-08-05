@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.88.4 / 2024-08-05
+- [Fix] Add fleet management preset
+
 ### v0.88.3 / 2024-08-05
 - [Feat] add more attributes to host entity event preset
 

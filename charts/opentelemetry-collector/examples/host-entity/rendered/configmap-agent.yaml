@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.88.3
+    helm.sh/chart: opentelemetry-collector-0.88.4
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.106.1"
@@ -17,7 +17,7 @@ data:
     exporters:
       coralogix/resource_catalog:
         application_name: resource
-        domain: ""
+        domain: coralogix.com
         logs:
           headers:
             X-Coralogix-Distribution: helm-otel-integration/
@@ -29,6 +29,18 @@ data:
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
+      opamp:
+        agent_description:
+          non_identifying_attributes:
+          - cx.agent.type: agent
+          - cx.cluster.name: test
+          - cx.integrationID: test
+          - k8s.node.name: ${env:KUBE_NODE_NAME}
+        server:
+          http:
+            endpoint: https://ingress.coralogix.com/opamp/v1
+            headers:
+              Authorization: Bearer ${env:CORALOGIX_PRIVATE_KEY}
     processors:
       batch: {}
       memory_limiter:
@@ -126,6 +138,7 @@ data:
     service:
       extensions:
       - health_check
+      - opamp
       pipelines:
         logs:
           exporters:

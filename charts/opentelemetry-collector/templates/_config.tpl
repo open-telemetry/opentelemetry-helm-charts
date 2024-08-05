@@ -85,6 +85,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.reduceResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.fleetManagement.enabled }}
+{{- $config = (include "opentelemetry-collector.applyFleetManagementConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -143,6 +146,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.reduceResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyReduceResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.fleetManagement.enabled }}
+{{- $config = (include "opentelemetry-collector.applyFleetManagementConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
@@ -686,6 +692,36 @@ processors:
           - delete_key(attributes, "net.host.name")
           - delete_key(attributes, "net.host.port")
 
+{{- end }}
+
+{{- define "opentelemetry-collector.applyFleetManagementConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.fleetManagementConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.extensions) (not (has "opamp" $config.service.extensions)) }}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "opamp" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.fleetManagementConfig" -}}
+extensions:
+    opamp:
+      server:
+        http:
+          endpoint: "https://ingress.{{.Values.global.domain}}/opamp/v1"
+          headers:
+            Authorization: "Bearer ${env:CORALOGIX_PRIVATE_KEY}"
+      agent_description:
+        non_identifying_attributes:
+        {{- if .Values.presets.fleetManagement.agentType }}
+        - cx.agent.type: "{{.Values.presets.fleetManagement.agentType}}"
+        {{- end }}
+        {{- if .Values.presets.fleetManagement.clusterName }}
+        - cx.cluster.name: "{{.Values.presets.fleetManagement.clusterName}}"
+        {{- end }}
+        {{- if .Values.presets.fleetManagement.integrationID }}
+        - cx.integrationID: "{{.Values.presets.fleetManagement.integrationID}}"
+        {{- end }}
+        - k8s.node.name: ${env:KUBE_NODE_NAME}
 {{- end }}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}
