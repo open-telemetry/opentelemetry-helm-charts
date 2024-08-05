@@ -1020,6 +1020,32 @@ exporters:
         x-coralogix-ingress: "metadata-as-otlp-logs/v1alpha1"
 
 processors:
+  resourcedetection/entity:
+    detectors: ["system", "env"]
+    timeout: 2s
+    override: false
+    system:
+      resource_attributes:
+        host.id:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.ip:
+          enabled: true
+        os.description:
+          enabled: true
   transform/entity-event:
     error_mode: silent
     log_statements:
@@ -1038,7 +1064,7 @@ service:
       processors:
         - memory_limiter
         - k8sattributes
-        - resourcedetection/env
+        - resourcedetection/entity
         - resourcedetection/region
         - transform/entity-event
       receivers:
