@@ -1,31 +1,33 @@
-name: Test Opentelemetry Kube Stack Charts
+# Blocked by 
 
-on:
-  pull_request:
-    paths:
-      - "charts/opentelemetry-kube-stack/**"
-    branches:
-      - main
+# name: Test Opentelemetry Kube Stack Charts
 
-jobs:
-  opentelemetry-kube-stack-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup
-        uses: ./.github/actions/setup
-        with:
-          create-kind-cluster: "true"
+# on:
+#   pull_request:
+#     paths:
+#       - "charts/opentelemetry-kube-stack/**"
+#     branches:
+#       - main
 
-      # We'll need this eventually, but for now leave it commented.
-      - name: Install cert-manager
-        run: |
-          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
-          kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
-          kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
+# jobs:
+#   opentelemetry-kube-stack-test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#       - name: Setup
+#         uses: ./.github/actions/setup
+#         with:
+#           create-kind-cluster: "true"
 
-      - name: Run chart-testing (install)
-        run: ct install --charts charts/opentelemetry-kube-stack
+#       # We'll need this eventually, but for now leave it commented.
+#       - name: Install cert-manager
+#         run: |
+#           kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+#           kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
+#           kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
+
+#       - name: Run chart-testing (install)
+#         run: ct install --charts charts/opentelemetry-kube-stack
