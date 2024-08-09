@@ -1,5 +1,13 @@
+{{- define "opentelemetry-collector.var_dump" -}}
+{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
+{{- end -}}
+
 {{- define "opentelemetry-collector.baseConfig" -}}
+{{- if .Values.alternateConfig }}
+{{- .Values.alternateConfig | toYaml }}
+{{- else}}
 {{- .Values.config | toYaml }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -56,7 +64,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
@@ -112,7 +120,7 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyClusterMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.clusterMetricsConfig" .Values | fromYaml) .config }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.clusterMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "k8s_cluster" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
@@ -124,7 +132,7 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
@@ -138,9 +146,10 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
 {{- if .Values.Values.presets.logsCollection.storeCheckpoints}}
+{{- $config := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $config.service.extensions "file_storage" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -179,12 +188,15 @@ receivers:
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
 {{- if and ($config.service.pipelines.logs) (not (has "k8sattributes" $config.service.pipelines.logs.processors)) }}
+{{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
 {{- end }}
 {{- if and ($config.service.pipelines.metrics) (not (has "k8sattributes" $config.service.pipelines.metrics.processors)) }}
+{{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
 {{- end }}
 {{- if and ($config.service.pipelines.traces) (not (has "k8sattributes" $config.service.pipelines.traces.processors)) }}
+{{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
@@ -268,7 +280,7 @@ processors:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}

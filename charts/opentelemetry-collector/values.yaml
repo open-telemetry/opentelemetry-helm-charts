@@ -166,6 +166,23 @@ config:
           - jaeger
           - zipkin
 
+# Helm currently has an issue (https://github.com/helm/helm/pull/12879) when using null to remove
+# default configuration from a subchart. The result is that you cannot remove default configuration
+# from `config`, such as a specific recevier or a specific pipeline, when the chart is used as a
+# subchart.
+#
+# Until the helm bug is fixed, this field is provided as an alternative when using this chart as a subchart.
+# It is not recommended to use this field when installing the chart directly.
+#
+# When not empty, `alternateConfig`will be used to set the collector's configuration. It has NO default
+# values and IS NOT MERGED with config. Any configuration provided via `config` will be ignored when
+# `alternateConfig` is set. You MUST provide your own collector configuration.
+#
+# Reminder that the healthcheck extension (or something else that provides the same functionality) is required.
+#
+# Components configured by presets will be injected in the same way they are for `config`.
+alternateConfig: {}
+
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
   repository: ""
