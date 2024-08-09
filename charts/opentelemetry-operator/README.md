@@ -142,21 +142,21 @@ the exporter is [debug exporter](https://github.com/open-telemetry/opentelemetry
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: deployment # This configuration is omittable.
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      debug:
+      debug: {}
 
     service:
       pipelines:
@@ -177,19 +177,19 @@ the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: daemonset
   hostNetwork: true
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
       debug:
@@ -218,22 +218,22 @@ is Jaeger receiver and the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: statefulset
   replicas: 3
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      debug:
+      debug: {}
 
     service:
       pipelines:
@@ -256,21 +256,21 @@ _See the [OpenTelemetry Operator github repository](https://github.com/open-tele
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: sidecar-for-my-app
 spec:
   mode: sidecar
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          thrift_compact:
-    processors:
+          thrift_compact: {}
+    processors: {}
 
     exporters:
-      debug:
+      debug: {}
 
     service:
       pipelines:
