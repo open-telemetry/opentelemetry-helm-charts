@@ -1,7 +1,3 @@
-{{- define "opentelemetry-collector.var_dump" -}}
-{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
-{{- end -}}
-
 {{- define "opentelemetry-collector.baseConfig" -}}
 {{- if .Values.alternateConfig }}
 {{- .Values.alternateConfig | toYaml }}
