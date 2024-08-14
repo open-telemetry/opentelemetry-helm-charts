@@ -11,6 +11,9 @@ extraEnvs: []
 
 # Enables a cleanup job to make sure the CRs are uninstalled before the operator
 cleanupJob:
+  # It is recommended to always keep this enabled so that running helm uninstall works properly.
+  # For non-helm installations i.e. ones created via helm template, it may make sense to disable this.
+  # For those installations, ensure that uninstallation for the operator happens _after_ the deletion of the CRs.
   enabled: true
 
 # Should the CRDs be installed by this chart.
