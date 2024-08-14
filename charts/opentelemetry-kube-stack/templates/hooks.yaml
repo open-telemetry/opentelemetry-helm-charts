@@ -1,13 +1,18 @@
 {{- if .Values.cleanupJob.enabled }}
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: delete-resources-sa
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: delete-resources-role
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 rules:
   - apiGroups:
       - opentelemetry.io
@@ -24,6 +29,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: delete-resources-rolebinding
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
