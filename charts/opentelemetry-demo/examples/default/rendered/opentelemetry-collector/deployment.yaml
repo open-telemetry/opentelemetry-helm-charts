@@ -1,0 +1,105 @@
+---
+# Source: opentelemetry-demo/charts/opentelemetry-collector/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-otelcol
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.100.0
+    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.105.0"
+    app.kubernetes.io/managed-by: Helm
+    
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otelcol
+      app.kubernetes.io/instance: example
+      component: standalone-collector
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 6402c6a1e56509c8663f5b85e39524b684a337eb7946537c389c1009c828c1d1
+        opentelemetry_community_demo: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/name: otelcol
+        app.kubernetes.io/instance: example
+        component: standalone-collector
+        
+    spec:
+      
+      serviceAccountName: example-otelcol
+      securityContext:
+        {}
+      containers:
+        - name: opentelemetry-collector
+          args:
+            - --config=/conf/relay.yaml
+          securityContext:
+            {}
+          image: "otel/opentelemetry-collector-contrib:0.105.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            
+            - name: jaeger-compact
+              containerPort: 6831
+              protocol: UDP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+            - name: otlp
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: prometheus
+              containerPort: 9464
+              protocol: TCP
+            - name: zipkin
+              containerPort: 9411
+              protocol: TCP
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: GOMEMLIMIT
+              value: "160MiB"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          resources:
+            limits:
+              memory: 200Mi
+          volumeMounts:
+            - mountPath: /conf
+              name: opentelemetry-collector-configmap
+      volumes:
+        - name: opentelemetry-collector-configmap
+          configMap:
+            name: example-otelcol
+            items:
+              - key: relay
+                path: relay.yaml
+      hostNetwork: false

@@ -1,0 +1,21 @@
+---
+# Source: opentelemetry-demo/charts/grafana/templates/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: example-grafana
+  namespace: default
+  labels:
+    helm.sh/chart: grafana-8.3.7
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "11.1.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: example-grafana
+subjects:
+- kind: ServiceAccount
+  name: example-grafana
+  namespace: default
