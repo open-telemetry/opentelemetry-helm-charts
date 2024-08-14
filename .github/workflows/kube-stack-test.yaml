@@ -28,4 +28,6 @@ jobs:
           kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
 
       - name: Run Helm Install
-        run: helm install opentelemetry-kube-stack charts/opentelemetry-kube-stack
+        run: |
+          helm dep build charts/opentelemetry-kube-stack
+          helm install opentelemetry-kube-stack charts/opentelemetry-kube-stack
