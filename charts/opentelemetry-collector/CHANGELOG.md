@@ -1,6 +1,10 @@
 # Changelog
 
 ## OpenTelemetry Collector
+
+### v0.88.7 / 2024-08-14
+- [Fix] add k8s.cluster.name to resource catalog events
+
 ### v0.88.6 / 2024-08-07
 - [Feat] Allow configuration of scrape interval value for target allocator prometheus custom resources.
 

@@ -996,6 +996,7 @@ service:
         - coralogix/resource_catalog
       processors:
         - memory_limiter
+        - resource/metadata
         - batch
       receivers:
         - k8sobjects/resource_catalog
@@ -1063,6 +1064,7 @@ service:
         - coralogix/resource_catalog
       processors:
         - memory_limiter
+        - resource/metadata
         - k8sattributes
         - resourcedetection/entity
         - resourcedetection/region

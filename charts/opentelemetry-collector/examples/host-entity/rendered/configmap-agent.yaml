@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.88.6
+    helm.sh/chart: opentelemetry-collector-0.88.7
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.106.1"
@@ -47,6 +47,14 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resource/metadata:
+        attributes:
+        - action: upsert
+          key: k8s.cluster.name
+          value: production
+        - action: upsert
+          key: cx.otel_integration.name
+          value: coralogix-integration-helm
       resourcedetection/entity:
         detectors:
         - system
@@ -172,6 +180,7 @@ data:
           exporters:
           - debug
           processors:
+          - resource/metadata
           - memory_limiter
           - batch
           receivers:
@@ -181,6 +190,7 @@ data:
           - coralogix/resource_catalog
           processors:
           - memory_limiter
+          - resource/metadata
           - k8sattributes
           - resourcedetection/entity
           - resourcedetection/region
@@ -191,6 +201,7 @@ data:
           exporters:
           - debug
           processors:
+          - resource/metadata
           - memory_limiter
           - batch
           receivers:
@@ -201,6 +212,7 @@ data:
           exporters:
           - debug
           processors:
+          - resource/metadata
           - memory_limiter
           - batch
           receivers:
