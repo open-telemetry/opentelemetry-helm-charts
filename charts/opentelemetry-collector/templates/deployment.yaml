@@ -32,11 +32,7 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if .Values.configMap.existingTemplateFile }}
-        checksum/config: {{ include (print $.Template.BasePath "/" .Values.configMap.existingTemplateFile ) . | sha256sum }}
-        {{- else -}}
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- end }}
+        {{- include "opentelemetry-collector.configFileChecksumAnnotation" . | nindent 8 }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
