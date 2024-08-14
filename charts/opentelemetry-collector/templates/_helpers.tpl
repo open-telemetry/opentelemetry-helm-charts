@@ -227,11 +227,11 @@ Get ConfigMap name if existingName is defined, otherwise use default name for ge
 {{- end }}
 
 {{/*
-Create ConfigMap checksum annotation if configMap.configFile is defined, otherwise use default file for generated config.
+Create ConfigMap checksum annotation if configMap.configTemplate is defined, otherwise use default file for generated config.
 */}}
-{{- define "opentelemetry-collector.configFileChecksumAnnotation" -}}
-  {{- if .Values.configMap.configFile }}
-  checksum/config: {{ include (print $.Template.BasePath "/" .Values.configMap.configFile ) . | sha256sum }}
+{{- define "opentelemetry-collector.configTemplateChecksumAnnotation" -}}
+  {{- if .Values.configMap.configTemplate }}
+  checksum/config: {{ include (print $.Template.BasePath "/" .Values.configMap.configTemplate ) . | sha256sum }}
   {{- else -}}
     {{- if eq .Values.mode "daemonset" -}}
     checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
