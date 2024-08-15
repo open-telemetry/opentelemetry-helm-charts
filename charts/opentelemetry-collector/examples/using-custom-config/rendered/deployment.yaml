@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 39e9727e920b7f499f75036d7b6d3133fbc9eceede910eeb77d515832f016d76
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -37,14 +37,13 @@ spec:
       serviceAccountName: example-opentelemetry-collector
       securityContext:
         {}
-      shareProcessNamespace: true
       containers:
         - name: opentelemetry-collector
           args:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector:0.107.0"
+          image: "otel/opentelemetry-collector-k8s:0.107.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -86,7 +85,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector
+            name: user-config
             items:
               - key: relay
                 path: relay.yaml
