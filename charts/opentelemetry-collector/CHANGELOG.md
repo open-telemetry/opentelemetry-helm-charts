@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.89.0 / 2024-08-16
+- [Feat] Bump collector version to `0.107.0`
+
 ### v0.88.7 / 2024-08-14
 - [Fix] add k8s.cluster.name to resource catalog events
 
