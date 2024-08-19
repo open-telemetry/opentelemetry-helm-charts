@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.90.0 / 2024-08-19
+- [Fix] ignore process name not found errors for hostmetrics process preset
+
 ### v0.89.0 / 2024-08-16
 - [Feat] Bump collector version to `0.107.0`
 

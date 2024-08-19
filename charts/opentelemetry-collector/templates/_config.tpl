@@ -280,6 +280,8 @@ receivers:
           # mutes "error reading username for process \"pause\" /etc/passwd", errors
           mute_process_user_error: true
           mute_process_exe_error: true
+          # fleeting processes cause these errors
+          mute_process_name_error: true
           metrics:
             process.cpu.utilization:
               enabled: true
