@@ -32,6 +32,10 @@
 {{ fail "[ERROR] Cannot set configMap.existingName when configMap.create is true" }}
 {{ end }}
 
+{{- if and .Values.configMap.create .Values.configMap.existingPath }}
+{{ fail "[ERROR] Cannot set configMap.existingPath when configMap.create is true" }}
+{{ end }}
+
 {{- if not .Values.resources }}
 [WARNING] No resource limits or requests were set. Consider setter resource requests and limits for your collector(s) via the `resources` field.
 {{ end }}
