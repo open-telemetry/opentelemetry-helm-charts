@@ -5,13 +5,17 @@ inputs:
     description: "Whether or not to create a kind cluster during setup"
     required: true
     default: "false"
+  helm-version:
+    description: "The helm version to be used when setting up"
+    required: false
+    default: "v3.9.4"
 runs:
   using: "composite"
   steps:
     - name: Set up Helm
       uses: azure/setup-helm@v4.2.0
       with:
-        version: v3.10.3
+        version: ${{ inputs.helm-version }}
 
     - uses: actions/setup-python@v4
       with:
