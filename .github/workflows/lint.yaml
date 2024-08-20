@@ -6,7 +6,26 @@ on:
       - main
 
 jobs:
+  get-charts:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Get chart names
+        id: get-charts
+        run: |
+          chart_names=$(ls charts)
+          echo "Chart names: $chart_names"
+          matrix=$(echo "${chart_names}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   lint-test:
+    needs: get-charts
+    strategy:
+      matrix:
+        helm-version: ["v3.9.4", "v3.11.3"]
+        chart-name: ${{ fromJson(needs.get-charts.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,6 +36,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "false"
+          helm-version: "${{ matrix.helm-version }}"
 
       - name: Run chart-testing (lint)
         run: "ct lint --target-branch main
@@ -27,4 +47,4 @@ jobs:
           --chart-repos opensearch=https://opensearch-project.github.io/helm-charts"
 
       - name: Run make check-examples
-        run: make check-examples
+        run: make check-examples CHARTS=${{ matrix.chart-name }}
