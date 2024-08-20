@@ -20,12 +20,18 @@ jobs:
           echo "Chart names: $chart_names"
           matrix=$(echo "${chart_names}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-  lint-test:
+  lint-matrix:
     needs: get-charts
     strategy:
       matrix:
         helm-version: ["v3.9.4", "v3.11.3"]
         chart-name: ${{ fromJson(needs.get-charts.outputs.matrix) }}
+        exclude:
+          # Excludes this version from testing for the OKS chart
+          # This version has a bug which prevents hooks from being rendered
+          # https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1305
+          - chart-name: opentelemetry-kube-stack
+            helm-version: "v3.9.4"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,3 +54,19 @@ jobs:
 
       - name: Run make check-examples
         run: make check-examples CHARTS=${{ matrix.chart-name }}
+  lint-test:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [lint-matrix]
+    steps:
+      - name: Print result
+        run: echo ${{ needs.lint-matrix.result }}
+      - name: Interpret result
+        run: |
+          if [[ success == ${{ needs.e2e-tests.result }} ]]
+          then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            false
+          fi
