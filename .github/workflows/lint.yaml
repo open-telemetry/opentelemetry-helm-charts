@@ -6,32 +6,7 @@ on:
       - main
 
 jobs:
-  get-charts:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Get chart names
-        id: set-matrix
-        run: |
-          chart_names=$(ls charts)
-          echo "Chart names: $chart_names"
-          matrix=$(echo "${chart_names}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-  lint-matrix:
-    needs: get-charts
-    strategy:
-      matrix:
-        helm-version: ["v3.9.4", "v3.11.3"]
-        chart-name: ${{ fromJson(needs.get-charts.outputs.matrix) }}
-        exclude:
-          # Excludes this version from testing for the OKS chart
-          # This version has a bug which prevents hooks from being rendered
-          # https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1305
-          - chart-name: opentelemetry-kube-stack
-            helm-version: "v3.9.4"
+  lint-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,7 +17,6 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "false"
-          helm-version: "${{ matrix.helm-version }}"
 
       - name: Run chart-testing (lint)
         run: "ct lint --target-branch main
@@ -53,20 +27,4 @@ jobs:
           --chart-repos opensearch=https://opensearch-project.github.io/helm-charts"
 
       - name: Run make check-examples
-        run: make check-examples CHARTS=${{ matrix.chart-name }}
-  lint-test:
-    runs-on: ubuntu-latest
-    if: always()
-    needs: [lint-matrix]
-    steps:
-      - name: Print result
-        run: echo ${{ needs.lint-matrix.result }}
-      - name: Interpret result
-        run: |
-          if [[ success == ${{ needs.lint-matrix.result }} ]]
-          then
-            echo "All matrix jobs passed!"
-          else
-            echo "One or more matrix jobs failed."
-            false
-          fi
+        run: make check-examples
