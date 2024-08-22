@@ -72,7 +72,7 @@ spec:
             - name: "EBPF_NET_CRASH_METRIC_HOST"
               value: {{ .Values.endpoint.address }}
             - name: "EBPF_NET_CRASH_METRIC_PORT"
-              value: {{ .Values.endpoint.port | quote}}
+              value: {{ .Values.endpoint.port }}
             {{- end }}
           {{- end }}
           ports:
@@ -101,7 +101,7 @@ spec:
           {{- if .Values.resources }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- end }}    
+          {{- end }}
       {{- with .Values.reducer.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
