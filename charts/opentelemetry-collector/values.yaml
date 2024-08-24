@@ -83,6 +83,9 @@ configMap:
   # Specifies an existing ConfigMap to be mounted to the pod
   # The ConfigMap MUST include the collector configuration via a key named 'relay' or the collector will not start.
   existingName: ""
+  # Specifies the relative path to custom ConfigMap template file. This option SHOULD be used when bundling a custom
+  # ConfigMap template, as it enables pod restart via a template checksum annotation.
+  # existingPath: ""
 
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
@@ -98,8 +101,14 @@ config:
       endpoint: ${env:MY_POD_IP}:13133
   processors:
     batch: {}
-    # If set to null, will be overridden with values based on k8s resource limits
-    memory_limiter: null
+    # Default memory limiter configuration for the collector based on k8s resource limits.
+    memory_limiter:
+      # check_interval is the time between measurements of memory usage.
+      check_interval: 5s
+      # By default limit_mib is set to 80% of ".Values.resources.limits.memory"
+      limit_percentage: 80
+      # By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
+      spike_limit_percentage: 25
   receivers:
     jaeger:
       protocols:

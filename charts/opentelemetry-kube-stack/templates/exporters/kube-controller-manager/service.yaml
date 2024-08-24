@@ -1,0 +1,29 @@
+{{- if and .Values.kubeControllerManager.enabled .Values.kubeControllerManager.service.enabled .Values.kubernetesServiceMonitors.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "opentelemetry-kube-stack.fullname" . }}-kube-controller-manager
+  labels:
+    app: {{ template "opentelemetry-kube-stack.name" . }}-kube-controller-manager
+    jobLabel: kube-controller-manager
+{{ include "opentelemetry-kube-stack.labels" . | indent 4 }}
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: {{ .Values.kubeControllerManager.serviceMonitor.port }}
+      {{- $kubeControllerManagerDefaultInsecurePort := 10252 }}
+      {{- $kubeControllerManagerDefaultSecurePort := 10257 }}
+      port: {{ include "opentelemetry-kube-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.port) }}
+      protocol: TCP
+      targetPort: {{ include "opentelemetry-kube-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.targetPort) }}
+{{- if .Values.kubeControllerManager.endpoints }}{{- else }}
+  selector:
+    {{- if .Values.kubeControllerManager.service.selector }}
+{{ toYaml .Values.kubeControllerManager.service.selector | indent 4 }}
+    {{- else}}
+    component: kube-controller-manager
+    {{- end}}
+{{- end }}
+  type: ClusterIP
+{{- end }}

@@ -1,0 +1,67 @@
+clusterName: demo
+collectors:
+  daemon:
+    enabled: true
+    # because this file is inside the examples folder, we need to reference it directly.
+    scrape_configs_file: "examples/prometheus-otel/kubelet_scrape_configs.yaml"
+    targetAllocator:
+      enabled: true
+      image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
+      allocationStrategy: per-node
+      prometheusCR:
+        enabled: true
+        podMonitorSelector: {}
+        scrapeInterval: "30s"
+        serviceMonitorSelector: {}
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:443
+          headers:
+            "access-token": "${ACCESS_TOKEN}"
+      service:
+        pipelines:
+          metrics:
+            receivers: [prometheus]
+            exporters: [debug, otlp]
+    env:
+      - name: ACCESS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: access_token
+            name: otel-collector-secret
+    presets:
+      logsCollection:
+        enabled: false
+      kubeletMetrics:
+        enabled: false
+      hostMetrics:
+        enabled: false
+      kubernetesAttributes:
+        enabled: false
+  cluster:
+    enabled: false
+instrumentation:
+  enabled: false
+opAMPBridge:
+  enabled: false
+kubernetesServiceMonitors:
+  enabled: true
+kubeApiServer:
+  enabled: true
+kubelet:
+  enabled: true
+kubeControllerManager:
+  enabled: true
+kubeDns:
+  enabled: true
+kubeEtcd:
+  enabled: true
+kubeScheduler:
+  enabled: true
+kubeProxy:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true

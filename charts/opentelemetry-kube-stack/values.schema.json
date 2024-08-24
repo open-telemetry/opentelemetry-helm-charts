@@ -1486,7 +1486,7 @@
         },
         "ports": {
           "items": {
-            "$ref": "#/$defs/ServicePort"
+            "$ref": "#/$defs/PortsSpec"
           },
           "type": "array"
         },
@@ -2404,6 +2404,34 @@
       "type": "object",
       "required": ["path"]
     },
+    "PortsSpec": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "protocol": {
+          "type": "string"
+        },
+        "appProtocol": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "targetPort": {
+          "type": ["string", "integer"]
+        },
+        "hostPort": {
+          "type": "integer"
+        },
+        "nodePort": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["port"]
+    },
     "ServicePort": {
       "properties": {
         "name": {
@@ -3248,6 +3276,313 @@
       "required": ["enabled"],
       "title": "EnableConfigBlock"
     },
+    "AttachMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node": {
+          "type": "boolean"
+        }
+      },
+      "required": ["node"],
+      "title": "AttachMetadata"
+    },
+    "KubeAPIServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "tlsConfig": {
+          "$ref": "#/$defs/TLSConfig"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/Monitor"
+        }
+      },
+      "required": ["enabled", "serviceMonitor", "tlsConfig"],
+      "title": "KubeAPIServer"
+    },
+    "TLSConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serverName": {
+          "type": "string"
+        },
+        "insecureSkipVerify": {
+          "type": "boolean"
+        }
+      },
+      "required": ["insecureSkipVerify", "serverName"],
+      "title": "TLSConfig"
+    },
+    "KubeDNS": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "service": {
+          "$ref": "#/$defs/KubeDNSService"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/KubeServiceMonitor"
+        }
+      },
+      "required": ["enabled", "service", "serviceMonitor"],
+      "title": "KubeDNS"
+    },
+    "KubeDNSService": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dnsmasq": {
+          "$ref": "#/$defs/Dnsmasq"
+        },
+        "skydns": {
+          "$ref": "#/$defs/Dnsmasq"
+        }
+      },
+      "required": ["dnsmasq", "skydns"],
+      "title": "KubeDNSService"
+    },
+    "Dnsmasq": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "targetPort": {
+          "type": "integer"
+        }
+      },
+      "required": ["port", "targetPort"],
+      "title": "Dnsmasq"
+    },
+    "Kubelet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/KubeletServiceMonitor"
+        }
+      },
+      "required": ["enabled", "namespace", "serviceMonitor"],
+      "title": "Kubelet"
+    },
+    "KubeletServiceMonitor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attachMetadata": {
+          "$ref": "#/$defs/AttachMetadata"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "honorLabels": {
+          "type": "boolean"
+        },
+        "honorTimestamps": {
+          "type": "boolean"
+        },
+        "https": {
+          "type": "boolean"
+        },
+        "cAdvisor": {
+          "type": "boolean"
+        },
+        "probes": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "cAdvisor",
+        "honorLabels",
+        "honorTimestamps",
+        "https",
+        "interval",
+        "probes"
+      ],
+      "title": "KubeletServiceMonitor"
+    },
+    "KubeServiceMonitorDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {}
+        },
+        "service": {
+          "$ref": "#/$defs/KubeService"
+        },
+        "serviceMonitor": {
+          "$ref": "#/$defs/KubeServiceMonitor"
+        }
+      },
+      "required": ["enabled", "endpoints", "service", "serviceMonitor"],
+      "title": "KubeServiceMonitorDefinition"
+    },
+    "KubeService": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "port": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetPort": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["enabled"],
+      "title": "KubeService"
+    },
+    "KubeServiceMonitor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "sampleLimit": {
+          "type": "integer"
+        },
+        "targetLimit": {
+          "type": "integer"
+        },
+        "labelLimit": {
+          "type": "integer"
+        },
+        "labelNameLengthLimit": {
+          "type": "integer"
+        },
+        "labelValueLengthLimit": {
+          "type": "integer"
+        },
+        "proxyUrl": {
+          "type": "string"
+        },
+        "port": {
+          "type": "string"
+        },
+        "jobLabel": {
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/$defs/AdditionalLabels"
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "relabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "additionalLabels": {
+          "$ref": "#/$defs/AdditionalLabels"
+        },
+        "https": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "insecureSkipVerify": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serverName": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "dnsmasqMetricRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "dnsmasqRelabelings": {
+          "type": "array",
+          "items": {}
+        },
+        "scheme": {
+          "type": "string"
+        },
+        "caFile": {
+          "type": "string"
+        },
+        "certFile": {
+          "type": "string"
+        },
+        "keyFile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "additionalLabels",
+        "interval",
+        "jobLabel",
+        "labelLimit",
+        "labelNameLengthLimit",
+        "labelValueLengthLimit",
+        "metricRelabelings",
+        "proxyUrl",
+        "relabelings",
+        "sampleLimit",
+        "selector",
+        "targetLimit"
+      ],
+      "title": "KubeServiceMonitor"
+    },
     "KubeStateMetrics": {
       "type": "object",
       "additionalProperties": true,
@@ -3492,6 +3827,14 @@
     }
   },
   "properties": {
+    "cleanupJob": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
     "crds": {
       "type": "object",
       "properties": {
@@ -3556,6 +3899,43 @@
     },
     "opentelemetry-operator": {
       "type": "object"
+    },
+    "kubernetesServiceMonitors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "ignoreNamespaceSelectors": {
+          "type": "boolean"
+        }
+      },
+      "required": ["enabled", "ignoreNamespaceSelectors"]
+    },
+    "kubeApiServer": {
+      "$ref": "#/$defs/KubeAPIServer"
+    },
+    "kubelet": {
+      "$ref": "#/$defs/Kubelet"
+    },
+    "kubeControllerManager": {
+      "$ref": "#/$defs/KubeServiceMonitorDefinition"
+    },
+    "coreDns": {
+      "$ref": "#/$defs/KubeServiceMonitorDefinition"
+    },
+    "kubeDns": {
+      "$ref": "#/$defs/KubeDNS"
+    },
+    "kubeEtcd": {
+      "$ref": "#/$defs/KubeServiceMonitorDefinition"
+    },
+    "kubeScheduler": {
+      "$ref": "#/$defs/KubeServiceMonitorDefinition"
+    },
+    "kubeProxy": {
+      "$ref": "#/$defs/KubeServiceMonitorDefinition"
     },
     "kubeStateMetrics": {
       "$ref": "#/$defs/EnableConfigBlock"
