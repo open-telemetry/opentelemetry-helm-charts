@@ -1,0 +1,63 @@
+{{- if .Values.cleanupJob.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: delete-resources-sa
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: delete-resources-role
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - instrumentations
+      - opampbridges
+      - opentelemetrycollectors
+    verbs:
+      - get
+      - list
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: delete-resources-rolebinding
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: delete-resources-role
+subjects:
+  - kind: ServiceAccount
+    name: delete-resources-sa
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "opentelemetry-kube-stack.name" . }}-pre-delete-job
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: delete-resources-sa
+      containers:
+      - name: delete-resources
+        image: bitnami/kubectl:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            kubectl delete instrumentations,opampbridges,opentelemetrycollectors \
+              -l helm.sh/chart={{ include "opentelemetry-kube-stack.chart" . }}
+{{- end }}

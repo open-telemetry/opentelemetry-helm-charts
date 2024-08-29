@@ -1,0 +1,63 @@
+# just for reducer
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "200m"
+  limits:
+    memory: "256Mi"
+    cpu: "300m"
+
+# OTLP gRPC endpoint to send the collected metrics
+endpoint:
+  address: "example-opentelemetry-collector.default"
+
+reducer:
+  extraArgs:
+    - --disable-prometheus-metrics
+
+  disableMetrics:
+    - none
+  enableMetrics:
+    ### to enable an entire metric category: ###
+    - tcp.all
+    - udp.all
+    - dns.all
+    - http.all
+    - ebpf_net.all
+
+kernelCollector:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "200m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+cloudCollector:
+  enabled: true
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "200m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+k8sCollector:
+  relay:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "200m"
+      limits:
+        memory: "256Mi"
+        cpu: "300m"
+  watcher:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "200m"
+      limits:
+        memory: "256Mi"
+        cpu: "300m"
