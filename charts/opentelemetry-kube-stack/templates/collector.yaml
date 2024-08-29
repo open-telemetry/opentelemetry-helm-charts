@@ -30,8 +30,8 @@ spec:
   {{- end }}
   {{- if $collector.image.digest }}
   image: "{{ $collector.image.repository }}@{{ $collector.image.digest }}"
-  {{- else }}
-  image: "{{ $collector.image.repository }}:{{ $collector.image.tag | default $.Chart.AppVersion }}"
+  {{- else if $collector.image.tag }}
+  image: "{{ $collector.image.repository }}:{{ $collector.image.tag }}"
   {{- end }}
   imagePullPolicy: {{ $collector.image.pullPolicy }}
   upgradeStrategy: {{ $collector.upgradeStrategy }}
