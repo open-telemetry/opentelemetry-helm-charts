@@ -16,11 +16,7 @@ data:
   relay: |
     exporters:
       debug: {}
-    extensions:
-      health_check:
-        endpoint: ${env:MY_POD_IP}:13133
     processors:
-      batch: {}
       k8sattributes:
         extract:
           metadata:
@@ -44,69 +40,29 @@ data:
             name: k8s.pod.uid
         - sources:
           - from: connection
-      memory_limiter:
-        check_interval: 5s
-        limit_percentage: 80
-        spike_limit_percentage: 25
     receivers:
-      jaeger:
-        protocols:
-          grpc:
-            endpoint: ${env:MY_POD_IP}:14250
-          thrift_compact:
-            endpoint: ${env:MY_POD_IP}:6831
-          thrift_http:
-            endpoint: ${env:MY_POD_IP}:14268
-      otlp:
-        protocols:
-          grpc:
-            endpoint: ${env:MY_POD_IP}:4317
-          http:
-            endpoint: ${env:MY_POD_IP}:4318
-      prometheus:
-        config:
-          scrape_configs:
-          - job_name: opentelemetry-collector
-            scrape_interval: 10s
-            static_configs:
-            - targets:
-              - ${env:MY_POD_IP}:8888
-      zipkin:
-        endpoint: ${env:MY_POD_IP}:9411
+      k8s_cluster:
+        collection_interval: 10s
+      k8sobjects:
+        objects:
+        - exclude_watch_type:
+          - DELETED
+          group: events.k8s.io
+          mode: watch
+          name: events
     service:
-      extensions:
-      - health_check
       pipelines:
         logs:
           exporters:
           - debug
           processors:
           - k8sattributes
-          - memory_limiter
-          - batch
           receivers:
-          - otlp
+          - k8sobjects
         metrics:
           exporters:
           - debug
           processors:
           - k8sattributes
-          - memory_limiter
-          - batch
           receivers:
-          - otlp
-          - prometheus
-        traces:
-          exporters:
-          - debug
-          processors:
-          - resource
-          - k8sattributes
-          - batch
-          receivers:
-          - otlp
-          - jaeger
-          - zipkin
-      telemetry:
-        metrics:
-          address: ${env:MY_POD_IP}:8888
+          - k8s_cluster

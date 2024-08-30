@@ -1,7 +1,7 @@
 ---
-# Source: opentelemetry-collector/templates/statefulset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   namespace: default
@@ -13,25 +13,24 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     
 spec:
-  serviceName: example-opentelemetry-collector
-  podManagementPolicy: Parallel
-  replicas: 2
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: statefulset-collector
-  updateStrategy:
+      component: standalone-collector
+  strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 606d240c6b499a1762d0e030d326aba44e55964d5da37bc0a546e73555ebef80
+        checksum/config: b9ee8f766c36fa6c45f49fdc4a2d4107c8afcd5faf20ab829f12b54d12dde201
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: statefulset-collector
+        component: standalone-collector
         
     spec:
       
@@ -75,7 +74,7 @@ spec:
                   apiVersion: v1
                   fieldPath: status.podIP
             - name: GOMEMLIMIT
-              value: "152MiB"
+              value: "3276MiB"
           livenessProbe:
             httpGet:
               path: /
@@ -86,15 +85,15 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 100m
-              memory: 200M
+              cpu: 2
+              memory: 4Gi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-statefulset
+            name: example-opentelemetry-collector
             items:
               - key: relay
                 path: relay.yaml
