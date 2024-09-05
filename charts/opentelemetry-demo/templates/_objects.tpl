@@ -11,6 +11,7 @@ metadata:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
   replicas: {{ .replicas | default .defaultValues.replicas }}
+  revisionHistoryLimit: {{ .revisionHistoryLimit | default .defaultValues.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "otel-demo.selectorLabels" . | nindent 6 }}
