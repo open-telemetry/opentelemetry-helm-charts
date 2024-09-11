@@ -2,7 +2,10 @@
 
 ## OpenTelemetry Collector
 
-### v0.92.0 / 2024-09-40
+### v0.93.0 / 2024-09-11
+- [Feat] Bump collector version to `0.108.0`
+
+### v0.92.0 / 2024-09-04
 - [Feat] Add support for taeget allocator static config.
 
 ### v0.91.0 / 2024-08-30
