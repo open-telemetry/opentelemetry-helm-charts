@@ -9,7 +9,7 @@ Just upgrade and enjoy.
 > [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
-The deprecated memory ballast extension has been removed from the default config. If you depend on this component you must manually configure `config.exentions` and `config.service.extensions` to include the memory ballast extension. Setting `useGOMEMLIMIT` to `false` will no longer keep the memory ballast extension in the rendered collector config.
+The deprecated memory ballast extension has been removed from the default config. If you depend on this component you must manually configure `config.extensions` and `config.service.extensions` to include the memory ballast extension. Setting `useGOMEMLIMIT` to `false` will no longer keep the memory ballast extension in the rendered collector config.
 
 ## 0.88.0 to 0.89.0
 
