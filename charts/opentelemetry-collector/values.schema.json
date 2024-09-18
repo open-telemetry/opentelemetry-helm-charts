@@ -557,6 +557,39 @@
         }
       }
     },
+    "startupProbe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "initialDelaySeconds": {
+          "type": "integer"
+        },
+        "periodSeconds": {
+          "type": "integer"
+        },
+        "timeoutSeconds": {
+          "type": "integer"
+        },
+        "failureThreshold": {
+          "type": "integer"
+        },
+        "terminationGracePeriodSeconds": {
+          "type": "integer"
+        },
+        "httpGet": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "port": {
+              "type": "integer"
+            },
+            "path": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "podAnnotations": {
       "type": "object"
     },
@@ -808,13 +841,11 @@
           "items": {}
         },
         "metricRelabelings": {
-            "type": "array",
-            "default": [],
-            "title": "The metricRelabelings Schema",
-            "items": {},
-            "examples": [
-                []
-            ]
+          "type": "array",
+          "default": [],
+          "title": "The metricRelabelings Schema",
+          "items": {},
+          "examples": [[]]
         }
       },
       "required": ["enabled"]
@@ -913,37 +944,37 @@
       }
     },
     "networkPolicy": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-            "enabled": {
-                "type": "boolean"
-            },
-            "annotations": {
-              "type": "object"
-            },
-            "allowIngressFrom": {
-              "type": "array",
-              "description": "List of sources which should be able to access the collector. See the standard NetworkPolicy 'spec.ingress.from' definition for more information: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/. If left empty, ingress traffic will be permitted on to all enabled ports from all sources.",
-              "items": {
-                "type": "object"
-              }
-            },
-            "extraIngressRules": {
-              "type": "array",
-              "description": "Additional ingress rules to apply to the policy. See the standard NetworkPolicy 'spec.ingress' definition for more information: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/",
-              "items": {
-                "type": "object"
-              }
-            },
-            "egressRules": {
-              "description": "Optional egress configuration, see the standard NetworkPolicy 'spec.egress' definition for more information: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/",
-              "type": "array",
-              "items": {
-                "type": "object"
-              }
-            }
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "allowIngressFrom": {
+          "type": "array",
+          "description": "List of sources which should be able to access the collector. See the standard NetworkPolicy 'spec.ingress.from' definition for more information: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/. If left empty, ingress traffic will be permitted on to all enabled ports from all sources.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "extraIngressRules": {
+          "type": "array",
+          "description": "Additional ingress rules to apply to the policy. See the standard NetworkPolicy 'spec.ingress' definition for more information: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/",
+          "items": {
+            "type": "object"
+          }
+        },
+        "egressRules": {
+          "description": "Optional egress configuration, see the standard NetworkPolicy 'spec.egress' definition for more information: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
         }
+      }
     },
     "useGOMEMLIMIT": {
       "type": "boolean"
