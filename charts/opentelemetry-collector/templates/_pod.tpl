@@ -110,6 +110,7 @@ containers:
       httpGet:
         path: {{ .Values.readinessProbe.httpGet.path }}
         port: {{ .Values.readinessProbe.httpGet.port }}
+    {{- if .Values.startupProbe }}
     startupProbe:
       {{- if .Values.startupProbe.initialDelaySeconds | empty | not }}
       initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
@@ -129,6 +130,7 @@ containers:
       httpGet:
         path: {{ .Values.startupProbe.httpGet.path }}
         port: {{ .Values.startupProbe.httpGet.port }}
+    {{- end }}
     {{- with .Values.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
