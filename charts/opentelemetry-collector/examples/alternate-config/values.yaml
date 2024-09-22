@@ -1,0 +1,34 @@
+mode: deployment
+
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 2
+    memory: 4Gi
+
+presets:
+  clusterMetrics:
+    enabled: true
+  kubernetesAttributes:
+    enabled: true
+  kubernetesEvents:
+    enabled: true
+
+alternateConfig:
+  exporters:
+    debug: {}
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - debug
+      metrics:
+        exporters: 
+          - debug
