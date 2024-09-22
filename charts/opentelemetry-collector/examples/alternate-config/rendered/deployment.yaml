@@ -1,7 +1,7 @@
 ---
-# Source: opentelemetry-collector/templates/statefulset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   namespace: default
@@ -13,28 +13,24 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     
 spec:
-  serviceName: example-opentelemetry-collector
-  podManagementPolicy: Parallel
-  replicas: 2
-  persistentVolumeClaimRetentionPolicy:
-    whenDeleted: Delete
-    whenScaled: Delete
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: statefulset-collector
-  updateStrategy:
+      component: standalone-collector
+  strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 7904fc6a81b85957b18c49a44a3ac78ce4516c06106ae1e3626fee6a1ed89977
+        checksum/config: 4fd4967114f8fbd563e26e8f2c70c5a889ce6f92ad6a87a729e72ce440216411
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: statefulset-collector
+        component: standalone-collector
         
     spec:
       
@@ -78,7 +74,7 @@ spec:
                   apiVersion: v1
                   fieldPath: status.podIP
             - name: GOMEMLIMIT
-              value: "152MiB"
+              value: "3276MiB"
           livenessProbe:
             httpGet:
               path: /
@@ -89,38 +85,16 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 100m
-              memory: 200M
+              cpu: 2
+              memory: 4Gi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-            - mountPath: /var/lib/storage/queue
-              name: queue
-      initContainers:
-        - command:
-          - sh
-          - -c
-          - 'chown -R 10001: /var/lib/storage/queue'
-          image: busybox:latest
-          name: init-fs
-          volumeMounts:
-          - mountPath: /var/lib/storage/queue
-            name: queue
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-statefulset
+            name: example-opentelemetry-collector
             items:
               - key: relay
                 path: relay.yaml
       hostNetwork: false
-  volumeClaimTemplates:
-  - metadata:
-      name: queue
-    spec:
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: 1Gi
-      storageClassName: standard

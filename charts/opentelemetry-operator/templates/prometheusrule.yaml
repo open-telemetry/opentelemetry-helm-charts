@@ -32,7 +32,7 @@ spec:
         {{- end }}
       annotations:
         description: '{{`Reconciliation errors for {{ $labels.controller }} is increasing and has now reached {{ humanize $value }} `}}'
-        runbook_url: 'Check manager logs for reasons why this might happen'
+        runbook_url: '{{ default "https://opentelemetry.io/docs/kubernetes/operator/troubleshooting/prometheus-alerts-runbooks/" .Values.manager.prometheusRule.runbookUrl }}#reconcileerrors'
         {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -46,7 +46,7 @@ spec:
         {{- end }}
       annotations:
         description: '{{`Queue depth for {{ $labels.name }} has reached {{ $value }} `}}'
-        runbook_url: 'Check manager logs for reasons why this might happen'
+        runbook_url: '{{ default "https://opentelemetry.io/docs/kubernetes/operator/troubleshooting/prometheus-alerts-runbooks/" .Values.manager.prometheusRule.runbookUrl }}#workqueuedepth'
         {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
