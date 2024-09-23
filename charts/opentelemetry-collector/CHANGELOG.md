@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.93.2 / 2024-09-20
+- [Fix] Change opamp poll interval to 2 minutes
+
 ### v0.93.1 / 2024-09-12
 - [Fix] Allow changing spanmetrics namespace
 
