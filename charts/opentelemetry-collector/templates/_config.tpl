@@ -716,15 +716,15 @@ extensions:
       agent_description:
         non_identifying_attributes:
         {{- if .Values.presets.fleetManagement.agentType }}
-        - cx.agent.type: "{{.Values.presets.fleetManagement.agentType}}"
+          cx.agent.type: "{{.Values.presets.fleetManagement.agentType}}"
         {{- end }}
         {{- if .Values.presets.fleetManagement.clusterName }}
-        - cx.cluster.name: "{{.Values.presets.fleetManagement.clusterName}}"
+          cx.cluster.name: "{{.Values.presets.fleetManagement.clusterName}}"
         {{- end }}
         {{- if .Values.presets.fleetManagement.integrationID }}
-        - cx.integrationID: "{{.Values.presets.fleetManagement.integrationID}}"
+          cx.integrationID: "{{.Values.presets.fleetManagement.integrationID}}"
         {{- end }}
-        - k8s.node.name: ${env:KUBE_NODE_NAME}
+          k8s.node.name: ${env:KUBE_NODE_NAME}
 {{- end }}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}

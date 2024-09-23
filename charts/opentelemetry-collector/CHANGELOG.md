@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.93.3 / 2024-09-23
+- [Fix] agent_description.non_identifying_attributes expected a map, got 'slice'
+
 ### v0.93.2 / 2024-09-20
 - [Fix] Change opamp poll interval to 2 minutes
 
