@@ -145,8 +145,8 @@ receivers:
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
 {{- if .Values.Values.presets.logsCollection.storeCheckpoints}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
-{{- $_ := set $config.service "extensions" (append $config.service.extensions "file_storage" | uniq)  }}
+{{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
+{{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions "file_storage" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
