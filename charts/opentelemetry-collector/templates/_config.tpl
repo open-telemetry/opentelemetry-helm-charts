@@ -179,6 +179,13 @@ receivers:
       - type: container
         id: container-parser
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+      # combine multiline logs (e.g. stack traces)
+      - id: recombine-multiline
+        type: recombine
+        combine_field: body
+        is_first_entry: body matches "^[^\\s]"
+        source_identifier: attributes["log.file.path"]
+        max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}

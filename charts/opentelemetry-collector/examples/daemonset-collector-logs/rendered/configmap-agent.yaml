@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.110.0"
     app.kubernetes.io/managed-by: Helm
-    
+
 data:
   relay: |
     exporters:
@@ -36,6 +36,12 @@ data:
         - id: container-parser
           max_log_size: 102400
           type: container
+        - combine_field: body
+          id: recombine-multiline
+          is_first_entry: body matches "^[^\\s]"
+          max_log_size: 102400
+          source_identifier: attributes["log.file.path"]
+          type: recombine
         retry_on_failure:
           enabled: true
         start_at: end
