@@ -121,6 +121,7 @@ helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+release: {{ .Release.Name | quote }}
 {{- end }}
 
 {{/*
