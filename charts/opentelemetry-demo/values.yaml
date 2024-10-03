@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
   env:
@@ -583,10 +584,19 @@ components:
       - "start"
       - "--uri"
       - "file:./etc/flagd/demo.flagd.json"
-    mountedConfigMaps:
-      - name: config
+    mountedEmptyDirs:
+      - name: config-rw
         mountPath: /etc/flagd
-        existingConfigMap: '{{ include "otel-demo.name" . }}-flagd-config'
+    initContainers:
+      - name: init-config
+        image: busybox
+        command:  ['sh', '-c', 'cp /config-ro/demo.flagd.json /config-rw/']
+        volumeMounts:
+          - mountPath: /config-ro
+            name: config-ro
+          - mountPath: /config-rw
+            name: config-rw
+            
 
   kafka:
     enabled: true

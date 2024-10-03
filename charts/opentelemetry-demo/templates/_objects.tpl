@@ -79,6 +79,14 @@ spec:
               subPath: {{ .subPath }}
               {{- end }}
           {{- end }}
+          {{- range .mountedEmptyDirs }}
+            - name: {{ .name | lower }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+          {{- end }}
+
       volumes:
         {{- range .mountedConfigMaps }}
         - name: {{ .name | lower}}
@@ -88,6 +96,10 @@ spec:
             {{- else }}
             name: {{ include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
             {{- end }}
+        {{- end }}
+        {{- range .mountedEmptyDirs }}
+        - name: {{ .name | lower}}
+          emptyDir: {}
         {{- end }}
       {{- if .initContainers }}
       initContainers:
