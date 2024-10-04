@@ -123,7 +123,11 @@ spec:
 {{ toYaml .Values.kernelCollector.resources | indent 12 }}
 {{- end }}
           securityContext:
+{{- if .Values.kernelCollector.securityContext }}
+{{ toYaml .Values.kernelCollector.securityContext | indent 12 }}
+{{- else }}
             privileged: true
+{{- end }}
           volumeMounts:
           - mountPath: /hostfs/
             name: host-root
