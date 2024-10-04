@@ -586,7 +586,30 @@ components:
       - "file:./etc/flagd/demo.flagd.json"
     mountedEmptyDirs:
       - name: config-rw
-        mountPath: /etc/flagd
+        mountPath: /etcd/flagd
+    # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
+    sidecarContainer:
+      name: flagd-ui
+      enabled: true
+      useDefault:
+        env: true
+      replicas: 1
+      service:
+        port: 4000
+      env:
+        - name: FLAGD_METRICS_EXPORTER
+          value: otel
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://$(OTEL_COLLECTOR_NAME):4317
+        - name: OTEL_SERVICE_NAME
+          value: flagd-ui
+      resources:
+        limits:
+          memory: 150Mi
+      mountedEmptyDirs:
+        - name: config-rw
+          mountPath: /app/data
+
     initContainers:
       - name: init-config
         image: busybox

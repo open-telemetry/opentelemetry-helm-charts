@@ -86,7 +86,46 @@ spec:
               subPath: {{ .subPath }}
               {{- end }}
           {{- end }}
-
+        {{- if .sidecarContainer }}
+        - name: {{ .sidecarContainer.name   }}
+          image: '{{ ((.sidecarContainer.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.sidecarContainer.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .sidecarContainer.name)) }}'
+          imagePullPolicy: {{ ((.imageOverride).pullPolicy) | default .defaultValues.image.pullPolicy }}
+          {{- if .sidecarContainer.command }}
+          command:
+            {{- .sidecarContainer.command | toYaml | nindent 10 -}}
+          {{- end }}
+          {{- if or .sidecarContainer.ports .sidecarContainer.service}}
+          ports:
+            {{- include "otel-demo.pod.ports" . | nindent 12 }}
+          {{- end }}
+          env:
+            {{- include "otel-demo.pod.env" . | nindent 12 }}
+          resources:
+            {{- .sidecarContainer.resources | toYaml | nindent 12 }}
+          {{- if or .defaultValues.securityContext .securityContext }}
+          securityContext:
+            {{- .securityContext | default .defaultValues.securityContext | toYaml | nindent 12 }}
+          {{- end}}
+          {{- if .sidecarContainer.livenessProbe }}
+          livenessProbe:
+            {{- .sidecarContainer.livenessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          {{- range .sidecarContainer.mountedConfigMaps }}
+            - name: {{ .name | lower }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+          {{- end }}
+          {{- range .sidecarContainer.mountedEmptyDirs }}
+            - name: {{ .name | lower }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+          {{- end }}
+        {{- end }}
       volumes:
         {{- range .mountedConfigMaps }}
         - name: {{ .name | lower}}
