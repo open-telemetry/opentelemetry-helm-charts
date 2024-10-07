@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
   env:
@@ -583,10 +584,42 @@ components:
       - "start"
       - "--uri"
       - "file:./etc/flagd/demo.flagd.json"
-    mountedConfigMaps:
-      - name: config
-        mountPath: /etc/flagd
-        existingConfigMap: '{{ include "otel-demo.name" . }}-flagd-config'
+    mountedEmptyDirs:
+      - name: config-rw
+        mountPath: /etcd/flagd
+    # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
+    sidecarContainer:
+      name: flagd-ui
+      enabled: true
+      useDefault:
+        env: true
+      replicas: 1
+      service:
+        port: 4000
+      env:
+        - name: FLAGD_METRICS_EXPORTER
+          value: otel
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://$(OTEL_COLLECTOR_NAME):4317
+        - name: OTEL_SERVICE_NAME
+          value: flagd-ui
+      resources:
+        limits:
+          memory: 150Mi
+      mountedEmptyDirs:
+        - name: config-rw
+          mountPath: /app/data
+
+    initContainers:
+      - name: init-config
+        image: busybox
+        command:  ['sh', '-c', 'cp /config-ro/demo.flagd.json /config-rw/']
+        volumeMounts:
+          - mountPath: /config-ro
+            name: config-ro
+          - mountPath: /config-rw
+            name: config-rw
+            
 
   kafka:
     enabled: true
