@@ -1,0 +1,50 @@
+---
+# Source: opentelemetry-demo/charts/prometheus/templates/cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: v2.53.1
+    helm.sh/chart: prometheus-25.24.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: prometheus
+  name: example-prometheus-server
+  namespace: default
+data:
+  allow-snippet-annotations: "false"
+  alerting_rules.yml: |
+    {}
+  alerts: |
+    {}
+  prometheus.yml: |
+    global:
+      evaluation_interval: 30s
+      scrape_interval: 5s
+      scrape_timeout: 3s
+    storage:
+      tsdb:
+        out_of_order_time_window: 30m
+    rule_files:
+    - /etc/config/recording_rules.yml
+    - /etc/config/alerting_rules.yml
+    - /etc/config/rules
+    - /etc/config/alerts
+    scrape_configs:
+    - honor_labels: true
+      job_name: otel-collector
+      kubernetes_sd_configs:
+      - namespaces:
+          own_namespace: true
+        role: pod
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_pod_annotation_opentelemetry_community_demo
+  recording_rules.yml: |
+    {}
+  rules: |
+    {}
