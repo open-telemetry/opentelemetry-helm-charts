@@ -74,7 +74,7 @@ check-operator-crds:
 	@sed -i '/{{- if \.Values\.admissionWebhooks\.create }}/d' "./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml"
 	@sed -i '0,/{{- end }}/{/{{- end }}/d}' "./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml"
 
-	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/conf/crds; then \
+	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/conf/crds > /dev/null; then \
 		echo "Passed"; \
 		rm -rf ${TMP_DIRECTORY}; \
 	else \
