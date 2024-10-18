@@ -70,6 +70,10 @@ check-operator-crds:
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_instrumentations.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_opampbridges.yaml)
+
+	@sed -i '/{{- if \.Values\.admissionWebhooks\.create }}/d' "./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml"
+	@sed -i '0,/{{- end }}/{/{{- end }}/d}' "./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml"
+
 	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/conf/crds > /dev/null; then \
 		echo "Passed"; \
 		rm -rf ${TMP_DIRECTORY}; \
