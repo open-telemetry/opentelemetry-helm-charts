@@ -372,6 +372,10 @@ components:
         value: '{{ include "otel-demo.name" . }}-flagd'
       - name: FLAGD_PORT
         value: "8013"
+      - name: FLAGD_UI_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_UI_PORT
+        value: "4000"
       - name: FRONTEND_HOST
         value: '{{ include "otel-demo.name" . }}-frontend'
       - name: FRONTEND_PORT
@@ -586,40 +590,38 @@ components:
       - "file:./etc/flagd/demo.flagd.json"
     mountedEmptyDirs:
       - name: config-rw
-        mountPath: /etcd/flagd
+        mountPath: /etc/flagd
     # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
-    sidecarContainer:
-      name: flagd-ui
-      enabled: true
-      useDefault:
-        env: true
-      replicas: 1
-      service:
-        port: 4000
-      env:
-        - name: FLAGD_METRICS_EXPORTER
-          value: otel
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: http://$(OTEL_COLLECTOR_NAME):4317
-        - name: OTEL_SERVICE_NAME
-          value: flagd-ui
-      resources:
-        limits:
-          memory: 150Mi
-      mountedEmptyDirs:
-        - name: config-rw
-          mountPath: /app/data
-
+    sidecarContainers:
+      - name: flagd-ui
+        useDefault:
+          env: true
+        service:
+          port: 4000
+        env:
+          - name: FLAGD_METRICS_EXPORTER
+            value: otel
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
+        resources:
+          limits:
+            memory: 150Mi
+        volumeMounts:
+          - name: config-rw
+            mountPath: /app/data
     initContainers:
       - name: init-config
         image: busybox
-        command:  ['sh', '-c', 'cp /config-ro/demo.flagd.json /config-rw/']
+        command:  ['sh', '-c', 'cp /config-ro/demo.flagd.json /config-rw/demo.flagd.json && cat /config-rw/demo.flagd.json']
         volumeMounts:
           - mountPath: /config-ro
             name: config-ro
           - mountPath: /config-rw
             name: config-rw
-            
+    additionalVolumes:
+      - name: config-ro
+        configMap:
+          name: '{{ include "otel-demo.name" . }}-flagd-config'
 
   kafka:
     enabled: true
