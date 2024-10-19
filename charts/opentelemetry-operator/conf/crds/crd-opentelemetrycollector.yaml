@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/name: opentelemetry-operator
   name: opentelemetrycollectors.opentelemetry.io
 spec:
+{{- if .Values.admissionWebhooks.create }}
   conversion:
     strategy: Webhook
     webhook:
@@ -23,6 +24,7 @@ spec:
       conversionReviewVersions:
       - v1alpha1
       - v1beta1
+{{- end }}
   group: opentelemetry.io
   names:
     kind: OpenTelemetryCollector
