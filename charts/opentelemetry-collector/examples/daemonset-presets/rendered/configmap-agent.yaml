@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.95.1
+    helm.sh/chart: opentelemetry-collector-0.95.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -15,6 +15,7 @@ metadata:
 data:
   relay: |
     connectors:
+      forward/db: {}
       spanmetrics:
         histogram:
           explicit:
@@ -25,6 +26,27 @@ data:
         metrics_expiration: 5m
         metrics_flush_interval: 30s
         namespace: ""
+      spanmetrics/db:
+        dimensions:
+        - name: db.namespace
+        - name: db.operation.name
+        - name: db.collection_name
+        - name: db.system
+        histogram:
+          explicit:
+            buckets:
+            - 100us
+            - 1ms
+            - 2ms
+            - 2.5ms
+            - 4ms
+            - 6ms
+            - 10ms
+            - 100ms
+            - 250ms
+        metrics_expiration: 5m
+        metrics_flush_interval: 30s
+        namespace: db
     exporters:
       debug: {}
     extensions:
@@ -36,6 +58,10 @@ data:
         observe_pods: true
     processors:
       batch: {}
+      filter/db_spanmetrics:
+        traces:
+          span:
+          - attributes["db.system"] == nil
       k8sattributes:
         extract:
           metadata:
@@ -65,6 +91,36 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      transform/db:
+        trace_statements:
+        - context: span
+          statements:
+          - set(attributes["db.namespace"], attributes["db.name"]) where attributes["db.namespace"]
+            == nil
+          - set(attributes["db.namespace"], attributes["server.address"]) where attributes["db.namespace"]
+            == nil
+          - set(attributes["db.namespace"], attributes["network.peer.name"]) where attributes["db.namespace"]
+            == nil
+          - set(attributes["db.namespace"], attributes["net.peer.name"]) where attributes["db.namespace"]
+            == nil
+          - set(attributes["db.namespace"], attributes["db.system"]) where attributes["db.namespace"]
+            == nil
+          - set(attributes["db.operation.name"], attributes["db.operation"]) where attributes["db.operation.name"]
+            == nil
+          - set(attributes["db.collection_name"], attributes["db.sql.table"]) where attributes["db.collection_name"]
+            == nil
+          - set(attributes["db.collection_name"], attributes["db.cassandra.table"]) where
+            attributes["db.collection.name"] == nil
+          - set(attributes["db.collection_name"], attributes["db.mongodb.collection"])
+            where attributes["db.collection.name"] == nil
+          - set(attributes["db.collection_name"], attributes["db.redis.database_index"])
+            where attributes["db.collection.name"] == nil
+          - set(attributes["db.collection_name"], attributes["db.elasticsearch.path_parts.index"])
+            where attributes["db.collection.name"] == nil
+          - set(attributes["db.collection_name"], attributes["db.cosmosdb.container"])
+            where attributes["db.collection.name"] == nil
+          - set(attributes["db.collection_name"], attributes["aws_dynamodb.table_names"])
+            where attributes["db.collection.name"] == nil
       transform/k8s_attributes:
         log_statements:
         - context: resource
@@ -333,10 +389,12 @@ data:
           - prometheus
           - receiver_creator/mysql
           - spanmetrics
+          - spanmetrics/db
         traces:
           exporters:
           - debug
           - spanmetrics
+          - forward/db
           processors:
           - transform/span_name
           - k8sattributes
@@ -347,6 +405,15 @@ data:
           - otlp
           - jaeger
           - zipkin
+        traces/db:
+          exporters:
+          - spanmetrics/db
+          processors:
+          - filter/db_spanmetrics
+          - transform/db
+          - batch
+          receivers:
+          - forward/db
       telemetry:
         metrics:
           address: ${env:MY_POD_IP}:8888
