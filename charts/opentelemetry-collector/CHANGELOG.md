@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.95.3 / 2024-10-22
+- [Fix] dbMetrics silent transform/db processor
+
 ### v0.95.2 / 2024-10-22
 - [Feat] add dbMetrics option to spanmetrics preset
 

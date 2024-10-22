@@ -819,6 +819,7 @@ processors:
         - 'attributes["db.system"] == nil'
 {{- if .Values.presets.spanMetrics.dbMetrics.transformStatements }}
   transform/db:
+    error_mode: silent
     trace_statements:
       - context: span
         statements:
