@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.95.4 / 2024-10-22
+- [Fix] dbMetrics wrongly generated filter connector instead of filter processor
+
 ### v0.95.3 / 2024-10-22
 - [Fix] dbMetrics silent transform/db processor
 

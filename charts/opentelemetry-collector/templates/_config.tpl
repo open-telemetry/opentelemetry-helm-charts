@@ -802,8 +802,10 @@ connectors:
 {{- end }}
   forward/db: {}
 {{- end }}
-{{- if .Values.presets.spanMetrics.spanNameReplacePattern }}
+{{- if or (.Values.presets.spanMetrics.spanNameReplacePattern) (.Values.presets.spanMetrics.dbMetrics.enabled) }}
 processors:
+{{- end}}
+{{- if .Values.presets.spanMetrics.spanNameReplacePattern }}
   transform/span_name:
     trace_statements:
       - context: span
@@ -827,7 +829,6 @@ processors:
         - {{ $pattern }}
         {{- end}}
 {{- end }}
-
 service:
   pipelines:
     traces/db:
