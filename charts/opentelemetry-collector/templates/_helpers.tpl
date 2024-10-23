@@ -14,13 +14,13 @@ Get component name
 */}}
 {{- define "opentelemetry-collector.component" -}}
 {{- if eq .Values.mode "deployment" -}}
-component: standalone-collector
+app.kubernetes.io/component: standalone-collector
 {{- end -}}
 {{- if eq .Values.mode "daemonset" -}}
-component: agent-collector
+app.kubernetes.io/component: agent-collector
 {{- end -}}
 {{- if eq .Values.mode "statefulset" -}}
-component: statefulset-collector
+app.kubernetes.io/component: statefulset-collector
 {{- end -}}
 {{- end }}
 
