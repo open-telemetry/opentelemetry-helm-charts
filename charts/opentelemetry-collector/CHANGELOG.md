@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.96.0 / 2024-10-24
+- [Feat] Bump collector version to `0.112.0`
+
 ### v0.95.4 / 2024-10-22
 - [Fix] dbMetrics wrongly generated filter connector instead of filter processor
 
