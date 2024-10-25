@@ -1,5 +1,5 @@
 {{- if .Values.collectorCRD.generate -}}
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
@@ -46,20 +46,25 @@ spec:
     {{- end }}
     {{- with .Values.targetAllocator.resources }}
     resources:
-      {{- toYaml . | nindent 6 }}
+      {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- end }}
   {{- if .Values.podAnnotations }}
   podAnnotations:
   {{- end }}
     {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
+
+  {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled)) }}
   podSecurityContext:
-    {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (.Values.presets.logsCollection.storeCheckpoints) }}
     runAsUser: 0
     runAsGroup: 0
-    {{- else -}}
+  {{- if .Values.presets.hostMetrics.process.enabled }}
+    privileged: true
+  {{- end }}
+  {{- else -}}
     {{- toYaml .Values.securityContext | nindent 6 }}
-    {{- end }}
+  {{- end }}
+
   {{- if .Values.image.digest }}
   image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
   {{- else }}
@@ -103,8 +108,8 @@ spec:
     - name: GOMEMLIMIT
       value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
     {{- end }}
-    {{- with .Values.extraEnvs }}
-    {{- . | toYaml | nindent 4 }}
+    {{- if .Values.extraEnvs }}
+    {{- toYaml .Values.extraEnvs | nindent 4 }}
     {{- end }}
   {{- if .Values.lifecycleHooks }}
   lifecycle:
@@ -212,7 +217,7 @@ spec:
   {{- end }}
   serviceAccount: {{ include "opentelemetry-collector.serviceAccountName" . }}
   hostNetwork: {{ .Values.hostNetwork }}
-  config: |
+  config:
   {{- if or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")  -}}
   {{- include "opentelemetry-collector.deploymentConfig" . | nindent 4 -}}
   {{- else if eq .Values.mode "daemonset" -}}
