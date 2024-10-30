@@ -4,6 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
+    {{- range $key, $value := .Values.crds.additionalAnnotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
