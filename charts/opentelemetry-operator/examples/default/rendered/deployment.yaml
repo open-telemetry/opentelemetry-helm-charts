@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.71.1
+    helm.sh/chart: opentelemetry-operator-0.71.2
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.110.0"
     app.kubernetes.io/managed-by: Helm
@@ -76,9 +76,8 @@ spec:
         - args:
             - --secure-listen-address=0.0.0.0:8443
             - --upstream=http://127.0.0.1:8080/
-            - --logtostderr=true
             - --v=0
-          image: "quay.io/brancz/kube-rbac-proxy:v0.15.0"
+          image: "quay.io/brancz/kube-rbac-proxy:v0.18.1"
           name: kube-rbac-proxy
           ports:
             - containerPort: 8443
