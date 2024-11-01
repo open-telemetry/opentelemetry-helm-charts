@@ -71,9 +71,6 @@ check-operator-crds:
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_instrumentations.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_opampbridges.yaml)
 
-	@sed -i '/{{- if \.Values\.admissionWebhooks\.create }}/d' "./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml"
-	@sed -i '0,/{{- end }}/{/{{- end }}/d}' "./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml"
-
 	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/conf/crds > /dev/null; then \
 		echo "Passed"; \
 		rm -rf ${TMP_DIRECTORY}; \
@@ -91,5 +88,7 @@ define get-crd
 @sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
 @sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
 @sed -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
+@sed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
+@sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
 @echo '{{- end }}' >> $(1)
 endef
