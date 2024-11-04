@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.96.1
+    helm.sh/chart: opentelemetry-collector-0.97.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.112.0"
+    app.kubernetes.io/version: "0.111.0"
     app.kubernetes.io/managed-by: Helm
     
 data:
@@ -268,6 +268,7 @@ data:
           combine_with: ""
           id: kube-system_app-.*_http
           is_first_entry: (attributes.log) matches "^[^\\s].*"
+          max_batch_size: 1000
           max_log_size: 1048576
           max_unmatched_batch_size: 1
           output: clean-up-log-record
@@ -276,6 +277,7 @@ data:
           combine_with: ""
           id: default_app-.*
           is_first_entry: (attributes.log) matches "^[^\\s].*"
+          max_batch_size: 1000
           max_log_size: 1048576
           max_unmatched_batch_size: 1
           output: clean-up-log-record
@@ -284,6 +286,7 @@ data:
           combine_with: ""
           id: test
           is_first_entry: (attributes.log) matches "^[^\\s].*"
+          max_batch_size: 1000
           max_log_size: 1048576
           max_unmatched_batch_size: 1
           output: clean-up-log-record

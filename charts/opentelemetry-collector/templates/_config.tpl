@@ -472,6 +472,7 @@ receivers:
         is_first_entry: '(attributes.log) matches {{ .firstEntryRegex | quote }}'
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
         max_unmatched_batch_size: {{ $.Values.presets.logsCollection.maxUnmatchedBatchSize }}
+        max_batch_size: {{ $.Values.presets.logsCollection.maxBatchSize }}
         {{- if hasKey . "combineWith" }}
         combine_with: {{ .combineWith | quote }}
         {{- end }}
