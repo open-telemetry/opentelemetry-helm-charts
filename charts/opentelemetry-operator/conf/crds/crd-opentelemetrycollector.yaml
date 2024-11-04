@@ -19,8 +19,8 @@ spec:
           name: {{ template "opentelemetry-operator.fullname" . }}-webhook
           namespace: {{ .Release.Namespace }}
           path: /convert
-          port: {{ .Values.admissionWebhooks.servicePort }}
 {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}
+          port: {{ .Values.admissionWebhooks.servicePort }}
       conversionReviewVersions:
       - v1alpha1
       - v1beta1
@@ -6967,6 +6967,13 @@ spec:
                       enableMetrics:
                         type: boolean
                     type: object
+                type: object
+              persistentVolumeClaimRetentionPolicy:
+                properties:
+                  whenDeleted:
+                    type: string
+                  whenScaled:
+                    type: string
                 type: object
               podAnnotations:
                 additionalProperties:

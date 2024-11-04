@@ -92,3 +92,19 @@ define get-crd
 @sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
 @echo '{{- end }}' >> $(1)
 endef
+
+# get-crd doesn't work on macos because of sed incompatibility
+# when upgrading the CRDs on MacOS, swap usage of get-crd to this macro
+define get-crd-macos
+	@curl -s -o $(1) $(2)
+	@sed -i '' 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
+	@sed -i '' "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
+	@sed -i '' 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
+	@sed -i '' '1s/^/{{- if .Values.crds.create }}\n/' $(1)
+	@sed -i '' 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
+	@sed -i '' 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
+	@sed -i '' 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
+	@printf '{{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}\n' | \
+		sed -i '' '/path: \/convert/ r /dev/stdin' $(1)
+	@echo '{{- end }}' >> $(1)
+endef
