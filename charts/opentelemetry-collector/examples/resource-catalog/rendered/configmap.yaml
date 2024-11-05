@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.97.0
+    helm.sh/chart: opentelemetry-collector-0.97.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -35,6 +35,23 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resourcedetection/resource_catalog:
+        detectors:
+        - eks
+        - aks
+        - gcp
+        gcp:
+          resource_attributes:
+            host.id:
+              enabled: false
+            host.name:
+              enabled: false
+            host.type:
+              enabled: false
+            k8s.cluster.name:
+              enabled: false
+        override: true
+        timeout: 2s
     receivers:
       jaeger:
         protocols:
@@ -196,6 +213,7 @@ data:
           - coralogix/resource_catalog
           processors:
           - memory_limiter
+          - resourcedetection/resource_catalog
           - resource/metadata
           - batch
           receivers:

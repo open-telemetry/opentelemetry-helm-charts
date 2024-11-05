@@ -5,13 +5,17 @@ kind: ClusterRole
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.97.0
+    helm.sh/chart: opentelemetry-collector-0.97.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
     app.kubernetes.io/managed-by: Helm
     
 rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["aws-auth"]
+    verbs: ["get"]
   - apiGroups: [""]
     resources:
     - namespaces
