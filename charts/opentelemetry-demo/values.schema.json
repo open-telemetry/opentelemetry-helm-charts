@@ -178,6 +178,12 @@
             "$ref": "#/definitions/MountedConfigMap"
           }
         },
+        "mountedEmptyDirs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MountedEmptyDirs"
+          }
+        },
         "livenessProbe": {
           "$ref": "#/definitions/LivenessProbe"
         },
@@ -200,18 +206,13 @@
           "$ref": "#/definitions/Ingress"
         },
         "initContainers": {
-          "type": "array",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "image": {
-              "type": "string"
-            },
-            "command": {
-              "type": "object"
-            }
-          }
+          "type": "array"
+        },
+        "sidecarContainers":{
+          "type": "array"
+        },
+        "additionalVolumes": {
+          "type": "array"
         }
       },
       "required": [
@@ -721,6 +722,22 @@
         {
           "required": ["data"]
         }
+      ]
+    },
+    "MountedEmptyDirs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "mountPath"
       ]
     }
   }

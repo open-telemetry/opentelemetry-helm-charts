@@ -6,7 +6,7 @@ in kubernetes cluster.
 ## Prerequisites
 
 - Kubernetes 1.24+
-- Helm 3.9+
+- Helm 3.14+
 
 ## Installing the Chart
 
@@ -115,57 +115,60 @@ component.
 > is the name of the demo component
 
 
-| Parameter                               | Description                                                                                                | Default                                                       |
-|-----------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| `enabled`                               | Is this component enabled                                                                                  | `true`                                                        |
-| `useDefault.env`                        | Use the default environment variables in this component                                                    | `true`                                                        |
-| `imageOverride.repository`              | Name of image for this component                                                                           | Defaults to the overall default image repository              |
-| `imageOverride.tag`                     | Tag of the image for this component                                                                        | Defaults to the overall default image tag                     |
-| `imageOverride.pullPolicy`              | Image pull policy for this component                                                                       | `IfNotPresent`                                                |
-| `imageOverride.pullSecrets`             | Image pull secrets for this component                                                                      | `[]`                                                          |
-| `service.type`                          | Service type used for this component                                                                       | `ClusterIP`                                                   |
-| `service.port`                          | Service port used for this component                                                                       | `nil`                                                         |
-| `service.nodePort`                      | Service node port used for this component                                                                  | `nil`                                                         |
-| `service.annotations`                   | Annotations to add to the component's service                                                              | `{}`                                                          |
-| `ports`                                 | Array of ports to open for deployment and service of this component                                        | `[]`                                                          |
-| `env`                                   | Array of environment variables added to this component                                                     | Each component will have its own set of environment variables |
-| `envOverrides`                          | Used to override individual environment variables without re-specifying the entire array                   | `[]`                                                          |
-| `replicas`                              | Number of replicas for this component                                                                      | `1` for kafka, and redis ; `nil` otherwise       |
-| `resources`                             | CPU/Memory resource requests/limits                                                                        | Each component will have a default memory limit set           |
-| `schedulingRules.nodeSelector`          | Node labels for pod assignment                                                                             | `{}`                                                          |
-| `schedulingRules.affinity`              | Man of node/pod affinities                                                                                 | `{}`                                                          |
-| `schedulingRules.tolerations`           | Tolerations for pod assignment                                                                             | `[]`                                                          |
-| `securityContext`                       | Container security context to define user ID (UID), group ID (GID) and other security policies             | `{}`                                                          |
-| `podSecurityContext`                    | Pod security context to define user ID (UID), group ID (GID) and other security policies                   | `{}`                                                          |
-| `podAnnotations`                        | Pod annotations for this component                                                                         | `{}`                                                          |
-| `ingress.enabled`                       | Enable the creation of Ingress rules                                                                       | `false`                                                       |
-| `ingress.annotations`                   | Annotations to add to the ingress rule                                                                     | `{}`                                                          |
-| `ingress.ingressClassName`              | Ingress class to use. If not specified default Ingress class will be used.                                 | `nil`                                                         |
-| `ingress.hosts`                         | Array of Hosts to use for the ingress rule.                                                                | `[]`                                                          |
-| `ingress.hosts[].paths`                 | Array of paths / routes to use for the ingress rule host.                                                  | `[]`                                                          |
-| `ingress.hosts[].paths[].path`          | Actual path route to use                                                                                   | `nil`                                                         |
-| `ingress.hosts[].paths[].pathType`      | Path type to use for the given path. Typically this is `Prefix`.                                           | `nil`                                                         |
-| `ingress.hosts[].paths[].port`          | Port to use for the given path                                                                             | `nil`                                                         |
-| `ingress.additionalIngresses`           | Array of additional ingress rules to add. This is handy if you need to differently annotated ingress rules | `[]`                                                          |
-| `ingress.additionalIngresses[].name`    | Each additional ingress rule needs to have a unique name                                                   | `nil`                                                         |
-| `command`                               | Command & arguments to pass to the container being spun up for this service                                | `[]`                                                          |
-| `mountedConfigMaps[].name`              | Name of the Volume that will be used for the ConfigMap mount                                               | `nil`                                                         |
-| `mountedConfigMaps[].mountPath`         | Path where the ConfigMap data will be mounted                                                              | `nil`                                                         |
-| `mountedConfigMaps[].subPath`           | SubPath within the mountPath. Used to mount a single file into the path.                                   | `nil`                                                         |
+| Parameter                              | Description                                                                                                | Default                                                       |
+|----------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| `enabled`                              | Is this component enabled                                                                                  | `true`                                                        |
+| `useDefault.env`                       | Use the default environment variables in this component                                                    | `true`                                                        |
+| `imageOverride.repository`             | Name of image for this component                                                                           | Defaults to the overall default image repository              |
+| `imageOverride.tag`                    | Tag of the image for this component                                                                        | Defaults to the overall default image tag                     |
+| `imageOverride.pullPolicy`             | Image pull policy for this component                                                                       | `IfNotPresent`                                                |
+| `imageOverride.pullSecrets`            | Image pull secrets for this component                                                                      | `[]`                                                          |
+| `service.type`                         | Service type used for this component                                                                       | `ClusterIP`                                                   |
+| `service.port`                         | Service port used for this component                                                                       | `nil`                                                         |
+| `service.nodePort`                     | Service node port used for this component                                                                  | `nil`                                                         |
+| `service.annotations`                  | Annotations to add to the component's service                                                              | `{}`                                                          |
+| `ports`                                | Array of ports to open for deployment and service of this component                                        | `[]`                                                          |
+| `env`                                  | Array of environment variables added to this component                                                     | Each component will have its own set of environment variables |
+| `envOverrides`                         | Used to override individual environment variables without re-specifying the entire array                   | `[]`                                                          |
+| `replicas`                             | Number of replicas for this component                                                                      | `1` for kafka, and redis ; `nil` otherwise       |
+| `resources`                            | CPU/Memory resource requests/limits                                                                        | Each component will have a default memory limit set           |
+| `schedulingRules.nodeSelector`         | Node labels for pod assignment                                                                             | `{}`                                                          |
+| `schedulingRules.affinity`             | Man of node/pod affinities                                                                                 | `{}`                                                          |
+| `schedulingRules.tolerations`          | Tolerations for pod assignment                                                                             | `[]`                                                          |
+| `securityContext`                      | Container security context to define user ID (UID), group ID (GID) and other security policies             | `{}`                                                          |
+| `podSecurityContext`                   | Pod security context to define user ID (UID), group ID (GID) and other security policies                   | `{}`                                                          |
+| `podAnnotations`                       | Pod annotations for this component                                                                         | `{}`                                                          |
+| `ingress.enabled`                      | Enable the creation of Ingress rules                                                                       | `false`                                                       |
+| `ingress.annotations`                  | Annotations to add to the ingress rule                                                                     | `{}`                                                          |
+| `ingress.ingressClassName`             | Ingress class to use. If not specified default Ingress class will be used.                                 | `nil`                                                         |
+| `ingress.hosts`                        | Array of Hosts to use for the ingress rule.                                                                | `[]`                                                          |
+| `ingress.hosts[].paths`                | Array of paths / routes to use for the ingress rule host.                                                  | `[]`                                                          |
+| `ingress.hosts[].paths[].path`         | Actual path route to use                                                                                   | `nil`                                                         |
+| `ingress.hosts[].paths[].pathType`     | Path type to use for the given path. Typically this is `Prefix`.                                           | `nil`                                                         |
+| `ingress.hosts[].paths[].port`         | Port to use for the given path                                                                             | `nil`                                                         |
+| `ingress.additionalIngresses`          | Array of additional ingress rules to add. This is handy if you need to differently annotated ingress rules | `[]`                                                          |
+| `ingress.additionalIngresses[].name`   | Each additional ingress rule needs to have a unique name                                                   | `nil`                                                         |
+| `command`                              | Command & arguments to pass to the container being spun up for this service                                | `[]`                                                          |
+| `mountedConfigMaps[].name`             | Name of the Volume that will be used for the ConfigMap mount                                               | `nil`                                                         |
+| `mountedConfigMaps[].mountPath`        | Path where the ConfigMap data will be mounted                                                              | `nil`                                                         |
+| `mountedConfigMaps[].subPath`          | SubPath within the mountPath. Used to mount a single file into the path.                                   | `nil`                                                         |
 | `mountedConfigMaps[].existingConfigMap` | Name of the existing ConfigMap to mount                                                                    | `nil`                                                         |
-| `mountedConfigMaps[].data`              | Contents of a ConfigMap. Keys should be the names of the files to be mounted.                              | `{}`                                                          |
-| `initContainers`                        | Array of init containers to add to the pod                                                                 | `[]`                                                          |
-| `initContainers[].name`                 | Name of the init container                                                                                 | `nil`                                                         |
-| `initContainers[].image`                | Image to use for the init container                                                                        | `nil`                                                         |
-| `initContainers[].command`              | Command to run for the init container                                                                      | `nil`                                                         |
+| `mountedConfigMaps[].data`             | Contents of a ConfigMap. Keys should be the names of the files to be mounted.                              | `{}`                                                          |
+| `initContainers`                       | Array of init containers to add to the pod                                                                 | `[]`                                                          |
+| `initContainers[].name`                | Name of the init container                                                                                 | `nil`                                                         |
+| `initContainers[].image`               | Image to use for the init container                                                                        | `nil`                                                         |
+| `initContainers[].command`             | Command to run for the init container                                                                      | `nil`                                                         |
+| `sidecarContainers`                    | Array of sidecar containers to add to the pod                                                              | `[]`                                                          |
+| `additionalVolumes`                    | Array of additional volumes to add to the pod                                                              | `[]`                                                          |
 
 ### Sub-charts
 
-The OpenTelemetry Demo Helm chart depends on 4 sub-charts:
+The OpenTelemetry Demo Helm chart depends on 5 sub-charts:
 * OpenTelemetry Collector
 * Jaeger
 * Prometheus
 * Grafana
+* OpenSearch
 
 Parameters for each sub-chart can be specified within that sub-chart's
 respective top level. This chart will override some of the dependent sub-chart
@@ -239,3 +242,18 @@ parameters by default. The overriden parameters are specified below.
 | `datasources`         | Configure grafana datasources (passed through tpl) | Prometheus and Jaeger data sources                                   |
 | `dashboardProviders`  | Configure grafana dashboard providers              | Defines a `default` provider based on a file path                    |
 | `dashboardConfigMaps` | ConfigMaps reference that contains dashboards      | Dashboard config map deployed with this Helm chart                   |
+
+#### OpenSearch
+> **Note**
+> The following parameters have a `opensearch.` prefix.
+
+| Parameter             | Description                                       | Default                                  |
+|-----------------------|---------------------------------------------------|------------------------------------------|
+| `enabled`             | Install the OpenSearch sub-chart                  | `true`                                   |
+| `fullnameOverride`    | Name that will be used by the sub-chart release   | `otel-demo-opensearch`                   |
+| `clusterName`         | Name of the OpenSearch cluster                    | `demo-cluster`                           |
+| `nodeGroup`           | OpenSearch Node group configuration               | `otel-demo`                              |
+| `singleNode`          | Deploy a single node OpenSearch cluster           | `true`                                   |
+| `opensearchJavaOpts`  | Java options for OpenSearch JVM                   | `-Xms300m -Xmx300m`                      |
+| `persistence.enabled` | Enable persistent storage for OpenSearch data     | `false`                                  |
+| `extraEnvs`           | Additional environment variables for OpenSearch   | Disables demo config and security plugin |
