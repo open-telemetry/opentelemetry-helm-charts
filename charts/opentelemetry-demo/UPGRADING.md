@@ -1,5 +1,10 @@
 # Upgrade guidelines
 
+## To 0.33
+
+The Helm prerequisite version has been updated to Helm 3.14+. Please upgrade your
+Helm client to the latest version.
+
 ## To 0.28
 
 The `configuration` property for components has been removed in favor of the new `mountedConfigMaps` property.
