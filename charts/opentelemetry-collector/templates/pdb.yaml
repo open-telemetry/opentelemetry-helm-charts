@@ -1,4 +1,4 @@
-{{- if and .Values.podDisruptionBudget.enabled (eq .Values.mode "deployment") }}
+{{- if and .Values.podDisruptionBudget.enabled (or (eq .Values.mode "statefulset") (eq .Values.mode "deployment")) }}
 apiVersion: {{ include "podDisruptionBudget.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
