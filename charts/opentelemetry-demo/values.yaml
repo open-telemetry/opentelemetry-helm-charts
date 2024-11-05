@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
   env:
@@ -371,6 +372,10 @@ components:
         value: '{{ include "otel-demo.name" . }}-flagd'
       - name: FLAGD_PORT
         value: "8013"
+      - name: FLAGD_UI_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_UI_PORT
+        value: "4000"
       - name: FRONTEND_HOST
         value: '{{ include "otel-demo.name" . }}-frontend'
       - name: FRONTEND_PORT
@@ -583,10 +588,40 @@ components:
       - "start"
       - "--uri"
       - "file:./etc/flagd/demo.flagd.json"
-    mountedConfigMaps:
-      - name: config
+    mountedEmptyDirs:
+      - name: config-rw
         mountPath: /etc/flagd
-        existingConfigMap: '{{ include "otel-demo.name" . }}-flagd-config'
+    # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
+    sidecarContainers:
+      - name: flagd-ui
+        useDefault:
+          env: true
+        service:
+          port: 4000
+        env:
+          - name: FLAGD_METRICS_EXPORTER
+            value: otel
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
+        resources:
+          limits:
+            memory: 150Mi
+        volumeMounts:
+          - name: config-rw
+            mountPath: /app/data
+    initContainers:
+      - name: init-config
+        image: busybox
+        command: ['sh', '-c', 'cp /config-ro/demo.flagd.json /config-rw/demo.flagd.json && cat /config-rw/demo.flagd.json']
+        volumeMounts:
+          - mountPath: /config-ro
+            name: config-ro
+          - mountPath: /config-rw
+            name: config-rw
+    additionalVolumes:
+      - name: config-ro
+        configMap:
+          name: '{{ include "otel-demo.name" . }}-flagd-config'
 
   kafka:
     enabled: true
@@ -743,6 +778,10 @@ jaeger:
     extraEnv:
       - name: METRICS_STORAGE_TYPE
         value: prometheus
+      - name: COLLECTOR_OTLP_GRPC_HOST_PORT
+        value: 0.0.0.0:4317
+      - name: COLLECTOR_OTLP_HTTP_HOST_PORT
+        value: 0.0.0.0:4318
     resources:
       limits:
         memory: 400Mi
@@ -855,7 +894,7 @@ grafana:
             logMessageField: body
             pplEnabled: true
             timeField: observedTimestamp
-            version: 2.13.0
+            version: 2.17.0
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
