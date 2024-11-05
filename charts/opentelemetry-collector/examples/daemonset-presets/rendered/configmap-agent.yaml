@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.97.1
+    helm.sh/chart: opentelemetry-collector-0.98.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -62,6 +62,16 @@ data:
         traces:
           span:
           - attributes["db.system"] == nil
+      filter/k8s_extra_metrics:
+        metrics:
+          metric:
+          - resource.attributes["service.name"] == "kubernetes-apiserver" and name !=
+            "kubernetes_build_info"
+          - resource.attributes["service.name"] == "kubernetes-cadvisor" and (name !=
+            "container_fs_writes_total" and name != "container_fs_reads_total" and name
+            != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total"
+            and name != "container_fs_usage_bytes" and name != "container_cpu_cfs_throttled_periods_total"
+            and name != "container_cpu_cfs_periods_total")
       k8sattributes:
         extract:
           metadata:
@@ -329,6 +339,20 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      prometheus/k8s_extra_metrics:
+        config:
+          scrape_configs:
+          - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            honor_timestamps: true
+            job_name: kubernetes-cadvisor
+            metrics_path: /metrics/cadvisor
+            scheme: https
+            static_configs:
+            - targets:
+              - ${env:K8S_NODE_IP}:10250
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: true
       receiver_creator/mysql:
         receivers:
           mysql:
@@ -386,12 +410,14 @@ data:
           - k8sattributes
           - memory_limiter
           - transform/k8s_attributes
+          - filter/k8s_extra_metrics
           - transform/reduce
           - batch
           receivers:
           - otlp
           - prometheus
           - receiver_creator/mysql
+          - prometheus/k8s_extra_metrics
           - spanmetrics
           - spanmetrics/db
         traces:

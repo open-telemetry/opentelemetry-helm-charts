@@ -45,7 +45,11 @@ rules:
   {{- end}}
   {{- if or (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesExtraMetrics.enabled)}}
   - apiGroups: [""]
+    {{- if .Values.presets.kubernetesExtraMetrics.perNode  }}
+    resources: ["nodes", "nodes/stats", "nodes/metrics"]
+    {{- else }}
     resources: ["pods", "endpoints", "nodes/stats", "nodes/metrics", "nodes", "services"]
+    {{- end }}
     verbs: ["get", "watch", "list"]
   - nonResourceURLs:
     - "/metrics"

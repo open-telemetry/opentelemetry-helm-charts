@@ -62,7 +62,7 @@ containers:
           fieldRef:
             fieldPath: spec.nodeName
       {{- end }}
-      {{- if .Values.presets.kubeletMetrics.enabled }}
+      {{- if or .Values.presets.kubeletMetrics.enabled .Values.presets.kubernetesExtraMetrics.perNode }}
       - name: K8S_NODE_IP
         valueFrom:
           fieldRef:
