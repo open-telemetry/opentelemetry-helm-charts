@@ -33,10 +33,11 @@ containers:
       {{- else -}}
       {{- toYaml .Values.securityContext | nindent 6 }}
       {{- end }}
+    {{- $imageRegistry := include "opentelemetry-collector.imageRegistry" . -}}
     {{- if .Values.image.digest }}
-    image: "{{ ternary "" (print (.Values.global).imageRegistry "/") (empty (.Values.global).imageRegistry) }}{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+    image: "{{ ternary "" (print $imageRegistry "/") (empty $imageRegistry) }}{{ .Values.image.repository }}@{{ .Values.image.digest }}"
     {{- else }}
-    image: "{{ ternary "" (print (.Values.global).imageRegistry "/") (empty (.Values.global).imageRegistry) }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+    image: "{{ ternary "" (print $imageRegistry "/") (empty $imageRegistry) }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
     {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
 

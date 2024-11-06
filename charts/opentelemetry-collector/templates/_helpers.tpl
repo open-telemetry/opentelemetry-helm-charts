@@ -242,3 +242,10 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
     {{- end -}}
   {{- end }}
 {{- end }}
+
+{{/*
+Return the the image registry.
+*/}}
+{{- define "opentelemetry-collector.imageRegistry" -}}
+  {{ default .Values.image.registry (.Values.global).imageRegistry }}
+{{- end }}
