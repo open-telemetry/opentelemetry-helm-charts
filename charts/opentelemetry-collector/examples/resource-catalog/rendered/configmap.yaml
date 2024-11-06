@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.98.0
+    helm.sh/chart: opentelemetry-collector-0.98.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -36,10 +36,36 @@ data:
         limit_percentage: 80
         spike_limit_percentage: 25
       resourcedetection/resource_catalog:
+        azure:
+          resource_attributes:
+            azure.resourcegroup.name:
+              enabled: false
+            azure.vm.name:
+              enabled: false
+            azure.vm.scaleset.name:
+              enabled: false
+            azure.vm.size:
+              enabled: false
+            host.id:
+              enabled: false
+            host.name:
+              enabled: false
         detectors:
         - eks
         - aks
         - gcp
+        - ec2
+        - azure
+        ec2:
+          resource_attributes:
+            host.id:
+              enabled: false
+            host.image.id:
+              enabled: false
+            host.name:
+              enabled: false
+            host.type:
+              enabled: false
         gcp:
           resource_attributes:
             host.id:

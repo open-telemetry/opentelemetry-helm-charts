@@ -963,8 +963,34 @@ processors:
     - eks
     - aks
     - gcp
+    - ec2
+    - azure
     override: true
     timeout: 2s
+    ec2:
+      resource_attributes:
+        host.name:
+          enabled: false
+        host.id:
+          enabled: false
+        host.image.id:
+          enabled: false
+        host.type:
+          enabled: false
+    azure:
+      resource_attributes:
+        host.name:
+          enabled: false
+        host.id:
+          enabled: false
+        azure.vm.name:
+          enabled: false
+        azure.vm.scaleset.name:
+          enabled: false
+        azure.resourcegroup.name:
+          enabled: false
+        azure.vm.size:
+          enabled: false
     gcp:
       resource_attributes:
         host.id:

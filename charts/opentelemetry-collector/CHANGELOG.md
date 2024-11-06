@@ -1,7 +1,11 @@
 # Changelog
 
 ## OpenTelemetry Collector
-### v0.98.0 / 2024-10.07
+
+### v0.98.1 / 2024-11-06
+- [Feat] add azure/ec2 resource detecion for kubernetes resource collection.
+
+### v0.98.0 / 2024-11-05
 - [Feat] Add support for scraping cadvisor metrics per node on daemonset
 
 ### v0.97.1 / 2024-11-05
