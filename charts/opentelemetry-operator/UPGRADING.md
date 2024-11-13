@@ -1,5 +1,9 @@
 # Upgrade guidelines
 
+## 0.74.0 to 0.74.1
+
+Prior to 0.72.1, feature gates could be enabled via the `manager.featureGates` property. As feature gates may require extra configuration to work properly, e.g. deploying extra permissions on the ClusterRole, the chart has been updated to make use of the `manager.featureGatesMap` property which allows the chart to smartly configure feature gates. If the `manager.featureGatesMap` property is set, the old `manager.featureGates` property will be ignored.
+
 ## 0.57.0 to 0.58.0
 
 OpenTelemetry Operator [0.99.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.99.0) includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions for the new Operator CRD. Please make sure you also follow the [helm upgrade instructions](./UPGRADING.md#0560-to-0570) for helm chart 0.57.0.
@@ -29,7 +33,7 @@ You can also delete the CRDs and let Helm recreate them, but doing so will also 
 
 ## 0.55.3 to 0.56.0
 
-> [!WARNING]  
+> [!WARNING]
 > As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set a collector image repository. If you are already explicitly setting a collector image repository this breaking change does not affect you.
 
 If you are using a OpenTelemetry Community distribution of the Collector we recommend you use `otel/opentelemetry-collector-k8s`, but carefully review the [components included in this distribution](https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/distributions/otelcol-k8s/manifest.yaml) to make sure it includes all the components you use in your configuration. In the future this distribution will become the default image used for the chart.
