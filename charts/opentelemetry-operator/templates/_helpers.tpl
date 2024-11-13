@@ -162,7 +162,7 @@ The image to use for opentelemetry-operator.
         ,
     {{- end -}}
     {{- if $value -}}
-        {{- $key }}={{ $value }}
+        {{- $key }}
     {{- end -}}
 {{- end -}}
 {{- end }}
