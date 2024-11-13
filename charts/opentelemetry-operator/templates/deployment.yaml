@@ -75,9 +75,9 @@ spec:
             - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
             {{- end }}
             {{- if .Values.manager.featureGatesMap }}
-            - --feature-gates={{ include "opentelemetry-operator.featureGatesMap" . | quote }}
+            - --feature-gates={{ include "opentelemetry-operator.featureGatesMap" . }}
             {{- else if ne .Values.manager.featureGates "" }}
-            - --feature-gates={{ .Values.manager.featureGates | quote }}
+            - --feature-gates={{ .Values.manager.featureGates }}
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
             {{- .Values.manager.extraArgs | toYaml | nindent 12 }}
