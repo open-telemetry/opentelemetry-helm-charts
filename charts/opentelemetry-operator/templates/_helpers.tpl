@@ -41,7 +41,9 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.additionalLabels }}
 {{ include "opentelemetry-operator.additionalLabels" . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -149,4 +151,18 @@ The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
 {{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
+{{- end }}
+
+{{- define "opentelemetry-operator.featureGatesMap" -}}
+{{$first := true}}
+{{- range $key, $value := .Values.manager.featureGatesMap -}}
+    {{- if $first -}}
+        {{ $first = false }}
+    {{- else -}}
+        ,
+    {{- end -}}
+    {{- if $value -}}
+        {{- $key }}
+    {{- end -}}
+{{- end -}}
 {{- end }}

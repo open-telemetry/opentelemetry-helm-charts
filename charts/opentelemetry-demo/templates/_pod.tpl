@@ -54,12 +54,10 @@ Get Pod ports
   name: {{ $port.name}}
 {{-   end }}
 {{- end }}
-
 {{- if .service }}
 {{-   if .service.port }}
 - containerPort: {{.service.port}}
   name: service
 {{-   end }}
 {{- end }}
-
 {{- end }}
