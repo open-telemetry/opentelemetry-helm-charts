@@ -1,4 +1,4 @@
-{{- if and .Values.prometheusRule.enabled (or .Values.serviceMonitor.enabled .Values.podMonitor.enabled) }}
+{{- if and .Values.prometheusRule.enabled (eq (include "opentelemetry-collector.serviceEnabled" .) "true") (or .Values.serviceMonitor.enabled .Values.podMonitor.enabled) }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
