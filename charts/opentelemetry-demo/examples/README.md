@@ -10,4 +10,3 @@ Here is a collection of common configurations for the OpenTelemetry demo.  Each 
 - [Public Hosted Ingress](public-hosted-ingress)
 
 The manifests are rendered using the `helm template` command and the specific example folder's values.yaml.
-
