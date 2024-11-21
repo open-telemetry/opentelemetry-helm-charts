@@ -925,7 +925,7 @@ spec:
           volumeMounts:
             - name: config-rw
               mountPath: /etc/flagd
-        - name: flagd-ui
+        - name: flagdui
           image: 'ghcr.io/open-telemetry/demo:1.12.0-flagdui'
           imagePullPolicy: IfNotPresent
           ports:
@@ -1221,6 +1221,8 @@ spec:
               value: "4317"
             - name: OTEL_COLLECTOR_PORT_HTTP
               value: "4318"
+            - name: OTEL_SERVICE_NAME
+              value: frontend-proxy
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=1.12.0
           resources:
