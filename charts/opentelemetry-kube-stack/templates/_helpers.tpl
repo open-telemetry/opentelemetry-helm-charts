@@ -48,7 +48,7 @@ Print a map of key values in a YAML block. This is useful for labels and annotat
 {{- define "opentelemetry-kube-stack.renderkv" -}}
 {{- with . -}}
 {{- range $key, $value := . -}}
-{{- printf "%s: %s" $key $value }}
+{{- printf "\n%s: %s" $key $value }}
 {{- end -}}
 {{- end -}}
 {{- end }}
@@ -115,7 +115,7 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{- define "opentelemetry-kube-stack.labels" -}}
+{{- define "opentelemetry-kube-stack.labels" }}
 helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
