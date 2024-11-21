@@ -401,6 +401,8 @@ components:
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
         value: "4318"
+      - name: OTEL_SERVICE_NAME
+        value: frontend-proxy
     resources:
       limits:
         memory: 50Mi
@@ -592,7 +594,7 @@ components:
         mountPath: /etc/flagd
     # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
     sidecarContainers:
-      - name: flagd-ui
+      - name: flagdui
         useDefault:
           env: true
         service:
@@ -895,7 +897,7 @@ grafana:
             logMessageField: body
             pplEnabled: true
             timeField: observedTimestamp
-            version: 2.17.0
+            version: 2.18.0
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
