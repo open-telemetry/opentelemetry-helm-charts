@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.98.1
+    helm.sh/chart: opentelemetry-collector-0.98.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -57,6 +57,7 @@ data:
           combine_with: ""
           id: crio-recombine
           is_last_entry: attributes.logtag == 'F'
+          max_batch_size: 1000
           max_log_size: 1048576
           output: handle_empty_log
           source_identifier: attributes["log.file.path"]
@@ -71,6 +72,7 @@ data:
           combine_with: ""
           id: containerd-recombine
           is_last_entry: attributes.logtag == 'F'
+          max_batch_size: 1000
           max_log_size: 1048576
           output: handle_empty_log
           source_identifier: attributes["log.file.path"]
@@ -84,6 +86,7 @@ data:
           combine_with: ""
           id: docker-recombine
           is_last_entry: attributes.log endsWith "\n"
+          max_batch_size: 1000
           max_log_size: 1048576
           output: handle_empty_log
           source_identifier: attributes["log.file.path"]

@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.98.2 / 2024-11-20
+- [Fix] Add missing `max_batch_size` to all applicable recombine processors in the `logsCollection` preset.
+
 ### v0.98.1 / 2024-11-06
 - [Feat] add azure/ec2 resource detecion for kubernetes resource collection.
 

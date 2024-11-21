@@ -398,6 +398,7 @@ receivers:
         is_last_entry: "attributes.logtag == 'F'"
         combine_with: ""
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+        max_batch_size: {{ $.Values.presets.logsCollection.maxBatchSize }}
       # Parse CRI-Containerd format
       - type: regex_parser
         id: parser-containerd
@@ -413,6 +414,7 @@ receivers:
         is_last_entry: "attributes.logtag == 'F'"
         combine_with: ""
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+        max_batch_size: {{ $.Values.presets.logsCollection.maxBatchSize }}
       # Parse Docker format
       - type: json_parser
         id: parser-docker
@@ -427,6 +429,7 @@ receivers:
         is_last_entry: attributes.log endsWith "\n"
         combine_with: ""
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+        max_batch_size: {{ $.Values.presets.logsCollection.maxBatchSize }}
       - type: add
         id: handle_empty_log
         if: attributes.log == nil
