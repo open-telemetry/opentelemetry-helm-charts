@@ -1,5 +1,10 @@
 # Upgrade guidelines
 
+> [!NOTE]
+> The OpenTelemetry Demo does not support being upgraded from one version to
+> another. If you need to upgrade the chart, you must first delete the existing
+> release and then install the new version.
+
 ## To 0.33
 
 The Helm prerequisite version has been updated to Helm 3.14+. Please upgrade your
