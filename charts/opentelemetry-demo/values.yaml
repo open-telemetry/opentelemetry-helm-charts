@@ -148,7 +148,6 @@ components:
   #  replicas: 1
   # # Number of old ReplicaSets to retain
   #  revisionHistoryLimit: 10
-
   # # Optional pod security context for setting user ID (UID), group ID (GID) and other security policies
   # # This will be applied at pod level, can be applied globally for all pods: .Values.default.podSecurityContext
   # # Or it can be applied to a specific component: .Values.components.<component-name>.podSecurityContext
@@ -402,6 +401,8 @@ components:
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
         value: "4318"
+      - name: OTEL_SERVICE_NAME
+        value: frontend-proxy
     resources:
       limits:
         memory: 50Mi
@@ -458,7 +459,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 1Gi
+        memory: 1500Mi
 
   paymentService:
     enabled: true
@@ -582,7 +583,7 @@ components:
         value: $(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 50Mi
+        memory: 75Mi
     command:
       - "/flagd-build"
       - "start"
@@ -593,7 +594,7 @@ components:
         mountPath: /etc/flagd
     # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
     sidecarContainers:
-      - name: flagd-ui
+      - name: flagdui
         useDefault:
           env: true
         service:
@@ -605,7 +606,7 @@ components:
             value: http://$(OTEL_COLLECTOR_NAME):4317
         resources:
           limits:
-            memory: 150Mi
+            memory: 75Mi
         volumeMounts:
           - name: config-rw
             mountPath: /app/data
@@ -842,6 +843,8 @@ prometheus:
 
 grafana:
   enabled: true
+  testFramework:
+    enabled: false
   grafana.ini:
     auth:
       disable_login_form: true
@@ -894,7 +897,7 @@ grafana:
             logMessageField: body
             pplEnabled: true
             timeField: observedTimestamp
-            version: 2.17.0
+            version: 2.18.0
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1

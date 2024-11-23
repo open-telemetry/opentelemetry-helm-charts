@@ -6,7 +6,7 @@ metadata:
   name: example-grafana-dashboards
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-demo-0.33.0
+    helm.sh/chart: opentelemetry-demo-0.33.4
     
     opentelemetry.io/name: example
     app.kubernetes.io/instance: example
@@ -16,7 +16,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 data:
   
-  demo-dashboard.json: |-
+  demo-dashboard.json: |
     {
       "annotations": {
         "list": [
@@ -45,7 +45,6 @@ data:
       "graphTooltip": 0,
       "id": 2,
       "links": [],
-      "liveNow": false,
       "panels": [
         {
           "collapsed": false,
@@ -78,6 +77,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -141,6 +141,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -149,7 +150,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "histogram_quantile(0.50, sum(rate(duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
               "legendFormat": "quantile50",
               "range": true,
               "refId": "A"
@@ -161,7 +162,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.95, sum(rate(duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
               "hide": false,
               "legendFormat": "quantile95",
               "range": true,
@@ -174,7 +175,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.99, sum(rate(duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
               "hide": false,
               "legendFormat": "quantile99",
               "range": true,
@@ -187,7 +188,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.999, sum(rate(duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
+              "expr": "histogram_quantile(0.999, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le))",
               "hide": false,
               "legendFormat": "quantile999",
               "range": true,
@@ -215,6 +216,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -277,6 +279,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -284,7 +287,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": " sum by (span_name) (rate(calls_total{status_code=\"STATUS_CODE_ERROR\", service_name=\"${service}\"}[$__rate_interval]))",
+              "expr": " sum by (span_name) (rate(traces_span_metrics_calls_total{status_code=\"STATUS_CODE_ERROR\", service_name=\"${service}\"}[$__rate_interval]))",
               "interval": "",
               "legendFormat": "{{ span_name }}",
               "range": true,
@@ -311,6 +314,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -374,6 +378,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -381,7 +386,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum by (span_name) (rate(duration_milliseconds_count{service_name=\"${service}\"}[$__rate_interval]))",
+              "expr": "sum by (span_name) (rate(traces_span_metrics_duration_milliseconds_count{service_name=\"${service}\"}[$__rate_interval]))",
               "legendFormat": "{{ span_name }}",
               "range": true,
               "refId": "A"
@@ -415,7 +420,7 @@ data:
                 "mode": "thresholds"
               },
               "custom": {
-                "align": "auto",
+                "align": "left",
                 "cellOptions": {
                   "type": "auto"
                 },
@@ -436,7 +441,20 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "count()"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 90
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -457,7 +475,7 @@ data:
             },
             "showHeader": true
           },
-          "pluginVersion": "10.4.3",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "alias": "",
@@ -523,7 +541,20 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "observedTimestamp"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 222
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -542,9 +573,15 @@ data:
               ],
               "show": false
             },
-            "showHeader": true
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "observedTimestamp"
+              }
+            ]
           },
-          "pluginVersion": "10.4.3",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "alias": "",
@@ -570,13 +607,13 @@ data:
                   "type": "count"
                 }
               ],
-              "query": "search source=otel\n| where resource.service.name=\"${service}\"",
+              "query": "search source=otel\n| where resource.service.name=\"${service}\"| sort - observedTimestamp | head 100",
               "queryType": "PPL",
               "refId": "A",
-              "timeField": "time"
+              "timeField": "observedTimestamp"
             }
           ],
-          "title": "${service} Logs",
+          "title": "${service} Logs (100 recent entries)",
           "type": "table"
         },
         {
@@ -609,6 +646,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -671,6 +709,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -728,6 +767,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -790,6 +830,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -832,6 +873,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "bars",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -893,6 +935,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -927,6 +970,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -989,6 +1033,7 @@ data:
               "sort": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -996,7 +1041,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "rate(otel_trace_span_processor_spans{job=\"quoteservice\"}[2m])*120",
+              "expr": "rate(otel_trace_span_processor_spans{job=\"opentelemetry-demo/quoteservice\"}[2m])*120",
               "interval": "2m",
               "legendFormat": "{{state}}",
               "range": true,
@@ -1007,16 +1052,14 @@ data:
           "type": "timeseries"
         }
       ],
+      "preload": false,
       "refresh": "",
-      "revision": 1,
-      "schemaVersion": 39,
+      "schemaVersion": 40,
       "tags": [],
       "templating": {
         "list": [
           {
-            "allValue": "",
             "current": {
-              "selected": true,
               "text": "frontend",
               "value": "frontend"
             },
@@ -1024,19 +1067,16 @@ data:
               "type": "prometheus",
               "uid": "webstore-metrics"
             },
-            "definition": "duration_milliseconds_bucket",
-            "hide": 0,
+            "definition": "traces_span_metrics_duration_milliseconds_bucket",
             "includeAll": false,
-            "multi": false,
             "name": "service",
             "options": [],
             "query": {
-              "query": "duration_milliseconds_bucket",
+              "query": "traces_span_metrics_duration_milliseconds_bucket",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             },
             "refresh": 1,
             "regex": "/.*service_name=\\\"([^\\\"]+)\\\".*/",
-            "skipUrlSync": false,
             "sort": 1,
             "type": "query"
           }
@@ -1081,9 +1121,8 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 6,
+      "id": 3,
       "links": [],
-      "liveNow": false,
       "panels": [
         {
           "collapsed": false,
@@ -1138,6 +1177,7 @@ data:
             "graphMode": "area",
             "justifyMode": "center",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -1145,9 +1185,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1155,7 +1197,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "count(count(otelcol_process_cpu_seconds{service_instance_id=~\".*\"}) by (service_instance_id))",
+              "expr": "count(count(otelcol_process_cpu_seconds_total{service_instance_id=~\".*\"}) by (service_instance_id))",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -1201,6 +1243,8 @@ data:
           },
           "id": 24,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -1210,9 +1254,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1220,7 +1265,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "avg(rate(otelcol_process_cpu_seconds{}[$__rate_interval])*100) by (instance)",
+              "expr": "avg(rate(otelcol_process_cpu_seconds_total{}[$__rate_interval])*100) by (instance)",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -1266,6 +1311,8 @@ data:
           },
           "id": 38,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -1275,9 +1322,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1295,11 +1343,11 @@ data:
           "type": "gauge"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "webstore-metrics"
-          },
           "description": "",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 4,
             "w": 15,
@@ -1316,7 +1364,8 @@ data:
             "content": "## Opentelemetry Collector Data Ingress/Egress\n\n`service_version:` ${service_version}\n\n`opentelemetry collector:` contrib\n\n",
             "mode": "markdown"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
+          "title": "",
           "type": "text"
         },
         {
@@ -1386,6 +1435,8 @@ data:
           },
           "id": 55,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "vertical",
             "reduceOptions": {
               "calcs": [
@@ -1395,9 +1446,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": false
+            "showThresholdMarkers": false,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1406,7 +1458,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "avg(sum by(job) (rate(otelcol_exporter_sent_spans{}[$__range])))",
+              "expr": "avg(sum by(job) (rate(otelcol_exporter_sent_spans_total{}[$__range])))",
               "format": "time_series",
               "hide": true,
               "instant": false,
@@ -1420,7 +1472,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "avg(sum by(job) (rate(otelcol_receiver_accepted_spans{}[$__range])))",
+              "expr": "avg(sum by(job) (rate(otelcol_receiver_accepted_spans_total{}[$__range])))",
               "format": "time_series",
               "hide": true,
               "legendFormat": "__auto",
@@ -1433,7 +1485,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "(avg(sum by(job) (rate(otelcol_exporter_sent_spans{}[$__range]))) / avg(sum by(job) (rate(otelcol_receiver_accepted_spans{}[$__range])))) ",
+              "expr": "(avg(sum by(job) (rate(otelcol_exporter_sent_spans_total{}[$__range]))) / avg(sum by(job) (rate(otelcol_receiver_accepted_spans_total{}[$__range])))) ",
               "hide": false,
               "legendFormat": "__auto",
               "range": true,
@@ -1441,13 +1493,16 @@ data:
             }
           ],
           "title": "Export Ratio",
-          "transformations": [],
           "type": "gauge"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
           },
           "gridPos": {
             "h": 11,
@@ -1457,10 +1512,12 @@ data:
           },
           "id": 4,
           "options": {
+            "edges": {},
             "nodes": {
               "mainStatUnit": "flops"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1469,7 +1526,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(label_join(\n(rate(otelcol_receiver_accepted_spans{}[$__interval]))\n, \"id\", \"\", \"transport\", \"receiver\")\n, \"title\", \"\", \"transport\", \"receiver\")\n\nor\n\nlabel_replace(label_replace(\nsum by(service_name) (rate(otelcol_receiver_accepted_spans{}[$__interval]))\n, \"id\", \"processor\", \"dummynode\", \"\")\n, \"title\", \"processor\", \"dummynode\", \"\")\n\nor\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n, \"id\", \"$0\", \"processor\", \".*\")\n, \"title\", \"$0\", \"processor\", \".*\")\n\nor\nlabel_replace(label_replace(\nsum by(exporter) (rate(otelcol_exporter_sent_spans{}[$__interval]))\n, \"id\", \"exporter\", \"dummynode\", \"\")\n, \"title\", \"exporter\", \"dummynode\", \"\")\n        \nor\nlabel_replace(label_replace(\nsum by(exporter) (rate(otelcol_exporter_sent_spans{}[$__interval]))\n, \"id\", \"$0\", \"exporter\", \".*\")\n, \"title\", \"$0\", \"exporter\", \".*\")",
+              "expr": "label_join(label_join(\n(rate(otelcol_receiver_accepted_spans_total{}[$__interval]))\n, \"id\", \"\", \"transport\", \"receiver\")\n, \"title\", \"\", \"transport\", \"receiver\")\n\nor\n\nlabel_replace(label_replace(\nsum by(service_name) (rate(otelcol_receiver_accepted_spans_total{}[$__interval]))\n, \"id\", \"processor\", \"dummynode\", \"\")\n, \"title\", \"processor\", \"dummynode\", \"\")\n\nor\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n, \"id\", \"$0\", \"processor\", \".*\")\n, \"title\", \"$0\", \"processor\", \".*\")\n\nor\nlabel_replace(label_replace(\nsum by(exporter) (rate(otelcol_exporter_sent_spans_total{}[$__interval]))\n, \"id\", \"exporter\", \"dummynode\", \"\")\n, \"title\", \"exporter\", \"dummynode\", \"\")\n        \nor\nlabel_replace(label_replace(\nsum by(exporter) (rate(otelcol_exporter_sent_spans_total{}[$__interval]))\n, \"id\", \"$0\", \"exporter\", \".*\")\n, \"title\", \"$0\", \"exporter\", \".*\")",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -1483,7 +1540,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\nlabel_replace(label_join(\n(rate(otelcol_receiver_accepted_spans{}[$__interval]))\n\n ,\"source\",\"\",\"transport\",\"receiver\")\n,\"target\",\"processor\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\n  or\n\n  label_join(\nlabel_replace(label_replace(\n  (rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n ,\"source\",\"processor\",\"\",\"\")\n,\"target\",\"$0\",\"processor\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")\n\nor\n  label_join(\nlabel_replace(label_replace(\n    (rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n ,\"source\",\"$0\",\"processor\",\".*\")\n,\"target\",\"exporter\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\nor\n  label_join(\nlabel_replace(label_replace(\n   (rate(otelcol_exporter_sent_spans{}[$__interval]))\n ,\"source\",\"exporter\",\"\",\"\")\n,\"target\",\"$0\",\"exporter\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")\n\n",
+              "expr": "label_join(\nlabel_replace(label_join(\n(rate(otelcol_receiver_accepted_spans_total{}[$__interval]))\n\n ,\"source\",\"\",\"transport\",\"receiver\")\n,\"target\",\"processor\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\n  or\n\n  label_join(\nlabel_replace(label_replace(\n  (rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n ,\"source\",\"processor\",\"\",\"\")\n,\"target\",\"$0\",\"processor\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")\n\nor\n  label_join(\nlabel_replace(label_replace(\n    (rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n ,\"source\",\"$0\",\"processor\",\".*\")\n,\"target\",\"exporter\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\nor\n  label_join(\nlabel_replace(label_replace(\n   (rate(otelcol_exporter_sent_spans_total{}[$__interval]))\n ,\"source\",\"exporter\",\"\",\"\")\n,\"target\",\"$0\",\"exporter\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")\n\n",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -1492,7 +1549,7 @@ data:
               "refId": "edges"
             }
           ],
-          "transformations": [],
+          "title": "",
           "type": "nodeGraph"
         },
         {
@@ -1533,6 +1590,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -1540,9 +1598,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1550,7 +1610,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_accepted_spans{}[$__rate_interval])) by (receiver,transport)",
+              "expr": "sum(rate(otelcol_receiver_accepted_spans_total{}[$__rate_interval])) by (receiver,transport)",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -1591,6 +1651,8 @@ data:
           },
           "id": 13,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -1600,9 +1662,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1610,7 +1673,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_accepted_spans{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_receiver_accepted_spans_total{}[$__rate_interval])) ",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -1660,6 +1723,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -1667,10 +1731,12 @@ data:
               "fields": "",
               "values": false
             },
+            "showPercentChange": false,
             "text": {},
-            "textMode": "auto"
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1718,6 +1784,8 @@ data:
           },
           "id": 14,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -1727,9 +1795,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1738,7 +1807,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_sent_spans{}[$__interval])) ",
+              "expr": "sum(rate(otelcol_exporter_sent_spans_total{}[$__interval])) ",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -1786,6 +1855,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -1793,9 +1863,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1804,7 +1876,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_sent_spans{}[$__rate_interval])) by (exporter)",
+              "expr": "sum(rate(otelcol_exporter_sent_spans_total{}[$__rate_interval])) by (exporter)",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -1852,6 +1924,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -1859,9 +1932,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1869,7 +1944,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_refused_spans{}[$__rate_interval])) by (receiver,transport)",
+              "expr": "sum(rate(otelcol_receiver_refused_spans_total{}[$__rate_interval])) by (receiver,transport)",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -1910,6 +1985,8 @@ data:
           },
           "id": 18,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -1919,9 +1996,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1929,7 +2007,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_refused_spans{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_receiver_refused_spans_total{}[$__rate_interval])) ",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -1970,6 +2048,8 @@ data:
           },
           "id": 19,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -1979,9 +2059,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -1990,7 +2071,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_send_failed_spans{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_exporter_send_failed_spans_total{}[$__rate_interval])) ",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -2038,6 +2119,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -2045,9 +2127,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2056,7 +2140,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_send_failed_spans{}[$__rate_interval])) by (exporter)",
+              "expr": "sum(rate(otelcol_exporter_send_failed_spans_total{}[$__rate_interval])) by (exporter)",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -2134,6 +2218,8 @@ data:
           },
           "id": 54,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "vertical",
             "reduceOptions": {
               "calcs": [
@@ -2143,9 +2229,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": false
+            "showThresholdMarkers": false,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2154,7 +2241,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "avg(sum by(job) (rate(otelcol_exporter_sent_metric_points{}[$__range])))",
+              "expr": "avg(sum by(job) (rate(otelcol_exporter_sent_metric_points_total{}[$__range])))",
               "format": "time_series",
               "hide": true,
               "instant": false,
@@ -2168,7 +2255,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "avg(sum by(job) (rate(otelcol_receiver_accepted_metric_points{}[$__range])))",
+              "expr": "avg(sum by(job) (rate(otelcol_receiver_accepted_metric_points_total{}[$__range])))",
               "format": "time_series",
               "hide": true,
               "legendFormat": "__auto",
@@ -2181,7 +2268,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "( avg(sum by(job) (rate(otelcol_exporter_sent_metric_points{}[$__range]))) /avg(sum by(job) (rate(otelcol_receiver_accepted_metric_points{}[$__range]))))",
+              "expr": "( avg(sum by(job) (rate(otelcol_exporter_sent_metric_points_total{}[$__range]))) /avg(sum by(job) (rate(otelcol_receiver_accepted_metric_points_total{}[$__range]))))",
               "hide": false,
               "legendFormat": "__auto",
               "range": true,
@@ -2233,6 +2320,10 @@ data:
             "uid": "webstore-metrics"
           },
           "description": "Metrics Signalling Pipelines",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 11,
             "w": 21,
@@ -2241,10 +2332,12 @@ data:
           },
           "id": 25,
           "options": {
+            "edges": {},
             "nodes": {
               "mainStatUnit": "flops"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2253,7 +2346,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "\nlabel_join(label_join(\n(rate(otelcol_receiver_accepted_metric_points{}[$__interval]))\n, \"id\", \"\", \"transport\", \"receiver\")\n, \"title\", \"\", \"transport\", \"receiver\")\n\nor\n\nlabel_replace(label_replace(\nsum by(service_name) (rate(otelcol_receiver_accepted_spans{}[$__interval]))\n, \"id\", \"processor\", \"dummynode\", \"\")\n, \"title\", \"processor\", \"dummynode\", \"\")\n\n\n\nor\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n, \"id\", \"$0\", \"processor\", \".*\")\n, \"title\", \"$0\", \"processor\", \".*\")\n\n\n\n\n\nor\nlabel_replace(label_replace(\nsum (rate(otelcol_exporter_sent_metric_points{}[$__interval]))\n, \"id\", \"exporter\", \"dummynode\", \"\")\n, \"title\", \"exporter\", \"dummynode\", \"\")\n\nor\nlabel_replace(label_replace(\nsum by(exporter) (rate(otelcol_exporter_sent_metric_points{}[$__interval]))\n, \"id\", \"$0\", \"exporter\", \".*\")\n, \"title\", \"$0\", \"exporter\", \".*\")",
+              "expr": "\nlabel_join(label_join(\n(rate(otelcol_receiver_accepted_metric_points_total{}[$__interval]))\n, \"id\", \"\", \"transport\", \"receiver\")\n, \"title\", \"\", \"transport\", \"receiver\")\n\nor\n\nlabel_replace(label_replace(\nsum by(service_name) (rate(otelcol_receiver_accepted_spans_total{}[$__interval]))\n, \"id\", \"processor\", \"dummynode\", \"\")\n, \"title\", \"processor\", \"dummynode\", \"\")\n\n\n\nor\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n, \"id\", \"$0\", \"processor\", \".*\")\n, \"title\", \"$0\", \"processor\", \".*\")\n\n\n\n\n\nor\nlabel_replace(label_replace(\nsum (rate(otelcol_exporter_sent_metric_points_total{}[$__interval]))\n, \"id\", \"exporter\", \"dummynode\", \"\")\n, \"title\", \"exporter\", \"dummynode\", \"\")\n\nor\nlabel_replace(label_replace(\nsum by(exporter) (rate(otelcol_exporter_sent_metric_points_total{}[$__interval]))\n, \"id\", \"$0\", \"exporter\", \".*\")\n, \"title\", \"$0\", \"exporter\", \".*\")",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2267,7 +2360,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\nlabel_replace(label_join(\n(rate(otelcol_receiver_accepted_metric_points{}[$__interval]))\n\n,\"source\",\"\",\"transport\",\"receiver\")\n,\"target\",\"processor\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\n\nor\n\nlabel_join(\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n,\"source\",\"processor\",\"\",\"\")\n,\"target\",\"$0\",\"processor\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")\n\n\n\n\n\nor\n\n\nlabel_join(\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n,\"source\",\"$0\",\"processor\",\".*\")\n,\"target\",\"exporter\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\nor\nlabel_join(\nlabel_replace(label_replace(\n(rate(otelcol_exporter_sent_metric_points{}[$__interval]))\n,\"source\",\"exporter\",\"\",\"\")\n,\"target\",\"$0\",\"exporter\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")",
+              "expr": "label_join(\nlabel_replace(label_join(\n(rate(otelcol_receiver_accepted_metric_points_total{}[$__interval]))\n\n,\"source\",\"\",\"transport\",\"receiver\")\n,\"target\",\"processor\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\n\nor\n\nlabel_join(\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n,\"source\",\"processor\",\"\",\"\")\n,\"target\",\"$0\",\"processor\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")\n\n\n\n\n\nor\n\n\nlabel_join(\nlabel_replace(label_replace(\n(rate(otelcol_processor_batch_batch_send_size_count{}[$__interval]))\n,\"source\",\"$0\",\"processor\",\".*\")\n,\"target\",\"exporter\",\"\",\"\")\n,\"id\",\"-\",\"source\",\"target\")\n\nor\nlabel_join(\nlabel_replace(label_replace(\n(rate(otelcol_exporter_sent_metric_points_total{}[$__interval]))\n,\"source\",\"exporter\",\"\",\"\")\n,\"target\",\"$0\",\"exporter\",\".*\")\n,\"id\",\"-\",\"source\",\"target\")",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -2276,7 +2369,7 @@ data:
               "refId": "edges"
             }
           ],
-          "transformations": [],
+          "title": "",
           "type": "nodeGraph"
         },
         {
@@ -2317,6 +2410,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -2324,9 +2418,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2334,7 +2430,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_accepted_metric_points{}[$__rate_interval])) by (receiver,transport)",
+              "expr": "sum(rate(otelcol_receiver_accepted_metric_points_total{}[$__rate_interval])) by (receiver,transport)",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -2375,6 +2471,8 @@ data:
           },
           "id": 27,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -2384,9 +2482,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2394,7 +2493,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_accepted_metric_points{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_receiver_accepted_metric_points_total{}[$__rate_interval])) ",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -2443,6 +2542,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -2450,10 +2550,12 @@ data:
               "fields": "",
               "values": false
             },
+            "showPercentChange": false,
             "text": {},
-            "textMode": "auto"
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2502,6 +2604,8 @@ data:
           },
           "id": 29,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -2511,9 +2615,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2522,7 +2627,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_sent_metric_points{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_exporter_sent_metric_points_total{}[$__rate_interval])) ",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -2570,6 +2675,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -2577,9 +2683,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2588,7 +2696,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_sent_metric_points{}[$__rate_interval])) by (exporter) ",
+              "expr": "sum(rate(otelcol_exporter_sent_metric_points_total{}[$__rate_interval])) by (exporter) ",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -2636,6 +2744,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -2643,9 +2752,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2653,7 +2764,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_refused_metric_points{}[$__rate_interval])) by (receiver,transport)",
+              "expr": "sum(rate(otelcol_receiver_refused_metric_points_total{}[$__rate_interval])) by (receiver,transport)",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -2694,6 +2805,8 @@ data:
           },
           "id": 48,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -2703,9 +2816,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2713,7 +2827,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum(rate(otelcol_receiver_refused_metric_points{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_receiver_refused_metric_points_total{}[$__rate_interval])) ",
               "legendFormat": "{{receiver}}-{{transport}}",
               "range": true,
               "refId": "A"
@@ -2754,6 +2868,8 @@ data:
           },
           "id": 49,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -2763,9 +2879,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2774,7 +2891,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_send_failed_metric_points{}[$__rate_interval])) ",
+              "expr": "sum(rate(otelcol_exporter_send_failed_metric_points_total{}[$__rate_interval])) ",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -2822,6 +2939,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -2829,9 +2947,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2840,7 +2960,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(rate(otelcol_exporter_send_failed_metric_points{}[$__rate_interval])) by (exporter)",
+              "expr": "sum(rate(otelcol_exporter_send_failed_metric_points_total{}[$__rate_interval])) by (exporter)",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{processor}}",
@@ -2918,6 +3038,8 @@ data:
           },
           "id": 53,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "vertical",
             "reduceOptions": {
               "calcs": [
@@ -2927,9 +3049,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": false
+            "showThresholdMarkers": false,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -2951,7 +3074,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "(sum(rate(otelcol_exporter_sent_metric_points{exporter=\"prometheus\"}[$__rate_interval])) )",
+              "expr": "(sum(rate(otelcol_exporter_sent_metric_points_total{exporter=\"prometheus\"}[$__rate_interval])) )",
               "format": "time_series",
               "hide": false,
               "legendFormat": "__auto",
@@ -3034,6 +3157,7 @@ data:
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3041,9 +3165,11 @@ data:
               "fields": "",
               "values": false
             },
-            "textMode": "value_and_name"
+            "showPercentChange": false,
+            "textMode": "value_and_name",
+            "wideLayout": true
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -3099,6 +3225,8 @@ data:
           },
           "id": 42,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -3108,9 +3236,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -3151,6 +3280,10 @@ data:
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 9,
             "w": 8,
@@ -3158,7 +3291,11 @@ data:
             "y": 46
           },
           "id": 41,
-          "pluginVersion": "9.1.0",
+          "options": {
+            "edges": {},
+            "nodes": {}
+          },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -3191,6 +3328,7 @@ data:
               "refId": "edges"
             }
           ],
+          "title": "",
           "transformations": [
             {
               "id": "organize",
@@ -3206,11 +3344,11 @@ data:
           "type": "nodeGraph"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "webstore-metrics"
-          },
           "description": "Sent by Exporter",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 9,
             "w": 5,
@@ -3227,20 +3365,20 @@ data:
             "content": "\n \n## Prometheus Config\n\n`evaluation_interval:` 30s\n\n`scrape_interval:` 5s",
             "mode": "markdown"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
+          "title": "",
           "type": "text"
         }
       ],
+      "preload": false,
       "refresh": false,
-      "schemaVersion": 37,
-      "style": "dark",
+      "schemaVersion": 40,
       "tags": [],
       "templating": {
         "list": [
           {
             "allValue": ".*",
             "current": {
-              "selected": false,
               "text": "0.70.0",
               "value": "0.70.0"
             },
@@ -3261,8 +3399,6 @@ data:
             },
             "refresh": 1,
             "regex": "/.*service_version=\"(.*)\".*/",
-            "skipUrlSync": false,
-            "sort": 0,
             "type": "query"
           }
         ]
@@ -3275,57 +3411,11 @@ data:
       "timezone": "",
       "title": "Opentelemetry Collector Data Flow",
       "uid": "rl5_tea4k",
-      "version": 2,
+      "version": 1,
       "weekStart": ""
     }
   opentelemetry-collector.json: |
     {
-      "__inputs": [],
-      "__elements": {},
-      "__requires": [
-        {
-          "type": "grafana",
-          "id": "grafana",
-          "name": "Grafana",
-          "version": "10.0.3"
-        },
-        {
-          "type": "panel",
-          "id": "heatmap",
-          "name": "Heatmap",
-          "version": ""
-        },
-        {
-          "type": "panel",
-          "id": "nodeGraph",
-          "name": "Node Graph",
-          "version": ""
-        },
-        {
-          "type": "datasource",
-          "id": "prometheus",
-          "name": "Prometheus",
-          "version": "1.0.0"
-        },
-        {
-          "type": "panel",
-          "id": "table",
-          "name": "Table",
-          "version": ""
-        },
-        {
-          "type": "panel",
-          "id": "text",
-          "name": "Text",
-          "version": ""
-        },
-        {
-          "type": "panel",
-          "id": "timeseries",
-          "name": "Time series",
-          "version": ""
-        }
-      ],
       "annotations": {
         "list": [
           {
@@ -3348,21 +3438,15 @@ data:
           }
         ]
       },
-      "description": "Visualize OpenTelemetry (OTEL) collector metrics (tested with OTEL contrib v0.84.0)",
+      "description": "Visualize OpenTelemetry (OTEL) collector metrics (tested with OTEL contrib v0.113.0)",
       "editable": true,
       "fiscalYearStartMonth": 0,
-      "gnetId": 15983,
       "graphTooltip": 1,
-      "id": null,
+      "id": 4,
       "links": [],
-      "liveNow": false,
       "panels": [
         {
           "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -3371,15 +3455,6 @@ data:
           },
           "id": 23,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
           "title": "Receivers",
           "type": "row"
         },
@@ -3395,11 +3470,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -3408,6 +3485,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -3468,7 +3546,6 @@ data:
           },
           "id": 28,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -3485,7 +3562,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -3494,7 +3571,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_receiver_accepted_spans{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
+              "expr": "sum(${metric:value}(otelcol_receiver_accepted_spans_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
               "format": "time_series",
               "interval": "$minstep",
               "intervalFactor": 1,
@@ -3509,7 +3586,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_receiver_refused_spans{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
+              "expr": "sum(${metric:value}(otelcol_receiver_refused_spans_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -3534,11 +3611,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -3547,6 +3626,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -3607,7 +3687,6 @@ data:
           },
           "id": 32,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -3624,7 +3703,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -3633,7 +3712,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_receiver_accepted_metric_points{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
+              "expr": "sum(${metric:value}(otelcol_receiver_accepted_metric_points_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
               "format": "time_series",
               "interval": "$minstep",
               "intervalFactor": 1,
@@ -3648,7 +3727,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_receiver_refused_metric_points{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
+              "expr": "sum(${metric:value}(otelcol_receiver_refused_metric_points_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -3673,11 +3752,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -3686,6 +3767,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -3746,7 +3828,6 @@ data:
           },
           "id": 47,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -3763,7 +3844,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -3772,7 +3853,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_receiver_accepted_log_records{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
+              "expr": "sum(${metric:value}(otelcol_receiver_accepted_log_records_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
               "format": "time_series",
               "interval": "$minstep",
               "intervalFactor": 1,
@@ -3787,7 +3868,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_receiver_refused_log_records{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
+              "expr": "sum(${metric:value}(otelcol_receiver_refused_log_records_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])) by (receiver $grouping)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -3802,10 +3883,6 @@ data:
         },
         {
           "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -3814,15 +3891,6 @@ data:
           },
           "id": 34,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
           "title": "Processors",
           "type": "row"
         },
@@ -3838,11 +3906,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -3851,6 +3921,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -3922,11 +3993,10 @@ data:
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 18
+            "y": 10
           },
           "id": 36,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -3943,7 +4013,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4007,11 +4077,10 @@ data:
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 18
+            "y": 10
           },
           "id": 49,
           "interval": "$minstep",
-          "links": [],
           "maxDataPoints": 50,
           "options": {
             "calculate": false,
@@ -4038,7 +4107,8 @@ data:
               "layout": "auto"
             },
             "tooltip": {
-              "show": true,
+              "mode": "single",
+              "showColorScale": false,
               "yHistogram": false
             },
             "yAxis": {
@@ -4046,7 +4116,7 @@ data:
               "reverse": false
             }
           },
-          "pluginVersion": "10.0.3",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4080,11 +4150,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4093,6 +4165,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4164,11 +4237,10 @@ data:
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 18
+            "y": 10
           },
           "id": 56,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -4185,7 +4257,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4194,13 +4266,13 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_processor_batch_batch_size_trigger_send{processor=~\"$processor\",job=\"$job\"}[$__rate_interval])) by (processor)",
+              "expr": "sum(${metric:value}(otelcol_processor_batch_timeout_trigger_send_total {processor=~\"$processor\",job=\"$job\"}[$__rate_interval])) by (processor)",
               "format": "time_series",
               "hide": false,
               "instant": false,
               "interval": "$minstep",
               "intervalFactor": 1,
-              "legendFormat": "Batch sent due to a size trigger: {{processor}}",
+              "legendFormat": "Batch sent due to a timeout trigger: {{processor}}",
               "refId": "B"
             },
             {
@@ -4225,27 +4297,14 @@ data:
         },
         {
           "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 26
+            "y": 18
           },
           "id": 25,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
           "title": "Exporters",
           "type": "row"
         },
@@ -4261,11 +4320,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4274,6 +4335,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4330,11 +4392,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 27
+            "y": 19
           },
           "id": 37,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -4351,7 +4412,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4360,7 +4421,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_exporter_sent_spans{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])) by (exporter $grouping)",
+              "expr": "sum(${metric:value}(otelcol_exporter_sent_spans_total{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])) by (exporter $grouping)",
               "format": "time_series",
               "interval": "$minstep",
               "intervalFactor": 1,
@@ -4416,11 +4477,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4429,6 +4492,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4485,11 +4549,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 27
+            "y": 19
           },
           "id": 38,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -4506,7 +4569,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4515,7 +4578,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_exporter_sent_metric_points{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])) by (exporter $grouping)",
+              "expr": "sum(${metric:value}(otelcol_exporter_sent_metric_points_total{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])) by (exporter $grouping)",
               "format": "time_series",
               "interval": "$minstep",
               "intervalFactor": 1,
@@ -4571,11 +4634,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4584,6 +4649,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4640,11 +4706,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 27
+            "y": 19
           },
           "id": 48,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -4661,7 +4726,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4670,7 +4735,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(${metric:value}(otelcol_exporter_sent_log_records{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])) by (exporter $grouping)",
+              "expr": "sum(${metric:value}(otelcol_exporter_sent_log_records_total{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])) by (exporter $grouping)",
               "format": "time_series",
               "interval": "$minstep",
               "intervalFactor": 1,
@@ -4726,11 +4791,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4739,6 +4806,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4778,10 +4846,9 @@ data:
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 36
+            "y": 28
           },
           "id": 10,
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -4798,7 +4865,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4831,11 +4898,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4844,6 +4913,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4883,10 +4953,9 @@ data:
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 36
+            "y": 28
           },
           "id": 55,
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -4903,7 +4972,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -4926,27 +4995,14 @@ data:
         },
         {
           "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 45
+            "y": 37
           },
           "id": 21,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
           "title": "Collector",
           "type": "row"
         },
@@ -4962,11 +5018,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4975,6 +5033,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5085,11 +5144,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 46
+            "y": 38
           },
           "id": 40,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -5106,7 +5164,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -5171,11 +5229,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -5184,6 +5244,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5294,11 +5355,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 46
+            "y": 38
           },
           "id": 52,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -5315,7 +5375,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -5380,11 +5440,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -5393,6 +5455,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5503,11 +5566,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 46
+            "y": 38
           },
           "id": 53,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -5524,7 +5586,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -5589,11 +5651,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -5602,6 +5666,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5708,11 +5773,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 55
+            "y": 47
           },
           "id": 39,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -5729,7 +5793,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -5738,7 +5802,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "max(rate(otelcol_process_cpu_seconds{job=\"$job\"}[$__rate_interval])*100) by (job $grouping)",
+              "expr": "max(rate(otelcol_process_cpu_seconds_total{job=\"$job\"}[$__rate_interval])*100) by (job $grouping)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -5754,7 +5818,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(otelcol_process_cpu_seconds{job=\"$job\"}[$__rate_interval])*100) by (job $grouping)",
+              "expr": "avg(rate(otelcol_process_cpu_seconds_total{job=\"$job\"}[$__rate_interval])*100) by (job $grouping)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -5770,7 +5834,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "min(rate(otelcol_process_cpu_seconds{job=\"$job\"}[$__rate_interval])*100) by (job $grouping)",
+              "expr": "min(rate(otelcol_process_cpu_seconds_total{job=\"$job\"}[$__rate_interval])*100) by (job $grouping)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -5795,11 +5859,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -5808,6 +5874,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5848,11 +5915,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 55
+            "y": 47
           },
           "id": 41,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -5869,7 +5935,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -5878,7 +5944,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "count(count(otelcol_process_cpu_seconds{service_instance_id=~\".*\",job=\"$job\"}) by (service_instance_id))",
+              "expr": "count(count(otelcol_process_cpu_seconds_total{service_instance_id=~\".*\",job=\"$job\"}) by (service_instance_id))",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -5903,11 +5969,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -5916,6 +5984,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5956,11 +6025,10 @@ data:
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 55
+            "y": 47
           },
           "id": 54,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "legend": {
               "calcs": [
@@ -5977,7 +6045,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.3.5",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -5986,7 +6054,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "max(otelcol_process_uptime{service_instance_id=~\".*\",job=\"$job\"}) by (service_instance_id)",
+              "expr": "max(otelcol_process_uptime_total{service_instance_id=~\".*\",job=\"$job\"}) by (service_instance_id)",
               "format": "time_series",
               "hide": false,
               "interval": "$minstep",
@@ -6041,11 +6109,10 @@ data:
             "h": 5,
             "w": 24,
             "x": 0,
-            "y": 64
+            "y": 56
           },
           "id": 57,
           "interval": "$minstep",
-          "links": [],
           "options": {
             "cellHeight": "sm",
             "footer": {
@@ -6058,7 +6125,7 @@ data:
             },
             "showHeader": true
           },
-          "pluginVersion": "10.0.3",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6067,7 +6134,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max(otelcol_process_uptime{service_instance_id=~\".*\",job=\"$job\"}) by (service_instance_id,service_name,service_version)",
+              "expr": "max(otelcol_process_uptime_total{service_instance_id=~\".*\",job=\"$job\"}) by (service_instance_id,service_name,service_version)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6100,7 +6167,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 69
+            "y": 61
           },
           "id": 59,
           "panels": [],
@@ -6113,18 +6180,24 @@ data:
             "uid": "$datasource"
           },
           "description": "Receivers -> Processor(s) -> Exporters (Node Graph panel is beta, so this panel may not show data correctly).",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 70
+            "y": 62
           },
           "id": 58,
           "options": {
+            "edges": {},
             "nodes": {
               "mainStatUnit": "flops"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6133,7 +6206,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "# receivers\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_receiver_accepted_spans{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])\n      ) by (receiver)\n      , \"id\", \"-rcv-\", \"transport\", \"receiver\"\n    )\n    , \"title\", \"\", \"transport\", \"receiver\"\n  )\n  , \"icon\", \"arrow-to-right\", \"\", \"\"\n)\n\n# dummy processor\nor\nlabel_replace(\n  label_replace(\n    label_replace(\n      (sum(rate(otelcol_process_uptime{job=\"$job\"}[$__interval])))\n      , \"id\", \"processor\", \"\", \"\"\n    )\n    , \"title\", \"Processor(s)\", \"\", \"\"\n  )\n  , \"icon\", \"arrow-random\", \"\", \"\"\n)\n\n# exporters\nor\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_exporter_sent_spans{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])\n      ) by (exporter)\n      , \"id\", \"-exp-\", \"transport\", \"exporter\"\n    )\n    , \"title\", \"\", \"transport\", \"exporter\"\n  )\n  , \"icon\", \"arrow-from-right\", \"\", \"\"\n)",
+              "expr": "# receivers\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_receiver_accepted_spans_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])\n      ) by (receiver)\n      , \"id\", \"-rcv-\", \"transport\", \"receiver\"\n    )\n    , \"title\", \"\", \"transport\", \"receiver\"\n  )\n  , \"icon\", \"arrow-to-right\", \"\", \"\"\n)\n\n# dummy processor\nor\nlabel_replace(\n  label_replace(\n    label_replace(\n      (sum(rate(otelcol_process_uptime_total{job=\"$job\"}[$__interval])))\n      , \"id\", \"processor\", \"\", \"\"\n    )\n    , \"title\", \"Processor(s)\", \"\", \"\"\n  )\n  , \"icon\", \"arrow-random\", \"\", \"\"\n)\n\n# exporters\nor\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_exporter_sent_spans_total{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])\n      ) by (exporter)\n      , \"id\", \"-exp-\", \"transport\", \"exporter\"\n    )\n    , \"title\", \"\", \"transport\", \"exporter\"\n  )\n  , \"icon\", \"arrow-from-right\", \"\", \"\"\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6148,7 +6221,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "# receivers -> processor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_receiver_accepted_spans{job=\"$job\"}[$__interval])) by (receiver))\r\n            ,\"source\", \"-rcv-\", \"transport\", \"receiver\"\r\n        )\r\n        ,\"target\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)\r\n\r\n# processor -> exporters\r\nor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_exporter_sent_spans{job=\"$job\"}[$__interval])) by (exporter))\r\n            , \"target\", \"-exp-\", \"transport\", \"exporter\"\r\n        )\r\n        , \"source\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)",
+              "expr": "# receivers -> processor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_receiver_accepted_spans_total{job=\"$job\"}[$__interval])) by (receiver))\r\n            ,\"source\", \"-rcv-\", \"transport\", \"receiver\"\r\n        )\r\n        ,\"target\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)\r\n\r\n# processor -> exporters\r\nor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_exporter_sent_spans_total{job=\"$job\"}[$__interval])) by (exporter))\r\n            , \"target\", \"-exp-\", \"transport\", \"exporter\"\r\n        )\r\n        , \"source\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6189,18 +6262,24 @@ data:
             "uid": "$datasource"
           },
           "description": "Receivers -> Processor(s) -> Exporters (Node Graph panel is beta, so this panel may not show data correctly).",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 70
+            "y": 62
           },
           "id": 60,
           "options": {
+            "edges": {},
             "nodes": {
               "mainStatUnit": "none"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6209,7 +6288,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "# receivers\nlabel_replace(\n  label_join(\n    label_join(\n      (sum(\n        ${metric:value}(otelcol_receiver_accepted_metric_points{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])\n      ) by (receiver))\n      , \"id\", \"-rcv-\", \"transport\", \"receiver\"\n    )\n    , \"title\", \"\", \"transport\", \"receiver\"\n  )\n  , \"icon\", \"arrow-to-right\", \"\", \"\"\n)\n\n# dummy processor\nor\nlabel_replace(\n  label_replace(\n    label_replace(\n      (sum(rate(otelcol_process_uptime{job=\"$job\"}[$__interval])))\n      , \"id\", \"processor\", \"\", \"\"\n    )\n    , \"title\", \"Processor(s)\", \"\", \"\"\n  )\n  , \"icon\", \"arrow-random\", \"\", \"\"\n)\n\n# exporters\nor\nlabel_replace(\n  label_join(\n    label_join(\n      (sum(\n        ${metric:value}(otelcol_exporter_sent_metric_points{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])\n      ) by (exporter))\n      , \"id\", \"-exp-\", \"transport\", \"exporter\"\n    )\n    , \"title\", \"\", \"transport\", \"exporter\"\n  )\n  , \"icon\", \"arrow-from-right\", \"\", \"\"\n)",
+              "expr": "# receivers\nlabel_replace(\n  label_join(\n    label_join(\n      (sum(\n        ${metric:value}(otelcol_receiver_accepted_metric_points_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])\n      ) by (receiver))\n      , \"id\", \"-rcv-\", \"transport\", \"receiver\"\n    )\n    , \"title\", \"\", \"transport\", \"receiver\"\n  )\n  , \"icon\", \"arrow-to-right\", \"\", \"\"\n)\n\n# dummy processor\nor\nlabel_replace(\n  label_replace(\n    label_replace(\n      (sum(rate(otelcol_process_uptime_total{job=\"$job\"}[$__interval])))\n      , \"id\", \"processor\", \"\", \"\"\n    )\n    , \"title\", \"Processor(s)\", \"\", \"\"\n  )\n  , \"icon\", \"arrow-random\", \"\", \"\"\n)\n\n# exporters\nor\nlabel_replace(\n  label_join(\n    label_join(\n      (sum(\n        ${metric:value}(otelcol_exporter_sent_metric_points_total{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])\n      ) by (exporter))\n      , \"id\", \"-exp-\", \"transport\", \"exporter\"\n    )\n    , \"title\", \"\", \"transport\", \"exporter\"\n  )\n  , \"icon\", \"arrow-from-right\", \"\", \"\"\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6224,7 +6303,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "# receivers -> processor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_receiver_accepted_metric_points{job=\"$job\"}[$__interval])) by (receiver))\r\n            , \"source\", \"-rcv-\", \"transport\", \"receiver\"\r\n        )\r\n        , \"target\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)\r\n\r\n# processor -> exporters\r\nor \r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_exporter_sent_metric_points{job=\"$job\"}[$__interval])) by (exporter))\r\n            , \"target\", \"-exp-\", \"transport\", \"exporter\"\r\n        )\r\n        , \"source\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)",
+              "expr": "# receivers -> processor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_receiver_accepted_metric_points_total{job=\"$job\"}[$__interval])) by (receiver))\r\n            , \"source\", \"-rcv-\", \"transport\", \"receiver\"\r\n        )\r\n        , \"target\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)\r\n\r\n# processor -> exporters\r\nor \r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_exporter_sent_metric_points_total{job=\"$job\"}[$__interval])) by (exporter))\r\n            , \"target\", \"-exp-\", \"transport\", \"exporter\"\r\n        )\r\n        , \"source\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-\", \"source\", \"target\"\r\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6265,18 +6344,24 @@ data:
             "uid": "$datasource"
           },
           "description": "Receivers -> Processor(s) -> Exporters (Node Graph panel is beta, so this panel may not show data correctly).",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 70
+            "y": 62
           },
           "id": 61,
           "options": {
+            "edges": {},
             "nodes": {
               "mainStatUnit": "flops"
             }
           },
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6285,7 +6370,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "# receivers\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_receiver_accepted_log_records{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])\n      ) by (receiver)\n      , \"id\", \"-rcv-\", \"transport\", \"receiver\"\n    )\n    , \"title\", \"\", \"transport\", \"receiver\"\n  )\n  , \"icon\", \"arrow-to-right\", \"\", \"\"\n)\n\n# dummy processor\nor\nlabel_replace(\n  label_replace(\n    label_replace(\n      (sum(rate(otelcol_process_uptime{job=\"$job\"}[$__interval])))\n      , \"id\", \"processor\", \"\", \"\"\n    )\n    , \"title\", \"Processor(s)\", \"\", \"\"\n  )\n  , \"icon\", \"arrow-random\", \"\", \"\"\n)\n\n# exporters\nor\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_exporter_sent_log_records{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])\n      ) by (exporter)\n      , \"id\", \"-exp-\", \"transport\", \"exporter\"\n    )\n    , \"title\", \"\", \"transport\", \"exporter\"\n  )\n  , \"icon\", \"arrow-from-right\", \"\", \"\"\n)",
+              "expr": "# receivers\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_receiver_accepted_log_records_total{receiver=~\"$receiver\",job=\"$job\"}[$__rate_interval])\n      ) by (receiver)\n      , \"id\", \"-rcv-\", \"transport\", \"receiver\"\n    )\n    , \"title\", \"\", \"transport\", \"receiver\"\n  )\n  , \"icon\", \"arrow-to-right\", \"\", \"\"\n)\n\n# dummy processor\nor\nlabel_replace(\n  label_replace(\n    label_replace(\n      (sum(rate(otelcol_process_uptime_total{job=\"$job\"}[$__interval])))\n      , \"id\", \"processor\", \"\", \"\"\n    )\n    , \"title\", \"Processor(s)\", \"\", \"\"\n  )\n  , \"icon\", \"arrow-random\", \"\", \"\"\n)\n\n# exporters\nor\nlabel_replace(\n  label_join(\n    label_join(\n      sum(${metric:value}(\n        otelcol_exporter_sent_log_records_total{exporter=~\"$exporter\",job=\"$job\"}[$__rate_interval])\n      ) by (exporter)\n      , \"id\", \"-exp-\", \"transport\", \"exporter\"\n    )\n    , \"title\", \"\", \"transport\", \"exporter\"\n  )\n  , \"icon\", \"arrow-from-right\", \"\", \"\"\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6300,7 +6385,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "# receivers -> processor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_receiver_accepted_log_records{job=\"$job\"}[$__interval])) by (receiver))\r\n            , \"source\", \"-rcv-\", \"transport\", \"receiver\"\r\n        )\r\n        , \"target\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-edg-\", \"source\", \"target\"\r\n)\r\n\r\n# processor -> exporters\r\nor \r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_exporter_sent_log_records{job=\"$job\"}[$__interval])) by (exporter))\r\n            ,\"target\",\"-exp-\",\"transport\",\"exporter\"\r\n        )\r\n        ,\"source\",\"processor\",\"\",\"\"\r\n    )\r\n    ,\"id\",\"-edg-\",\"source\",\"target\"\r\n)",
+              "expr": "# receivers -> processor\r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_receiver_accepted_log_records_total{job=\"$job\"}[$__interval])) by (receiver))\r\n            , \"source\", \"-rcv-\", \"transport\", \"receiver\"\r\n        )\r\n        , \"target\", \"processor\", \"\", \"\"\r\n    )\r\n    , \"id\", \"-edg-\", \"source\", \"target\"\r\n)\r\n\r\n# processor -> exporters\r\nor \r\nlabel_join(\r\n    label_replace(\r\n        label_join(\r\n            (sum(rate(otelcol_exporter_sent_log_records_total{job=\"$job\"}[$__interval])) by (exporter))\r\n            ,\"target\",\"-exp-\",\"transport\",\"exporter\"\r\n        )\r\n        ,\"source\",\"processor\",\"\",\"\"\r\n    )\r\n    ,\"id\",\"-edg-\",\"source\",\"target\"\r\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -6336,20 +6421,17 @@ data:
           "type": "nodeGraph"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
           },
-          "editable": true,
-          "error": false,
           "gridPos": {
             "h": 3,
             "w": 24,
             "x": 0,
-            "y": 79
+            "y": 71
           },
           "id": 45,
-          "links": [],
           "options": {
             "code": {
               "language": "plaintext",
@@ -6359,23 +6441,14 @@ data:
             "content": "<a href=\"http://www.monitoringartist.com\" target=\"_blank\" title=\"Dashboard maintained by Monitoring Artist - DevOps / Docker / Kubernetes / AWS ECS / Google GCP / Zabbix / Zenoss / Terraform / Monitoring\"><img src=\"https://monitoringartist.github.io/monitoring-artist-logo-grafana.png\" height=\"30px\" /></a> | \n<a target=\"_blank\" href=\"https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/troubleshooting.md#metrics\">OTEL collector troubleshooting (how to enable telemetry metrics)</a> | \n<a target=\"_blank\" href=\"https://opentelemetry.io/docs/collector/scaling/\">Scaling the Collector (metrics to watch)</a> | \n<a target=\"_blank\" href=\"https://grafana.com/grafana/dashboards/15983-opentelemetry-collector/\">Installed from Grafana.com dashboards</a>",
             "mode": "html"
           },
-          "pluginVersion": "10.0.3",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
+          "pluginVersion": "11.3.0",
           "title": "Documentation",
           "type": "text"
         }
       ],
+      "preload": false,
       "refresh": "10s",
-      "schemaVersion": 38,
-      "style": "dark",
+      "schemaVersion": 40,
       "tags": [
         "opentelemetry",
         "monitoring"
@@ -6384,17 +6457,13 @@ data:
         "list": [
           {
             "current": {},
-            "hide": 0,
             "includeAll": false,
             "label": "Datasource",
-            "multi": false,
             "name": "datasource",
             "options": [],
             "query": "prometheus",
-            "queryValue": "",
             "refresh": 1,
             "regex": "",
-            "skipUrlSync": false,
             "type": "datasource"
           },
           {
@@ -6404,10 +6473,8 @@ data:
               "uid": "$datasource"
             },
             "definition": "label_values(otelcol_process_uptime, job)",
-            "hide": 0,
             "includeAll": false,
             "label": "Job",
-            "multi": false,
             "name": "job",
             "options": [],
             "query": {
@@ -6416,7 +6483,6 @@ data:
             },
             "refresh": 1,
             "regex": "",
-            "skipUrlSync": false,
             "sort": 1,
             "type": "query"
           },
@@ -6425,11 +6491,9 @@ data:
             "auto_count": 300,
             "auto_min": "10s",
             "current": {
-              "selected": false,
               "text": "auto",
               "value": "$__auto_interval_minstep"
             },
-            "hide": 0,
             "label": "Min step",
             "name": "minstep",
             "options": [
@@ -6460,21 +6524,16 @@ data:
               }
             ],
             "query": "10s,30s,1m,5m",
-            "queryValue": "",
             "refresh": 2,
-            "skipUrlSync": false,
             "type": "interval"
           },
           {
             "current": {
-              "selected": true,
               "text": "Rate",
               "value": "rate"
             },
-            "hide": 0,
             "includeAll": false,
             "label": "Base metric",
-            "multi": false,
             "name": "metric",
             "options": [
               {
@@ -6489,8 +6548,6 @@ data:
               }
             ],
             "query": "Rate : rate, Count : increase",
-            "queryValue": "",
-            "skipUrlSync": false,
             "type": "custom"
           },
           {
@@ -6501,10 +6558,8 @@ data:
               "uid": "$datasource"
             },
             "definition": "label_values(receiver)",
-            "hide": 0,
             "includeAll": true,
             "label": "Receiver",
-            "multi": false,
             "name": "receiver",
             "options": [],
             "query": {
@@ -6513,12 +6568,8 @@ data:
             },
             "refresh": 2,
             "regex": "",
-            "skipUrlSync": false,
             "sort": 1,
-            "tagValuesQuery": "",
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
+            "type": "query"
           },
           {
             "current": {},
@@ -6527,10 +6578,8 @@ data:
               "uid": "$datasource"
             },
             "definition": "label_values(processor)",
-            "hide": 0,
             "includeAll": true,
             "label": "Processor",
-            "multi": false,
             "name": "processor",
             "options": [],
             "query": {
@@ -6539,12 +6588,8 @@ data:
             },
             "refresh": 2,
             "regex": "",
-            "skipUrlSync": false,
             "sort": 1,
-            "tagValuesQuery": "",
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
+            "type": "query"
           },
           {
             "allValue": ".*",
@@ -6554,10 +6599,8 @@ data:
               "uid": "$datasource"
             },
             "definition": "label_values(exporter)",
-            "hide": 0,
             "includeAll": true,
             "label": "Exporter",
-            "multi": false,
             "name": "exporter",
             "options": [],
             "query": {
@@ -6566,24 +6609,17 @@ data:
             },
             "refresh": 2,
             "regex": "",
-            "skipUrlSync": false,
             "sort": 1,
-            "tagValuesQuery": "",
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
+            "type": "query"
           },
           {
             "current": {
-              "selected": true,
               "text": "None (basic metrics)",
               "value": ""
             },
             "description": "Detailed metrics must be configured in the collector configuration. They add grouping by transport protocol (http/grpc) for receivers. ",
-            "hide": 0,
             "includeAll": false,
             "label": "Additional groupping",
-            "multi": false,
             "name": "grouping",
             "options": [
               {
@@ -6603,8 +6639,6 @@ data:
               }
             ],
             "query": "None (basic metrics) :  , By transport (detailed metrics) : \\,transport, By service instance id : \\,service_instance_id",
-            "queryValue": "",
-            "skipUrlSync": false,
             "type": "custom"
           }
         ]
@@ -6613,35 +6647,11 @@ data:
         "from": "now-6h",
         "to": "now"
       },
-      "timepicker": {
-        "refresh_intervals": [
-          "5s",
-          "10s",
-          "30s",
-          "1m",
-          "5m",
-          "15m",
-          "30m",
-          "1h",
-          "2h",
-          "1d"
-        ],
-        "time_options": [
-          "5m",
-          "15m",
-          "1h",
-          "6h",
-          "12h",
-          "24h",
-          "2d",
-          "7d",
-          "30d"
-        ]
-      },
+      "timepicker": {},
       "timezone": "utc",
       "title": "OpenTelemetry Collector",
       "uid": "BKf2sowmj",
-      "version": 72,
+      "version": 10,
       "weekStart": ""
     }
   spanmetrics-dashboard.json: |
@@ -6669,14 +6679,11 @@ data:
         ]
       },
       "description": "Spanmetrics way of demo application view.",
-      "author": {
-        "name": "devrimdemiroz"
-        },
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
+      "id": 5,
       "links": [],
-      "liveNow": false,
       "panels": [
         {
           "collapsed": false,
@@ -6740,6 +6747,8 @@ data:
           "id": 2,
           "interval": "5m",
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -6749,9 +6758,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6760,7 +6770,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.50, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
+              "expr": "topk(7,histogram_quantile(0.50, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
               "format": "time_series",
               "hide": true,
               "instant": false,
@@ -6776,11 +6786,11 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.95, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,service_name)))",
+              "expr": "topk(7,histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,service_name)))",
               "hide": false,
               "instant": true,
               "interval": "",
-              "legendFormat": "{{le}} - {{service_name}}",
+              "legendFormat": "{{service_name}}",
               "range": false,
               "refId": "B"
             },
@@ -6791,7 +6801,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.99, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.99, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile99",
@@ -6805,7 +6815,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.999, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.999, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile999",
@@ -6863,8 +6873,16 @@ data:
           "interval": "5m",
           "options": {
             "displayMode": "lcd",
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "maxVizHeight": 300,
             "minVizHeight": 10,
             "minVizWidth": 0,
+            "namePlacement": "auto",
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -6874,9 +6892,11 @@ data:
               "values": false
             },
             "showUnfilled": true,
-            "text": {}
+            "sizing": "auto",
+            "text": {},
+            "valueMode": "color"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6885,7 +6905,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,sum by (service_name) (rate(calls_total{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])))",
+              "expr": "topk(7,sum by (service_name) (rate(traces_span_metrics_calls_total{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])))",
               "format": "time_series",
               "instant": true,
               "interval": "",
@@ -6895,7 +6915,6 @@ data:
             }
           ],
           "title": "Top 7 Services Mean Rate over Range",
-          "transformations": [],
           "type": "bargauge"
         },
         {
@@ -6941,8 +6960,16 @@ data:
           "interval": "5m",
           "options": {
             "displayMode": "lcd",
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "maxVizHeight": 300,
             "minVizHeight": 10,
             "minVizWidth": 0,
+            "namePlacement": "auto",
             "orientation": "vertical",
             "reduceOptions": {
               "calcs": [
@@ -6952,9 +6979,11 @@ data:
               "values": false
             },
             "showUnfilled": true,
-            "text": {}
+            "sizing": "auto",
+            "text": {},
+            "valueMode": "color"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -6963,7 +6992,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,sum(rate(calls_total{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (service_name))",
+              "expr": "topk(7,sum(rate(traces_span_metrics_calls_total{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (service_name))",
               "instant": true,
               "interval": "",
               "legendFormat": "{{service_name}}",
@@ -6972,15 +7001,10 @@ data:
             }
           ],
           "title": "Top 7 Services Mean ERROR Rate over Range",
-          "transformations": [],
           "type": "bargauge"
         },
         {
           "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "webstore-metrics"
-          },
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -6989,15 +7013,6 @@ data:
           },
           "id": 14,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "webstore-metrics"
-              },
-              "refId": "A"
-            }
-          ],
           "title": "span_names Level - Throughput",
           "type": "row"
         },
@@ -7014,7 +7029,9 @@ data:
               },
               "custom": {
                 "align": "auto",
-                "displayMode": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
                 "inspect": false
               },
               "decimals": 2,
@@ -7042,8 +7059,11 @@ data:
                 },
                 "properties": [
                   {
-                    "id": "custom.displayMode",
-                    "value": "lcd-gauge"
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "lcd",
+                      "type": "gauge"
+                    }
                   },
                   {
                     "id": "color",
@@ -7060,8 +7080,11 @@ data:
                 },
                 "properties": [
                   {
-                    "id": "custom.displayMode",
-                    "value": "lcd-gauge"
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "lcd",
+                      "type": "gauge"
+                    }
                   },
                   {
                     "id": "color",
@@ -7102,8 +7125,7 @@ data:
                 },
                 "properties": [
                   {
-                    "id": "custom.width",
-                    "value": null
+                    "id": "custom.width"
                   }
                 ]
               }
@@ -7118,7 +7140,9 @@ data:
           "id": 22,
           "interval": "5m",
           "options": {
+            "cellHeight": "sm",
             "footer": {
+              "countRows": false,
               "fields": "",
               "reducer": [
                 "sum"
@@ -7128,7 +7152,7 @@ data:
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -7136,7 +7160,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "exemplar": false,
-              "expr": "topk(7, sum(rate(calls_total{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name)) ",
+              "expr": "topk(7, sum(rate(traces_span_metrics_calls_total{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name)) ",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -7149,7 +7173,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "exemplar": false,
-              "expr": "topk(7, sum(rate(calls_total{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name))",
+              "expr": "topk(7, sum(rate(traces_span_metrics_calls_total{status_code=\"STATUS_CODE_ERROR\",service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (span_name,service_name))",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -7250,10 +7274,6 @@ data:
         },
         {
           "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "webstore-metrics"
-          },
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -7262,15 +7282,6 @@ data:
           },
           "id": 20,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "webstore-metrics"
-              },
-              "refId": "A"
-            }
-          ],
           "title": "span_name Level - Latencies",
           "type": "row"
         },
@@ -7323,6 +7334,8 @@ data:
           "id": 25,
           "interval": "5m",
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -7332,9 +7345,10 @@ data:
               "values": false
             },
             "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -7343,7 +7357,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.50, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
+              "expr": "topk(7,histogram_quantile(0.50, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name)))",
               "format": "time_series",
               "hide": true,
               "instant": false,
@@ -7359,7 +7373,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7,histogram_quantile(0.95, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,span_name)))",
+              "expr": "topk(7,histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__range])) by (le,span_name)))",
               "hide": false,
               "instant": true,
               "interval": "",
@@ -7374,7 +7388,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.99, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.99, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile99",
@@ -7388,7 +7402,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "histogram_quantile(0.999, sum(rate(duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
+              "expr": "histogram_quantile(0.999, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])) by (le,service_name))",
               "hide": true,
               "interval": "",
               "legendFormat": "quantile999",
@@ -7438,8 +7452,16 @@ data:
           "interval": "5m",
           "options": {
             "displayMode": "lcd",
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "maxVizHeight": 300,
             "minVizHeight": 10,
             "minVizWidth": 0,
+            "namePlacement": "auto",
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -7448,9 +7470,11 @@ data:
               "fields": "",
               "values": false
             },
-            "showUnfilled": true
+            "showUnfilled": true,
+            "sizing": "auto",
+            "valueMode": "color"
           },
-          "pluginVersion": "9.1.0",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -7459,7 +7483,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "topk(7, sum by (span_name,service_name)(increase(duration_milliseconds_sum{service_name=~\"${service}\", span_name=~\"$span_name\"}[5m]) / increase(duration_milliseconds_count{service_name=~\"${service}\",span_name=~\"$span_name\"}[5m\n])))",
+              "expr": "topk(7, sum by (span_name,service_name)(increase(duration_milliseconds_sum{service_name=~\"${service}\", span_name=~\"$span_name\"}[5m]) / increase(traces_span_metrics_duration_milliseconds_count{service_name=~\"${service}\",span_name=~\"$span_name\"}[5m\n])))",
               "instant": true,
               "interval": "",
               "legendFormat": "{{span_name}} [{{service_name}}]",
@@ -7468,7 +7492,6 @@ data:
             }
           ],
           "title": "Top 7 Highest Endpoint Latencies  Mean Over Range ",
-          "transformations": [],
           "type": "bargauge"
         },
         {
@@ -7482,11 +7505,13 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 15,
                 "gradientMode": "none",
@@ -7495,6 +7520,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "smooth",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7554,7 +7580,7 @@ data:
               "sort": "none"
             }
           },
-          "pluginVersion": "8.4.7",
+          "pluginVersion": "11.3.0",
           "targets": [
             {
               "datasource": {
@@ -7563,7 +7589,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(7,sum by (span_name,service_name)(increase(duration_milliseconds_sum{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval]) / increase(duration_milliseconds_count{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])))",
+              "expr": "topk(7,sum by (span_name,service_name)(increase(traces_span_metrics_duration_milliseconds_sum{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval]) / increase(traces_span_metrics_duration_milliseconds_count{service_name=~\"$service\", span_name=~\"$span_name\"}[$__rate_interval])))",
               "instant": false,
               "interval": "",
               "legendFormat": "[{{service_name}}]  {{span_name}}",
@@ -7575,16 +7601,15 @@ data:
           "type": "timeseries"
         }
       ],
+      "preload": false,
       "refresh": "5m",
-      "schemaVersion": 37,
-      "style": "dark",
+      "schemaVersion": 40,
       "tags": [],
       "templating": {
         "list": [
           {
             "allValue": ".*",
             "current": {
-              "selected": false,
               "text": "All",
               "value": "$__all"
             },
@@ -7592,26 +7617,23 @@ data:
               "type": "prometheus",
               "uid": "webstore-metrics"
             },
-            "definition": "query_result(count by (service_name)(count_over_time(calls_total[$__range])))",
-            "hide": 0,
+            "definition": "query_result(count by (service_name)(count_over_time(traces_span_metrics_calls_total[$__range])))",
             "includeAll": true,
             "multi": true,
             "name": "service",
             "options": [],
             "query": {
-              "query": "query_result(count by (service_name)(count_over_time(calls_total[$__range])))",
+              "query": "query_result(count by (service_name)(count_over_time(traces_span_metrics_calls_total[$__range])))",
               "refId": "StandardVariableQuery"
             },
             "refresh": 2,
             "regex": "/.*service_name=\"(.*)\".*/",
-            "skipUrlSync": false,
             "sort": 1,
             "type": "query"
           },
           {
             "allValue": ".*",
             "current": {
-              "selected": false,
               "text": "All",
               "value": "$__all"
             },
@@ -7619,20 +7641,17 @@ data:
               "type": "prometheus",
               "uid": "webstore-metrics"
             },
-            "definition": "query_result(sum ({__name__=~\".*calls_total\",service_name=~\"$service\"})  by (span_name))",
-            "hide": 0,
+            "definition": "query_result(sum ({__name__=~\".*traces_span_metrics_calls_total\",service_name=~\"$service\"})  by (span_name))",
             "includeAll": true,
             "multi": true,
             "name": "span_name",
             "options": [],
             "query": {
-              "query": "query_result(sum ({__name__=~\".*calls_total\",service_name=~\"$service\"})  by (span_name))",
+              "query": "query_result(sum ({__name__=~\".*traces_span_metrics_calls_total\",service_name=~\"$service\"})  by (span_name))",
               "refId": "StandardVariableQuery"
             },
             "refresh": 2,
             "regex": "/.*span_name=\"(.*)\".*/",
-            "skipUrlSync": false,
-            "sort": 0,
             "type": "query"
           }
         ]
