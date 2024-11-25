@@ -115,7 +115,7 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{- define "opentelemetry-kube-stack.labels" }}
+{{- define "opentelemetry-kube-stack.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
