@@ -48,7 +48,7 @@ Print a map of key values in a YAML block. This is useful for labels and annotat
 {{- define "opentelemetry-kube-stack.renderkv" -}}
 {{- with . -}}
 {{- range $key, $value := . -}}
-{{- printf "%s: %s" $key $value }}
+{{- printf "\n%s: %s" $key $value }}
 {{- end -}}
 {{- end -}}
 {{- end }}
