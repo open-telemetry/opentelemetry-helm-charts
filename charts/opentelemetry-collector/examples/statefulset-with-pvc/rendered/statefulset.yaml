@@ -6,12 +6,12 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.110.2
+    helm.sh/chart: opentelemetry-collector-0.110.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.114.0"
     app.kubernetes.io/managed-by: Helm
-    
+    app.kubernetes.io/component: statefulset-collector
 spec:
   serviceName: example-opentelemetry-collector
   podManagementPolicy: Parallel
@@ -23,19 +23,17 @@ spec:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      app.kubernetes.io/component: statefulset-collector
       component: statefulset-collector
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 25073109d7524acf81dab63db4b0051158204b8218f235001d1c0f30d0dcb584
+        checksum/config: 20c2a52fc92fd336232e1e00ab2ff630fb4fecaf7c068add169dad2d3e020f2a
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        app.kubernetes.io/component: statefulset-collector
         component: statefulset-collector
         
     spec:
