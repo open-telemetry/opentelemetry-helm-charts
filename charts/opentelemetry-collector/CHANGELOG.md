@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.98.3 / 2024-11-26
+- [Feat] Add the new `errorTracking` preset.
+
 ### v0.98.2 / 2024-11-20
 - [Fix] Add missing `max_batch_size` to all applicable recombine processors in the `logsCollection` preset.
 

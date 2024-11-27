@@ -44,6 +44,8 @@ presets:
             team: "teamA"
   spanMetrics:
     enabled: true
+    transformStatements:
+      - set(attributes["http.response.status_code"], attributes["http.status_code"]) where attributes["http.response.status_code"] == nil
     dbMetrics:
       enabled: true
       transformStatements:
@@ -60,6 +62,8 @@ presets:
         - set(attributes["db.collection_name"], attributes["db.elasticsearch.path_parts.index"]) where attributes["db.collection.name"] == nil
         - set(attributes["db.collection_name"], attributes["db.cosmosdb.container"]) where attributes["db.collection.name"] == nil
         - set(attributes["db.collection_name"], attributes["aws_dynamodb.table_names"]) where attributes["db.collection.name"] == nil
+    errorTracking:
+      enabled: true
     collectionInterval: 30s
     metricsExpiration: 5m
     histogramBuckets: [1ms, 1s, 10s]

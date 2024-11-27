@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.98.2
+    helm.sh/chart: opentelemetry-collector-0.98.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -17,6 +17,9 @@ data:
     connectors:
       forward/db: {}
       spanmetrics:
+        dimensions:
+        - name: http.response.status_code
+        - name: rpc.grpc.status_code
         histogram:
           explicit:
             buckets:
@@ -177,6 +180,13 @@ data:
         - context: span
           statements:
           - replace_pattern(name, "^(.*)$", "$$1")
+      transform/spanmetrics:
+        error_mode: silent
+        trace_statements:
+        - context: span
+          statements:
+          - set(attributes["http.response.status_code"], attributes["http.status_code"])
+            where attributes["http.response.status_code"] == nil
     receivers:
       filelog:
         exclude: []
@@ -433,6 +443,7 @@ data:
           - k8sattributes
           - memory_limiter
           - transform/k8s_attributes
+          - transform/spanmetrics
           - batch
           receivers:
           - otlp
