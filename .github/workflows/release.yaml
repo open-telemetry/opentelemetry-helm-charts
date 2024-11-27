@@ -58,7 +58,5 @@ jobs:
             if [ -z "${pkg:-}" ]; then
               break
             fi
-            lowercase=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-            echo "Pushing package - ${pkg} to ghcr.io repository - ${lowercase}"
-            helm push "${pkg}" "oci://ghcr.io/${lowercase}"
+            helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
           done
