@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.98.5 / 2024-11-28
+- [Feat] Adding new configs to the Target Allocator.
+
 ### v0.98.3 / 2024-11-26
 - [Feat] Add the new `errorTracking` preset.
 

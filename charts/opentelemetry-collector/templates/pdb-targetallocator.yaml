@@ -1,0 +1,16 @@
+{{- if .Values.targetAllocator.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-target-allocator.labels" . | nindent 4 }}
+    component: target-allocator
+spec:
+  maxUnavailable: {{ .Values.targetAllocator.pdb.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 6 }}
+      component: target-allocator
+{{- end }}

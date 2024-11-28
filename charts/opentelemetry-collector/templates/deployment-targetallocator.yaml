@@ -15,6 +15,9 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.targetAllocator.replicas }}
+  {{- if .Values.minReadySeconds }}
+  minReadySeconds: {{ .Values.targetAllocator.minReadySeconds }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 6 }}
@@ -36,6 +39,14 @@ spec:
         {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 8 }}
         component: target-allocator
     spec:
+      {{- if .Values.targetAllocator.affinity }}
+      affinity:
+        {{- toYaml .Values.targetAllocator.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.targetAllocator.tolerations }}
+      tolerations:
+        {{- toYaml .Values.targetAllocator.tolerations | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "opentelemetry-collector.fullname" . }}-targetallocator
           {{- if .Values.targetAllocator.image.tag }}
@@ -63,9 +74,31 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
+          {{- if .Values.targetAllocator.volumeMounts }}
+          {{- toYaml .Values.targetAllocator.volumeMounts | nindent 10 }}
+          {{- end }}
           - mountPath: /conf
             name: ta-internal
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            initialDelaySeconds: {{ .Values.targetAllocator.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.targetAllocator.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values..targetAllocator.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.targetAllocator.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: {{ .Values.targetAllocator.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.targetAllocator.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.targetAllocator.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.targetAllocator.livenessProbe.failureThreshold }}
       volumes:
+      {{- if .Values.volumes }}
+      {{- toYaml .Values.volumes | nindent 6 }}
+      {{- end }}
       - configMap:
           defaultMode: 420
           items:
