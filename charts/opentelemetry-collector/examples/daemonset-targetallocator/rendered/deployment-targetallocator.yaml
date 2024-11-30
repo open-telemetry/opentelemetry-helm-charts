@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-targetallocator
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.98.4
+    helm.sh/chart: opentelemetry-collector-0.98.5
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.111.0"
@@ -24,7 +24,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 5e500733a7b7a6c651e16a9d7d4e589527921106f84fe1871e3cfb2ce349f66f
+        checksum/config: e0958a92daca280a58bf2eeea1b93e98ad5fd23794acfb774d04df9c3bf57c37
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector-target-allocator
@@ -50,6 +50,22 @@ spec:
           volumeMounts:
           - mountPath: /conf
             name: ta-internal
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
       volumes:
       - configMap:
           defaultMode: 420

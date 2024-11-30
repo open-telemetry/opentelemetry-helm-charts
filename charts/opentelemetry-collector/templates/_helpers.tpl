@@ -147,6 +147,18 @@ Create the name of the priorityClass to use
 {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-target-allocator.serviceMonitorNamespaceSelector" -}}
+{{- if .Values.targetAllocator.prometheusCR.serviceMonitorNamespaceSelector }}
+{{- tpl (.Values.targetAllocator.prometheusCR.serviceMonitorNamespaceSelector | toYaml) . }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-target-allocator.podMonitorNamespaceSelector" -}}
+{{- if .Values.targetAllocator.prometheusCR.podMonitorNamespaceSelector }}
+{{- tpl (.Values.targetAllocator.prometheusCR.podMonitorNamespaceSelector | toYaml) . }}
+{{- end }}
+{{- end }}
+
 {{- define "opentelemetry-collector.additionalLabels" -}}
 {{- if .Values.additionalLabels }}
 {{- tpl (.Values.additionalLabels | toYaml) . }}
