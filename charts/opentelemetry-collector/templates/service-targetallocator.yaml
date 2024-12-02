@@ -1,3 +1,5 @@
+{{- if not .Values.collectorCRD.generate -}}
+{{- if .Values.targetAllocator.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -21,3 +23,5 @@ spec:
   selector:
     {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 4 }}
     component: target-allocator
+{{- end }}
+{{- end }}
