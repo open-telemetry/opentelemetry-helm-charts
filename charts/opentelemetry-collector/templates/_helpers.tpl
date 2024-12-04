@@ -68,7 +68,9 @@ app.kubernetes.io/component: agent-collector
 {{- if eq .Values.mode "statefulset" }}
 app.kubernetes.io/component: statefulset-collector
 {{- end -}}
+{{- if .Values.additionalLabels }}
 {{ include "opentelemetry-collector.additionalLabels" . }}
+{{- end }}
 {{- end }}
 
 {{/*
