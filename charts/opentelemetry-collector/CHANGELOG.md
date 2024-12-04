@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+### v0.98.7 / 2024-12-04
+- [Fix] Target Allocator configmap name conflicting with collector configmap. 
 
 ### v0.98.6 / 2024-12-02
 - [Fix] Create the Target Allocator service only when applicable. 
