@@ -1,0 +1,20 @@
+mode: daemonset
+
+targetAllocator:
+  enabled: true
+  allocationStrategy: per-node
+  scrapeConfigs:
+  - job_name: otel-collector
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["0.0.0.0:8888"]
+  prometheusCR:
+    enabled: false
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
+    tag: v0.95.0
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
