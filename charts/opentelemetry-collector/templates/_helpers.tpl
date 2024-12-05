@@ -229,7 +229,7 @@ Get ConfigMap name if existingName is defined, otherwise use default name for ge
 */}}
 {{- define "opentelemetry-collector.configName" -}}
   {{- if .Values.configMap.existingName -}}
-    {{- .Values.configMap.existingName }}
+    {{- tpl (.Values.configMap.existingName | toYaml) . }}
   {{- else }}
     {{- printf "%s%s" (include "opentelemetry-collector.fullname" .) (.configmapSuffix) }}
   {{- end -}}
