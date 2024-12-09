@@ -92,6 +92,7 @@ rules:
     resources:
       - nodes
       - namespaces
+      - secrets
     verbs:
       - get
       - list
@@ -236,6 +237,28 @@ rules:
       - update
       - watch
   {{- if .Values.manager.featureGatesMap }}
+  {{- if ".Values.manager.featureGatesMap.operator.targetAllocatorCR" }}
+  - apiGroups:
+    - opentelemetry.io
+    resources:
+      - targetallocators
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+    - opentelemetry.io
+    resources:
+    - targetallocators/status
+    verbs:
+    - get
+    - patch
+    - update
+  {{- end }}
   {{- if ".Values.manager.featureGatesMap.operator.targetallocator.mtls" }}
   - apiGroups:
       - cert-manager.io
