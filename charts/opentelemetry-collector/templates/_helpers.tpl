@@ -68,7 +68,9 @@ app.kubernetes.io/component: agent-collector
 {{- if eq .Values.mode "statefulset" }}
 app.kubernetes.io/component: statefulset-collector
 {{- end -}}
-{{ include "opentelemetry-collector.additionalLabels" . }}
+{{- if .Values.additionalLabels }}
+{{ tpl (.Values.additionalLabels | toYaml) . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -114,12 +116,6 @@ Create the name of the clusterRoleBinding to use
 {{- define "opentelemetry-collector.podLabels" -}}
 {{- if .Values.podLabels }}
 {{- tpl (.Values.podLabels | toYaml) . }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.additionalLabels" -}}
-{{- if .Values.additionalLabels }}
-{{- tpl (.Values.additionalLabels | toYaml) . }}
 {{- end }}
 {{- end }}
 
