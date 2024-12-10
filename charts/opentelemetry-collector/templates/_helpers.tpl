@@ -119,7 +119,9 @@ Create the name of the clusterRoleBinding to use
 
 {{- define "opentelemetry-collector.additionalLabels" -}}
 {{- if .Values.additionalLabels }}
-{{- tpl (.Values.additionalLabels | toYaml) . }}
+{{- range $key, $value := .Values.additionalLabels }}
+{{ $key }}: {{ $value }}
+{{- end }}
 {{- end }}
 {{- end }}
 
