@@ -288,7 +288,7 @@ Helpers for prometheus servicemonitors
 {{- end -}}
 
 {{/* Sets default scrape limits for servicemonitor */}}
-{{- define "servicemonitor.scrapeLimits" -}}
+{{- define "opentelemetry-kube-stack.servicemonitor.scrapeLimits" -}}
 {{- with .sampleLimit }}
 sampleLimit: {{ . }}
 {{- end }}
