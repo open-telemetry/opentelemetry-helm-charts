@@ -154,15 +154,11 @@ The image to use for opentelemetry-operator.
 {{- end }}
 
 {{- define "opentelemetry-operator.featureGatesMap" -}}
-{{$first := true}}
-{{- range $key, $value := .Values.manager.featureGatesMap -}}
-    {{- if $first -}}
-        {{ $first = false }}
-    {{- else -}}
-        ,
-    {{- end -}}
-    {{- if $value -}}
-        {{- $key }}
-    {{- end -}}
+{{- $list := list -}}
+{{- range $k, $v := .Values.manager.featureGatesMap -}}
+{{- if $v -}}
+{{- $list = append $list (printf "%s=true" $k) -}}
 {{- end -}}
+{{- end -}}
+{{ join "," $list }}
 {{- end }}
