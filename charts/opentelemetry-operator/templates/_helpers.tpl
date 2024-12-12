@@ -31,14 +31,19 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "opentelemetry-operator.appVersion" -}}
+{{ default .Chart.AppVersion .Values.manager.image.tag }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "opentelemetry-operator.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 {{ include "opentelemetry-operator.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ include "opentelemetry-operator.appVersion" . | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{ include "opentelemetry-operator.additionalLabels" . }}
@@ -147,5 +152,5 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
-{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
+{{- printf "%s:%s" .Values.manager.image.repository (include "opentelemetry-operator.appVersion" .) }}
 {{- end }}
