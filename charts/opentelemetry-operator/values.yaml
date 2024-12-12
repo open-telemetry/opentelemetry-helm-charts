@@ -42,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.100.1
+    tag: 0.114.0
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -62,6 +62,9 @@ manager:
     dotnet:
       repository: ""
       tag: ""
+    apacheHttpd:
+      repository: ""
+      tag: ""
     # The Go instrumentation support in the operator is disabled by default.
     # To enable it, use the operator.autoinstrumentation.go feature gate.
     go:
@@ -71,7 +74,18 @@ manager:
   # Prefix a gate with '-' to disable support.
   # Prefixing a gate with '+' or no prefix will enable support.
   # A full list of valid identifiers can be found here: https://github.com/open-telemetry/opentelemetry-operator/blob/main/pkg/featuregate/featuregate.go
+  # NOTE: the featureGates value is deprecated and will be replaced by featureGatesMap in the future.
   featureGates: ""
+  # The featureGatesMap will enable or disable specific feature gates in the operator as well as deploy any prerequisites for the feature gate.
+  # If this property is not an empty map, the featureGates property will be ignored.
+  featureGatesMap: {}
+    # targetAllocatorMtls: false
+    # targetAllocatorCR: false
+    # targetAllocatorFallbackStrategy: false
+    # nativeSideCarContainers: false
+    # prometheusOperator: false
+    # golangFlags: false
+    # collectorDefaultConfig: false
   ports:
     metricsPort: 8080
     webhookPort: 9443
@@ -106,6 +120,10 @@ manager:
     annotations: {}
     metricsEndpoints:
       - port: metrics
+    # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
+    # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+    relabelings: []
+    metricRelabelings: []
 
   # Adds additional annotations to the manager Deployment
   deploymentAnnotations: {}
@@ -121,12 +139,21 @@ manager:
     # Create default rules for monitoring the manager
     defaultRules:
       enabled: false
-    # additional labels on the PrometheusRule
+      ## Additional labels for PrometheusRule alerts
+      additionalRuleLabels: {}
+      ## Additional annotations for PrometheusRule alerts
+      additionalRuleAnnotations: {}
+      ## Alerts are considered firing once they have been returned for this long.
+      duration: 5m
+    # additional labels on the PrometheusRule object
     extraLabels: {}
-    # add annotations on the PrometheusRule
+    # add annotations on the PrometheusRule object
     annotations: {}
+    # change the default runbook urls.
+    # the alert name will get appended at the end of the url as an anchor.
+    runbookUrl: ""
 
-  # Whether the operator should create RBAC permissions for collectors
+  # Whether the operator should create RBAC permissions for collectors. See README.md for more information.
   createRbacPermissions: false
   ## List of additional cli arguments to configure the manager
   ## for example: --labels, etc.
@@ -178,7 +205,7 @@ kubeRBACProxy:
   enabled: true
   image:
     repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.15.0
+    tag: v0.18.1
   ports:
     proxyPort: 8443
   resources:
@@ -239,6 +266,12 @@ admissionWebhooks:
     ## Annotations for the cert and issuer if cert-manager is enabled.
     certificateAnnotations: {}
     issuerAnnotations: {}
+    # duration must be specified by a Go time.Duration (ending in s, m or h)
+    duration: ""
+    # renewBefore must be specified by a Go time.Duration (ending in s, m or h)
+    # Take care when setting the renewBefore field to be very close to the duration
+    # as this can lead to a renewal loop, where the Certificate is always in the renewal period.
+    renewBefore: ""
 
   ## TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate.
   ## certManager must be disabled and autoGenerateCert must be enabled.
@@ -247,6 +280,8 @@ admissionWebhooks:
     enabled: true
     # If set to true, new webhook key/certificate is generated on helm upgrade.
     recreate: true
+    # Cert period time in days. The default is 365 days.
+    certPeriodDays: 365
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
   ## certManager and autoGenerateCert must be disabled and certFile, keyFile, and caFile must be set.

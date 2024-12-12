@@ -5,10 +5,10 @@ kind: ConfigMap
 metadata:
   name: otel-demo-opensearch-config
   labels:
-    helm.sh/chart: opensearch-2.19.0
+    helm.sh/chart: opensearch-2.27.1
     app.kubernetes.io/name: opensearch
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.13.0"
+    app.kubernetes.io/version: "2.18.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: otel-demo-opensearch
 data:
@@ -24,42 +24,42 @@ data:
     
     # Start OpenSearch Security Demo Configuration
     # WARNING: revise all the lines below before you go into production
-    plugins:
-      security:
-        ssl:
-          transport:
-            pemcert_filepath: esnode.pem
-            pemkey_filepath: esnode-key.pem
-            pemtrustedcas_filepath: root-ca.pem
-            enforce_hostname_verification: false
-          http:
-            enabled: true
-            pemcert_filepath: esnode.pem
-            pemkey_filepath: esnode-key.pem
-            pemtrustedcas_filepath: root-ca.pem
-        allow_unsafe_democertificates: true
-        allow_default_init_securityindex: true
-        authcz:
-          admin_dn:
-            - CN=kirk,OU=client,O=client,L=test,C=de
-        audit.type: internal_opensearch
-        enable_snapshot_restore_privilege: true
-        check_snapshot_restore_write_privileges: true
-        restapi:
-          roles_enabled: ["all_access", "security_rest_api_access"]
-        system_indices:
-          enabled: true
-          indices:
-            [
-              ".opendistro-alerting-config",
-              ".opendistro-alerting-alert*",
-              ".opendistro-anomaly-results*",
-              ".opendistro-anomaly-detector*",
-              ".opendistro-anomaly-checkpoints",
-              ".opendistro-anomaly-detection-state",
-              ".opendistro-reports-*",
-              ".opendistro-notifications-*",
-              ".opendistro-notebooks",
-              ".opendistro-asynchronous-search-response*",
-            ]
+    # plugins:
+    #   security:
+    #     ssl:
+    #       transport:
+    #         pemcert_filepath: esnode.pem
+    #         pemkey_filepath: esnode-key.pem
+    #         pemtrustedcas_filepath: root-ca.pem
+    #         enforce_hostname_verification: false
+    #       http:
+    #         enabled: true
+    #         pemcert_filepath: esnode.pem
+    #         pemkey_filepath: esnode-key.pem
+    #         pemtrustedcas_filepath: root-ca.pem
+    #     allow_unsafe_democertificates: true
+    #     allow_default_init_securityindex: true
+    #     authcz:
+    #       admin_dn:
+    #         - CN=kirk,OU=client,O=client,L=test,C=de
+    #     audit.type: internal_opensearch
+    #     enable_snapshot_restore_privilege: true
+    #     check_snapshot_restore_write_privileges: true
+    #     restapi:
+    #       roles_enabled: ["all_access", "security_rest_api_access"]
+    #     system_indices:
+    #       enabled: true
+    #       indices:
+    #         [
+    #           ".opendistro-alerting-config",
+    #           ".opendistro-alerting-alert*",
+    #           ".opendistro-anomaly-results*",
+    #           ".opendistro-anomaly-detector*",
+    #           ".opendistro-anomaly-checkpoints",
+    #           ".opendistro-anomaly-detection-state",
+    #           ".opendistro-reports-*",
+    #           ".opendistro-notifications-*",
+    #           ".opendistro-notebooks",
+    #           ".opendistro-asynchronous-search-response*",
+    #         ]
     ######## End OpenSearch Security Demo Configuration ########

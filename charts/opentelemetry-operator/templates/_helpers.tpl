@@ -46,7 +46,9 @@ helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 app.kubernetes.io/version: {{ include "opentelemetry-operator.appVersion" . | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.additionalLabels }}
 {{ include "opentelemetry-operator.additionalLabels" . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -115,8 +117,9 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- end }}
 {{- else }}
 {{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) -}}
-{{- $ca := genCA "opentelemetry-operator-operator-ca" 365 }}
-{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames 365 $ca }}
+{{- $tmpperioddays := int .Values.admissionWebhooks.autoGenerateCert.certPeriodDays | default 365 }}
+{{- $ca := genCA "opentelemetry-operator-operator-ca" $tmpperioddays }}
+{{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames $tmpperioddays $ca }}
 {{- $certCrtEnc = b64enc $cert.Cert }}
 {{- $certKeyEnc = b64enc $cert.Key }}
 {{- $caCertEnc = b64enc $ca.Cert }}
@@ -153,4 +156,18 @@ The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
 {{- printf "%s:%s" .Values.manager.image.repository (include "opentelemetry-operator.appVersion" .) }}
+{{- end }}
+
+{{- define "opentelemetry-operator.featureGatesMap" -}}
+{{$first := true}}
+{{- range $key, $value := .Values.manager.featureGatesMap -}}
+    {{- if $first -}}
+        {{ $first = false }}
+    {{- else -}}
+        ,
+    {{- end -}}
+    {{- if $value -}}
+        {{- $key }}
+    {{- end -}}
+{{- end -}}
 {{- end }}

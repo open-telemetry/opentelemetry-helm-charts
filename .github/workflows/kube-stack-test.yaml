@@ -19,13 +19,16 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
+          helm-version: "v3.11.3"
 
       # We'll need this eventually, but for now leave it commented.
-      # - name: Install cert-manager
-      #   run: |
-      #     kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
-      #     kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
-      #     kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
 
-      - name: Run chart-testing (install)
-        run: ct install --charts charts/opentelemetry-kube-stack
+      - name: Run Helm Install
+        run: |
+          helm dep build charts/opentelemetry-kube-stack
+          helm install opentelemetry-kube-stack charts/opentelemetry-kube-stack

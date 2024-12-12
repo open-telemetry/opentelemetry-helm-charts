@@ -108,6 +108,18 @@ $ helm show values open-telemetry/opentelemetry-operator
 
 When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
 
+### Role-based Access Control (RBAC) Configuration
+
+The OpenTelemetry Collector requires specific RBAC permissions to function correctly, especially when using the `k8sattributesprocessor`. Depending on your deployment's scope, you may need to configure Cluster-scoped or Namespace-scoped RBAC permissions.
+
+- **Cluster-scoped RBAC**: Necessary if the collector is to receive telemetry from across multiple namespaces. This setup requires `get`, `watch`, and `list` permissions on `pods`, `namespaces`, and `nodes`, plus `replicasets` if using deployment-related attributes.
+
+- **Namespace-scoped RBAC**: Suitable for collecting telemetry within a specific namespace. This requires setting up a `Role` and `RoleBinding` to grant access to `pods` and `replicasets` within the target namespace. This setup limits the collector's access to resources within the specified namespace only.
+
+**Important**: The `manager.createRbacPermissions` flag in the Helm chart values should be set to `false` if you are manually configuring RBAC permissions for the collector. Manual configuration allows for more granular control over the permissions granted to the OpenTelemetry Collector, ensuring it has exactly the access it needs based on your specific deployment requirements. Conversely, setting `manager.createRbacPermissions` to `true` will allow the operator to automatically configure RBAC for your collectors.
+
+For detailed instructions and examples on configuring RBAC permissions, please refer to the [official documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md).
+
 ## Install OpenTelemetry Collector
 
 _See [OpenTelemetry website](https://opentelemetry.io/docs/collector/) for more details about the Collector_
@@ -130,21 +142,21 @@ the exporter is [debug exporter](https://github.com/open-telemetry/opentelemetry
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: deployment # This configuration is omittable.
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      debug:
+      debug: {}
 
     service:
       pipelines:
@@ -165,19 +177,19 @@ the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: daemonset
   hostNetwork: true
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
       debug:
@@ -206,22 +218,22 @@ is Jaeger receiver and the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: statefulset
   replicas: 3
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      debug:
+      debug: {}
 
     service:
       pipelines:
@@ -244,21 +256,21 @@ _See the [OpenTelemetry Operator github repository](https://github.com/open-tele
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: sidecar-for-my-app
 spec:
   mode: sidecar
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          thrift_compact:
-    processors:
+          thrift_compact: {}
+    processors: {}
 
     exporters:
-      debug:
+      debug: {}
 
     service:
       pipelines:

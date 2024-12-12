@@ -9,10 +9,10 @@ kind: DaemonSet
 metadata:
   name: example-opentelemetry-ebpf-kernel-collector
   labels:
-    helm.sh/chart: opentelemetry-ebpf-0.1.0
+    helm.sh/chart: opentelemetry-ebpf-0.1.4
     app.kubernetes.io/name: opentelemetry-ebpf
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/version: "v0.10.2"
     app.kubernetes.io/managed-by: Helm
 spec:
   selector:
@@ -22,14 +22,14 @@ spec:
   template:
     metadata:
       annotations:
-        charts.flowmill.com/version: 0.1.0
+        charts.flowmill.com/version: 0.1.4
       labels:
         app.kubernetes.io/name: example-opentelemetry-ebpf-kernel-collector
         app.kubernetes.io/instance: example
     spec:
       containers:
         - name: kernel-collector
-          image: "otel/opentelemetry-ebpf-kernel-collector:v0.10.0"
+          image: "otel/opentelemetry-ebpf-kernel-collector:v0.10.2"
           imagePullPolicy: IfNotPresent
           args:
             - --config-file=/etc/network-explorer/config.yaml

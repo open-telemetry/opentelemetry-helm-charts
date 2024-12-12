@@ -7,11 +7,11 @@ metadata:
   name: {{ include "opentelemetry-opamp-bridge.fullname" $merged }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.renderkv" .Values.opAMPBridge.labels | nindent 4 }}
-    {{- with .Values.opAMPBridge.annotations }}
-    annotations:
-      {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
-    {{- end }}
+    {{- include "opentelemetry-kube-stack.renderkv" .Values.opAMPBridge.labels | indent 4 }}
+  {{- with .Values.opAMPBridge.annotations }}
+  annotations:
+    {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
+  {{- end }}
 spec:
   endpoint: {{ required "opamp endpoint required" $.Values.opAMPBridge.endpoint }}
   {{- with $.Values.opAMPBridge.headers }}
@@ -119,7 +119,7 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name={{ $.Values.clusterName }}"
-  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.opAMPBridge.env) | nindent 4 }}
+  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.opAMPBridge.env) | nindent 2 }}
   {{- with $.Values.opAMPBridge.envFrom }}
   envFrom:
   {{- toYaml . | nindent 4 }}

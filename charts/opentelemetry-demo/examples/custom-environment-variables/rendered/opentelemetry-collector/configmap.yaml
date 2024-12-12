@@ -6,12 +6,12 @@ metadata:
   name: example-otelcol
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.90.1
+    helm.sh/chart: opentelemetry-collector-0.110.3
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.99.0"
+    app.kubernetes.io/version: "0.114.0"
     app.kubernetes.io/managed-by: Helm
-    
+    app.kubernetes.io/component: standalone-collector
 data:
   relay: |
     connectors:
@@ -78,7 +78,17 @@ data:
         - action: insert
           from_attribute: k8s.pod.uid
           key: service.instance.id
+      transform:
+        error_mode: ignore
+        trace_statements:
+        - context: span
+          statements:
+          - replace_pattern(name, "\\?.*", "")
+          - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
+      httpcheck/frontendproxy:
+        targets:
+        - endpoint: http://example-frontendproxy:8080
       jaeger:
         protocols:
           grpc:
@@ -105,6 +115,9 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      redis:
+        collection_interval: 10s
+        endpoint: valkey-cart:6379
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
@@ -132,6 +145,8 @@ data:
           - resource
           - batch
           receivers:
+          - httpcheck/frontendproxy
+          - redis
           - otlp
           - spanmetrics
         traces:

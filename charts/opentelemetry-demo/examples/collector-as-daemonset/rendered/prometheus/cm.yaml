@@ -7,9 +7,8 @@ metadata:
     app.kubernetes.io/component: server
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: v2.51.2
-    helm.sh/chart: prometheus-25.20.1
-    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: v3.0.0
+    helm.sh/chart: prometheus-26.0.0
     app.kubernetes.io/part-of: prometheus
   name: example-prometheus-server
   namespace: default
@@ -24,6 +23,9 @@ data:
       evaluation_interval: 30s
       scrape_interval: 5s
       scrape_timeout: 3s
+    storage:
+      tsdb:
+        out_of_order_time_window: 30m
     rule_files:
     - /etc/config/recording_rules.yml
     - /etc/config/alerting_rules.yml

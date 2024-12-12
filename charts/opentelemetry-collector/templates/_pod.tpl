@@ -10,6 +10,9 @@ securityContext:
 hostAliases:
   {{- toYaml . | nindent 2 }}
 {{- end }}
+{{- if $.Values.shareProcessNamespace }}
+shareProcessNamespace: true
+{{- end }}
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     {{- if .Values.command.name }}
@@ -107,6 +110,27 @@ containers:
       httpGet:
         path: {{ .Values.readinessProbe.httpGet.path }}
         port: {{ .Values.readinessProbe.httpGet.port }}
+    {{- if .Values.startupProbe }}
+    startupProbe:
+      {{- if .Values.startupProbe.initialDelaySeconds | empty | not }}
+      initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.periodSeconds | empty | not }}
+      periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.timeoutSeconds | empty | not }}
+      timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.failureThreshold | empty | not }}
+      failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+      {{- end }}
+      {{- if .Values.startupProbe.terminationGracePeriodSeconds | empty | not }}
+      terminationGracePeriodSeconds: {{ .Values.startupProbe.terminationGracePeriodSeconds }}
+      {{- end }}
+      httpGet:
+        path: {{ .Values.startupProbe.httpGet.path }}
+        port: {{ .Values.startupProbe.httpGet.port }}
+    {{- end }}
     {{- with .Values.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
@@ -135,7 +159,7 @@ containers:
         mountPropagation: HostToContainer
       {{- end }}
       {{- if .Values.extraVolumeMounts }}
-      {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
+      {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 6 }}
       {{- end }}
 {{- if .Values.extraContainers }}
   {{- tpl (toYaml .Values.extraContainers) . | nindent 2 }}
@@ -176,7 +200,7 @@ volumes:
       path: /
   {{- end }}
   {{- if .Values.extraVolumes }}
-  {{- toYaml .Values.extraVolumes | nindent 2 }}
+  {{- tpl (toYaml .Values.extraVolumes) . | nindent 2 }}
   {{- end }}
 {{- with .Values.nodeSelector }}
 nodeSelector:

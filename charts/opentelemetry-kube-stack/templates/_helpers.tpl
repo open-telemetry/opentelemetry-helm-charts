@@ -46,11 +46,11 @@ Allow the release namespace to be overridden
 Print a map of key values in a YAML block. This is useful for labels and annotations.
 */}}
 {{- define "opentelemetry-kube-stack.renderkv" -}}
-{{- with . }}
-{{- range $key, $value := . }}
-{{- printf "%s: %s" $key $value }}
-{{- end }}
-{{- end }}
+{{- with . -}}
+{{- range $key, $value := . -}}
+{{- printf "\n%s: %s" $key $value }}
+{{- end -}}
+{{- end -}}
 {{- end }}
 
 {{/*
@@ -58,15 +58,29 @@ Render a deduped list of environment variables and 'extraEnvs'
 */}}
 {{- define "opentelemetry-kube-stack.renderenvs" -}}
 {{- $envMap := dict }}
+{{- $valueFromMap := dict }}
 {{- range $item := .extraEnvs }}
+{{- if $item.value }}
 {{- $_ := set $envMap $item.name $item.value }}
+{{- else }}
+{{- $_ := set $valueFromMap $item.name $item.valueFrom }}
+{{- end }}
 {{- end }}
 {{- range $item := .env }}
+{{- if $item.value }}
 {{- $_ := set $envMap $item.name $item.value }}
+{{- else }}
+{{- $_ := set $valueFromMap $item.name $item.valueFrom }}
+{{- end }}
 {{- end }}
 {{- range $key, $value := $envMap }}
 - name: {{ $key }}
   value: {{ $value }}
+{{- end }}
+{{- range $key, $value := $valueFromMap }}
+- name: {{ $key }}
+  valueFrom:
+    {{- $value | toYaml | nindent 4 }}
 {{- end }}
 {{- end }}
 
@@ -107,13 +121,7 @@ helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Expand the name of the chart.
-*/}}
-{{- define "opentelemetry-kube-stack.collectorName" -}}
-{{- default .Chart.Name .collector.name | trunc 63 | trimSuffix "-" }}
+release: {{ .Release.Name | quote }}
 {{- end }}
 
 {{/*
@@ -124,12 +132,14 @@ If release name contains chart name it will be used as a full name.
 {{- define "opentelemetry-kube-stack.collectorFullname" -}}
 {{- if .fullnameOverride }}
 {{- .fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else if .collector.fullnameOverride }}
+{{- .collector.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name (coalesce .collector.name "") }}
-{{- if contains $name .Release.Name }}
+{{- $suffix := default .Chart.Name (coalesce .collector.suffix "") }}
+{{- if contains $suffix .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Release.Name $suffix | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -149,24 +159,130 @@ Create the name of the clusterRoleBinding to use
 {{- end }}
 
 {{/*
-Constructs the final config for the given collector
-
-This allows a user to supply a scrape_configs_file. This file is templated and loaded as a yaml array.
-If a user has already supplied a prometheus receiver config, the file's config is appended. Finally,
-the config is written as YAML.
+Optionally include the RBAC for the k8sCluster receiver
 */}}
-{{- define "opentelemetry-kube-stack.config" -}}
-{{- if .collector.scrape_configs_file }}
-{{- $loaded_file := (.Files.Get .collector.scrape_configs_file) }}
-{{- $loaded_config := (fromYamlArray (tpl $loaded_file .)) }}
-{{- $prom_override := (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $loaded_config)))) }}
-{{- if (dig "receivers" "prometheus" "config" "scrape_configs" false .collector.config) }}
-{{- $merged_prom_scrape_configs := (concat .collector.config.receivers.prometheus.config.scrape_configs $loaded_config) }}
-{{- $prom_override = (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" $merged_prom_scrape_configs)))) }}
+{{- define "opentelemetry-kube-stack.k8scluster.rules" -}}
+{{- if $.Values.clusterRole.rules }}
+{{ toYaml $.Values.clusterRole.rules }}
 {{- end }}
-{{- $new_config := (mergeOverwrite .collector.config $prom_override)}}
-{{- toYaml $new_config | nindent 4 }}
-{{- else }}
-{{- toYaml .collector.config | nindent 4 }}
+{{- $clusterMetricsEnabled := false }}
+{{- $eventsEnabled := false }}
+{{ range $_, $collector := $.Values.collectors -}}
+{{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
+{{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
+{{- $clusterMetricsEnabled = true }}
+{{- end }}
+{{- $eventsEnabled = (any $eventsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
+{{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
+{{- $eventsEnabled = true }}
 {{- end }}
 {{- end }}
+{{- if $clusterMetricsEnabled }}
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  - namespaces/status
+  - nodes
+  - nodes/spec
+  - pods
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - resourcequotas
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+    - autoscaling
+  resources:
+    - horizontalpodautoscalers
+  verbs:
+    - get
+    - list
+    - watch
+{{- end }}
+{{- if $eventsEnabled }}
+- apiGroups: ["events.k8s.io"]
+  resources: ["events"]
+  verbs: ["watch", "list"]
+{{- end }}
+{{- end }}
+
+{{/*
+Helpers for prometheus servicemonitors
+*/}}
+{{/* Prometheus specific stuff. */}}
+{{/* Allow KubeVersion to be overridden. */}}
+{{- define "opentelemetry-kube-stack.kubeVersion" -}}
+  {{- default .Capabilities.KubeVersion.Version .Values.kubeVersionOverride -}}
+{{- end -}}
+
+{{/* Get value based on current Kubernetes version */}}
+{{- define "opentelemetry-kube-stack.kubeVersionDefaultValue" -}}
+  {{- $values := index . 0 -}}
+  {{- $kubeVersion := index . 1 -}}
+  {{- $old := index . 2 -}}
+  {{- $new := index . 3 -}}
+  {{- $default := index . 4 -}}
+  {{- if kindIs "invalid" $default -}}
+    {{- if semverCompare $kubeVersion (include "opentelemetry-kube-stack.kubeVersion" $values) -}}
+      {{- print $new -}}
+    {{- else -}}
+      {{- print $old -}}
+    {{- end -}}
+  {{- else -}}
+    {{- print $default }}
+  {{- end -}}
+{{- end -}}
+
+{{/* Get value for kube-controller-manager depending on insecure scraping availability */}}
+{{- define "opentelemetry-kube-stack.kubeControllerManager.insecureScrape" -}}
+  {{- $values := index . 0 -}}
+  {{- $insecure := index . 1 -}}
+  {{- $secure := index . 2 -}}
+  {{- $userValue := index . 3 -}}
+  {{- include "opentelemetry-kube-stack.kubeVersionDefaultValue" (list $values ">= 1.22-0" $insecure $secure $userValue) -}}
+{{- end -}}
+
+{{/* Get value for kube-scheduler depending on insecure scraping availability */}}
+{{- define "opentelemetry-kube-stack.kubeScheduler.insecureScrape" -}}
+  {{- $values := index . 0 -}}
+  {{- $insecure := index . 1 -}}
+  {{- $secure := index . 2 -}}
+  {{- $userValue := index . 3 -}}
+  {{- include "opentelemetry-kube-stack.kubeVersionDefaultValue" (list $values ">= 1.23-0" $insecure $secure $userValue) -}}
+{{- end -}}

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
   env:
@@ -11,7 +12,7 @@ default:
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
+      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version={{ .Chart.AppVersion }}'
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -25,6 +26,8 @@ default:
     pullSecrets: []
   # Default # of replicas for all components
   replicas: 1
+  # default revisionHistoryLimit for all components (number of old ReplicaSets to retain)
+  revisionHistoryLimit: 10
   # Default schedulingRules for all components
   schedulingRules:
     nodeSelector: {}
@@ -143,6 +146,8 @@ components:
   #       command: [list of commands for the init container to run]
   # # Replicas for the component
   #  replicas: 1
+  # # Number of old ReplicaSets to retain
+  #  revisionHistoryLimit: 10
   # # Optional pod security context for setting user ID (UID), group ID (GID) and other security policies
   # # This will be applied at pod level, can be applied globally for all pods: .Values.default.podSecurityContext
   # # Or it can be applied to a specific component: .Values.components.<component-name>.podSecurityContext
@@ -150,7 +155,6 @@ components:
   #      runAsGroup: 65534
   #      runAsNonRoot: true
   #      runAsUser: 65534
-
 
   accountingService:
     enabled: true
@@ -160,10 +164,10 @@ components:
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+        value: http://$(OTEL_COLLECTOR_NAME):4318
     resources:
       limits:
-        memory: 20Mi
+        memory: 120Mi
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
@@ -201,21 +205,21 @@ components:
         value: "8080"
       - name: ASPNETCORE_URLS
         value: http://*:$(CART_SERVICE_PORT)
+      - name: VALKEY_ADDR
+        value: '{{ include "otel-demo.name" . }}-valkey:6379'
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
       - name: FLAGD_PORT
         value: "8013"
-      - name: REDIS_ADDR
-        value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 160Mi
     initContainers:
-      - name: wait-for-redis
+      - name: wait-for-valkey
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-redis 6379; do echo waiting for redis; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-valkey 6379; do echo waiting for valkey; sleep 2; done;']
 
   checkoutService:
     enabled: true
@@ -226,10 +230,6 @@ components:
     env:
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
-      - name: FLAGD_HOST
-        value: '{{ include "otel-demo.name" . }}-flagd'
-      - name: FLAGD_PORT
-        value: "8013"
       - name: CART_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-cartservice:8080'
       - name: CURRENCY_SERVICE_ADDR
@@ -244,6 +244,10 @@ components:
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
       - name: KAFKA_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-kafka:9092'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -293,12 +297,12 @@ components:
     useDefault:
       env: true
     env:
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
       - name: FLAGD_PORT
         value: "8013"
-      - name: KAFKA_SERVICE_ADDR
-        value: '{{ include "otel-demo.name" . }}-kafka:9092'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
     resources:
@@ -334,6 +338,10 @@ components:
         value: '{{ include "otel-demo.name" . }}-recommendationservice:8080'
       - name: SHIPPING_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -344,7 +352,7 @@ components:
         value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
     resources:
       limits:
-        memory: 200Mi
+        memory: 250Mi
     securityContext:
       runAsUser: 1001  # nextjs
       runAsGroup: 1001
@@ -359,28 +367,40 @@ components:
     env:
       - name: ENVOY_PORT
         value: "8080"
-      - name: FRONTEND_PORT
-        value: "8080"
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
+      - name: FLAGD_UI_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_UI_PORT
+        value: "4000"
       - name: FRONTEND_HOST
         value: '{{ include "otel-demo.name" . }}-frontend'
-      - name: LOCUST_WEB_PORT
-        value: "8089"
-      - name: LOCUST_WEB_HOST
-        value: '{{ include "otel-demo.name" . }}-loadgenerator'
-      - name: GRAFANA_SERVICE_PORT
-        value: "80"
+      - name: FRONTEND_PORT
+        value: "8080"
       - name: GRAFANA_SERVICE_HOST
         value: '{{ include "otel-demo.name" . }}-grafana'
-      - name: JAEGER_SERVICE_PORT
-        value: "16686"
+      - name: GRAFANA_SERVICE_PORT
+        value: "80"
+      - name: IMAGE_PROVIDER_HOST
+        value: '{{ include "otel-demo.name" . }}-imageprovider'
+      - name: IMAGE_PROVIDER_PORT
+        value: "8081"
       - name: JAEGER_SERVICE_HOST
         value: '{{ include "otel-demo.name" . }}-jaeger-query'
+      - name: JAEGER_SERVICE_PORT
+        value: "16686"
+      - name: LOCUST_WEB_HOST
+        value: '{{ include "otel-demo.name" . }}-loadgenerator'
+      - name: LOCUST_WEB_PORT
+        value: "8089"
+      - name: OTEL_COLLECTOR_HOST
+        value: $(OTEL_COLLECTOR_NAME)
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
         value: "4318"
-      - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
     resources:
       limits:
         memory: 50Mi
@@ -388,6 +408,23 @@ components:
       runAsUser: 101  # envoy
       runAsGroup: 101
       runAsNonRoot: true
+
+  imageprovider:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8081
+    env:
+      - name: IMAGE_PROVIDER_PORT
+        value: "8081"
+      - name: OTEL_COLLECTOR_PORT_GRPC
+        value: "4317"
+      - name: OTEL_COLLECTOR_HOST
+        value: $(OTEL_COLLECTOR_NAME)
+    resources:
+      limits:
+        memory: 50Mi
 
   loadgenerator:
     enabled: true
@@ -412,15 +449,15 @@ components:
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: FLAGD_HOST
         value: '{{ include "otel-demo.name" . }}-flagd'
       - name: FLAGD_PORT
         value: "8013"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 1Gi
+        memory: 1500Mi
 
   paymentService:
     enabled: true
@@ -496,14 +533,14 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
-      - name: FLAGD_HOST
-        value: '{{ include "otel-demo.name" . }}-flagd'
-      - name: FLAGD_PORT
-        value: "8013"
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
+      - name: FLAGD_HOST
+        value: '{{ include "otel-demo.name" . }}-flagd'
+      - name: FLAGD_PORT
+        value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -531,24 +568,59 @@ components:
     enabled: true
     imageOverride:
       repository: "ghcr.io/open-feature/flagd"
-      tag: "v0.10.1"
+      tag: "v0.11.1"
     useDefault:
       env: true
     replicas: 1
     service:
       port: 8013
+    env:
+      - name: FLAGD_METRICS_EXPORTER
+        value: otel
+      - name: FLAGD_OTEL_COLLECTOR_URI
+        value: $(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 50Mi
+        memory: 75Mi
     command:
       - "/flagd-build"
       - "start"
       - "--uri"
       - "file:./etc/flagd/demo.flagd.json"
-    mountedConfigMaps:
-      - name: config
+    mountedEmptyDirs:
+      - name: config-rw
         mountPath: /etc/flagd
-        existingConfigMap: '{{ include "otel-demo.name" . }}-flagd-config'
+    # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
+    sidecarContainers:
+      - name: flagdui
+        useDefault:
+          env: true
+        service:
+          port: 4000
+        env:
+          - name: FLAGD_METRICS_EXPORTER
+            value: otel
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4318
+        resources:
+          limits:
+            memory: 75Mi
+        volumeMounts:
+          - name: config-rw
+            mountPath: /app/data
+    initContainers:
+      - name: init-config
+        image: busybox
+        command: ['sh', '-c', 'cp /config-ro/demo.flagd.json /config-rw/demo.flagd.json && cat /config-rw/demo.flagd.json']
+        volumeMounts:
+          - mountPath: /config-ro
+            name: config-ro
+          - mountPath: /config-rw
+            name: config-rw
+    additionalVolumes:
+      - name: config-ro
+        configMap:
+          name: '{{ include "otel-demo.name" . }}-flagd-config'
 
   kafka:
     enabled: true
@@ -575,22 +647,22 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-  redis:
+  valkey:
     enabled: true
     useDefault:
       env: true
     imageOverride:
-      repository: "redis"
+      repository: "valkey/valkey"
       tag: "7.2-alpine"
     replicas: 1
     ports:
-      - name: redis
+      - name: valkey
         value: 6379
     resources:
       limits:
         memory: 20Mi
     securityContext:
-      runAsUser: 999  # redis
+      runAsUser: 999  # valkey
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -631,6 +703,12 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
+      httpcheck/frontendproxy:
+        targets:
+          - endpoint: 'http://{{ include "otel-demo.name" . }}-frontendproxy:8080'
+      redis:
+        endpoint: "valkey-cart:6379"
+        collection_interval: 10s
 
     exporters:
       ## Create an exporter to Jaeger using the standard `otlp` export format
@@ -651,6 +729,17 @@ opentelemetry-collector:
             insecure: true
 
     processors:
+      # This processor is used to help limit high cardinality on next.js span names
+      # When this PR is merged (and released) we can remove this transform processor
+      # https://github.com/vercel/next.js/pull/64852
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+              - replace_pattern(name, "\\?.*", "")
+              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
       resource:
         attributes:
         - key: service.instance.id
@@ -663,10 +752,10 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, resource, batch]
+          processors: [memory_limiter, resource, transform, batch]
           exporters: [otlp, debug, spanmetrics]
         metrics:
-          receivers: [otlp, spanmetrics]
+          receivers: [httpcheck/frontendproxy, redis, otlp, spanmetrics]
           processors: [memory_limiter, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
@@ -688,6 +777,10 @@ jaeger:
     extraEnv:
       - name: METRICS_STORAGE_TYPE
         value: prometheus
+      - name: COLLECTOR_OTLP_GRPC_HOST_PORT
+        value: 0.0.0.0:4317
+      - name: COLLECTOR_OTLP_HTTP_HOST_PORT
+        value: 0.0.0.0:4318
     resources:
       limits:
         memory: 400Mi
@@ -722,6 +815,8 @@ prometheus:
       scrape_interval: 5s
       scrape_timeout: 3s
       evaluation_interval: 30s
+    tsdb:
+      out_of_order_time_window: 30m
     persistentVolume:
       enabled: false
     service:
@@ -746,6 +841,8 @@ prometheus:
 
 grafana:
   enabled: true
+  testFramework:
+    enabled: false
   grafana.ini:
     auth:
       disable_login_form: true
@@ -798,7 +895,7 @@ grafana:
             logMessageField: body
             pplEnabled: true
             timeField: observedTimestamp
-            version: 2.13.0
+            version: 2.18.0
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1

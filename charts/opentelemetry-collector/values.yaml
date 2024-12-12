@@ -63,7 +63,7 @@ presets:
   kubeletMetrics:
     enabled: false
   # Configures the collector to collect kubernetes events.
-  # Adds the k8sobject receiver to the logs pipeline
+  # Adds the k8sobjects receiver to the logs pipeline
   # and collects kubernetes events by default.
   # Best used with mode = deployment or statefulset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
@@ -82,7 +82,11 @@ configMap:
   create: true
   # Specifies an existing ConfigMap to be mounted to the pod
   # The ConfigMap MUST include the collector configuration via a key named 'relay' or the collector will not start.
+  # This also supports template content, which will eventually be converted to yaml.
   existingName: ""
+  # Specifies the relative path to custom ConfigMap template file. This option SHOULD be used when bundling a custom
+  # ConfigMap template, as it enables pod restart via a template checksum annotation.
+  # existingPath: ""
 
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
@@ -96,11 +100,16 @@ config:
     # The health_check extension can be modified, but should never be removed.
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
-    memory_ballast: {}
   processors:
     batch: {}
-    # If set to null, will be overridden with values based on k8s resource limits
-    memory_limiter: null
+    # Default memory limiter configuration for the collector based on k8s resource limits.
+    memory_limiter:
+      # check_interval is the time between measurements of memory usage.
+      check_interval: 5s
+      # By default limit_mib is set to 80% of ".Values.resources.limits.memory"
+      limit_percentage: 80
+      # By default spike_limit_mib is set to 25% of ".Values.resources.limits.memory"
+      spike_limit_percentage: 25
   receivers:
     jaeger:
       protocols:
@@ -132,7 +141,6 @@ config:
         address: ${env:MY_POD_IP}:8888
     extensions:
       - health_check
-      - memory_ballast
     pipelines:
       logs:
         exporters:
@@ -161,6 +169,23 @@ config:
           - otlp
           - jaeger
           - zipkin
+
+# Helm currently has an issue (https://github.com/helm/helm/pull/12879) when using null to remove
+# default configuration from a subchart. The result is that you cannot remove default configuration
+# from `config`, such as a specific recevier or a specific pipeline, when the chart is used as a
+# subchart.
+#
+# Until the helm bug is fixed, this field is provided as an alternative when using this chart as a subchart.
+# It is not recommended to use this field when installing the chart directly.
+#
+# When not empty, `alternateConfig` will be used to set the collector's configuration. It has NO default
+# values and IS NOT MERGED with config. Any configuration provided via `config` will be ignored when
+# `alternateConfig` is set. You MUST provide your own collector configuration.
+#
+# Reminder that the healthcheck extension (or something else that provides the same functionality) is required.
+#
+# Components configured by presets will be injected in the same way they are for `config`.
+alternateConfig: {}
 
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
@@ -233,7 +258,10 @@ priorityClassName: ""
 
 extraEnvs: []
 extraEnvsFrom: []
+# This also supports template content, which will eventually be converted to yaml.
 extraVolumes: []
+
+# This also supports template content, which will eventually be converted to yaml.
 extraVolumeMounts: []
 
 # Configuration for ports
@@ -285,7 +313,13 @@ ports:
     servicePort: 8888
     protocol: TCP
 
-# Resource limits & requests. Update according to your own use case as these values might be too low for a typical deployment.
+# When enabled, the chart will set the GOMEMLIMIT env var to 80% of the configured resources.limits.memory.
+# If no resources.limits.memory are defined then enabling does nothing.
+# It is HIGHLY recommend to enable this setting and set a value for resources.limits.memory.
+useGOMEMLIMIT: true
+
+# Resource limits & requests.
+# It is HIGHLY recommended to set resource limits.
 resources: {}
 # resources:
 #   limits:
@@ -409,6 +443,24 @@ readinessProbe:
     port: 13133
     path: /
 
+# startup probe configuration
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+##
+startupProbe: {}
+  # Number of seconds after the container has started before startup probes are initiated.
+  # initialDelaySeconds: 1
+  # How often in seconds to perform the probe.
+  # periodSeconds: 10
+  # Number of seconds after which the probe times out.
+  # timeoutSeconds: 1
+  # Minimum consecutive failures for the probe to be considered failed after having succeeded.
+  # failureThreshold: 1
+  # Duration in seconds the pod needs to terminate gracefully upon probe failure.
+  # terminationGracePeriodSeconds: 10
+  # httpGet:
+  #   port: 13133
+  #   path: /
+
 service:
   # Enable the creation of a Service.
   # By default, it's enabled on mode != daemonset.
@@ -488,6 +540,10 @@ serviceMonitor:
   # additional labels for the ServiceMonitor
   extraLabels: {}
   #  release: kube-prometheus-stack
+  # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
+  # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+  relabelings: []
+  metricRelabelings: []
 
 # PodDisruptionBudget is used only if deployment enabled
 podDisruptionBudget:
@@ -583,10 +639,5 @@ networkPolicy:
   #      - port: 1234
   #        protocol: TCP
 
-# When enabled, the chart will set the GOMEMLIMIT env var to 80% of the configured
-# resources.limits.memory and remove the memory ballast extension.
-# If no resources.limits.memory are defined enabling does nothing.
-# In a future release this setting will be enabled by default.
-# See https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891
-# for more details.
-useGOMEMLIMIT: true
+# Allow containers to share processes across pod namespace
+shareProcessNamespace: false

@@ -1,10 +1,51 @@
 # OpenTelemetry Kube Stack Helm Chart
 
-> [!CAUTION]
-> This chart is under active development and is not meant to be installed yet.
-> Right now, nothing is included with this deployment.
+| Status        |           |
+| ------------- |-----------|
+| Stability     | [alpha]   |
+| Issues        | [![Open issues](https://img.shields.io/github/issues-search/open-telemetry/opentelemetry-helm-charts?query=is%3Aissue+is%3Aopen+label%3Achart%3Akube-stack&label=open&color=orange&logo=opentelemetry)](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aissue+is%3Aopen+label%3Achart%3Akube-stack) [![Closed issues](https://img.shields.io/github/issues-search/open-telemetry/opentelemetry-helm-charts?query=is%3Aissue%20is%3Aclosed%20label%3Achart%3Akube-stack%20&label=closed&color=blue&logo=opentelemetry)](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aclosed+is%3Aissue+label%3Achart%3Akube-stack) |
+| [Code Owners](https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/CONTRIBUTING.md)    | [@jaronoff97](https://www.github.com/jaronoff97), [@TylerHelmuth](https://github.com/TylerHelmuth), [@dmitryax](https://github.com/dmitryax) |
+
 
 This Helm chart serves as a quickstart for OpenTelemetry in a Kubernetes environment. The chart installs an [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) and a suite of collectors that help you get started with OpenTelemetry metrics, traces, and logs.
+
+## Features
+
+This chart installs the OpenTelemetry Operator and two collector pools with the following features:
+* Daemonset collector
+  * Kubernetes infrastructure metrics
+  * Applications logs
+  * OTLP trace receiver
+  * Kubernetes resource enrichment
+* Standalone collector
+  * Kubernetes events
+  * Cluster metrics
+
+## Usage
+
+For example usage of this chart, please look in the examples/ folder where you can see how you can set a custom OTLP exporter for your desired destination. The example configuration also shows how to enable Instrumentation and OpAMP Bridge resources.
+
+### Kube-Prometheus-Stack compatability
+This chart provides functionality to port an existing scrape configuration from the [kube-prometheus-stack chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) to this chart. This is accomplished by embedding the [kube-state-metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) and [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter) charts. Each of the versions installed in this chart is pinned the latest minor version in the published repositories.
+
+> [!NOTE]
+> More work is needed for full compatibility. Specifically, the exporter configuration provided for various kubernetes infrastructure components.
+
+> [!NOTE]
+> This chart aims to provide compatibility for scrape targets from the kube-prometheus-stack chart. This chart is not responsible for applying Prometheus Rules, Alertmanager, or a Prometheus instance.
+
+### Image versioning
+
+The appVersion of the chart is aligned to the latest image version of the operator. Images are upgraded within the chart manually by setting the image tag to the latest release of each image used. This will be the latest patch release for the chart's appVersion. example:
+```
+appVersion: 0.103.0
+collector.image.tag: 0.103.1
+bridge.image.tag: 0.103.0
+```
+
+### scrape_configs_file Details
+
+By default, the daemonset collector will load in the daemon_scrape_configs.yaml file which collects prometheus metrics from applications on the same node that have the prometheus.io/scrape=true annotation, kubernetes node metrics, and cadvisor metrics. Users can disable this by settings collectors.daemon.scrape_configs_file: "" OR they can provide their own promethues scrape config file for the daemonset by supplying collectors.daemon.scrape_configs_file: "<your-file>.yaml"
 
 ## Prerequisites
 

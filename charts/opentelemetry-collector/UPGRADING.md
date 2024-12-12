@@ -4,17 +4,16 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## Feature Flags
+## 0.110.0 to 0.110.1 or 0.110.2
 
-### useGOMEMLIMIT
+We broke the selector labels in `0.110.0`, which causes `helm upgrades` to fail. Do not attempt to upgrade from `0.110.0` to either `0.110.1` or `0.110.2`. Go straight to `0.110.3` instead.
 
-A new flag, `useGOMEMLIMIT` has been added that allows specifying whether or not the chart should use the `GOMEMLIMIT` environment variable or the Memory Ballast Extension.
-When enabled, the chart will remove the Memory Ballast Extension from the collector's configuration AND will setup a `GOMEMLIMIT` environment variable that is set to 80%
-of the configured `resources.limits.memory`.  If no `resources.limits.memory` are set when `useGOMEMLIMIT` is enabled then a `GOMEMLIMIT` environment variable WILL NOT be
-created but the Memory Ballast Extension will still be removed.
+## 0.97.2 to 0.98.0
 
-Depending on the progress made in [Issue 891](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891),
-the use of `GOMEMLIMIT` may completely replace the Memory Ballast Extension in the future.
+> [!WARNING]
+> Critical content demanding immediate user attention due to potential risks.
+
+The deprecated memory ballast extension has been removed from the default config. If you depend on this component you must manually configure `config.extensions` and `config.service.extensions` to include the memory ballast extension. Setting `useGOMEMLIMIT` to `false` will no longer keep the memory ballast extension in the rendered collector config.
 
 ## 0.88.0 to 0.89.0
 

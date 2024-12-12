@@ -135,8 +135,16 @@
         "existingName": {
           "description": "Specifies an existing configMap to be mounted to the pod",
           "type": "string"
-        }        
+        },
+        "existingPath": {
+          "description": "Relative path to the template file used to generate a custom configMap. Needed for pod restart on custom config change.",
+          "type": "string"
+        }
       }
+    },
+    "alternateConfig": {
+      "description": "When not empty, will be used instead of config. Presets will be merged in the same way they are for config.",
+      "type": "object"
     },
     "config": {
       "description": "Configuration that applies to both standalone and agent collector. Overwritable by standalone and agent specific configs.",
@@ -549,6 +557,39 @@
         }
       }
     },
+    "startupProbe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "initialDelaySeconds": {
+          "type": "integer"
+        },
+        "periodSeconds": {
+          "type": "integer"
+        },
+        "timeoutSeconds": {
+          "type": "integer"
+        },
+        "failureThreshold": {
+          "type": "integer"
+        },
+        "terminationGracePeriodSeconds": {
+          "type": "integer"
+        },
+        "httpGet": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "port": {
+              "type": "integer"
+            },
+            "path": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "podAnnotations": {
       "type": "object"
     },
@@ -792,6 +833,21 @@
         },
         "extraLabels": {
           "type": "object"
+        },
+        "relabelings": {
+          "type": "array",
+          "description": "The relabelings Schema",
+          "default": [],
+          "items": {}
+        },
+        "metricRelabelings": {
+            "type": "array",
+            "default": [],
+            "title": "The metricRelabelings Schema",
+            "items": {},
+            "examples": [
+                []
+            ]
         }
       },
       "required": ["enabled"]
@@ -923,6 +979,9 @@
         }
     },
     "useGOMEMLIMIT": {
+      "type": "boolean"
+    },
+    "shareProcessNamespace": {
       "type": "boolean"
     }
   },
