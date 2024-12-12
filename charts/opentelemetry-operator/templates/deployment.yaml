@@ -84,13 +84,13 @@ spec:
             {{-  end  }}
           command:
             - /manager
-          {{- if or .Values.manager.env .Values.manager.extraEnv .Values.manager.createRbacPermissions }}
+          {{- if or .Values.manager.env .Values.manager.extraEnvs .Values.manager.createRbacPermissions }}
           env:
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- with .Values.manager.extraEnv }}
+            {{- with .Values.manager.extraEnvs }}
               {{- . | toYaml | nindent 12 }}
             {{- end }}
             {{- if .Values.manager.createRbacPermissions }}
