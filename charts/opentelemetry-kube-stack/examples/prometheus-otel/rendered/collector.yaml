@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.3.7
+    helm.sh/chart: opentelemetry-kube-stack-0.3.8
     app.kubernetes.io/version: "0.107.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"    
@@ -56,7 +56,7 @@ spec:
             relabel_configs:
             - action: replace
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - job
@@ -66,7 +66,7 @@ spec:
               target_label: job
             - action: replace
               regex: (.*)
-              replacement: ${1}
+              replacement: $$1
               separator: ;
               source_labels:
               - __meta_kubernetes_node_name
@@ -78,7 +78,7 @@ spec:
               target_label: endpoint
             - action: replace
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __metrics_path__
@@ -86,14 +86,14 @@ spec:
             - action: hashmod
               modulus: 1
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __address__
               target_label: __tmp_hash
             - action: keep
               regex: $(SHARD)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __tmp_hash
@@ -117,37 +117,37 @@ spec:
             metric_relabel_configs:
             - action: drop
               regex: container_cpu_(cfs_throttled_seconds_total|load_average_10s|system_seconds_total|user_seconds_total)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __name__
             - action: drop
               regex: container_fs_(io_current|io_time_seconds_total|io_time_weighted_seconds_total|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __name__
             - action: drop
               regex: container_memory_(mapped_file|swap)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __name__
             - action: drop
               regex: container_(file_descriptors|tasks_state|threads_max)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __name__
             - action: drop
               regex: container_spec.*
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __name__
             - action: drop
               regex: .+;
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - id
@@ -156,7 +156,7 @@ spec:
             relabel_configs:
             - action: replace
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - job
@@ -166,7 +166,7 @@ spec:
               target_label: job
             - action: replace
               regex: (.*)
-              replacement: ${1}
+              replacement: $$1
               separator: ;
               source_labels:
               - __meta_kubernetes_node_name
@@ -178,7 +178,7 @@ spec:
               target_label: endpoint
             - action: replace
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __metrics_path__
@@ -186,14 +186,14 @@ spec:
             - action: hashmod
               modulus: 1
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __address__
               target_label: __tmp_hash
             - action: keep
               regex: $(SHARD)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __tmp_hash
@@ -218,7 +218,7 @@ spec:
             relabel_configs:
             - action: replace
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - job
@@ -228,7 +228,7 @@ spec:
               target_label: job
             - action: replace
               regex: (.*)
-              replacement: ${1}
+              replacement: $$1
               separator: ;
               source_labels:
               - __meta_kubernetes_node_name
@@ -240,7 +240,7 @@ spec:
               target_label: endpoint
             - action: replace
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __metrics_path__
@@ -248,14 +248,14 @@ spec:
             - action: hashmod
               modulus: 1
               regex: (.*)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __address__
               target_label: __tmp_hash
             - action: keep
               regex: $(SHARD)
-              replacement: $1
+              replacement: $$1
               separator: ;
               source_labels:
               - __tmp_hash
