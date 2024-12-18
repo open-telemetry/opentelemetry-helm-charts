@@ -84,13 +84,14 @@ spec:
             {{-  end  }}
           command:
             - /manager
-          {{- if or .Values.manager.env .Values.manager.createRbacPermissions }}
+          {{- if or .Values.manager.env .Values.manager.extraEnvs .Values.manager.createRbacPermissions }}
           env:
-            {{- if .Values.manager.env }}
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
-              value: {{ $value | quote -}}
+              value: {{ $value | quote }}
             {{- end }}
+            {{- with .Values.manager.extraEnvs }}
+              {{- . | toYaml | nindent 12 }}
             {{- end }}
             {{- if .Values.manager.createRbacPermissions }}
             - name: SERVICE_ACCOUNT_NAME

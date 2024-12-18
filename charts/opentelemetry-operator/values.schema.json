@@ -132,6 +132,7 @@
                 "featureGates",
                 "ports",
                 "env",
+                "extraEnvs",
                 "serviceAccount",
                 "serviceMonitor",
                 "deploymentAnnotations",
@@ -718,6 +719,20 @@
                     },
                     "examples": [{
                         "ENABLE_WEBHOOKS": "true"
+                    }]
+                },
+                "extraEnvs": {
+                    "type": "array",
+                    "default": [],
+                    "title": "Extra definitions of environment variables",
+                    "examples": [{
+                      "name": "GOMEMLIMIT",
+                      "valueFrom": {
+                        "resourceFieldRef": {
+                          "containerName": "manager",
+                          "resource": "limits.memory"
+                        }
+                      }
                     }]
                 },
                 "serviceAccount": {
