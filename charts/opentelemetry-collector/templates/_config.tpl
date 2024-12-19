@@ -785,6 +785,9 @@ extensions:
 - name: http.response.status_code
 - name: rpc.grpc.status_code
 {{- end }}
+{{- if .Values.presets.spanMetrics.serviceVersion.enabled }}
+- name: service.version
+{{- end }}
 {{- end}}
 
 {{- define "opentelemetry-collector.spanMetricsConfig" -}}
@@ -826,6 +829,9 @@ connectors:
       - name: db.operation.name
       - name: db.collection_name
       - name: db.system
+      {{- if .Values.presets.spanMetrics.dbMetrics.serviceVersion.enabled }}
+      - name: service.version
+      {{- end }}
 {{- if .Values.presets.spanMetrics.metricsExpiration }}
     metrics_expiration: "{{ .Values.presets.spanMetrics.metricsExpiration }}"
 {{- else }}
