@@ -45,6 +45,14 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+postgresql:
+  enabled: true
+  host: "postgres-db"            # PostgreSQL service hostname
+  port: "5432"                 # Default PostgreSQL port
+  username: "postgres"    # PostgreSQL username
+  password: "postgres"   # PostgreSQL password
+  database: "product_catalog" # PostgreSQL database name
+
 components:
   ## Demo Components are named objects (services) with several properties
   # demoService:
@@ -497,6 +505,16 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: DB_HOST
+        value: "postgres-db"                # PostgreSQL service hostname
+      - name: DB_PORT
+        value: "5432"                    # PostgreSQL default port
+      - name: DB_USER
+        value: "postgres"            # PostgreSQL username
+      - name: DB_PASSWORD
+        value: "postgres"           # PostgreSQL password
+      - name: DB_NAME
+        value: "product_catalog"         # PostgreSQL database name
     resources:
       limits:
         memory: 20Mi

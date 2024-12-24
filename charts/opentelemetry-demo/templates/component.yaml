@@ -8,11 +8,20 @@
     {{- $config := set . "observability" $.Values.observability }}
     {{- $config := set . "defaultValues" $.Values.default }}
 
+    {{- if and $config.enabled (eq $name "productCatalogService") -}}
+        {{- $config := set $config "env" (list
+          (dict "name" "DB_HOST" "value" $.Values.postgresql.host)
+          (dict "name" "DB_PORT" "value" $.Values.postgresql.port)
+          (dict "name" "DB_USER" "value" $.Values.postgresql.username)
+          (dict "name" "DB_PASSWORD" "value" $.Values.postgresql.password)
+          (dict "name" "DB_NAME" "value" $.Values.postgresql.database)
+        ) -}}
+    {{- end }}
+
     {{- if $config.enabled -}}
         {{- include "otel-demo.deployment" $config -}}
         {{- include "otel-demo.service" $config -}}
         {{- include "otel-demo.ingress" $config -}}
         {{- include "otel-demo.configmap" $config -}}
     {{ end }}
-
 {{- end }}
