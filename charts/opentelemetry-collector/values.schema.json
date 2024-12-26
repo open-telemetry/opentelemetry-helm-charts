@@ -878,6 +878,46 @@
         },
         "targetCPUUtilizationPercentage": {
           "type": "integer"
+        },
+        "targetMemoryUtilizationPercentage": {
+          "type": "integer"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["hpa", "keda"],
+          "default": "hpa"
+        },
+        "keda": {
+          "type": "object",
+          "properties": {
+            "pollingInterval": {
+                "type": "integer",
+                "default": "30"
+            },
+           "cooldownPeriod": {
+              "type": "integer",
+              "default": "300"
+           },
+             "initialCooldownPeriod": {
+                "type": "integer",
+                "default": "0"
+             },
+             "idleReplicaCount": {
+                "type": "integer",
+                "default": "0"
+             },
+            "advanced": {
+              "type": "object",
+              "default": {}
+            },
+            "fallback": {
+              "type": "object",
+              "default": {}
+            },
+            "extraTriggers": {
+               "type": "object"
+            }
+          }
         }
       },
       "required": ["enabled"]

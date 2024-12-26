@@ -1,0 +1,43 @@
+{{- if and .Values.autoscaling.enabled (eq .Values.autoscaling.mode "keda") (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+spec:
+  maxReplicaCount: {{ .Values.autoscaling.maxReplicas }}
+  minReplicaCount: {{ .Values.autoscaling.minReplicas }}
+  pollingInterval: {{ .Values.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.autoscaling.keda.cooldownPeriod }}
+  initialCooldownPeriod: {{ .Values.autoscaling.keda.initialCooldownPeriod }}
+  idleReplicaCount: {{ .Values.autoscaling.keda.idleReplicaCount }}
+  {{- if .Values.autoscaling.keda.fallback }}
+  {{- toYaml .Values.autoscaling.keda.fallback | nindent 2 }}
+  {{- end }}
+  {{- if .Values.autoscaling.keda.advanced }}
+  {{- toYaml .Values.autoscaling.keda.advanced | nindent 2 }}
+  {{- end }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    name: {{ include "opentelemetry-collector.fullname" . }}
+    kind: {{ include "opentelemetry-collector.hpaKind" . }}
+  triggers:
+  {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+    - metadata:
+        type: "Utilization"
+        value: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+      type: cpu
+  {{- end }}
+  {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    - metadata:
+        type: "Utilization"
+        value: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+      type: memory
+  {{- end }}
+  {{- if .Values.autoscaling.keda.extraTriggers }}
+    {{- toYaml .Values.autoscaling.keda.extraTriggers | nindent 4 }}
+  {{- end }}
+{{- end }}
+

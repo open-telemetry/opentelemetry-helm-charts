@@ -554,11 +554,21 @@ podDisruptionBudget:
 # autoscaling is used only if mode is "deployment" or "statefulset"
 autoscaling:
   enabled: false
+  # type can be "hpa" or "keda"
+  mode: "hpa"
   minReplicas: 1
   maxReplicas: 10
   behavior: {}
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  keda:
+    pollingInterval:  30
+    cooldownPeriod:   300
+    initialCooldownPeriod:  0
+    idleReplicaCount: 0
+    advanced: {}
+    fallback: {}
+    extraTriggers: {}
 
 rollout:
   rollingUpdate: {}
