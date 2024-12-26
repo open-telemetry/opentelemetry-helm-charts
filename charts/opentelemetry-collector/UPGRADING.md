@@ -6,7 +6,7 @@ Just upgrade and enjoy.
 
 ## 0.111.0 to 0.112.0
 
-We move hpa behavior config from `autoscaling.behavior` to `autoscaling.hpa.behavior`.
+We move hpa behavior configuration from `autoscaling.behavior` to `autoscaling.hpa.behavior`.
 
 ## 0.110.0 to 0.110.1 or 0.110.2
 

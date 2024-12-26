@@ -1,0 +1,34 @@
+---
+# Source: opentelemetry-collector/templates/keda.yaml
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: example-opentelemetry-collector
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.112.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.116.1"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: statefulset-collector
+spec:
+  maxReplicaCount: 10
+  minReplicaCount: 1
+  pollingInterval: 15
+  cooldownPeriod: 300
+  initialCooldownPeriod: 0
+  idleReplicaCount: 0
+  scaleTargetRef:
+    apiVersion: apps/v1
+    name: example-opentelemetry-collector
+    kind: StatefulSet
+  triggers:
+    - metadata:
+        type: "Utilization"
+        value: 80
+      type: cpu
+    - metadata:
+        type: "Utilization"
+        value: 80
+      type: memory

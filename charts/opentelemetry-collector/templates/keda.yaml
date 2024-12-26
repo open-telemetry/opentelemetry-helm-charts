@@ -9,10 +9,10 @@ metadata:
 spec:
   maxReplicaCount: {{ .Values.autoscaling.maxReplicas }}
   minReplicaCount: {{ .Values.autoscaling.minReplicas }}
-  pollingInterval: {{ .Values.autoscaling.keda.pollingInterval }}
-  cooldownPeriod: {{ .Values.autoscaling.keda.cooldownPeriod }}
-  initialCooldownPeriod: {{ .Values.autoscaling.keda.initialCooldownPeriod }}
-  idleReplicaCount: {{ .Values.autoscaling.keda.idleReplicaCount }}
+  pollingInterval: {{ default 15 .Values.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ default 300 .Values.autoscaling.keda.cooldownPeriod }}
+  initialCooldownPeriod: {{ default 0 .Values.autoscaling.keda.initialCooldownPeriod }}
+  idleReplicaCount: {{ default 0 .Values.autoscaling.keda.idleReplicaCount }}
   {{- if .Values.autoscaling.keda.fallback }}
   {{- toYaml .Values.autoscaling.keda.fallback | nindent 2 }}
   {{- end }}
