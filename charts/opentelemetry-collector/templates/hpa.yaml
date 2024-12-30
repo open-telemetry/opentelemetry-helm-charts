@@ -1,4 +1,4 @@
-{{- if and .Values.autoscaling.enabled (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
+{{- if and .Values.autoscaling.enabled (eq .Values.autoscaling.mode "hpa") (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -13,9 +13,9 @@ spec:
     name: {{ include "opentelemetry-collector.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
-  {{- if .Values.autoscaling.behavior }}
+  {{- if and .Values.autoscaling.hpa .Values.autoscaling.hpa.behavior }}
   behavior:
-    {{- toYaml .Values.autoscaling.behavior | nindent 4 }}
+    {{- toYaml .Values.autoscaling.hpa.behavior | nindent 4 }}
   {{- end }}
   metrics:
   {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}

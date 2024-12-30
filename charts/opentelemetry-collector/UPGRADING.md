@@ -4,6 +4,10 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.111.0 to 0.112.0
+
+We move hpa behavior configuration from `autoscaling.behavior` to `autoscaling.hpa.behavior`.
+
 ## 0.110.0 to 0.110.1 or 0.110.2
 
 We broke the selector labels in `0.110.0`, which causes `helm upgrades` to fail. Do not attempt to upgrade from `0.110.0` to either `0.110.1` or `0.110.2`. Go straight to `0.110.3` instead.
@@ -17,7 +21,7 @@ The deprecated memory ballast extension has been removed from the default config
 
 ## 0.88.0 to 0.89.0
 
-> [!WARNING]  
+> [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
 As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.
