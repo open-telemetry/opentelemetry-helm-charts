@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.101.0 / 2024-12-31
+
+- [Feat] Add job name to pod association for k8s attributes.
+
 ### v0.99.0 / 2024-12-05
 - [Feat] Bump collector version to `0.115.1`
 

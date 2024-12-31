@@ -1309,6 +1309,9 @@ processors:
         name: k8s.pod.uid
     - sources:
       - from: connection
+    - sources:
+      - from: resource_attribute
+        name: k8s.job.name
     extract:
       metadata:
         - "k8s.namespace.name"
