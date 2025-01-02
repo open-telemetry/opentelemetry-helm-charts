@@ -2,6 +2,13 @@
 
 ## OpenTelemetry Collector
 
+### v0.102.0 / 2025-01-02
+
+- [Fix] Revert the change in metrics telemetry service host from `0.0.0.0` to `${env:MY_POD_IP}`
+  since https://github.com/open-telemetry/opentelemetry-operator/pull/3531 is merged and released.
+  If you are using the OpenTelemetry Operator and the Collector CRD, please update the Operator to
+  version `0.116.0` or later.
+
 ### v0.101.0 / 2024-12-31
 
 - [Feat] Add job name to pod association for k8s attributes.
