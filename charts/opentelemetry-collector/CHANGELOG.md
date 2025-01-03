@@ -2,8 +2,10 @@
 
 ## OpenTelemetry Collector
 
-### v0.102.0 / 2025-01-02
+### v0.103.0 / 2025-01-03
+- [Feat] Bump collector version to `0.116.1`
 
+### v0.102.0 / 2025-01-02
 - [Fix] Revert the change in metrics telemetry service host from `0.0.0.0` to `${env:MY_POD_IP}`
   since https://github.com/open-telemetry/opentelemetry-operator/pull/3531 is merged and released.
   If you are using the OpenTelemetry Operator and the Collector CRD, please update the Operator to
