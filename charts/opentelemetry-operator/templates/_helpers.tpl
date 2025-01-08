@@ -38,12 +38,20 @@ Create Operator version.
 {{- end }}
 
 {{/*
+Enforce valid label value.
+See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+*/}}
+{{- define "opentelemetry-operator.validLabelValue" -}}
+{{- (regexReplaceAllLiteral "[^a-zA-Z0-9._-]" . "-") | trunc 63 | trimSuffix "-" | trimSuffix "_" | trimSuffix "." }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "opentelemetry-operator.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 {{ include "opentelemetry-operator.selectorLabels" . }}
-app.kubernetes.io/version: {{ include "opentelemetry-operator.appVersion" . | quote }}
+app.kubernetes.io/version: {{ include "opentelemetry-operator.validLabelValue" (include "opentelemetry-operator.appVersion" .) | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.additionalLabels }}
