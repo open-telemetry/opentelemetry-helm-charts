@@ -1004,6 +1004,12 @@ connectors:
 
 {{- define "opentelemetry-collector.kubernetesResourcesConfig" -}}
 processors:
+  transform/entity-event:
+    error_mode: silent
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["otel.entity.interval"], Milliseconds(Duration("1h")))
   resourcedetection/resource_catalog:
     detectors:
     - eks
@@ -1187,6 +1193,7 @@ service:
       processors:
         - memory_limiter
         - resourcedetection/resource_catalog
+        - transform/entity-event
         - resource/metadata
         - batch
       receivers:
