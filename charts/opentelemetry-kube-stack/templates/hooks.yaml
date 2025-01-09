@@ -53,7 +53,11 @@ spec:
       serviceAccountName: delete-resources-sa
       containers:
       - name: delete-resources
-        image: bitnami/kubectl:latest
+        {{- if $.Values.cleanupJob.image.digest }}
+        image: "{{ $.Values.cleanupJob.image.repository }}@{{ $.Values.cleanupJob.image.digest }}"
+        {{- else }}
+        image: "{{ $.Values.cleanupJob.image.repository }}:{{ $.Values.cleanupJob.image.tag }}"
+        {{- end }}
         command:
           - /bin/sh
           - -c
