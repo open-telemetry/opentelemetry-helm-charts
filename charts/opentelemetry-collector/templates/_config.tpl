@@ -1063,7 +1063,7 @@ exporters:
     logs:
       headers:
         X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.global.version }}"
-        x-coralogix-ingress: "metadata-as-otlp-logs/v1alpha1"
+        x-coralogix-ingress: "metadata-as-otlp-logs/v1"
 
 receivers:
   k8sobjects/resource_catalog:
@@ -1216,7 +1216,7 @@ exporters:
     logs:
       headers:
         X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.global.version }}"
-        x-coralogix-ingress: "metadata-as-otlp-logs/v1alpha1"
+        x-coralogix-ingress: "metadata-as-otlp-logs/v1"
 
 processors:
   resourcedetection/entity:
