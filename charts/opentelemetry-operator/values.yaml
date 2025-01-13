@@ -42,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.114.0
+    tag: 0.116.1
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -99,10 +99,18 @@ manager:
       cpu: 100m
       memory: 64Mi
       # ephemeral-storage: 50Mi
-  ## Adds additional environment variables
+  ## Adds additional environment variables. This property will be deprecated. Please use extraEnvs instead.
   ## e.g ENV_VAR: env_value
   env:
     ENABLE_WEBHOOKS: "true"
+
+  # Extra definitions of environment variables.
+  extraEnvs: []
+    # - name: GOMEMLIMIT
+    #   valueFrom:
+    #     resourceFieldRef:
+    #       containerName: manager
+    #       resource: limits.memory
 
   # -- Create the manager ServiceAccount
   serviceAccount:
