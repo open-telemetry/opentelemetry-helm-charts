@@ -162,7 +162,9 @@ The image to use for opentelemetry-operator.
 {{- $list := list -}}
 {{- range $k, $v := .Values.manager.featureGatesMap -}}
 {{- if $v -}}
-{{- $list = append $list (printf "%s=true" $k) -}}
+{{- $list = append $list (printf "%s" $k) -}}
+{{- else }}
+{{- $list = append $list (printf "-%s" $k) -}}
 {{- end -}}
 {{- end -}}
 {{ join "," $list }}
