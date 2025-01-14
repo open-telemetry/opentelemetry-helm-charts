@@ -475,6 +475,7 @@ receivers:
         id: {{ include "opentelemetry-collector.newlineKey" . | quote}}
         output: clean-up-log-record
         combine_field: attributes.log
+        source_identifier: attributes["log.file.path"]
         is_first_entry: '(attributes.log) matches {{ .firstEntryRegex | quote }}'
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
         max_unmatched_batch_size: {{ $.Values.presets.logsCollection.maxUnmatchedBatchSize }}

@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.105.0
+    helm.sh/chart: opentelemetry-collector-0.105.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.117.0"
@@ -300,6 +300,7 @@ data:
           max_log_size: 1048576
           max_unmatched_batch_size: 1
           output: clean-up-log-record
+          source_identifier: attributes["log.file.path"]
           type: recombine
         - combine_field: attributes.log
           combine_with: ""
@@ -309,6 +310,7 @@ data:
           max_log_size: 1048576
           max_unmatched_batch_size: 1
           output: clean-up-log-record
+          source_identifier: attributes["log.file.path"]
           type: recombine
         - combine_field: attributes.log
           combine_with: ""
@@ -318,6 +320,7 @@ data:
           max_log_size: 1048576
           max_unmatched_batch_size: 1
           output: clean-up-log-record
+          source_identifier: attributes["log.file.path"]
           type: recombine
         - from: attributes.log
           id: clean-up-log-record
