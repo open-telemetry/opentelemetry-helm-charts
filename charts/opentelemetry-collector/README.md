@@ -149,6 +149,10 @@ This feature is disabled by default. It has the following requirements:
 
 - It requires the [Kubernetes Attributes processor](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
+#### :memo: Note: Changing or supplementing `k8sattributes` scopes
+
+In order to minimize the collector's privileges, the [Kubernetes RBAC Rules](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) that are applied to the collector as part of this chart are the minimum required for the `presets.kubernetesAttributes` preset to work. If additional configuration scopes are desired outside of the preset you must apply the corresponding RBAC rules to grant the collector access.
+
 To enable this feature, set the  `presets.kubernetesAttributes.enabled` property to `true`.
 Here is an example `values.yaml`:
 
