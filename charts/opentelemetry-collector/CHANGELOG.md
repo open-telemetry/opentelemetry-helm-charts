@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.105.2 / 2025-01-31
+- [Feat] Add extraConfig to allow adding extra processors, receivers, exporters, and connectors to the collector.
+
 ### v0.105.1 / 2025-01-14
 - [Fix] Add missing `source_identifier` to `presets.logsCollection.multilineConfigs`
 

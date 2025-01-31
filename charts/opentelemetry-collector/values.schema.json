@@ -278,6 +278,60 @@
       "type": "string",
       "description": "Name of the namespace to deploy the resources into."
     },
+    "extraConfig": {
+      "type": "object",
+      "description": "Extra config for the collector. Used to add extra receivers, processors, exporters, and connectors to the pipelines managed by the chart. Processors are added at the end of the pipeline before batching.",
+      "additionalProperties": false,
+      "properties": {
+        "receivers": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "processors": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "exporters": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "connectors": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "pipelines": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "receivers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "processors": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "exporters": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "presets": {
       "type": "object",
       "additionalProperties": false,

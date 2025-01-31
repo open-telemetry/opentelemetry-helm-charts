@@ -21,7 +21,7 @@ collectorCRD:
   resources: {}
 
 # Valid values are "daemonset", "deployment", and "statefulset".
-mode: ""
+mode: "daemonset"
 
 # If the target allocator is enabled, the service account, cluster role
 # and cluster role binding will be generated as well, with appropriate
@@ -89,6 +89,43 @@ distribution: ""
 # Specify which namespace should be used to deploy the resources into
 namespaceOverride: ""
 
+
+# Extra config for the collector
+# This is used to add extra receivers, processors, exporters, and connectors
+# to the "logs", "metrics", and "traces" pipelines and other pipelines managed by the chart.
+# Processors are added at the end of the pipeline before batching.
+# You cannot use this to add new pipelines, instead use the
+# config.service.pipelines field to add new pipelines.
+extraConfig: {}
+# extraConfig:
+#   receivers:
+#     otlp/3:
+#       protocols:
+#         grpc:
+#           endpoint: ${env:MY_POD_IP}:4317
+#         http:
+#           endpoint: ${env:MY_POD_IP}:4318
+#   processors:
+#     batch: {}
+#   exporters:
+#     debug/2: {}
+#   connectors:
+#     spanmetrics/2:
+#       metrics:
+#         enabled: true
+#   service:
+#     pipelines:
+#       logs:
+#         receivers:
+#         - otlp/3
+#         processors:
+#         - batch/2
+#         exporters:
+#         - debug/2
+#       metrics:
+#         receivers:
+#         - otlp/3
+#         - spanmetrics/2
 # Handles basic configuration of components that
 # also require k8s modifications to work correctly.
 # .Values.config can be used to modify/add to a preset
@@ -566,6 +603,7 @@ initContainers: []
 #       - cp
 #     args:
 #       - /bin/sleep
+#     args:
 #       - /test/sleep
 #     volumeMounts:
 #       - name: test

@@ -91,6 +91,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.fleetManagement.enabled }}
 {{- $config = (include "opentelemetry-collector.applyFleetManagementConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.extraConfig }}
+{{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -153,6 +156,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.fleetManagement.enabled }}
 {{- $config = (include "opentelemetry-collector.applyFleetManagementConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.extraConfig }}
+{{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -213,6 +219,56 @@ receivers:
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
 {{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyExtraConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.extraConfig" .Values | fromYaml) .config }}
+
+{{- range $pipelineType, $pipeline := .Values.Values.extraConfig.service.pipelines }}
+  {{- range $componentType, $components := $pipeline }}
+    {{- if $config.service.pipelines }}
+      {{- if not (hasKey $config.service.pipelines $pipelineType) }}
+        {{- fail (printf "Cannot create new pipeline %q with extraConfig please use config.service.pipelines" $pipelineType) }}
+      {{- end }}
+      {{- $pipeline := index $config.service.pipelines $pipelineType }}
+      {{- $existingComponents := index $pipeline $componentType | default list }}
+      {{- range $component := $components }}
+        {{- if has $component $existingComponents }}
+          {{- fail (printf "Pipeline %q already contains component %q of type %q" $pipelineType $component $componentType) }}
+        {{- end }}
+      {{- end }}
+      {{- $_ := set $pipeline $componentType (concat $existingComponents $components) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.extraConfig" -}}
+{{- $extraReceivers := .Values.extraConfig.receivers }}
+{{- $extraProcessors := .Values.extraConfig.processors }}
+{{- $extraExporters := .Values.extraConfig.exporters }}
+{{- $extraConnectors := .Values.extraConfig.connectors }}
+
+{{- if $extraProcessors }}
+processors:
+{{- $extraProcessors | toYaml | nindent 2 }}
+{{- end }}
+
+{{- if $extraExporters }}
+exporters:
+{{- $extraExporters | toYaml | nindent 2 }}
+{{- end }}
+
+{{- if $extraReceivers }}
+receivers:
+{{- $extraReceivers | toYaml | nindent 2 }}
+{{- end }}
+
+{{- if $extraConnectors }}
+connectors:
+{{- $extraConnectors | toYaml | nindent 2 }}
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.hostMetricsConfig" -}}

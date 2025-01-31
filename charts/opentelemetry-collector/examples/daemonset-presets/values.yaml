@@ -77,3 +77,13 @@ presets:
   kubernetesExtraMetrics:
     enabled: true
     perNode: true
+extraConfig:
+  processors:
+    transform/test:
+      statements:
+        - set(attributes["http.response.status_code"], attributes["http.status_code"]) where attributes["http.response.status_code"] == nil
+  service:
+    pipelines:
+      traces:
+        processors:
+        - transform/test

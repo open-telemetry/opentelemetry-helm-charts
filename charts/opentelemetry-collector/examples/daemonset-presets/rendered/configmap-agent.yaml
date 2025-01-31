@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.105.1
+    helm.sh/chart: opentelemetry-collector-0.105.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.117.0"
@@ -192,6 +192,10 @@ data:
           statements:
           - set(attributes["http.response.status_code"], attributes["http.status_code"])
             where attributes["http.response.status_code"] == nil
+      transform/test:
+        statements:
+        - set(attributes["http.response.status_code"], attributes["http.status_code"])
+          where attributes["http.response.status_code"] == nil
     receivers:
       filelog:
         exclude: []
@@ -452,6 +456,7 @@ data:
           - memory_limiter
           - transform/k8s_attributes
           - transform/spanmetrics
+          - transform/test
           - batch
           receivers:
           - otlp
