@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.105.3 / 2025-02-03
+- [Feat] Add configuration for startup probe.
+
 ### v0.105.2 / 2025-01-31
 - [Feat] Add extraConfig to allow adding extra processors, receivers, exporters, and connectors to the collector.
 

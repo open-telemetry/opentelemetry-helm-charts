@@ -103,6 +103,33 @@ containers:
       httpGet:
         path: {{ .Values.livenessProbe.httpGet.path }}
         port: {{ .Values.livenessProbe.httpGet.port }}
+    {{- if .Values.startupProbe }}
+    startupProbe:
+      {{- if .Values.startupProbe.initialDelaySeconds | empty | not }}
+      initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.periodSeconds | empty | not }}
+      periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.timeoutSeconds | empty | not }}
+      timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.failureThreshold | empty | not }}
+      failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+      {{- end }}
+      {{- if .Values.startupProbe.terminationGracePeriodSeconds | empty | not }}
+      terminationGracePeriodSeconds: {{ .Values.startupProbe.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.httpGet }}
+      httpGet:
+        {{- if .Values.startupProbe.httpGet.path | empty | not }}
+        path: {{ .Values.startupProbe.httpGet.path }}
+        {{- end }}
+        {{- if .Values.startupProbe.httpGet.port | empty | not }}
+        port: {{ .Values.startupProbe.httpGet.port }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
     readinessProbe:
       {{- if .Values.readinessProbe.initialDelaySeconds | empty | not }}
       initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
