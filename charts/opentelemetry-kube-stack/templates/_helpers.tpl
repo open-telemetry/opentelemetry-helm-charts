@@ -48,7 +48,7 @@ Print a map of key values in a YAML block. This is useful for labels and annotat
 {{- define "opentelemetry-kube-stack.renderkv" -}}
 {{- with . -}}
 {{- range $key, $value := . -}}
-{{- printf "%s: %s" $key $value }}
+{{- printf "\n%s: %s" $key $value }}
 {{- end -}}
 {{- end -}}
 {{- end }}
@@ -121,6 +121,7 @@ helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+release: {{ .Release.Name | quote }}
 {{- end }}
 
 {{/*
@@ -284,4 +285,23 @@ Helpers for prometheus servicemonitors
   {{- $secure := index . 2 -}}
   {{- $userValue := index . 3 -}}
   {{- include "opentelemetry-kube-stack.kubeVersionDefaultValue" (list $values ">= 1.23-0" $insecure $secure $userValue) -}}
+{{- end -}}
+
+{{/* Sets default scrape limits for servicemonitor */}}
+{{- define "opentelemetry-kube-stack.servicemonitor.scrapeLimits" -}}
+{{- with .sampleLimit }}
+sampleLimit: {{ . }}
+{{- end }}
+{{- with .targetLimit }}
+targetLimit: {{ . }}
+{{- end }}
+{{- with .labelLimit }}
+labelLimit: {{ . }}
+{{- end }}
+{{- with .labelNameLengthLimit }}
+labelNameLengthLimit: {{ . }}
+{{- end }}
+{{- with .labelValueLengthLimit }}
+labelValueLengthLimit: {{ . }}
+{{- end }}
 {{- end -}}

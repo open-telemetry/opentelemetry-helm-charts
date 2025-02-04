@@ -35,8 +35,12 @@ spec:
   {{- end }}
   imagePullPolicy: {{ $collector.image.pullPolicy }}
   upgradeStrategy: {{ $collector.upgradeStrategy }}
+  {{- if $collector.hostNetwork }}
   hostNetwork: {{ $collector.hostNetwork }}
+  {{- end }}
+  {{- if $collector.shareProcessNamespace }}
   shareProcessNamespace: {{ $collector.shareProcessNamespace }}
+  {{- end }}
   {{- if $collector.priorityClassName }}
   priorityClassName: {{ $collector.priorityClassName }}
   {{- end }}
@@ -128,7 +132,7 @@ spec:
     mountPropagation: HostToContainer
   {{- end }}
   {{- with $collector.volumeMounts }}
-  {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 2 }}
   {{- end }}
   {{- with $collector.ports }}
   ports:
@@ -196,7 +200,7 @@ spec:
       path: /
   {{- end }}
   {{- with $collector.volumes }}
-  {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 2 }}
   {{- end }}
   {{- with $collector.initContainers }}
   initContainers:

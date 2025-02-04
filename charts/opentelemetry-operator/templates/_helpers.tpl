@@ -31,17 +31,32 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Create Operator version.
+*/}}
+{{- define "opentelemetry-operator.appVersion" -}}
+{{ default .Chart.AppVersion .Values.manager.image.tag }}
+{{- end }}
+
+{{/*
+Enforce valid label value.
+See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+*/}}
+{{- define "opentelemetry-operator.validLabelValue" -}}
+{{- (regexReplaceAllLiteral "[^a-zA-Z0-9._-]" . "-") | trunc 63 | trimSuffix "-" | trimSuffix "_" | trimSuffix "." }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "opentelemetry-operator.labels" -}}
 helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 {{ include "opentelemetry-operator.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ include "opentelemetry-operator.validLabelValue" (include "opentelemetry-operator.appVersion" .) | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.additionalLabels }}
 {{ include "opentelemetry-operator.additionalLabels" . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -148,5 +163,17 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
-{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
+{{- printf "%s:%s" .Values.manager.image.repository (include "opentelemetry-operator.appVersion" .) }}
+{{- end }}
+
+{{- define "opentelemetry-operator.featureGatesMap" -}}
+{{- $list := list -}}
+{{- range $k, $v := .Values.manager.featureGatesMap -}}
+{{- if $v -}}
+{{- $list = append $list (printf "%s" $k) -}}
+{{- else }}
+{{- $list = append $list (printf "-%s" $k) -}}
+{{- end -}}
+{{- end -}}
+{{ join "," $list }}
 {{- end }}

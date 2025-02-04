@@ -42,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.108.0
+    tag: 0.117.0
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -74,7 +74,18 @@ manager:
   # Prefix a gate with '-' to disable support.
   # Prefixing a gate with '+' or no prefix will enable support.
   # A full list of valid identifiers can be found here: https://github.com/open-telemetry/opentelemetry-operator/blob/main/pkg/featuregate/featuregate.go
+  # NOTE: the featureGates value is deprecated and will be replaced by featureGatesMap in the future.
   featureGates: ""
+  # The featureGatesMap will enable or disable specific feature gates in the operator as well as deploy any prerequisites for the feature gate.
+  # If this property is not an empty map, the featureGates property will be ignored.
+  featureGatesMap: {}
+    # targetAllocatorMtls: false
+    # targetAllocatorCR: false
+    # targetAllocatorFallbackStrategy: false
+    # nativeSideCarContainers: false
+    # prometheusOperator: false
+    # golangFlags: false
+    # collectorDefaultConfig: false
   ports:
     metricsPort: 8080
     webhookPort: 9443
@@ -88,10 +99,18 @@ manager:
       cpu: 100m
       memory: 64Mi
       # ephemeral-storage: 50Mi
-  ## Adds additional environment variables
+  ## Adds additional environment variables. This property will be deprecated. Please use extraEnvs instead.
   ## e.g ENV_VAR: env_value
   env:
     ENABLE_WEBHOOKS: "true"
+
+  # Extra definitions of environment variables.
+  extraEnvs: []
+    # - name: GOMEMLIMIT
+    #   valueFrom:
+    #     resourceFieldRef:
+    #       containerName: manager
+    #       resource: limits.memory
 
   # -- Create the manager ServiceAccount
   serviceAccount:
@@ -132,6 +151,8 @@ manager:
       additionalRuleLabels: {}
       ## Additional annotations for PrometheusRule alerts
       additionalRuleAnnotations: {}
+      ## Alerts are considered firing once they have been returned for this long.
+      duration: 5m
     # additional labels on the PrometheusRule object
     extraLabels: {}
     # add annotations on the PrometheusRule object
@@ -192,7 +213,7 @@ kubeRBACProxy:
   enabled: true
   image:
     repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.15.0
+    tag: v0.18.1
   ports:
     proxyPort: 8443
   resources:

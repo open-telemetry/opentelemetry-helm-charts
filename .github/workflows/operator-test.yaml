@@ -46,7 +46,7 @@ jobs:
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
 
       - name: Install chainsaw
-        uses: kyverno/action-install-chainsaw@v0.2.9
+        uses: kyverno/action-install-chainsaw@v0.2.12
 
       - name: Install metrics-server
         run: |
@@ -58,7 +58,8 @@ jobs:
         run: |
           helm install --namespace=opentelemetry-operator-system --create-namespace my-opentelemetry-operator ./charts/opentelemetry-operator \
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
-            --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s"
+            --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+            --set "manager.podLabels.control-plane=controller-manager"
           kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
 
       - name: Run e2e tests
@@ -98,7 +99,7 @@ jobs:
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
 
       - name: Install chainsaw
-        uses: kyverno/action-install-chainsaw@v0.2.9
+        uses: kyverno/action-install-chainsaw@v0.2.12
 
       - name: Install metrics-server
         run: |
@@ -111,6 +112,7 @@ jobs:
           helm install --namespace=opentelemetry-operator-system --create-namespace my-opentelemetry-operator ./charts/opentelemetry-operator \
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+            --set "manager.podLabels.control-plane=controller-manager" \
             --set "admissionWebhooks.certManager.enabled=false"
           kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
 

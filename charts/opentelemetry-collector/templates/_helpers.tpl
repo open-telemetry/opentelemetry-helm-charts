@@ -59,7 +59,18 @@ helm.sh/chart: {{ include "opentelemetry-collector.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{ include "opentelemetry-collector.additionalLabels" . }}
+{{- if eq .Values.mode "deployment" }}
+app.kubernetes.io/component: standalone-collector
+{{- end -}}
+{{- if eq .Values.mode "daemonset" }}
+app.kubernetes.io/component: agent-collector
+{{- end -}}
+{{- if eq .Values.mode "statefulset" }}
+app.kubernetes.io/component: statefulset-collector
+{{- end -}}
+{{- if .Values.additionalLabels }}
+{{ tpl (.Values.additionalLabels | toYaml) . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -105,12 +116,6 @@ Create the name of the clusterRoleBinding to use
 {{- define "opentelemetry-collector.podLabels" -}}
 {{- if .Values.podLabels }}
 {{- tpl (.Values.podLabels | toYaml) . }}
-{{- end }}
-{{- end }}
-
-{{- define "opentelemetry-collector.additionalLabels" -}}
-{{- if .Values.additionalLabels }}
-{{- tpl (.Values.additionalLabels | toYaml) . }}
 {{- end }}
 {{- end }}
 
@@ -220,7 +225,7 @@ Get ConfigMap name if existingName is defined, otherwise use default name for ge
 */}}
 {{- define "opentelemetry-collector.configName" -}}
   {{- if .Values.configMap.existingName -}}
-    {{- .Values.configMap.existingName }}
+    {{- tpl (.Values.configMap.existingName | toYaml) . }}
   {{- else }}
     {{- printf "%s%s" (include "opentelemetry-collector.fullname" .) (.configmapSuffix) }}
   {{- end -}}

@@ -24,7 +24,7 @@ spec:
     rules:
     - alert: ReconcileErrors
       expr: rate(controller_runtime_reconcile_total{controller="opentelemetrycollector",result="error"}[5m]) > 0
-      for: 5m
+      for: {{ .Values.manager.prometheusRule.defaultRules.duration }}
       labels:
         severity: warning
         {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleLabels }}
@@ -38,7 +38,7 @@ spec:
         {{- end }}
     - alert: WorkqueueDepth
       expr: workqueue_depth{name="opentelemetrycollector"} > 0
-      for: 5m
+      for: {{ .Values.manager.prometheusRule.defaultRules.duration }}
       labels:
         severity: warning
         {{- with .Values.manager.prometheusRule.defaultRules.additionalRuleLabels }}

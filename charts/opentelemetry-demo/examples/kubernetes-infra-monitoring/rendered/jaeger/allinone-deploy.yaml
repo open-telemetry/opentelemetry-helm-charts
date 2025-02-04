@@ -5,7 +5,7 @@ kind: Deployment
 metadata:
   name: example-jaeger
   labels:
-    helm.sh/chart: jaeger-3.1.2
+    helm.sh/chart: jaeger-3.3.3
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "1.53.0"
@@ -37,6 +37,10 @@ spec:
         - env:
             - name: METRICS_STORAGE_TYPE
               value: prometheus
+            - name: COLLECTOR_OTLP_GRPC_HOST_PORT
+              value: 0.0.0.0:4317
+            - name: COLLECTOR_OTLP_HTTP_HOST_PORT
+              value: 0.0.0.0:4318
             - name: SPAN_STORAGE_TYPE
               value: memory
             

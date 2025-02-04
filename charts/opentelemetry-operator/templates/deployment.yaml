@@ -74,7 +74,9 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
             - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
             {{- end }}
-            {{- if .Values.manager.featureGates }}
+            {{- if .Values.manager.featureGatesMap }}
+            - --feature-gates={{ include "opentelemetry-operator.featureGatesMap" . }}
+            {{- else if ne .Values.manager.featureGates "" }}
             - --feature-gates={{ .Values.manager.featureGates }}
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
@@ -82,13 +84,14 @@ spec:
             {{-  end  }}
           command:
             - /manager
-          {{- if or .Values.manager.env .Values.manager.createRbacPermissions }}
+          {{- if or .Values.manager.env .Values.manager.extraEnvs .Values.manager.createRbacPermissions }}
           env:
-            {{- if .Values.manager.env }}
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
-              value: {{ $value | quote -}}
+              value: {{ $value | quote }}
             {{- end }}
+            {{- with .Values.manager.extraEnvs }}
+              {{- . | toYaml | nindent 12 }}
             {{- end }}
             {{- if .Values.manager.createRbacPermissions }}
             - name: SERVICE_ACCOUNT_NAME
@@ -134,7 +137,6 @@ spec:
         - args:
             - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
             - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
-            - --logtostderr=true
             - --v=0
             {{-  if .Values.kubeRBACProxy.extraArgs  }}
             {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}

@@ -4,12 +4,13 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ include "opentelemetry-operator.webhookCertAnnotation" . }}
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.17.1
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
   name: opentelemetrycollectors.opentelemetry.io
 spec:
+{{- if .Values.admissionWebhooks.create }}
   conversion:
     strategy: Webhook
     webhook:
@@ -23,6 +24,7 @@ spec:
       conversionReviewVersions:
       - v1alpha1
       - v1beta1
+{{- end }}
   group: opentelemetry.io
   names:
     kind: OpenTelemetryCollector
@@ -6966,6 +6968,13 @@ spec:
                         type: boolean
                     type: object
                 type: object
+              persistentVolumeClaimRetentionPolicy:
+                properties:
+                  whenDeleted:
+                    type: string
+                  whenScaled:
+                    type: string
+                type: object
               podAnnotations:
                 additionalProperties:
                   type: string
@@ -7880,6 +7889,58 @@ spec:
                       enabled:
                         type: boolean
                       podMonitorSelector:
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                              required:
+                              - key
+                              - operator
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                        x-kubernetes-map-type: atomic
+                      probeSelector:
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                              required:
+                              - key
+                              - operator
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                        x-kubernetes-map-type: atomic
+                      scrapeConfigSelector:
                         properties:
                           matchExpressions:
                             items:

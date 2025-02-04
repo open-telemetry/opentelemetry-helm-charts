@@ -56,6 +56,10 @@ containers:
         valueFrom:
           fieldRef:
             fieldPath: spec.nodeName
+      - name: K8S_NODE_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
       {{- end }}
       {{- if and (.Values.useGOMEMLIMIT) ((((.Values.resources).limits).memory))  }}
       - name: GOMEMLIMIT
@@ -110,6 +114,27 @@ containers:
       httpGet:
         path: {{ .Values.readinessProbe.httpGet.path }}
         port: {{ .Values.readinessProbe.httpGet.port }}
+    {{- if .Values.startupProbe }}
+    startupProbe:
+      {{- if .Values.startupProbe.initialDelaySeconds | empty | not }}
+      initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.periodSeconds | empty | not }}
+      periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.timeoutSeconds | empty | not }}
+      timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+      {{- end }}
+      {{- if .Values.startupProbe.failureThreshold | empty | not }}
+      failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+      {{- end }}
+      {{- if .Values.startupProbe.terminationGracePeriodSeconds | empty | not }}
+      terminationGracePeriodSeconds: {{ .Values.startupProbe.terminationGracePeriodSeconds }}
+      {{- end }}
+      httpGet:
+        path: {{ .Values.startupProbe.httpGet.path }}
+        port: {{ .Values.startupProbe.httpGet.port }}
+    {{- end }}
     {{- with .Values.resources }}
     resources:
       {{- toYaml . | nindent 6 }}

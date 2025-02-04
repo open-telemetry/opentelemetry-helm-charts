@@ -1,4 +1,4 @@
-{{- if and .Values.prometheusRule.enabled .Values.serviceMonitor.enabled  }}
+{{- if .Values.prometheusRule.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -12,7 +12,7 @@ metadata:
 spec:
   groups:
 {{- if .Values.prometheusRule.groups }}
-    {{- toYaml .Values.prometheusRule.groups | nindent 4 }}
+    {{- toYaml .Values.prometheusRule.groups | nindent 2 }}
 {{- end }}
 {{- if .Values.prometheusRule.defaultRules.enabled }}
   - name: collectorRules

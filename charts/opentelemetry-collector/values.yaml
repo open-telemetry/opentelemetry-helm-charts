@@ -44,7 +44,7 @@ presets:
     enabled: false
   # Configures the Kubernetes Processor to add Kubernetes metadata.
   # Adds the k8sattributes processor to all the pipelines
-  # and adds the necessary rules to ClusteRole.
+  # and adds a preset of minimum required RBAC rules to ClusterRole.
   # Best used with mode = daemonset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
   kubernetesAttributes:
@@ -57,13 +57,13 @@ presets:
     extractAllPodAnnotations: false
   # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
   # Adds the kubeletstats receiver to the metrics pipeline
-  # and adds the necessary rules to ClusteRole.
+  # and adds the necessary rules to ClusterRole.
   # Best used with mode = daemonset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
   kubeletMetrics:
     enabled: false
   # Configures the collector to collect kubernetes events.
-  # Adds the k8sobject receiver to the logs pipeline
+  # Adds the k8sobjects receiver to the logs pipeline
   # and collects kubernetes events by default.
   # Best used with mode = deployment or statefulset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
@@ -71,7 +71,7 @@ presets:
     enabled: false
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
-  # and adds the necessary rules to ClusteRole.
+  # and adds the necessary rules to ClusterRole.
   # Best used with mode = deployment or statefulset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
   clusterMetrics:
@@ -82,6 +82,7 @@ configMap:
   create: true
   # Specifies an existing ConfigMap to be mounted to the pod
   # The ConfigMap MUST include the collector configuration via a key named 'relay' or the collector will not start.
+  # This also supports template content, which will eventually be converted to yaml.
   existingName: ""
   # Specifies the relative path to custom ConfigMap template file. This option SHOULD be used when bundling a custom
   # ConfigMap template, as it enables pod restart via a template checksum annotation.
@@ -263,6 +264,9 @@ extraVolumes: []
 # This also supports template content, which will eventually be converted to yaml.
 extraVolumeMounts: []
 
+# This also supports template content, which will eventually be converted to yaml.
+extraManifests: []
+
 # Configuration for ports
 # nodePort is also allowed
 ports:
@@ -441,6 +445,24 @@ readinessProbe:
   httpGet:
     port: 13133
     path: /
+
+# startup probe configuration
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+##
+startupProbe: {}
+  # Number of seconds after the container has started before startup probes are initiated.
+  # initialDelaySeconds: 1
+  # How often in seconds to perform the probe.
+  # periodSeconds: 10
+  # Number of seconds after which the probe times out.
+  # timeoutSeconds: 1
+  # Minimum consecutive failures for the probe to be considered failed after having succeeded.
+  # failureThreshold: 1
+  # Duration in seconds the pod needs to terminate gracefully upon probe failure.
+  # terminationGracePeriodSeconds: 10
+  # httpGet:
+  #   port: 13133
+  #   path: /
 
 service:
   # Enable the creation of a Service.
