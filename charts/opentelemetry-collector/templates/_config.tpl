@@ -160,6 +160,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -189,7 +190,23 @@ Build config file for deployment OpenTelemetry Collector
 {{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "routing" | uniq)  }}
 {{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "routing" | uniq)  }}
 {{- end }}
+{{- $config | toYaml }}
+{{- end }}
 
+{{- define "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" -}}
+{{- $config := .config }}
+{{- if and ($config.service.pipelines.logs) (has "memory_limiter" $config.service.pipelines.logs.processors) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (without $config.service.pipelines.logs.processors "memory_limiter" | uniq)  }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "memory_limiter" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (has "memory_limiter" $config.service.pipelines.metrics.processors) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (without $config.service.pipelines.metrics.processors "memory_limiter" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "memory_limiter" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (has "memory_limiter" $config.service.pipelines.traces.processors) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "memory_limiter" | uniq)  }}
+{{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "memory_limiter" | uniq)  }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 

@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.106.1 / 2025-02-04
+- [Feat] Ensure the `memory_limiter` processor is always the first in the pipeline.
+
 ### v0.106.0 / 2025-02-04
 - [Feat] Update Collector to v0.118.0
 
