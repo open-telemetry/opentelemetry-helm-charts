@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.106.0 / 2025-02-04
+- [Feat] Update Collector to v0.118.0
+
 ### v0.105.3 / 2025-02-03
 - [Feat] Add configuration for startup probe.
 
