@@ -14,7 +14,7 @@ We'd love your help!
 
 To work with this repository, ensure you have:
 
-0Helm 3.8+
+-Helm 3.8+
 
 -chart-testing (ct) 3.7+
 
