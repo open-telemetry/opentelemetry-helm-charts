@@ -6,8 +6,6 @@
 
 This repository hosts Helm charts for deploying OpenTelemetry components in Kubernetes. Your contributions help improve observability for everyone! Whether you’re fixing a configuration, adding a new feature, or improving documentation, we appreciate your effort!
 
-Questions? Ask in the OpenTelemetry-helm [Slack](https://cloud-native.slack.com/archives/C03HVLM8LAH)
-
 We'd love your help!
 
 ## Pre-requisites
