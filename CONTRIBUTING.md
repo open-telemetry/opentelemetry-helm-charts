@@ -22,7 +22,7 @@ To work with this repository, ensure you have:
 
 -make (for automation)
 
-### Platform Notes:
+### Platform Notes
 
 Docker or Kubernetes cluster access (for testing chart installations)
 
