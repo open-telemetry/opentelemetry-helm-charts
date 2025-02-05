@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.106.2 / 2025-02-05
+- [Feat] Add support for CUSTOM autoscaling mode alongside HPA mode
+
 ### v0.106.1 / 2025-02-04
 - [Feat] Ensure the `memory_limiter` processor is always the first in the pipeline.
 
