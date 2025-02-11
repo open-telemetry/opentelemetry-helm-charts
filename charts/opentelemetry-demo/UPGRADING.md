@@ -5,6 +5,12 @@
 > another. If you need to upgrade the chart, you must first delete the existing
 > release and then install the new version.
 
+## To 0.35
+
+The Helm chart release name prefix has been removed from all resources. If you
+have any custom configuration that depend on the release name, you will need to
+update it accordingly.
+
 ## To 0.33
 
 The Helm prerequisite version has been updated to Helm 3.14+. Please upgrade your
