@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-jaeger
+  name: jaeger
   labels:
     helm.sh/chart: jaeger-3.3.3
     app.kubernetes.io/name: jaeger
@@ -58,7 +58,7 @@ spec:
           args:
             - "--memory.max-traces=5000"
             - "--query.base-path=/jaeger/ui"
-            - "--prometheus.server-url=http://example-prometheus-server:9090"
+            - "--prometheus.server-url=http://prometheus-server:9090"
             - "--prometheus.query.normalize-calls=true"
             - "--prometheus.query.normalize-duration=true"
           ports:
@@ -108,5 +108,5 @@ spec:
         fsGroup: 10001
         runAsGroup: 10001
         runAsUser: 10001
-      serviceAccountName: example-jaeger
+      serviceAccountName: jaeger
       volumes:
