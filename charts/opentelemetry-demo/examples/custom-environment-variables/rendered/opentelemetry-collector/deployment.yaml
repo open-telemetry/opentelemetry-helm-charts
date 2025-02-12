@@ -3,11 +3,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-otelcol
+  name: otelcol
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.110.3
-    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.114.0"
     app.kubernetes.io/managed-by: Helm
@@ -17,7 +17,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app.kubernetes.io/name: otelcol
+      app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
       component: standalone-collector
   strategy:
@@ -25,18 +25,18 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 3aee62980696aac5c68642d151740e3b06b0419b048c5c86f7b909ae633bcb55
+        checksum/config: bbf9d60e3fb78dc8144e43eb3c9839dd67b68b2e377b8989c71e8f29e9a6c449
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
       labels:
-        app.kubernetes.io/name: otelcol
+        app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: standalone-collector
         
     spec:
       
-      serviceAccountName: example-otelcol
+      serviceAccountName: otelcol
       securityContext:
         {}
       containers:
@@ -98,7 +98,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-otelcol
+            name: otelcol
             items:
               - key: relay
                 path: relay.yaml

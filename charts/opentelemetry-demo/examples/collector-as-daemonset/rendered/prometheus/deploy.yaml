@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/version: v3.0.0
     helm.sh/chart: prometheus-26.0.0
     app.kubernetes.io/part-of: prometheus
-  name: example-prometheus-server
+  name: prometheus
   namespace: default
 spec:
   selector:
@@ -34,7 +34,7 @@ spec:
         app.kubernetes.io/part-of: prometheus
     spec:
       enableServiceLinks: true
-      serviceAccountName: example-prometheus-server
+      serviceAccountName: prometheus
       containers:
 
         - name: prometheus-server
@@ -89,7 +89,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: example-prometheus-server
+            name: prometheus
         - name: storage-volume
           emptyDir:
             {}

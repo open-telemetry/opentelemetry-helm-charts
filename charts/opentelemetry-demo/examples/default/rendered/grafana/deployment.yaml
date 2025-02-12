@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-grafana
+  name: grafana
   namespace: default
   labels:
     helm.sh/chart: grafana-8.6.4
@@ -27,13 +27,13 @@ spec:
         app.kubernetes.io/instance: example
         app.kubernetes.io/version: "11.3.1"
       annotations:
-        checksum/config: a9f5a2b89c48190fe92c675736096573a2f0a3b5b3b9d4011a086412bf2bed80
+        checksum/config: 409a844f60a4278b3f179a8e508a51c7894ae40cbcd26346d04355bab4fe4a0e
         checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
         checksum/secret: bed677784356b2af7fb0d87455db21f077853059b594101a4f6532bfbd962a7f
         kubectl.kubernetes.io/default-container: grafana
     spec:
       
-      serviceAccountName: example-grafana
+      serviceAccountName: grafana
       automountServiceAccountToken: true
       securityContext:
         fsGroup: 472
@@ -84,17 +84,17 @@ spec:
             - name: GF_SECURITY_ADMIN_USER
               valueFrom:
                 secretKeyRef:
-                  name: example-grafana
+                  name: grafana
                   key: admin-user
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: example-grafana
+                  name: grafana
                   key: admin-password
             - name: GF_INSTALL_PLUGINS
               valueFrom:
                 configMapKeyRef:
-                  name: example-grafana
+                  name: grafana
                   key: plugins
             - name: GF_PATHS_DATA
               value: /var/lib/grafana/
@@ -121,9 +121,9 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: example-grafana
+            name: grafana
         - name: dashboards-default
           configMap:
-            name: example-grafana-dashboards
+            name: grafana-dashboards
         - name: storage
           emptyDir: {}
