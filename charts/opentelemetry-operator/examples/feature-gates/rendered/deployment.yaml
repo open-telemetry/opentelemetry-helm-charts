@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.79.0
+    helm.sh/chart: opentelemetry-operator-0.80.0
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.117.0"
     app.kubernetes.io/managed-by: Helm
@@ -62,12 +62,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: 
-            limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 100m
-              memory: 64Mi
+            {}
           volumeMounts:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
@@ -83,13 +78,6 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-          resources: 
-            limits:
-              cpu: 500m
-              memory: 128Mi
-            requests:
-              cpu: 5m
-              memory: 64Mi
       serviceAccountName: opentelemetry-operator
       terminationGracePeriodSeconds: 10
       volumes:

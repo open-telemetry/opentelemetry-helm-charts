@@ -1,5 +1,29 @@
 # Upgrade guidelines
 
+## 0.79.0 to 0.80.0
+
+Prior to 0.80.0, this chart included resource requests and limits for the OpenTelemetry Operator manager pod. These values were set to `100m` and `128Mi` respectively. In 0.78.0, these values have been removed from the chart. If you were relying on these values, you can set them in your `values.yaml` file. For example:
+
+```yaml
+manager:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+kubeRBACProxy:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 5m
+      memory: 64Mi
+```
+
 ## 0.74.0 to 0.74.1
 
 Prior to 0.72.1, feature gates could be enabled via the `manager.featureGates` property. As feature gates may require extra configuration to work properly, e.g. deploying extra permissions on the ClusterRole, the chart has been updated to make use of the `manager.featureGatesMap` property which allows the chart to smartly configure feature gates. If the `manager.featureGatesMap` property is set, the old `manager.featureGates` property will be ignored.
