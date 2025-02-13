@@ -711,7 +711,7 @@ opentelemetry-collector:
         targets:
           - endpoint: http://frontendproxy:8080
       redis:
-        endpoint: "valkey-cart:6379"
+        endpoint: "valkey:6379"
         collection_interval: 10s
 
     exporters:
@@ -722,7 +722,7 @@ opentelemetry-collector:
           insecure: true
       # Create an exporter to Prometheus (metrics)
       otlphttp/prometheus:
-        endpoint: http://prometheus-server:9090/api/v1/otlp
+        endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
       opensearch:
@@ -776,7 +776,7 @@ jaeger:
     args:
       - "--memory.max-traces=5000"
       - "--query.base-path=/jaeger/ui"
-      - "--prometheus.server-url=http://prometheus-server:9090"
+      - "--prometheus.server-url=http://prometheus:9090"
       - "--prometheus.query.normalize-calls=true"
       - "--prometheus.query.normalize-duration=true"
     extraEnv:
@@ -891,7 +891,7 @@ grafana:
         - name: Prometheus
           uid: webstore-metrics
           type: prometheus
-          url: http://prometheus-server:9090
+          url: http://prometheus:9090
           editable: true
           isDefault: true
           jsonData:
