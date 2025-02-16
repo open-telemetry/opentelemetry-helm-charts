@@ -3,13 +3,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: otelcol
+  name: otel-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.110.3
+    helm.sh/chart: opentelemetry-collector-0.116.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.114.0"
+    app.kubernetes.io/version: "0.119.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: standalone-collector
 data:
@@ -86,9 +86,9 @@ data:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
-      httpcheck/frontendproxy:
+      httpcheck/frontend-proxy:
         targets:
-        - endpoint: http://frontendproxy:8080
+        - endpoint: http://frontend-proxy:8080
       jaeger:
         protocols:
           grpc:
@@ -117,7 +117,7 @@ data:
               - ${env:MY_POD_IP}:8888
       redis:
         collection_interval: 10s
-        endpoint: valkey:6379
+        endpoint: valkey-cart:6379
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
@@ -145,7 +145,7 @@ data:
           - resource
           - batch
           receivers:
-          - httpcheck/frontendproxy
+          - httpcheck/frontend-proxy
           - redis
           - otlp
           - spanmetrics

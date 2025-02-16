@@ -8,7 +8,7 @@ default:
           apiVersion: v1
           fieldPath: "metadata.labels['app.kubernetes.io/component']"
     - name: OTEL_COLLECTOR_NAME
-      value: otelcol
+      value: otel-collector
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
@@ -156,12 +156,12 @@ components:
   #      runAsNonRoot: true
   #      runAsUser: 65534
 
-  accountingService:
+  accounting:
     enabled: true
     useDefault:
       env: true
     env:
-      - name: KAFKA_SERVICE_ADDR
+      - name: KAFKA_ADDR
         value: kafka:9092
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
@@ -173,14 +173,14 @@ components:
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
 
-  adService:
+  ad:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: AD_SERVICE_PORT
+      - name: AD_PORT
         value: "8080"
       - name: FLAGD_HOST
         value: flagd
@@ -194,19 +194,19 @@ components:
       limits:
         memory: 300Mi
 
-  cartService:
+  cart:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: CART_SERVICE_PORT
+      - name: CART_PORT
         value: "8080"
       - name: ASPNETCORE_URLS
-        value: http://*:$(CART_SERVICE_PORT)
+        value: http://*:$(CART_PORT)
       - name: VALKEY_ADDR
-        value: valkey:6379
+        value: valkey-cart:6379
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -217,32 +217,32 @@ components:
       limits:
         memory: 160Mi
     initContainers:
-      - name: wait-for-valkey
+      - name: wait-for-valkey-cart
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 valkey 6379; do echo waiting for valkey; sleep 2; done;"]
+        command: ["sh", "-c", "until nc -z -v -w30 valkey-cart 6379; do echo waiting for valkey-cart; sleep 2; done;"]
 
-  checkoutService:
+  checkout:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: CHECKOUT_SERVICE_PORT
+      - name: CHECKOUT_PORT
         value: "8080"
-      - name: CART_SERVICE_ADDR
-        value: cartservice:8080
-      - name: CURRENCY_SERVICE_ADDR
-        value: currencyservice:8080
-      - name: EMAIL_SERVICE_ADDR
-        value: http://emailservice:8080
-      - name: PAYMENT_SERVICE_ADDR
-        value: paymentservice:8080
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: productcatalogservice:8080
-      - name: SHIPPING_SERVICE_ADDR
-        value: shippingservice:8080
-      - name: KAFKA_SERVICE_ADDR
+      - name: CART_ADDR
+        value: cart:8080
+      - name: CURRENCY_ADDR
+        value: currency:8080
+      - name: EMAIL_ADDR
+        value: http://email:8080
+      - name: PAYMENT_ADDR
+        value: payment:8080
+      - name: PRODUCT_CATALOG_ADDR
+        value: product-catalog:8080
+      - name: SHIPPING_ADDR
+        value: shipping:8080
+      - name: KAFKA_ADDR
         value: kafka:9092
       - name: FLAGD_HOST
         value: flagd
@@ -258,14 +258,14 @@ components:
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
 
-  currencyService:
+  currency:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: CURRENCY_SERVICE_PORT
+      - name: CURRENCY_PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
@@ -275,14 +275,14 @@ components:
       limits:
         memory: 20Mi
 
-  emailService:
+  email:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: EMAIL_SERVICE_PORT
+      - name: EMAIL_PORT
         value: "8080"
       - name: APP_ENV
         value: production
@@ -292,12 +292,12 @@ components:
       limits:
         memory: 100Mi
 
-  frauddetectionService:
+  fraud-detection:
     enabled: true
     useDefault:
       env: true
     env:
-      - name: KAFKA_SERVICE_ADDR
+      - name: KAFKA_ADDR
         value: kafka:9092
       - name: FLAGD_HOST
         value: flagd
@@ -324,20 +324,20 @@ components:
         value: "8080"
       - name: FRONTEND_ADDR
         value: :8080
-      - name: AD_SERVICE_ADDR
-        value: adservice:8080
-      - name: CART_SERVICE_ADDR
-        value: cartservice:8080
-      - name: CHECKOUT_SERVICE_ADDR
-        value: checkoutservice:8080
-      - name: CURRENCY_SERVICE_ADDR
-        value: currencyservice:8080
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: productcatalogservice:8080
-      - name: RECOMMENDATION_SERVICE_ADDR
-        value: recommendationservice:8080
-      - name: SHIPPING_SERVICE_ADDR
-        value: shippingservice:8080
+      - name: AD_ADDR
+        value: ad:8080
+      - name: CART_ADDR
+        value: cart:8080
+      - name: CHECKOUT_ADDR
+        value: checkout:8080
+      - name: CURRENCY_ADDR
+        value: currency:8080
+      - name: PRODUCT_CATALOG_ADDR
+        value: product-catalog:8080
+      - name: RECOMMENDATION_ADDR
+        value: recommendation:8080
+      - name: SHIPPING_ADDR
+        value: shipping:8080
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -358,7 +358,7 @@ components:
       runAsGroup: 1001
       runAsNonRoot: true
 
-  frontendProxy:
+  frontend-proxy:
     enabled: true
     useDefault:
       env: true
@@ -379,20 +379,20 @@ components:
         value: frontend
       - name: FRONTEND_PORT
         value: "8080"
-      - name: GRAFANA_SERVICE_HOST
+      - name: GRAFANA_HOST
         value: grafana
-      - name: GRAFANA_SERVICE_PORT
+      - name: GRAFANA_PORT
         value: "80"
       - name: IMAGE_PROVIDER_HOST
-        value: imageprovider
+        value: image-provider
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
-      - name: JAEGER_SERVICE_HOST
+      - name: JAEGER_HOST
         value: jaeger-query
-      - name: JAEGER_SERVICE_PORT
+      - name: JAEGER_PORT
         value: "16686"
       - name: LOCUST_WEB_HOST
-        value: loadgenerator
+        value: load-generator
       - name: LOCUST_WEB_PORT
         value: "8089"
       - name: OTEL_COLLECTOR_HOST
@@ -409,7 +409,7 @@ components:
       runAsGroup: 101
       runAsNonRoot: true
 
-  imageprovider:
+  image-provider:
     enabled: true
     useDefault:
       env: true
@@ -426,7 +426,7 @@ components:
       limits:
         memory: 50Mi
 
-  loadgenerator:
+  load-generator:
     enabled: true
     useDefault:
       env: true
@@ -442,7 +442,7 @@ components:
       - name: LOCUST_SPAWN_RATE
         value: "1"
       - name: LOCUST_HOST
-        value: http://frontendproxy:8080
+        value: http://frontend-proxy:8080
       - name: LOCUST_HEADLESS
         value: "false"
       - name: LOCUST_AUTOSTART
@@ -461,14 +461,14 @@ components:
       limits:
         memory: 1500Mi
 
-  paymentService:
+  payment:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: PAYMENT_SERVICE_PORT
+      - name: PAYMENT_PORT
         value: "8080"
       - name: FLAGD_HOST
         value: flagd
@@ -484,33 +484,39 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-  productCatalogService:
+  product-catalog:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: PRODUCT_CATALOG_SERVICE_PORT
+      - name: PRODUCT_CATALOG_PORT
         value: "8080"
+      - name: PRODUCT_CATALOG_RELOAD_INTERVAL
+        value: "10"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+    mountedConfigMaps:
+      - name: product-catalog-products
+        mountPath: /usr/src/app/products
+        existingConfigMap: product-catalog-products
     resources:
       limits:
         memory: 20Mi
 
-  quoteService:
+  quote:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: QUOTE_SERVICE_PORT
+      - name: QUOTE_PORT
         value: "8080"
       - name: OTEL_PHP_AUTOLOAD_ENABLED
         value: "true"
@@ -524,17 +530,17 @@ components:
       runAsGroup: 33
       runAsNonRoot: true
 
-  recommendationService:
+  recommendation:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: RECOMMENDATION_SERVICE_PORT
+      - name: RECOMMENDATION_PORT
         value: "8080"
-      - name: PRODUCT_CATALOG_SERVICE_ADDR
-        value: productcatalogservice:8080
+      - name: PRODUCT_CATALOG_ADDR
+        value: product-catalog:8080
       - name: OTEL_PYTHON_LOG_CORRELATION
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
@@ -549,17 +555,17 @@ components:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
 
-  shippingService:
+  shipping:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: SHIPPING_SERVICE_PORT
+      - name: SHIPPING_PORT
         value: "8080"
-      - name: QUOTE_SERVICE_ADDR
-        value: http://quoteservice:8080
+      - name: QUOTE_ADDR
+        value: http://quote:8080
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
@@ -583,7 +589,7 @@ components:
         value: $(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 100Mi
+        memory: 75Mi
     command:
       - "/flagd-build"
       - "start"
@@ -596,7 +602,7 @@ components:
         mountPath: /etc/flagd
     # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
     sidecarContainers:
-      - name: flagdui
+      - name: flagd-ui
         useDefault:
           env: true
         service:
@@ -608,7 +614,7 @@ components:
             value: http://$(OTEL_COLLECTOR_NAME):4318
         resources:
           limits:
-            memory: 100Mi
+            memory: 75Mi
         volumeMounts:
           - name: config-rw
             mountPath: /app/data
@@ -651,7 +657,7 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-  valkey:
+  valkey-cart:
     enabled: true
     useDefault:
       env: true
@@ -660,7 +666,7 @@ components:
       tag: "7.2-alpine"
     replicas: 1
     ports:
-      - name: valkey
+      - name: valkey-cart
         value: 6379
     resources:
       limits:
@@ -674,7 +680,7 @@ opentelemetry-collector:
   enabled: true
   image:
     repository: "otel/opentelemetry-collector-contrib"
-  fullnameOverride: otelcol
+  fullnameOverride: otel-collector
   mode: deployment
   presets:
     kubernetesAttributes:
@@ -707,11 +713,11 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
-      httpcheck/frontendproxy:
+      httpcheck/frontend-proxy:
         targets:
-          - endpoint: http://frontendproxy:8080
+          - endpoint: http://frontend-proxy:8080
       redis:
-        endpoint: "valkey:6379"
+        endpoint: "valkey-cart:6379"
         collection_interval: 10s
 
     exporters:
@@ -759,7 +765,7 @@ opentelemetry-collector:
           processors: [memory_limiter, resource, transform, batch]
           exporters: [otlp, debug, spanmetrics]
         metrics:
-          receivers: [httpcheck/frontendproxy, redis, otlp, spanmetrics]
+          receivers: [httpcheck/frontend-proxy, redis, otlp, spanmetrics]
           processors: [memory_limiter, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
@@ -960,4 +966,4 @@ opensearch:
       value: "true"
   resources:
     limits:
-      memory: 1Gi
+      memory: 1100Mi
