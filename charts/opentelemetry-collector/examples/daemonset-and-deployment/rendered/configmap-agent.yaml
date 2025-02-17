@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.106.2
+    helm.sh/chart: opentelemetry-collector-0.106.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.118.0"
@@ -14,6 +14,15 @@ metadata:
     
 data:
   relay: |
+    connectors:
+      spanmetrics:
+        dimensions:
+        - name: http.response.status_code
+        - name: rpc.grpc.status_code
+        - name: service.version
+        metrics_expiration: 0
+        metrics_flush_interval: 15s
+        namespace: ""
     exporters:
       debug: {}
       otlp:
@@ -29,6 +38,13 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      transform/spanmetrics:
+        error_mode: silent
+        trace_statements:
+        - context: span
+          statements:
+          - set(attributes["http.response.status_code"], attributes["http.status_code"])
+            where attributes["http.response.status_code"] == nil
     receivers:
       jaeger:
         protocols:
@@ -83,12 +99,15 @@ data:
           - otlp
           - prometheus
           - kubeletstats
+          - spanmetrics
         traces:
           exporters:
           - otlp
           - debug
+          - spanmetrics
           processors:
           - memory_limiter
+          - transform/spanmetrics
           - batch
           receivers:
           - otlp
