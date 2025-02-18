@@ -35,9 +35,7 @@ Workload (Pod) labels
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .name }}
 app.kubernetes.io/component: {{ .name}}
-app.kubernetes.io/name: {{ include "otel-demo.name" . }}-{{ .name }}
-{{- else }}
-app.kubernetes.io/name: {{ include "otel-demo.name" . }}
+app.kubernetes.io/name: {{ .name }}
 {{- end }}
 {{- end }}
 
@@ -49,9 +47,7 @@ Selector labels
 */}}
 {{- define "otel-demo.selectorLabels" -}}
 {{- if .name }}
-opentelemetry.io/name: {{ include "otel-demo.name" . }}-{{ .name }}
-{{- else }}
-opentelemetry.io/name: {{ include "otel-demo.name" . }}
+opentelemetry.io/name: {{ .name }}
 {{- end }}
 {{- end }}
 
