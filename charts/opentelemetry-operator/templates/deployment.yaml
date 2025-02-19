@@ -93,6 +93,11 @@ spec:
             {{- with .Values.manager.extraEnvs }}
               {{- . | toYaml | nindent 12 }}
             {{- end }}
+            # These are required to make cert-manager detection work properly
+            - name: SERVICE_ACCOUNT_NAME
+              value: {{ .Release.Name }}
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
             {{- if .Values.manager.createRbacPermissions }}
             - name: SERVICE_ACCOUNT_NAME
               valueFrom:

@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.80.2
+    helm.sh/chart: opentelemetry-operator-0.80.3
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.117.0"
     app.kubernetes.io/managed-by: Helm
@@ -40,6 +40,11 @@ spec:
           env:
             - name: ENABLE_WEBHOOKS
               value: "true"
+            # These are required to make cert-manager detection work properly
+            - name: SERVICE_ACCOUNT_NAME
+              value: example
+            - name: NAMESPACE
+              value: default
           image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.117.0"
           name: manager
           ports:
