@@ -1,8 +1,30 @@
 # Contributing Guide
 
+🎉 Welcome to the OpenTelemetry Helm Charts Repository! 🎉
+
+## Introduction
+
+This repository hosts Helm charts for deploying OpenTelemetry components in Kubernetes. Your contributions help improve observability for everyone! Whether you’re fixing a configuration, adding a new feature, or improving documentation, we appreciate your effort!
+
 We'd love your help!
 
-## How to Contribute
+## Pre-requisites
+
+To work with this repository, ensure you have:
+
+- Helm 3.8+
+
+- chart-testing (ct) 3.7+
+
+- Kubernetes CLI (kubectl)
+
+- make (for automation)
+
+### Platform Notes
+
+Docker or Kubernetes cluster access (for testing chart installations)
+
+## Workflow 
 
 1. Fork this repository
 1. Develop, and test your changes
@@ -15,7 +37,15 @@ Please also see [GitHub
 workflow](https://github.com/open-telemetry/community/blob/main/CONTRIBUTING.md#github-workflow)
 section of general project contributing guide.
 
-### Technical Requirements
+Local Run/Build
+
+TBD
+
+Testing
+
+TBD
+
+## Technical Requirements
 
 * Must follow [Charts best practices](https://helm.sh/docs/topics/chart_best_practices/)
 * Must pass CI jobs for linting and installing changed charts with the
@@ -27,12 +57,12 @@ section of general project contributing guide.
 Once changes have been merged, the release job will automatically run to package
 and release changed charts.
 
-### Immutability
+## Immutability
 
 Chart releases must be immutable. Any change to a chart warrants a chart version
 bump even if it is only changed to the documentation.
 
-### Versioning
+## Versioning
 
 The chart `version` should follow [semver](https://semver.org/).
 
@@ -43,7 +73,7 @@ Any breaking (backwards incompatible) changes to a chart should:
 2. In the README, under a section called "Upgrading", describe the manual steps
    necessary to upgrade to the new (specified) MAJOR version
 
-### Examples
+## Examples
 
 All charts maintain examples for the current version. After updating the version, examples must be updated with the `make generate-examples` target.
 
@@ -53,6 +83,10 @@ If you need update a single chart's examples you can use the `CHARTS` variable. 
 
 New examples should be added as independent folders in the respective chart's `examples` folder.  Examples should always contain a `values.yaml` and a `rendered` folder.
 
+## Further Help
+
+- Join [#helm-charts](https://cloud-native.slack.com/archives/C03HVLM8LAH) on OpenTelemetry Slack.
+  
 ### Chart-specific Contributing Guides
 
 - [opentelemetry-collector](./charts/opentelemetry-collector/CONTRIBUTING.md)
