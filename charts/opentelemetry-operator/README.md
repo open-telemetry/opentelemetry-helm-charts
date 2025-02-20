@@ -1,6 +1,6 @@
 # OpenTelemetry Operator Helm Chart
 
-> [!WARNING]  
+> [!WARNING]
 > Version 0.58.0 of this Chart includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions for the new Operator CRD. Please make sure you also follow the [helm upgrade instructions](./UPGRADING.md#0560-to-0570) for helm chart 0.57.0.
 
 The Helm chart installs [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) in Kubernetes cluster.
@@ -37,7 +37,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ## Install Chart
 
-> [!NOTE]  
+> [!NOTE]
 > This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Use `crds.create=false` instead if you do not want the chart to install the OpenTelemetry Operator's CRDs.
 
 ```console
@@ -82,6 +82,7 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
 $ kubectl delete crd opampbridges.opentelemetry.io
 $ kubectl delete crd instrumentations.opentelemetry.io
+$ kubectl delete crd targetallocators.opentelemetry.io
 ```
 
 ## Upgrade Chart
