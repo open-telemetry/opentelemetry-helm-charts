@@ -1080,6 +1080,13 @@ connectors:
 
 {{- define "opentelemetry-collector.kubernetesResourcesConfig" -}}
 processors:
+  {{- if .Values.presets.kubernetesResources.filterWorkflows.enabled }}
+  filter/workflow:
+    error_mode: silent
+    logs:
+      log_record:
+        - 'body["object"]["kind"] == "Pod" and not IsMatch(body["object"]["metadata"]["ownerReferences"], ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")'
+  {{- end }}
   transform/entity-event:
     error_mode: silent
     log_statements:
@@ -1270,6 +1277,9 @@ service:
         - memory_limiter
         - resourcedetection/resource_catalog
         - transform/entity-event
+        {{- if .Values.presets.kubernetesResources.filterWorkflows.enabled }}
+        - filter/workflow
+        {{- end }}
         - resource/metadata
         - batch
       receivers:

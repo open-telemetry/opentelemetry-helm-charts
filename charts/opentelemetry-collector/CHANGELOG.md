@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.106.4 / 2025-02-20
+- [Fix] Filter only Pods from standard kubernetes Workloads in kubernetesResource presets.
+
 ### v0.106.3 / 2025-02-17
 - [Fix] `spanMetrics.transformStatements` are correctly created even when `spanMetrics.dbMetrics` is not enabled.
 
