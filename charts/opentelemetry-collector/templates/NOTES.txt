@@ -20,8 +20,8 @@
 {{ end }}
 
 {{/* validate extensions must include health_check */}}
-{{- if not (has "health_check" .Values.config.service.extensions) }}
-{{ fail "[ERROR] The opentelemetry-collector chart requires that the health_check extension to be included in the extension list." }}
+{{- if and (not (has "health_check" .Values.config.service.extensions)) (not (has "healthcheckv2" .Values.config.service.extensions)) }}
+{{ fail "[ERROR] The opentelemetry-collector chart requires that the health_check extension or the healthcheckv2 extension to be included in the extension list." }}
 {{- end}}
 
 {{- if not .Values.configMap.create }}
