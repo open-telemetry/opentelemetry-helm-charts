@@ -47,3 +47,7 @@
 {{- if and (.Values.useGOMEMLIMIT) (not ((((.Values.resources).limits).memory))) }}
 [WARNING] "useGOMEMLIMIT" is enabled but memory limits have not been supplied so the GOMEMLIMIT env var could not be added. Solve this problem by setting resources.limits.memory or disabling useGOMEMLIMIT
 {{ end }}
+
+{{- if and (.Values.useOTLPToExportInternalTelemetry.enabled) (not .Values.useOTLPToExportInternalTelemetry.endpoint) }}
+{{ fail "[ERROR] useOTLPToExportInternalTelemetry.endpoint must be set when useOTLPToExportInternalTelemetry.enabled is true" }}
+{{ end }}

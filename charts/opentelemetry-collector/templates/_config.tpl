@@ -1,8 +1,49 @@
+{{- define "opentelemetry-collector.var_dump" -}}
+{{- . | mustToPrettyJson | printf "\nThe JSON output of the dumped var is: \n%s" | fail }}
+{{- end -}}
+
+{{- define "opentelemetry-collector.otelsdkotlp" -}}
+traces:
+  processors:
+    - batch:
+        exporter:
+          otlp:
+            protocol: http/protobuf
+            endpoint: {{ .Values.useOTLPToExportInternalTelemetry.endpoint }}
+            headers:
+              {{- toYaml .Values.useOTLPToExportInternalTelemetry.headers | nindent 14 }}
+metrics:
+  readers:
+    - periodic:
+        exporter:
+          otlp:
+            protocol: http/protobuf
+            endpoint: {{ .Values.useOTLPToExportInternalTelemetry.endpoint }}
+            headers:
+              {{- toYaml .Values.useOTLPToExportInternalTelemetry.headers | nindent 14 }}
+logs:
+  processors:
+    - batch:
+        exporter:
+          otlp:
+            protocol: http/protobuf
+            endpoint: {{ .Values.useOTLPToExportInternalTelemetry.endpoint }}
+            headers:
+              {{- toYaml .Values.useOTLPToExportInternalTelemetry.headers | nindent 14 }}
+{{- end }}
+
 {{- define "opentelemetry-collector.baseConfig" -}}
 {{- if .Values.alternateConfig }}
 {{- .Values.alternateConfig | toYaml }}
 {{- else}}
-{{- .Values.config | toYaml }}
+{{- $config := deepCopy .Values.config }}
+{{- if .Values.useOTLPToExportInternalTelemetry.enabled }}
+{{- $_ := unset $config.receivers "prometheus" }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (mustWithout $config.service.pipelines.metrics.receivers "prometheus") }}
+{{- $_ := unset $config.service.telemetry.metrics "address" }}
+{{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp" . | fromYaml)) }}
+{{- end }}
+{{- $config | toYaml }}
 {{- end }}
 {{- end }}
 
