@@ -88,6 +88,22 @@ configMap:
   # ConfigMap template, as it enables pod restart via a template checksum annotation.
   # existingPath: ""
 
+
+# When enabled, the chart will configure the collector to emit its traces, metrics, and logs via the OTLP using the Otel Go SDK.
+# It will also remove the default prometheus receiver (which was configured to scrape the Collector's metrics)
+# and the service.telemetry.metrics.address value.
+# Learn more about the Collector telemetry at https://opentelemetry.io/docs/collector/internal-telemetry/.
+#
+# THIS OPTION IS EXPERIMENTAL AND SUBJECT TO BREAKING CHANGES
+useOTLPToExportInternalTelemetry:
+  enabled: false
+  # The endpoint where the telemetry will be exported
+  endpoint: ""
+  # Optional headers to configure the exporter
+  headers: []
+    # - name: "x-dest-auth"
+    #   value: "some auth key"
+
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
 # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
@@ -125,6 +141,7 @@ config:
           endpoint: ${env:MY_POD_IP}:4317
         http:
           endpoint: ${env:MY_POD_IP}:4318
+    # if useOTLPToExportInternalTelemetry = true, prometheus receiver will be removed
     prometheus:
       config:
         scrape_configs:
@@ -138,6 +155,7 @@ config:
   service:
     telemetry:
       metrics:
+          # if useOTLPToExportInternalTelemetry = true, this address will be removed and an otel go sdk will be configured to emit otlp
         address: ${env:MY_POD_IP}:8888
     extensions:
       - health_check
@@ -158,6 +176,7 @@ config:
           - batch
         receivers:
           - otlp
+          # if useOTLPToExportInternalTelemetry = true, prometheus receiver will be removed
           - prometheus
       traces:
         exporters:
