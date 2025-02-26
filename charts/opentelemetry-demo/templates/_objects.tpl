@@ -6,7 +6,7 @@ Demo component Deployment template
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  name: {{ .name }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
@@ -49,7 +49,7 @@ spec:
       {{- end}}
       containers:
         - name: {{ .name }}
-          image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
+          image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) .name) }}'
           imagePullPolicy: {{ ((.imageOverride).pullPolicy) | default .defaultValues.image.pullPolicy }}
           {{- if .command }}
           command:
@@ -92,7 +92,7 @@ spec:
         {{- $sidecar := set . "Release" $.Release }}
         {{- $sidecar := set . "defaultValues" $.defaultValues }}
         - name: {{ .name   }}
-          image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) (replace "-" "" .name)) }}'
+          image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) .name) }}'
           imagePullPolicy: {{ ((.imageOverride).pullPolicy) | default .defaultValues.image.pullPolicy }}
           {{- if .command }}
           command:
@@ -132,7 +132,7 @@ spec:
             {{- if .existingConfigMap }}
             name: {{ tpl .existingConfigMap $ }}
             {{- else }}
-            name: {{ include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
+            name: {{ $.name }}-{{ .name | lower }}
             {{- end }}
         {{- end }}
         {{- range .mountedEmptyDirs }}
@@ -154,7 +154,7 @@ Demo component Service template
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "otel-demo.name" . }}-{{ .name }}
+  name: {{ .name }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
   {{- with $service.annotations }}
@@ -214,7 +214,7 @@ Demo component ConfigMap template
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
+  name: {{ $.name }}-{{ .name | lower }}
   labels:
         {{- include "otel-demo.labels" $ | nindent 4 }}
 data:
@@ -250,9 +250,9 @@ apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
   {{- if .name }}
-  name: {{include "otel-demo.name" $ }}-{{ $.name }}-{{ .name | lower }}
+  name: {{ $.name }}-{{ .name | lower }}
   {{- else }}
-  name: {{include "otel-demo.name" $ }}-{{ $.name }}
+  name: {{ $.name }}
   {{- end }}
   labels:
     {{- include "otel-demo.labels" $ | nindent 4 }}
@@ -286,7 +286,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "otel-demo.name" $ }}-{{ $.name }}
+                name: {{ $.name }}
                 port:
                   number: {{ .port }}
           {{- end }}

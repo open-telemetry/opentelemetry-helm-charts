@@ -5,6 +5,50 @@
 > another. If you need to upgrade the chart, you must first delete the existing
 > release and then install the new version.
 
+## To 0.36
+
+The Demo 2.0 release removed the `service` suffix from many components names,
+and renamed some components based on a naming standard defined in
+the [#1788](https://github.com/open-telemetry/opentelemetry-demo/issues/1788)
+issue in the OpenTelemetry Demo repository. Any custom configuration for a Demo
+component that was renamed will need to be updated to use the new name. The
+following table shows the old and new names for each component:
+
+| Old Name               | New Name        |
+|------------------------|-----------------|
+| accountingservice      | accounting      |
+| adservice              | ad              |
+| cartservice            | cart            |
+| checkoutservice        | checkout        |
+| currencyservice        | currency        |
+| emailservice           | email           |
+| flagd                  | flagd           |
+| flagd-ui               | flagd-ui        |
+| frauddetectionservice  | fraud-detection |
+| frontend               | frontend        |
+| frontendproxy          | frontend-proxy  |
+| frontend-web           | frontend-web    |
+| grafana                | grafana         |
+| imageprovider          | image-provider  |
+| jaeger                 | jaeger          |
+| kafka                  | kafka           |
+| loadgenerator          | load-generator  |
+| opensearch             | opensearch      |
+| otelcollector          | otel-collector  |
+| paymentservice         | payment         |
+| productcatalogservice  | product-catalog |
+| prometheus             | prometheus      |
+| quotesservice          | quote           |
+| recommendationsservice | recommendation  |
+| shippingservice        | shipping        |
+| valkey-cart            | valkey-cart     |
+
+## To 0.35
+
+The Helm chart release name prefix has been removed from all resources. If you
+have any custom configuration that depend on the release name, you will need to
+update it accordingly.
+
 ## To 0.33
 
 The Helm prerequisite version has been updated to Helm 3.14+. Please upgrade your

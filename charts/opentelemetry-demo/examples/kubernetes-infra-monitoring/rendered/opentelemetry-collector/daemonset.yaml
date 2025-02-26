@@ -3,19 +3,19 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: example-otelcol-agent
+  name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.110.3
-    app.kubernetes.io/name: otelcol
+    helm.sh/chart: opentelemetry-collector-0.116.0
+    app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.114.0"
+    app.kubernetes.io/version: "0.119.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: agent-collector
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: otelcol
+      app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
       component: agent-collector
   updateStrategy:
@@ -23,18 +23,18 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 0ff346b3f43d037338a5a4af050b6a5c80971391325d2ffd35e5db5769639621
+        checksum/config: 5dcc5cade0421b1598e3ee788abfaae7ef36ddb130cc0e4d7053fde00a13cf84
         opentelemetry_community_demo: "true"
         prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
       labels:
-        app.kubernetes.io/name: otelcol
+        app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: agent-collector
         
     spec:
       
-      serviceAccountName: example-otelcol
+      serviceAccountName: otel-collector
       securityContext:
         {}
       containers:
@@ -44,7 +44,7 @@ spec:
           securityContext:
             runAsUser: 0
             runAsGroup: 0
-          image: "otel/opentelemetry-collector-contrib:0.114.0"
+          image: "otel/opentelemetry-collector-contrib:0.119.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -88,6 +88,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
             - name: GOMEMLIMIT
               value: "160MiB"
           livenessProbe:
@@ -119,7 +123,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-otelcol-agent
+            name: otel-collector-agent
             items:
               - key: relay
                 path: relay.yaml

@@ -182,7 +182,7 @@ parameters by default. The overriden parameters are specified below.
 | Parameter        | Description                                        | Default                                                  |
 |------------------|----------------------------------------------------|----------------------------------------------------------|
 | `enabled`        | Install the OpenTelemetry collector                | `true`                                                   |
-| `nameOverride`   | Name that will be used by the sub-chart release    | `otelcol`                                                |
+| `nameOverride`   | Name that will be used by the sub-chart release    | `otel-collector`                                                |
 | `mode`           | The Deployment or Daemonset mode                   | `deployment`                                             |
 | `resources`      | CPU/Memory resource requests/limits                | 100Mi memory limit                                       |
 | `service.type`   | Service Type to use                                | `ClusterIP`                                              |
@@ -236,7 +236,7 @@ parameters by default. The overriden parameters are specified below.
 | Parameter             | Description                                        | Default                                                              |
 |-----------------------|----------------------------------------------------|----------------------------------------------------------------------|
 | `enabled`             | Install the Grafana sub-chart                      | `true`                                                               |
-| `grafana.ini`         | Grafana's primary configuration                    | Enables anonymous login, and proxy through the frontendProxy service |
+| `grafana.ini`         | Grafana's primary configuration                    | Enables anonymous login, and proxy through the frontend-proxy service |
 | `adminPassword`       | Password used by `admin` user                      | `admin`                                                              |
 | `rbac.pspEnabled`     | Enable PodSecurityPolicy resources                 | `false`                                                              |
 | `datasources`         | Configure grafana datasources (passed through tpl) | Prometheus and Jaeger data sources                                   |

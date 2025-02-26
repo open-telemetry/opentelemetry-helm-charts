@@ -3,18 +3,18 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: otel-demo-opensearch
+  name: opensearch
   labels:
-    helm.sh/chart: opensearch-2.27.1
+    helm.sh/chart: opensearch-2.31.0
     app.kubernetes.io/name: opensearch
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.18.0"
+    app.kubernetes.io/version: "2.19.0"
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: otel-demo-opensearch
+    app.kubernetes.io/component: opensearch
   annotations:
     majorVersion: "2"
 spec:
-  serviceName: otel-demo-opensearch-headless
+  serviceName: opensearch-headless
   selector:
     matchLabels:
       app.kubernetes.io/name: opensearch
@@ -25,16 +25,16 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      name: "otel-demo-opensearch"
+      name: "opensearch"
       labels:
-        helm.sh/chart: opensearch-2.27.1
+        helm.sh/chart: opensearch-2.31.0
         app.kubernetes.io/name: opensearch
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "2.18.0"
+        app.kubernetes.io/version: "2.19.0"
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/component: otel-demo-opensearch
+        app.kubernetes.io/component: opensearch
       annotations:
-        configchecksum: 3fd357b077f0655ef353bece2513c5d5d810ec973c73d57851f6e159ba5be35
+        configchecksum: 838f0e165e6aa96864905c927dda39e2e2a6480bff7bfa9b9110e6a50cc1408
     spec:
       securityContext:
         fsGroup: 1000
@@ -60,13 +60,13 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: otel-demo-opensearch-config
+          name: opensearch-config
       - emptyDir: {}
         name: config-emptydir
       enableServiceLinks: true
       initContainers:
       - name: configfile
-        image: "opensearchproject/opensearch:2.18.0"
+        image: "opensearchproject/opensearch:2.19.0"
         imagePullPolicy: "IfNotPresent"
         command:
         - sh
@@ -91,7 +91,7 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
 
-        image: "opensearchproject/opensearch:2.18.0"
+        image: "opensearchproject/opensearch:2.19.0"
         imagePullPolicy: "IfNotPresent"
         readinessProbe:
           failureThreshold: 3
@@ -115,7 +115,7 @@ spec:
           containerPort: 9600
         resources:
           limits:
-            memory: 1Gi
+            memory: 1100Mi
           requests:
             cpu: 1000m
             memory: 100Mi
