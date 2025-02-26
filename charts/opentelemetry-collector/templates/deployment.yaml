@@ -6,6 +6,7 @@ metadata:
   namespace: {{ template "opentelemetry-collector.namespace" . }}
   labels:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+    {{- include "opentelemetry-collector.component" . | nindent 4 }}
   {{- if .Values.annotations }}
   annotations:
     {{- range $key, $value := .Values.annotations }}
@@ -35,7 +36,7 @@ spec:
         {{- include "opentelemetry-collector.configTemplateChecksumAnnotation" . | nindent 8 }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
-        {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-collector.labels" . | nindent 8 }}
         {{- include "opentelemetry-collector.component" . | nindent 8 }}
         {{- include "opentelemetry-collector.podLabels" . | nindent 8 }}
     spec:
