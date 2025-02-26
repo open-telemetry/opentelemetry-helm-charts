@@ -48,6 +48,14 @@
 [WARNING] "useGOMEMLIMIT" is enabled but memory limits have not been supplied so the GOMEMLIMIT env var could not be added. Solve this problem by setting resources.limits.memory or disabling useGOMEMLIMIT
 {{ end }}
 
-{{- if and (.Values.useOTLPToExportInternalTelemetry.enabled) (not .Values.useOTLPToExportInternalTelemetry.endpoint) }}
-{{ fail "[ERROR] useOTLPToExportInternalTelemetry.endpoint must be set when useOTLPToExportInternalTelemetry.enabled is true" }}
+{{- if or (and (.Values.internalTelemetryViaOTLP.traces.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.traces.endpoint))) }}
+{{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.traces.endpoint must be set when internalTelemetryViaOTLP.traces.enabled is true" }}
+{{ end }}
+
+{{- if or (and (.Values.internalTelemetryViaOTLP.metrics.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.metrics.endpoint))) }}
+{{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.metrics.endpoint must be set when internalTelemetryViaOTLP.metrics.enabled is true" }}
+{{ end }}
+
+{{- if or (and (.Values.internalTelemetryViaOTLP.logs.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.logs.endpoint))) }}
+{{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.logs.endpoint must be set when internalTelemetryViaOTLP.logs.enabled is true" }}
 {{ end }}
