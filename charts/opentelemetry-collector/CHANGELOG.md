@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.107.1 / 2025-02-27
+- [Fix] Change telemetry.metrics.address to metric reader
+
 ### v0.107.0 / 2025-02-27
 - [Feat] Update Collector to v0.119.0
 
