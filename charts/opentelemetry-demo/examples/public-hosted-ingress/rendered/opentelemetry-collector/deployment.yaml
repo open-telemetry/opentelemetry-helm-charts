@@ -6,10 +6,10 @@ metadata:
   name: otel-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.116.0
+    helm.sh/chart: opentelemetry-collector-0.117.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.119.0"
+    app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: standalone-collector
 spec:
@@ -25,9 +25,8 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 083c3fffe47f5eb6bbcea0ce548d80dff000c451fe54aac534683ad0cde2393c
+        checksum/config: 926b9ff95e3c843878db38a0f0ee9d894dca81a2332acab49a01bab5b60021d1
         opentelemetry_community_demo: "true"
-        prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -45,7 +44,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.119.0"
+          image: "otel/opentelemetry-collector-contrib:0.120.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -66,9 +65,6 @@ spec:
               protocol: TCP
             - name: otlp-http
               containerPort: 4318
-              protocol: TCP
-            - name: prometheus
-              containerPort: 9464
               protocol: TCP
             - name: zipkin
               containerPort: 9411
