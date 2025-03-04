@@ -85,7 +85,7 @@ processors:
   k8sattributes:
   {{- if eq .mode "daemonset" }}
     filter:
-      node_from_env_var: K8S_NODE_NAME
+      node_from_env_var: OTEL_K8S_NODE_NAME
   {{- end }}
     passthrough: false
     pod_association:
