@@ -126,7 +126,6 @@ config:
       include:
         - /var/log/pods/example-namespace_*/*/*.log
 ```
-
 #### :warning: Warning: Risk of looping the exported logs back into the receiver, causing "log explosion"
 
 The container logs pipeline uses the `debug` exporter by default.
