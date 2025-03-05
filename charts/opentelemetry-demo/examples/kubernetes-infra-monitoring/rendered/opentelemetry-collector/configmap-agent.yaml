@@ -3,13 +3,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-otelcol-agent
+  name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.110.3
-    app.kubernetes.io/name: otelcol
+    helm.sh/chart: opentelemetry-collector-0.117.1
+    app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.114.0"
+    app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: agent-collector
 data:
@@ -20,16 +20,16 @@ data:
       debug: {}
       opensearch:
         http:
-          endpoint: http://otel-demo-opensearch:9200
+          endpoint: http://opensearch:9200
           tls:
             insecure: true
         logs_index: otel
       otlp:
-        endpoint: 'example-jaeger-collector:4317'
+        endpoint: jaeger-collector:4317
         tls:
           insecure: true
       otlphttp/prometheus:
-        endpoint: http://example-prometheus-server:9090/api/v1/otlp
+        endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
     extensions:
@@ -83,7 +83,7 @@ data:
     receivers:
       filelog:
         exclude:
-        - /var/log/pods/default_example-otelcol*_*/opentelemetry-collector/*.log
+        - /var/log/pods/default_otel-collector*_*/opentelemetry-collector/*.log
         include:
         - /var/log/pods/*/*/*.log
         include_file_name: false
@@ -142,9 +142,9 @@ data:
           load: null
           memory: null
           network: null
-      httpcheck/frontendproxy:
+      httpcheck/frontend-proxy:
         targets:
-        - endpoint: http://example-frontendproxy:8080
+        - endpoint: http://frontend-proxy:8080
       jaeger:
         protocols:
           grpc:
@@ -156,7 +156,7 @@ data:
       kubeletstats:
         auth_type: serviceAccount
         collection_interval: 20s
-        endpoint: ${env:K8S_NODE_NAME}:10250
+        endpoint: ${env:K8S_NODE_IP}:10250
       otlp:
         protocols:
           grpc:
@@ -207,7 +207,7 @@ data:
           - resource
           - batch
           receivers:
-          - httpcheck/frontendproxy
+          - httpcheck/frontend-proxy
           - redis
           - otlp
           - spanmetrics
@@ -231,3 +231,12 @@ data:
       telemetry:
         metrics:
           address: ${env:MY_POD_IP}:8888
+          level: detailed
+          readers:
+          - periodic:
+              exporter:
+                otlp:
+                  endpoint: otel-collector:4318
+                  protocol: grpc
+              interval: 10000
+              timeout: 5000

@@ -3,13 +3,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-grafana
+  name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-8.6.4
+    helm.sh/chart: grafana-8.10.1
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "11.3.1"
+    app.kubernetes.io/version: "11.5.2"
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -22,19 +22,20 @@ spec:
   template:
     metadata:
       labels:
-        helm.sh/chart: grafana-8.6.4
+        helm.sh/chart: grafana-8.10.1
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "11.3.1"
+        app.kubernetes.io/version: "11.5.2"
       annotations:
-        checksum/config: a9f5a2b89c48190fe92c675736096573a2f0a3b5b3b9d4011a086412bf2bed80
+        checksum/config: 99cca986c6d5f6511900d815ee5a70d0c284aeb70af56fb96108c7bf456eff87
         checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
         checksum/secret: bed677784356b2af7fb0d87455db21f077853059b594101a4f6532bfbd962a7f
         kubectl.kubernetes.io/default-container: grafana
     spec:
       
-      serviceAccountName: example-grafana
+      serviceAccountName: grafana
       automountServiceAccountToken: true
+      shareProcessNamespace: false
       securityContext:
         fsGroup: 472
         runAsGroup: 472
@@ -43,7 +44,7 @@ spec:
       enableServiceLinks: true
       containers:
         - name: grafana
-          image: "docker.io/grafana/grafana:11.3.1"
+          image: "docker.io/grafana/grafana:11.5.2"
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -76,6 +77,9 @@ spec:
             - name: gossip-udp
               containerPort: 9094
               protocol: UDP
+            - name: profiling
+              containerPort: 6060
+              protocol: TCP
           env:
             - name: POD_IP
               valueFrom:
@@ -84,17 +88,17 @@ spec:
             - name: GF_SECURITY_ADMIN_USER
               valueFrom:
                 secretKeyRef:
-                  name: example-grafana
+                  name: grafana
                   key: admin-user
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: example-grafana
+                  name: grafana
                   key: admin-password
             - name: GF_INSTALL_PLUGINS
               valueFrom:
                 configMapKeyRef:
-                  name: example-grafana
+                  name: grafana
                   key: plugins
             - name: GF_PATHS_DATA
               value: /var/lib/grafana/
@@ -121,9 +125,9 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: example-grafana
+            name: grafana
         - name: dashboards-default
           configMap:
-            name: example-grafana-dashboards
+            name: grafana-dashboards
         - name: storage
           emptyDir: {}

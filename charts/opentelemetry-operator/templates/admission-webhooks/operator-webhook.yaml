@@ -133,8 +133,6 @@ webhooks:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  annotations:
-    cert-manager.io/inject-ca-from: {{ include "opentelemetry-operator.webhookCertAnnotation" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
@@ -270,11 +268,15 @@ webhooks:
 {{- $contextWithCaBundle := merge $ (dict "caBundle" $caCertEnc) }}
 {{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_opampbridges.yaml") $contextWithCaBundle }}
 ---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_targetallocators.yaml") $contextWithCaBundle }}
+---
 {{- tpl (.Files.Get "conf/crds/crd-opentelemetrycollector.yaml") $contextWithCaBundle }}
 ---
 {{- tpl (.Files.Get "conf/crds/crd-opentelemetryinstrumentation.yaml") $contextWithCaBundle }}
 {{- else }}
 {{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_opampbridges.yaml") . }}
+---
+{{- tpl (.Files.Get "conf/crds/crd-opentelemetry.io_targetallocators.yaml") . }}
 ---
 {{- tpl (.Files.Get "conf/crds/crd-opentelemetrycollector.yaml") . }}
 ---

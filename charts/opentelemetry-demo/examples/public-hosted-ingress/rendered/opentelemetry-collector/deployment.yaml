@@ -3,13 +3,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-otelcol
+  name: otel-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.110.3
-    app.kubernetes.io/name: otelcol
+    helm.sh/chart: opentelemetry-collector-0.117.1
+    app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.114.0"
+    app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: standalone-collector
 spec:
@@ -17,7 +17,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app.kubernetes.io/name: otelcol
+      app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
       component: standalone-collector
   strategy:
@@ -25,18 +25,17 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 62adfeddd71a96dc4b733857c6c6b1ca5ba8c9aae0e8464666dd8fce27f595cc
+        checksum/config: 926b9ff95e3c843878db38a0f0ee9d894dca81a2332acab49a01bab5b60021d1
         opentelemetry_community_demo: "true"
-        prometheus.io/port: "9464"
         prometheus.io/scrape: "true"
       labels:
-        app.kubernetes.io/name: otelcol
+        app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: standalone-collector
         
     spec:
       
-      serviceAccountName: example-otelcol
+      serviceAccountName: otel-collector
       securityContext:
         {}
       containers:
@@ -45,7 +44,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.114.0"
+          image: "otel/opentelemetry-collector-contrib:0.120.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -66,9 +65,6 @@ spec:
               protocol: TCP
             - name: otlp-http
               containerPort: 4318
-              protocol: TCP
-            - name: prometheus
-              containerPort: 9464
               protocol: TCP
             - name: zipkin
               containerPort: 9411
@@ -98,7 +94,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-otelcol
+            name: otel-collector
             items:
               - key: relay
                 path: relay.yaml

@@ -3,13 +3,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-grafana
+  name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-8.6.4
+    helm.sh/chart: grafana-8.10.1
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "11.3.1"
+    app.kubernetes.io/version: "11.5.2"
 data:
   
   plugins: grafana-opensearch-datasource
@@ -50,27 +50,28 @@ data:
       name: Prometheus
       type: prometheus
       uid: webstore-metrics
-      url: http://example-prometheus-server:9090
+      url: http://prometheus:9090
     - editable: true
       isDefault: false
       name: Jaeger
       type: jaeger
       uid: webstore-traces
-      url: http://example-jaeger-query:16686/jaeger/ui
+      url: http://jaeger-query:16686/jaeger/ui
     - access: proxy
       editable: true
       isDefault: false
       jsonData:
         database: otel
         flavor: opensearch
-        logLevelField: severity
+        logLevelField: severity.text.keyword
         logMessageField: body
         pplEnabled: true
         timeField: observedTimestamp
         version: 2.18.0
       name: OpenSearch
       type: grafana-opensearch-datasource
-      url: http://otel-demo-opensearch:9200/
+      uid: webstore-logs
+      url: http://opensearch:9200/
   dashboardproviders.yaml: |
     apiVersion: 1
     providers:
