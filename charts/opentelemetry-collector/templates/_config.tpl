@@ -94,6 +94,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.headSampling.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHeadSamplingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -158,6 +161,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.headSampling.enabled }}
+{{- $config = (include "opentelemetry-collector.applyHeadSamplingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1500,4 +1506,46 @@ receivers:
         group: "events.k8s.io"
         exclude_watch_type:
           - "DELETED"
+{{- end }}
+
+{{- define "opentelemetry-collector.applyHeadSamplingConfig" -}}
+{{- $exporterName := "coralogix" }}
+{{- if and (.Values.Values.presets.loadBalancing) (.Values.Values.presets.loadBalancing.enabled) }}
+{{- $exporterName = "loadbalancing" }}
+{{- end }}
+
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.headSamplingConfig" (dict "Values" .Values "exporterName" $exporterName) | fromYaml) .config }}
+
+{{- if and ($config.service.pipelines.traces) (has "coralogix" $config.service.pipelines.traces.exporters) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (without $config.service.pipelines.traces.exporters "coralogix")  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (has "loadbalancing" $config.service.pipelines.traces.exporters) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (without $config.service.pipelines.traces.exporters "loadbalancing")  }}
+{{- end }}
+
+{{- if and ($config.service.pipelines.traces) (not (has "forward/sampled" $config.service.pipelines.traces.exporters)) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "forward/sampled" | uniq)  }}
+{{- end }}
+
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.headSamplingConfig" -}}
+{{- $exporterName := .exporterName | default "coralogix" }}
+processors:
+  probabilistic_sampler:
+    sampling_percentage: {{ .Values.Values.presets.headSampling.percentage }}
+    mode: {{ .Values.Values.presets.headSampling.mode }}
+connectors:
+  forward/sampled: {}
+service:
+  pipelines:
+    traces/sampled:
+      receivers:
+         - forward/sampled
+      processors:
+        - batch
+        - probabilistic_sampler
+      exporters:
+        - {{ $exporterName }}
 {{- end }}

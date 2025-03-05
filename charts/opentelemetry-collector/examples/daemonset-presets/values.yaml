@@ -1,5 +1,11 @@
 mode: daemonset
 
+config:
+  exporters:
+    coralogix:
+      application_name: 'otel'
+      domain: 'coralogix.com'
+
 presets:
   logsCollection:
     enabled: true
@@ -42,6 +48,9 @@ presets:
         labelSelectors:
             env: "test"
             team: "teamA"
+  headSampling:
+    enabled: true
+
   spanMetrics:
     enabled: true
     transformStatements:
@@ -80,7 +89,10 @@ presets:
 extraConfig:
   processors:
     transform/test:
-      statements:
+      error_mode: silent
+      trace_statements:
+      - context: span
+        statements:
         - set(attributes["http.response.status_code"], attributes["http.status_code"]) where attributes["http.response.status_code"] == nil
   service:
     pipelines:

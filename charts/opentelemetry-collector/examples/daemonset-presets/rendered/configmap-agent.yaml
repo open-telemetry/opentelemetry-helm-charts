@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.108.0
+    helm.sh/chart: opentelemetry-collector-0.108.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.120.0"
@@ -16,6 +16,7 @@ data:
   relay: |
     connectors:
       forward/db: {}
+      forward/sampled: {}
       spanmetrics:
         dimensions:
         - name: http.response.status_code
@@ -53,6 +54,9 @@ data:
         metrics_flush_interval: 30s
         namespace: db
     exporters:
+      coralogix:
+        application_name: otel
+        domain: coralogix.com
       debug: {}
     extensions:
       health_check:
@@ -109,6 +113,9 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      probabilistic_sampler:
+        mode: proportional
+        sampling_percentage: 10
       transform/db:
         error_mode: silent
         trace_statements:
@@ -193,9 +200,12 @@ data:
           - set(attributes["http.response.status_code"], attributes["http.status_code"])
             where attributes["http.response.status_code"] == nil
       transform/test:
-        statements:
-        - set(attributes["http.response.status_code"], attributes["http.status_code"])
-          where attributes["http.response.status_code"] == nil
+        error_mode: silent
+        trace_statements:
+        - context: span
+          statements:
+          - set(attributes["http.response.status_code"], attributes["http.status_code"])
+            where attributes["http.response.status_code"] == nil
     receivers:
       filelog:
         exclude: []
@@ -450,6 +460,7 @@ data:
           - debug
           - spanmetrics
           - forward/db
+          - forward/sampled
           processors:
           - transform/span_name
           - k8sattributes
@@ -471,6 +482,14 @@ data:
           - batch
           receivers:
           - forward/db
+        traces/sampled:
+          exporters:
+          - coralogix
+          processors:
+          - batch
+          - probabilistic_sampler
+          receivers:
+          - forward/sampled
       telemetry:
         logs:
           encoding: json

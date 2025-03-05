@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.108.0
+    helm.sh/chart: opentelemetry-collector-0.108.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.120.0"
@@ -14,6 +14,8 @@ metadata:
     
 data:
   relay: |
+    connectors:
+      forward/sampled: {}
     exporters:
       debug: {}
       loadbalancing:
@@ -34,6 +36,9 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      probabilistic_sampler:
+        mode: proportional
+        sampling_percentage: 10
     receivers:
       jaeger:
         protocols:
@@ -83,7 +88,7 @@ data:
         traces:
           exporters:
           - debug
-          - loadbalancing
+          - forward/sampled
           processors:
           - resource
           - batch
@@ -91,6 +96,14 @@ data:
           - otlp
           - jaeger
           - zipkin
+        traces/sampled:
+          exporters:
+          - loadbalancing
+          processors:
+          - batch
+          - probabilistic_sampler
+          receivers:
+          - forward/sampled
       telemetry:
         logs:
           encoding: json
