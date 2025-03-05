@@ -6,10 +6,10 @@ metadata:
   name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-8.10.0
+    helm.sh/chart: grafana-8.10.1
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "11.5.1"
+    app.kubernetes.io/version: "11.5.2"
 data:
   
   plugins: grafana-opensearch-datasource
@@ -63,13 +63,14 @@ data:
       jsonData:
         database: otel
         flavor: opensearch
-        logLevelField: severity
+        logLevelField: severity.text.keyword
         logMessageField: body
         pplEnabled: true
         timeField: observedTimestamp
         version: 2.18.0
       name: OpenSearch
       type: grafana-opensearch-datasource
+      uid: webstore-logs
       url: http://opensearch:9200/
   dashboardproviders.yaml: |
     apiVersion: 1
