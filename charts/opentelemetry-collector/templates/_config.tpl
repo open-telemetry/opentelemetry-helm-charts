@@ -46,6 +46,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.profilesCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.mysql.metrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -418,6 +421,11 @@ receivers:
 {{- $config | toYaml }}
 {{- end }}
 
+{{- define "opentelemetry-collector.applyProfilesConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.profilesCollectionConfig" .Values | fromYaml) .config }}
+{{- $config | toYaml }}
+{{- end }}
+
 {{- define "opentelemetry-collector.logsCollectionConfig" -}}
 {{- if .Values.presets.logsCollection.storeCheckpoints }}
 extensions:
@@ -581,6 +589,33 @@ receivers:
       {{- if .Values.presets.logsCollection.extraFilelogOperators }}
       {{- .Values.presets.logsCollection.extraFilelogOperators | toYaml | nindent 6 }}
       {{- end }}
+{{- end }}
+
+
+{{- define "opentelemetry-collector.profilesCollectionConfig" -}}
+exporters:
+  coralogix/profiles:
+    timeout: "30s"
+    private_key: "${CORALOGIX_PRIVATE_KEY}"
+    domain: "{{.Values.global.domain}}"
+    application_name: "resource"
+    subsystem_name: "catalog"
+    batcher:
+      enabled: true
+      min_size: 1024
+      max_size: 2048
+      sizer: "items"
+      flush_timeout: "1s"
+service:
+  pipelines:
+    profiles:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - resource/metadata
+      exporters:
+        - coralogix/profiles
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesExtraMetrics" -}}
