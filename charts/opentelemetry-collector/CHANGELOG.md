@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.109.0 / 2025-03-06
+- [Feat] Update Collector to v0.121.0
+
 ### v0.108.1 / 2025-03-05
 - [Feat] Add headSampling preset to configure probabilistic sampling for traces
 
