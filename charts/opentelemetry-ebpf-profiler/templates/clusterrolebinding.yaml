@@ -1,0 +1,24 @@
+{{- if .Values.clusterRole.create}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "opentelemetry-ebpf-profiler.clusterRoleBindingName" . }}
+  labels:
+    {{- include "opentelemetry-ebpf-profiler.labels" . | nindent 4 }}
+  {{- if .Values.clusterRole.clusterRoleBinding.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.clusterRole.clusterRoleBinding.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "opentelemetry-ebpf-profiler.clusterRoleName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "opentelemetry-ebpf-profiler.serviceAccountName" . }}
+    namespace: {{ include "opentelemetry-ebpf-profiler.namespace" . }}
+  - kind: User
+    name: {{ include "opentelemetry-ebpf-profiler.serviceAccountName" . }}
+{{- end }}

@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "opentelemetry-ebpf-profiler.fullname" . }}-agent
+  namespace: {{ template "opentelemetry-ebpf-profiler.namespace" . }}
+  labels:
+    {{- include "opentelemetry-ebpf-profiler.labels" . | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "opentelemetry-ebpf-profiler.selectorLabels" . | nindent 6 }}
+      {{- include "opentelemetry-ebpf-profiler.component" . | nindent 6 }}
+  updateStrategy:
+    {{- if eq .Values.rollout.strategy "RollingUpdate" }}
+    {{- with .Values.rollout.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
+    type: {{ .Values.rollout.strategy }}
+  template:
+    metadata:
+      annotations:
+        {{- include "opentelemetry-ebpf-profiler.podAnnotations" . | nindent 8 }}
+      labels:
+        {{- include "opentelemetry-ebpf-profiler.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-ebpf-profiler.component" . | nindent 8 }}
+        {{- include "opentelemetry-ebpf-profiler.podLabels" . | nindent 8 }}
+    spec:
+      {{- $podValues := deepCopy .Values }}
+      {{- $podData := dict "Values" $podValues "configmapSuffix" "-agent" "isAgent" true }}
+      {{- include "opentelemetry-ebpf-profiler.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      hostPID: true
+      {{- with .Values.dnsPolicy }}
+      dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
