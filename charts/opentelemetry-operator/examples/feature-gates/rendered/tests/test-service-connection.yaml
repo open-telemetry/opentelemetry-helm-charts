@@ -34,7 +34,20 @@ spec:
           then exit 0
           else exit 1
           fi
+      securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
   restartPolicy: Never
+  securityContext:
+    fsGroup: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
 ---
 # Source: opentelemetry-operator/templates/tests/test-service-connection.yaml
 apiVersion: v1
@@ -71,4 +84,17 @@ spec:
           then exit 0
           else exit 1
           fi
+      securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
   restartPolicy: Never
+  securityContext:
+    fsGroup: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
