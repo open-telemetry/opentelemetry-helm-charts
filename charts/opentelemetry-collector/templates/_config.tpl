@@ -10,8 +10,10 @@ traces:
           otlp:
             protocol: http/protobuf
             endpoint: {{ default .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.traces.endpoint }}
+            {{- if or .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.traces.headers }}
             headers:
               {{- toYaml (default .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.traces.headers) | nindent 14 }}
+            {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.otelsdkotlp.metrics" -}}
@@ -22,8 +24,10 @@ metrics:
           otlp:
             protocol: http/protobuf
             endpoint: {{ default .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.metrics.endpoint }}
+            {{- if or .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.metrics.headers }}
             headers:
               {{- toYaml (default .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.metrics.headers) | nindent 14 }}
+            {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.otelsdkotlp.logs" -}}
@@ -34,8 +38,10 @@ logs:
           otlp:
             protocol: http/protobuf
             endpoint: {{ default .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.logs.endpoint }}
+            {{- if or .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.logs.headers }}
             headers:
               {{- toYaml (default .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.logs.headers) | nindent 14 }}
+            {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.baseConfig" -}}
