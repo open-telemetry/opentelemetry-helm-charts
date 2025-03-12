@@ -53,6 +53,7 @@ helm.sh/chart: {{ include "opentelemetry-operator.chart" . }}
 {{ include "opentelemetry-operator.selectorLabels" . }}
 app.kubernetes.io/version: {{ include "opentelemetry-operator.validLabelValue" (include "opentelemetry-operator.appVersion" .) | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: opentelemetry-operator
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.additionalLabels }}
 {{ include "opentelemetry-operator.additionalLabels" . }}
