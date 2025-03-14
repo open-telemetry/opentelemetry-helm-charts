@@ -1,8 +1,63 @@
+{{- define "opentelemetry-collector.otelsdkotlp.traces" -}}
+traces:
+  processors:
+    - batch:
+        exporter:
+          otlp:
+            protocol: http/protobuf
+            endpoint: {{ default .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.traces.endpoint }}
+            {{- if or .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.traces.headers }}
+            headers:
+              {{- toYaml (default .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.traces.headers) | nindent 14 }}
+            {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.otelsdkotlp.metrics" -}}
+metrics:
+  readers:
+    - periodic:
+        exporter:
+          otlp:
+            protocol: http/protobuf
+            endpoint: {{ default .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.metrics.endpoint }}
+            {{- if or .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.metrics.headers }}
+            headers:
+              {{- toYaml (default .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.metrics.headers) | nindent 14 }}
+            {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.otelsdkotlp.logs" -}}
+logs:
+  processors:
+    - batch:
+        exporter:
+          otlp:
+            protocol: http/protobuf
+            endpoint: {{ default .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.logs.endpoint }}
+            {{- if or .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.logs.headers }}
+            headers:
+              {{- toYaml (default .Values.internalTelemetryViaOTLP.headers .Values.internalTelemetryViaOTLP.logs.headers) | nindent 14 }}
+            {{- end }}
+{{- end }}
+
 {{- define "opentelemetry-collector.baseConfig" -}}
 {{- if .Values.alternateConfig }}
 {{- .Values.alternateConfig | toYaml }}
 {{- else}}
-{{- .Values.config | toYaml }}
+{{- $config := deepCopy .Values.config }}
+{{- if .Values.internalTelemetryViaOTLP.traces.enabled }}
+{{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.traces" . | fromYaml)) }}
+{{- end }}
+{{- if .Values.internalTelemetryViaOTLP.metrics.enabled }}
+{{- $_ := unset $config.receivers "prometheus" }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (mustWithout $config.service.pipelines.metrics.receivers "prometheus") }}
+{{- $_ := unset $config.service.telemetry.metrics "address" }}
+{{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.metrics" . | fromYaml)) }}
+{{- end }}
+{{- if .Values.internalTelemetryViaOTLP.logs.enabled }}
+{{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.logs" . | fromYaml)) }}
+{{- end }}
+{{- $config | toYaml }}
 {{- end }}
 {{- end }}
 
