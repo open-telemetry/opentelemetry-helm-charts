@@ -1,5 +1,53 @@
 # Upgrade guidelines
 
+## 0.83.0 to 0.84.0
+
+Prior to 0.84.0, this chart always used Helm hooks to pre-install the TLS secret.
+This behavior has changed to make hook usage optional and may impact users supplying their own certificates.
+- **If you do not set custom values for `admissionWebhooks.secretAnnotations`, this upgrade does not
+affect you.** You can ignore these steps.
+- Impact by TLS Certificate Provider Configuration
+  - Cert-Manager Generated Certificate (_"default chart behavior"_)
+    - No impact. No action required.
+  - Helm Auto-Generated Certificate (`admissionWebhooks.certManager=false`)
+    - No impact. No action required.
+  - User-Supplied Certificate** (`admissionWebhooks.certManager=false, admissionWebhooks.certFile={value}, admissionWebhooks.keyFile={value}, admissionWebhooks.caFile={value}`)
+    - If `admissionWebhooks.secretAnnotations` is not set, there is **no impact** and no action required.
+    - **If `admissionWebhooks.secretAnnotations` is set, update your values to retain previous functionality.
+    See upgrade instructions below.**
+ - Why This Change?
+   - Helm hooks are not universally supported across all Kubernetes deployment methods, such as the
+   [AWS EKS add-on method](https://docs.aws.amazon.com/marketplace/latest/userguide/container-product-policies.html#publishing-eks-add-on).
+   - The `"helm.sh/hook-delete-policy": "before-hook-creation"`annotation can prevent the TLS secret from
+   being deleted when uninstalling the chart or migrating to cert-manager, potentially causing deployment
+   errors such as "secret already exists and is managed by another chart."
+
+**New Default Behavior (0.84.0)**
+
+Previously, `admissionWebhooks.secretAnnotations` defaulted to an empty map ({}). As of 0.84.0, the
+following values are now the default:
+```yaml
+admissionWebhooks:
+  secretAnnotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+```
+Helm hooks remain enabled by default but can now be overridden in values.yaml.
+
+**Upgrade Instructions**
+
+If you previously set custom `admissionWebhooks.secretAnnotations` values, merge your custom values with the
+default hook annotations to maintain the previous functionality:
+```yaml
+admissionWebhooks:
+  secretAnnotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    {your_custom_annotations}
+```
+This ensures that user-supplied TLS files are validated during the Helm `pre-install` or `pre-upgrade`
+phase, preventing potential errors during `install` phase.
+
 ## 0.79.0 to 0.80.0
 
 Prior to 0.80.0, this chart included resource requests and limits for the OpenTelemetry Operator manager pod. These values were set to `100m` and `128Mi` respectively. In 0.78.0, these values have been removed from the chart. If you were relying on these values, you can set them in your `values.yaml` file. For example:
