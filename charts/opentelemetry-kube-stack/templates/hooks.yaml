@@ -1,4 +1,5 @@
 {{- if .Values.cleanupJob.enabled }}
+{{- if not .Values.cleanupJob.existingServiceAccount}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -6,6 +7,7 @@ metadata:
   name: delete-resources-sa
   annotations:
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+{{- end}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -36,8 +38,13 @@ roleRef:
   kind: Role
   name: delete-resources-role
 subjects:
+{{- if not .Values.cleanupJob.existingServiceAccount}}
   - kind: ServiceAccount
     name: delete-resources-sa
+{{- else}}
+  - kind: ServiceAccount
+    name: {{ .Values.cleanupJob.existingServiceAccount }}
+{{- end}}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -50,7 +57,11 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      {{- if not .Values.cleanupJob.existingServiceAccount}}
       serviceAccountName: delete-resources-sa
+      {{- else}}
+      serviceAccountName: {{ .Values.cleanupJob.existingServiceAccount }}
+      {{- end}}
       containers:
       - name: delete-resources
         {{- if $.Values.cleanupJob.image.digest }}
