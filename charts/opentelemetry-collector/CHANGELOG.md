@@ -2,6 +2,12 @@
 
 ## OpenTelemetry Collector
 
+## v0.110.1 / 2025-03-20
+- [Fix] Fix OpentelemetryCollector crd generation
+
+## v0.110.0 / 2025-03-06
+- [Feat] Add profiling preset
+
 ### v0.109.0 / 2025-03-06
 - [Feat] Update Collector to v0.121.0
 
