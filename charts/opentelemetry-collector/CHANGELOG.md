@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.110.2 / 2025-03-20
+- [Fix] Fix OpentelemetryCollector crd generation
+
 ## v0.110.1 / 2025-03-20
 - [Fix] Fix OpentelemetryCollector crd generation
 

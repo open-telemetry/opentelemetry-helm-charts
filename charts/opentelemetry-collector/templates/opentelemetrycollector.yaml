@@ -61,7 +61,9 @@ spec:
     privileged: true
   {{- end }}
   {{- else -}}
+    {{- if .Values.securityContext }}
     {{- toYaml .Values.securityContext | nindent 6 }}
+    {{- end }}
   {{- end }}
   {{- if .Values.image.digest }}
   image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"

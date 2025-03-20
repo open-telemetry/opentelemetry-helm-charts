@@ -1,10 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/configmap-agent.yaml
-apiVersion: v1
-kind: ConfigMap
+# Source: opentelemetry-collector/templates/opentelemetrycollector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
 metadata:
-  name: example-opentelemetry-collector-agent
-  namespace: default
+  name: example-opentelemetry-collector
   labels:
     helm.sh/chart: opentelemetry-collector-0.110.2
     app.kubernetes.io/name: opentelemetry-collector
@@ -12,8 +11,40 @@ metadata:
     app.kubernetes.io/version: "0.121.0"
     app.kubernetes.io/managed-by: Helm
     
-data:
-  relay: |
+spec:
+  mode: deployment
+  image: "otel/opentelemetry-collector-contrib:0.121.0"
+  imagePullPolicy: IfNotPresent
+  ports:
+    - name: jaeger-compact
+      port: 6831
+      protocol: UDP
+    - name: jaeger-grpc
+      port: 14250
+      protocol: TCP
+    - name: jaeger-thrift
+      port: 14268
+      protocol: TCP
+    - name: otlp
+      port: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+    - name: zipkin
+      port: 9411
+      protocol: TCP
+  env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+  volumeMounts:
+  volumes:
+  serviceAccount: example-opentelemetry-collector
+  hostNetwork: false
+  config:
     exporters:
       debug: {}
     extensions:
@@ -26,70 +57,6 @@ data:
         limit_percentage: 80
         spike_limit_percentage: 25
     receivers:
-      hostmetrics:
-        collection_interval: 10s
-        root_path: /hostfs
-        scrapers:
-          cpu:
-            metrics:
-              system.cpu.utilization:
-                enabled: true
-          disk: null
-          filesystem:
-            exclude_fs_types:
-              fs_types:
-              - autofs
-              - binfmt_misc
-              - bpf
-              - cgroup2
-              - configfs
-              - debugfs
-              - devpts
-              - devtmpfs
-              - fusectl
-              - hugetlbfs
-              - iso9660
-              - mqueue
-              - nsfs
-              - overlay
-              - proc
-              - procfs
-              - pstore
-              - rpc_pipefs
-              - securityfs
-              - selinuxfs
-              - squashfs
-              - sysfs
-              - tracefs
-              match_type: strict
-            exclude_mount_points:
-              match_type: regexp
-              mount_points:
-              - /dev/*
-              - /proc/*
-              - /sys/*
-              - /run/k3s/containerd/*
-              - /run/containerd/runc/*
-              - /var/lib/docker/*
-              - /var/lib/kubelet/*
-              - /snap/*
-          load: null
-          memory:
-            metrics:
-              system.memory.utilization:
-                enabled: true
-          network: null
-          process:
-            metrics:
-              process.cpu.utilization:
-                enabled: true
-              process.memory.utilization:
-                enabled: true
-              process.threads:
-                enabled: true
-            mute_process_exe_error: true
-            mute_process_name_error: true
-            mute_process_user_error: true
       jaeger:
         protocols:
           grpc:
@@ -135,7 +102,6 @@ data:
           receivers:
           - otlp
           - prometheus
-          - hostmetrics
         traces:
           exporters:
           - debug
