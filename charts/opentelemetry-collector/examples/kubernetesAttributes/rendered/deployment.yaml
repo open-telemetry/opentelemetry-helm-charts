@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.117.4
+    helm.sh/chart: opentelemetry-collector-0.119.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.120.0"
+    app.kubernetes.io/version: "0.121.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: standalone-collector
 spec:
@@ -25,8 +25,8 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 4e7849c8a9bd71a1e0f4e2ec31146b31986d6cb506c867df1df3a98c43a35570
-
+        checksum/config: 85ac30a3a3f430ef326e58af5b86871fac190313e350962c8184abc9d16c5e62
+        
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
@@ -37,51 +37,52 @@ spec:
       serviceAccountName: example-opentelemetry-collector
       securityContext: {}
       containers:
-      - name: opentelemetry-collector
-        command:
-        - /otelcol-k8s
-        args:
-        - --config=/conf/relay.yaml
-        securityContext: {}
-        image: "otel/opentelemetry-collector-k8s:0.120.0"
-        imagePullPolicy: IfNotPresent
-        ports:
-
-        - name: jaeger-compact
-          containerPort: 6831
-          protocol: UDP
-        - name: jaeger-grpc
-          containerPort: 14250
-          protocol: TCP
-        - name: jaeger-thrift
-          containerPort: 14268
-          protocol: TCP
-        - name: otlp
-          containerPort: 4317
-          protocol: TCP
-        - name: otlp-http
-          containerPort: 4318
-          protocol: TCP
-        - name: zipkin
-          containerPort: 9411
-          protocol: TCP
-        env:
-        - name: MY_POD_IP
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: status.podIP
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 13133
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 13133
-        volumeMounts:
-        - mountPath: /conf
-          name: opentelemetry-collector-configmap
+        - name: opentelemetry-collector
+          command:
+            - /otelcol-k8s
+          args:
+            - --config=/conf/relay.yaml
+          securityContext:
+            {}
+          image: "otel/opentelemetry-collector-k8s:0.121.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            
+            - name: jaeger-compact
+              containerPort: 6831
+              protocol: UDP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
+            - name: otlp
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: zipkin
+              containerPort: 9411
+              protocol: TCP
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          volumeMounts:
+            - mountPath: /conf
+              name: opentelemetry-collector-configmap
       volumes:
       - name: opentelemetry-collector-configmap
         configMap:

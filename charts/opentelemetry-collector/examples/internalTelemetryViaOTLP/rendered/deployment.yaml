@@ -1,7 +1,7 @@
 ---
-# Source: opentelemetry-collector/templates/statefulset.yaml
+# Source: opentelemetry-collector/templates/deployment.yaml
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: example-opentelemetry-collector
   namespace: default
@@ -11,27 +11,26 @@ metadata:
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.121.0"
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: statefulset-collector
+    app.kubernetes.io/component: standalone-collector
 spec:
-  serviceName: example-opentelemetry-collector
-  podManagementPolicy: Parallel
-  replicas: 2
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: statefulset-collector
-  updateStrategy:
+      component: standalone-collector
+  strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: f5dfe4484d2477d870837a3a106b57cd71ec386386c561153cdf2408de740ecd
+        checksum/config: b110ceeb533a8ee555af187579ea2644991468150f37210e6896c34451223156
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: statefulset-collector
+        component: standalone-collector
         
     spec:
       
@@ -40,8 +39,6 @@ spec:
         {}
       containers:
         - name: opentelemetry-collector
-          command:
-            - /otelcol-k8s
           args:
             - --config=/conf/relay.yaml
           securityContext:
@@ -94,7 +91,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-statefulset
+            name: example-opentelemetry-collector
             items:
               - key: relay
                 path: relay.yaml

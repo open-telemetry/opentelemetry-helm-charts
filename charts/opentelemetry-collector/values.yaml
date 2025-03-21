@@ -88,6 +88,39 @@ configMap:
   # ConfigMap template, as it enables pod restart via a template checksum annotation.
   # existingPath: ""
 
+
+# When enabled, the chart will configure the collector to emit its traces, metrics, and logs over http via the OTLP using the Otel Go SDK.
+# If internalTelemetryViaOTLP.metrics.enabled Ithe chart will remove the default prometheus receiver (which was configured to scrape the Collector's metrics)
+# and the service.telemetry.metrics.address value.
+# Learn more about the Collector telemetry at https://opentelemetry.io/docs/collector/internal-telemetry/.
+#
+# THIS OPTION IS EXPERIMENTAL AND SUBJECT TO BREAKING CHANGES
+internalTelemetryViaOTLP:
+  # The endpoint where the telemetry will be exported
+  endpoint: ""
+  # Optional headers to configure the exporters
+  headers: []
+    # - name: "x-dest-auth"
+    #   value: "some auth key"
+  traces:
+    enabled: false
+    # overrides internalTelemetryViaOTLP.endpoint for traces
+    endpoint: ""
+    # overrides internalTelemetryViaOTLP.headers for traces
+    headers: []
+  metrics:
+    enabled: false
+    # overrides internalTelemetryViaOTLP.endpoint for metrics
+    endpoint: ""
+    # overrides internalTelemetryViaOTLP.headers for metrics
+    headers: []
+  logs:
+    enabled: false
+    # overrides internalTelemetryViaOTLP.endpoint for logs
+    endpoint: ""
+    # overrides internalTelemetryViaOTLP.headers for logs
+    headers: []
+
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
 # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
@@ -125,6 +158,7 @@ config:
           endpoint: ${env:MY_POD_IP}:4317
         http:
           endpoint: ${env:MY_POD_IP}:4318
+    # if internalTelemetryViaOTLP.metrics.enabled = true, prometheus receiver will be removed
     prometheus:
       config:
         scrape_configs:
@@ -138,6 +172,7 @@ config:
   service:
     telemetry:
       metrics:
+          # if internalTelemetryViaOTLP.metrics.enabled = true, this address will be removed and an otel go sdk will be configured to emit otlp
         address: ${env:MY_POD_IP}:8888
     extensions:
       - health_check
@@ -158,6 +193,7 @@ config:
           - batch
         receivers:
           - otlp
+          # if internalTelemetryViaOTLP.metrics.enabled = true, prometheus receiver will be removed
           - prometheus
       traces:
         exporters:
