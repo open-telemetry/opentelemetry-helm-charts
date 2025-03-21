@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.119.0
+    helm.sh/chart: opentelemetry-collector-0.119.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.121.0"
@@ -25,17 +25,18 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 42bf087462c1fca734ce2c8275c12600c338af7635f900353ead01d724c33527
+        checksum/config: c0a29c687e8c3547d48fd4f1f33d32b68cc1b07a90fb9543f0d584a10776705d
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: standalone-collector
-
+        
     spec:
-
+      
       serviceAccountName: example-opentelemetry-collector
-      securityContext: {}
+      securityContext:
+        {}
       containers:
         - name: opentelemetry-collector
           command:
@@ -90,10 +91,10 @@ spec:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
       volumes:
-      - name: opentelemetry-collector-configmap
-        configMap:
-          name: example-opentelemetry-collector
-          items:
-          - key: relay
-            path: relay.yaml
+        - name: opentelemetry-collector-configmap
+          configMap:
+            name: example-opentelemetry-collector
+            items:
+              - key: relay
+                path: relay.yaml
       hostNetwork: false
