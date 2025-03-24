@@ -84,8 +84,12 @@ spec:
             {{-  end  }}
           command:
             - /manager
-          {{- if or .Values.manager.env .Values.manager.extraEnvs .Values.manager.createRbacPermissions }}
           env:
+            - name: SERVICE_ACCOUNT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            {{- if or .Values.manager.env .Values.manager.extraEnvs }}
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
@@ -93,13 +97,7 @@ spec:
             {{- with .Values.manager.extraEnvs }}
               {{- . | toYaml | nindent 12 }}
             {{- end }}
-            {{- if .Values.manager.createRbacPermissions }}
-            - name: SERVICE_ACCOUNT_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.serviceAccountName
             {{- end }}
-          {{- end }}
           image: {{ include "opentelemetry-operator.image" . | quote }}
           name: manager
           ports:
