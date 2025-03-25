@@ -204,11 +204,14 @@ manager:
 
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  securityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop:
-  #   - ALL
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
 
 ## Provide OpenTelemetry Operator kube-rbac-proxy container image.
 ##
@@ -234,11 +237,14 @@ kubeRBACProxy:
 
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  securityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop:
-  #   - ALL
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
 
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
 ## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
@@ -352,3 +358,11 @@ testFramework:
   image:
     repository: busybox
     tag: latest
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
