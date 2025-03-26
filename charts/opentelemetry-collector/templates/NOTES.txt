@@ -20,8 +20,8 @@
 {{ end }}
 
 {{/* validate extensions must include health_check */}}
-{{- if not (has "health_check" .Values.config.service.extensions) }}
-{{ fail "[ERROR] The opentelemetry-collector chart requires that the health_check extension to be included in the extension list." }}
+{{- if and (not (has "health_check" .Values.config.service.extensions)) (not (has "healthcheckv2" .Values.config.service.extensions)) }}
+{{ fail "[ERROR] The opentelemetry-collector chart requires that the health_check extension or the healthcheckv2 extension to be included in the extension list." }}
 {{- end}}
 
 {{- if not .Values.configMap.create }}
@@ -46,4 +46,16 @@
 
 {{- if and (.Values.useGOMEMLIMIT) (not ((((.Values.resources).limits).memory))) }}
 [WARNING] "useGOMEMLIMIT" is enabled but memory limits have not been supplied so the GOMEMLIMIT env var could not be added. Solve this problem by setting resources.limits.memory or disabling useGOMEMLIMIT
+{{ end }}
+
+{{- if or (and (.Values.internalTelemetryViaOTLP.traces.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.traces.endpoint))) }}
+{{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.traces.endpoint must be set when internalTelemetryViaOTLP.traces.enabled is true" }}
+{{ end }}
+
+{{- if or (and (.Values.internalTelemetryViaOTLP.metrics.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.metrics.endpoint))) }}
+{{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.metrics.endpoint must be set when internalTelemetryViaOTLP.metrics.enabled is true" }}
+{{ end }}
+
+{{- if or (and (.Values.internalTelemetryViaOTLP.logs.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.logs.endpoint))) }}
+{{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.logs.endpoint must be set when internalTelemetryViaOTLP.logs.enabled is true" }}
 {{ end }}
