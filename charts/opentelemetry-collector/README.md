@@ -114,7 +114,7 @@ This is achieved by using an include path of `/var/log/pods/*/*/*.log` for the `
 To limit the import to a certain subset of pods or containers, the `filelog`
 receivers `include` list can be overwritten by supplying explicit configuration.
 
-E.g. The following configuration would only import logs for pods within the namespace `example-namespace`:
+E.g. The following configuration would only import logs for pods within the namespace : `example-namespace`:
 
 ```yaml
 mode: daemonset
