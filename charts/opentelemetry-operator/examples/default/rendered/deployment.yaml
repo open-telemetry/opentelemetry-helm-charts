@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.83.1
+    helm.sh/chart: opentelemetry-operator-0.84.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
@@ -24,7 +24,7 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        helm.sh/chart: opentelemetry-operator-0.83.1
+        helm.sh/chart: opentelemetry-operator-0.84.1
         app.kubernetes.io/name: opentelemetry-operator
         app.kubernetes.io/version: "0.120.0"
         app.kubernetes.io/managed-by: Helm
@@ -76,6 +76,14 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
+          securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         
         - args:
             - --secure-listen-address=0.0.0.0:8443
@@ -87,6 +95,14 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
+          securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
       serviceAccountName: opentelemetry-operator
       terminationGracePeriodSeconds: 10
       volumes:

@@ -6,7 +6,7 @@ metadata:
   name: "example-opentelemetry-operator-metrics"
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-operator-0.83.1
+    helm.sh/chart: opentelemetry-operator-0.84.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
@@ -35,7 +35,20 @@ spec:
           then exit 0
           else exit 1
           fi
+      securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
   restartPolicy: Never
+  securityContext:
+    fsGroup: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
 ---
 # Source: opentelemetry-operator/templates/tests/test-service-connection.yaml
 apiVersion: v1
@@ -44,7 +57,7 @@ metadata:
   name: "example-opentelemetry-operator-webhook"
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-operator-0.83.1
+    helm.sh/chart: opentelemetry-operator-0.84.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
@@ -73,4 +86,17 @@ spec:
           then exit 0
           else exit 1
           fi
+      securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
   restartPolicy: Never
+  securityContext:
+    fsGroup: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
