@@ -57,6 +57,9 @@ presets:
       - set(attributes["http.response.status_code"], attributes["http.status_code"]) where attributes["http.response.status_code"] == nil
     dbMetrics:
       enabled: true
+      extraDimensions:
+        - cgx.transaction
+        - cgx.transaction.root
       transformStatements:
         - set(attributes["db.namespace"], attributes["db.name"]) where attributes["db.namespace"] == nil
         - set(attributes["db.namespace"], attributes["server.address"]) where attributes["db.namespace"] == nil
