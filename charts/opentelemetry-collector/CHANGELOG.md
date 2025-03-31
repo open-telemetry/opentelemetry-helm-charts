@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.110.3 / 2025-03-31
+- [Fix] Configure hostEntityEvents preset to require hostMetrics preset to be enabled
+
 ## v0.110.2 / 2025-03-20
 - [Fix] Fix OpentelemetryCollector crd generation
 

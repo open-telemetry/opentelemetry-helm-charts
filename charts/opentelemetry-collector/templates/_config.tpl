@@ -1328,6 +1328,9 @@ service:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHostEntityEventsConfig" -}}
+{{- if not .Values.Values.presets.hostMetrics.enabled }}
+{{- fail "hostEntityEvents preset requires hostMetrics preset to be enabled" }}
+{{- end }}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostEntityEventsConfig" .Values | fromYaml) .config }}
 {{- $config | toYaml }}
 {{- end }}
