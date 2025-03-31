@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.110.4 / 2025-03-31
+- [Feat] Add extraDimensions support for dbMetrics in spanMetrics preset
+
 ## v0.110.3 / 2025-03-31
 - [Fix] Configure hostEntityEvents preset to require hostMetrics preset to be enabled
 
