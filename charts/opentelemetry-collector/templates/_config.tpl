@@ -947,8 +947,8 @@ connectors:
       {{- if .Values.presets.spanMetrics.dbMetrics.serviceVersion.enabled }}
       - name: service.version
       {{- end }}
-      {{- range .Values.presets.spanMetrics.dbMetrics.extraDimensions }}
-      - {{ . }}
+      {{- if .Values.presets.spanMetrics.dbMetrics.extraDimensions }}
+      {{- .Values.presets.spanMetrics.dbMetrics.extraDimensions | toYaml | nindent 6 }}
       {{- end }}
 {{- if .Values.presets.spanMetrics.metricsExpiration }}
     metrics_expiration: "{{ .Values.presets.spanMetrics.metricsExpiration }}"

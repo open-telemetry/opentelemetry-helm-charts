@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.110.6 / 2025-04-01
+- [Fix] extraDimensions support for dbMetrics in spanMetrics preset
+
 ## v0.110.5 / 2025-03-31
 - [Fix] extraDimensions support for dbMetrics in spanMetrics preset
 
