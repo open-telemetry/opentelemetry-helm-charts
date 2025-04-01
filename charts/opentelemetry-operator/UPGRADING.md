@@ -1,8 +1,8 @@
 # Upgrade guidelines
 
-## 0.83.0 to 0.84.0
+## 0.84.2 to 0.85.0
 
-Prior to 0.84.0, this chart always used Helm hooks to pre-install the TLS secret.
+Prior to 0.85.0, this chart always used Helm hooks to pre-install the TLS secret.
 This behavior has changed to make hook usage optional and may impact users supplying their own certificates.
 - **If you do not set custom values for `admissionWebhooks.secretAnnotations`, this upgrade does not
 affect you.** You can ignore these steps.
@@ -22,9 +22,9 @@ affect you.** You can ignore these steps.
    being deleted when uninstalling the chart or migrating to cert-manager, potentially causing deployment
    errors such as "secret already exists and is managed by another chart."
 
-**New Default Behavior (0.84.0)**
+**New Default Behavior (0.85.0)**
 
-Previously, `admissionWebhooks.secretAnnotations` defaulted to an empty map ({}). As of 0.84.0, the
+Previously, `admissionWebhooks.secretAnnotations` defaulted to an empty map ({}). As of 0.85.0, the
 following values are now the default:
 ```yaml
 admissionWebhooks:
