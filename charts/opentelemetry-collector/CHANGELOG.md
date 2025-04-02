@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.110.7 / 2025-04-02
+- [Fix] Filter only Pods from standard Kubernetes Workloads in kubernetesResource preset.
+
 ## v0.110.6 / 2025-04-01
 - [Fix] extraDimensions support for dbMetrics in spanMetrics preset
 
