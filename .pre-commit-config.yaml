@@ -1,0 +1,55 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args:
+          - --maxkb=5000
+      - id: check-json
+      - id: pretty-format-json
+        # Exclude subchart dependencies in all charts, we can't modify these files
+        # Exclude opentelemetry-demo Grafana dashboards, these files are automatically generated
+        exclude: "^charts\\/[^\\/]+\\/charts\\/.*|^charts\\/opentelemetry-demo\\/grafana-dashboards\\/.*"
+        args:
+          - --autofix
+          - --no-sort-keys
+          - --no-ensure-ascii
+      # TODO: Add these hooks in follow-up PRs, addressing failures gradually to resolve issues incrementally
+      # - id: trailing-whitespace
+      # - id: end-of-file-fixer
+      # - id: check-yaml
+      #   args: [ --allow-multiple-documents ]
+
+      # TODO: Address these captured failures to enable the hooks above
+      #
+      # #!/bin/bash
+      # opentelemetry-helm-charts % pre-commit
+      # trim trailing whitespace.................................................Failed
+      # - hook id: trailing-whitespace
+      # - exit code: 1
+      # - files were modified by this hook
+      #
+      # Fixing charts/opentelemetry-collector/UPGRADING.md
+      # Fixing charts/opentelemetry-ebpf/templates/k8s-collector-deployment.yaml
+      # Fixing charts/opentelemetry-collector/README.md
+      # Fixing charts/opentelemetry-ebpf/templates/reducer-deployment.yaml
+      #
+      # fix end of files.........................................................Failed
+      # - hook id: end-of-file-fixer
+      # - exit code: 1
+      # - files were modified by this hook
+      #
+      # Fixing charts/opentelemetry-demo/grafana-dashboards/spanmetrics-dashboard.json
+      # Fixing charts/opentelemetry-ebpf/templates/_helpers.tpl
+      # Fixing charts/opentelemetry-collector/templates/extraManifests.yaml
+      # Fixing charts/opentelemetry-ebpf/values.schema.json
+      # Fixing charts/opentelemetry-demo/grafana-dashboards/demo-dashboard.json
+      # Fixing charts/opentelemetry-ebpf/README.md
+      # Fixing charts/opentelemetry-demo/grafana-dashboards/opentelemetry-collector.json
+      # Fixing charts/opentelemetry-demo/templates/grafana-dashboards.yaml
+      # Fixing charts/opentelemetry-demo/grafana-dashboards/exemplars-dashboard.json
+      #
+      # check yaml...............................................................Failed
+      # ...Many files fail...
