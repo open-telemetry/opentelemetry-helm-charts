@@ -106,6 +106,29 @@ to read the files where Kubernetes container runtime writes all containers' cons
 
 #### :warning: Warning: Risk of looping the exported logs back into the receiver, causing "log explosion"
 
+#### Log collection for a subset of pods or containers
+
+The `logsCollection` preset will by default ingest the logs of all kubernetes containers.
+This is achieved by using an include path of `/var/log/pods/*/*/*.log` for the `filelog`receiver.
+
+To limit the import to a certain subset of pods or containers, the `filelog`
+receivers `include` list can be overwritten by supplying explicit configuration.
+
+E.g. The following configuration would only import logs for pods within the namespace: `example-namespace`:
+
+```yaml
+mode: daemonset
+
+presets:
+  logsCollection:
+    enabled: true
+config:
+  receivers:
+    filelog:
+      include:
+        - /var/log/pods/example-namespace_*/*/*.log
+```
+
 The container logs pipeline uses the `debug` exporter by default.
 Paired with the default `filelog` receiver that receives all containers' console output,
 it is easy to accidentally feed the exported logs back into the receiver.
