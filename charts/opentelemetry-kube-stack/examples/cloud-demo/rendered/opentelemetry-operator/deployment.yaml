@@ -4,10 +4,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.79.0
+    helm.sh/chart: opentelemetry-operator-0.84.2
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example
     app.kubernetes.io/component: controller-manager
   name: example-opentelemetry-operator
@@ -23,7 +24,12 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
+        helm.sh/chart: opentelemetry-operator-0.84.2
         app.kubernetes.io/name: opentelemetry-operator
+        app.kubernetes.io/version: "0.120.0"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: opentelemetry-operator
+        app.kubernetes.io/instance: example
         app.kubernetes.io/component: controller-manager
     spec:
       hostNetwork: false
@@ -33,13 +39,17 @@ spec:
             - --enable-leader-election
             - --health-probe-addr=:8081
             - --webhook-port=9443
-            - --collector-image=otel/opentelemetry-collector-k8s:0.117.0
+            - --collector-image=otel/opentelemetry-collector-k8s:0.120.0
           command:
             - /manager
           env:
+            - name: SERVICE_ACCOUNT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
             - name: ENABLE_WEBHOOKS
               value: "true"
-          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.117.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.120.0"
           name: manager
           ports:
             - containerPort: 8080
@@ -61,16 +71,19 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: 
-            limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 100m
-              memory: 64Mi
+            {}
           volumeMounts:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
+          securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         
         - args:
             - --secure-listen-address=0.0.0.0:8443
@@ -82,13 +95,14 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-          resources: 
-            limits:
-              cpu: 500m
-              memory: 128Mi
-            requests:
-              cpu: 5m
-              memory: 64Mi
+          securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
       serviceAccountName: opentelemetry-operator
       terminationGracePeriodSeconds: 10
       volumes:
