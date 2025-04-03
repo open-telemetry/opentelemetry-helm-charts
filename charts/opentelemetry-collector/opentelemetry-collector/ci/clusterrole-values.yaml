@@ -1,0 +1,27 @@
+mode: daemonset
+
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+clusterRole:
+  create: true
+  name: "testing-clusterrole"
+  rules:
+    - apiGroups:
+      - ''
+      resources:
+      - 'pods'
+      - 'nodes'
+      verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  clusterRoleBinding:
+    name: "testing-clusterrolebinding"
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
