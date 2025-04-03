@@ -1130,6 +1130,7 @@ processors:
     logs:
       log_record:
         - 'body["object"]["kind"] == "Pod" and not IsMatch(String(body["object"]["metadata"]["ownerReferences"]), ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")'
+        - 'body["kind"] == "Pod" and not IsMatch(String(body["metadata"]["ownerReferences"]), ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")'
   {{- end }}
   transform/entity-event:
     error_mode: silent

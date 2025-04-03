@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.110.7
+    helm.sh/chart: opentelemetry-collector-0.110.8
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.121.0"
@@ -36,6 +36,8 @@ data:
         logs:
           log_record:
           - body["object"]["kind"] == "Pod" and not IsMatch(String(body["object"]["metadata"]["ownerReferences"]),
+            ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")
+          - body["kind"] == "Pod" and not IsMatch(String(body["metadata"]["ownerReferences"]),
             ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")
       memory_limiter:
         check_interval: 5s
