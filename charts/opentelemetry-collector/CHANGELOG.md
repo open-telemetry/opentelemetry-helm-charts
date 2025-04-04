@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.111.0 / 2025-04-04
+- [Feat] Update Collector to v0.122.1
+
 ## v0.110.8 / 2025-04-03
 - [Fix] Filter only Pods from standard Kubernetes Workloads in kubernetesResource preset.
 
