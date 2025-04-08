@@ -33,6 +33,7 @@ spec:
         {{- end }}
         app.kubernetes.io/component: controller-manager
     spec:
+      automountServiceAccountToken: {{ not .Values.explicitMountServiceAccountToken }}
       hostNetwork: {{ .Values.hostNetwork }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
@@ -122,11 +123,18 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{ toYaml .Values.manager.resources | nindent 12 }}
-          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
+          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName .Values.explicitMountServiceAccountToken }}
           volumeMounts:
+            {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
+            {{- end }}
+            {{- if .Values.explicitMountServiceAccountToken }}
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: access-token
+              readOnly: true
+            {{- end }}
           {{- end }}
           {{- with .Values.manager.securityContext }}
           securityContext: {{ toYaml . | nindent 12 }}
@@ -151,6 +159,12 @@ spec:
           {{- with .Values.kubeRBACProxy.securityContext }}
           securityContext: {{ toYaml . | nindent 12 }}
           {{- end }}
+          {{- if .Values.explicitMountServiceAccountToken }}
+          volumeMounts:
+            - name: access-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+          {{- end }}
         {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -170,12 +184,33 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
-      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
+      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName .Values.explicitMountServiceAccountToken }}
       volumes:
+        {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
         - name: cert
           secret:
             defaultMode: 420
             secretName: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
+        {{- end }}
+        {{- if .Values.explicitMountServiceAccountToken }}
+        - name: access-token
+          projected:
+            defaultMode: 420
+            sources:
+              - serviceAccountToken:
+                  expirationSeconds: 3607
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        fieldPath: metadata.namespace
+        {{- end }}
       {{- end }}
       securityContext:
 {{ toYaml .Values.securityContext | indent 8 }}
