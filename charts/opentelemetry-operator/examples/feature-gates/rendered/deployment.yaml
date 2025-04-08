@@ -72,13 +72,13 @@ spec:
               port: 8081
             initialDelaySeconds: 5
             periodSeconds: 10
-          resources: 
+          resources:
             {}
           volumeMounts:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
-          securityContext: 
+          securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
@@ -86,7 +86,7 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        
+
         - args:
             - --secure-listen-address=0.0.0.0:8443
             - --upstream=http://127.0.0.1:8080/
@@ -97,7 +97,7 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-          securityContext: 
+          securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
