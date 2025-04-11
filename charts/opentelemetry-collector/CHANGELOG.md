@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.112.0 / 2024-04-11
+- [Feat] Update Collector to v0.123.0
+
 ### v0.111.0 / 2025-04-04
 - [Feat] Update Collector to v0.122.1
 
