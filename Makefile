@@ -84,13 +84,13 @@ check-operator-crds:
 
 define get-crd
 @curl -s -o $(1) $(2)
-@sed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
-@sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
-@sed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
-@sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
-@sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
-@sed -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
-@sed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
-@sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
+@gsed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
+@gsed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
+@gsed -i "s/opentelemetry-operator-system/{{ .Release.Namespace }}/g" $(1)
+@gsed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
+@gsed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
+@gsed -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
+@gsed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
+@gsed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
 @echo '{{- end }}' >> $(1)
 endef
