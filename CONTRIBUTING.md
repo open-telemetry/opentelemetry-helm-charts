@@ -20,6 +20,8 @@ To work with this repository, ensure you have:
 
 - make (for automation)
 
+- [pre-commit](https://pre-commit.com/) (for commit validation)
+
 ### Platform Notes
 
 Docker or Kubernetes cluster access (for testing chart installations)
