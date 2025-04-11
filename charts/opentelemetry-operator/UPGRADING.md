@@ -1,5 +1,9 @@
 # Upgrade guidelines
 
+## 0.84.2 to 0.85.0
+
+The `operator.observability.prometheus` feature gate is stable and may no longer be configured in `manager.featureGatesMap`.
+
 ## 0.79.0 to 0.80.0
 
 Prior to 0.80.0, this chart included resource requests and limits for the OpenTelemetry Operator manager pod. These values were set to `100m` and `128Mi` respectively. In 0.78.0, these values have been removed from the chart. If you were relying on these values, you can set them in your `values.yaml` file. For example:
