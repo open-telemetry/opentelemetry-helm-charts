@@ -26,6 +26,18 @@ metrics:
             {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.metrics.prometheus" -}}
+{{- $address:= .Values.config.service.telemetry.metrics.address  }}
+test: {{ $address }}
+metrics:
+  readers:
+    - pull:
+            exporter:
+              prometheus:
+{{/*                host: {{ $address._0 }}*/}}
+{{/*                port: {{ index $address._1 }}*/}}
+{{- end }}
+
 {{- define "opentelemetry-collector.otelsdkotlp.logs" -}}
 logs:
   processors:
@@ -53,6 +65,8 @@ logs:
 {{- $_ := set $config.service.pipelines.metrics "receivers" (mustWithout $config.service.pipelines.metrics.receivers "prometheus") }}
 {{- $_ := unset $config.service.telemetry.metrics "address" }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.metrics" . | fromYaml)) }}
+{{- else if .Values.config.service.telemetry.metrics.address}}
+{{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.metrics.prometheus" . | fromYaml)) }}
 {{- end }}
 {{- if .Values.internalTelemetryViaOTLP.logs.enabled }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.logs" . | fromYaml)) }}
