@@ -8,6 +8,20 @@ Just upgrade and enjoy.
 
 We broke the selector labels in `0.110.0`, which causes `helm upgrades` to fail. Do not attempt to upgrade from `0.110.0` to either `0.110.1` or `0.110.2`. Go straight to `0.110.3` instead.
 
+## 0.99.0 to 0.100.0
+
+If `memory_limiter` is set to `null`, it will no longer be overridden with values derived from k8s resource limits.
+Instead, the processor will be omitted from the final configuration.
+
+To maintain the same behavior as the previous version, replace `memory_limiter: null` with the following:
+
+```yaml
+memory_limiter:
+  check_interval: 5s
+  limit_percentage: 80
+  spike_limit_percentage: 25
+```
+
 ## 0.97.2 to 0.98.0
 
 > [!WARNING]
@@ -17,7 +31,7 @@ The deprecated memory ballast extension has been removed from the default config
 
 ## 0.88.0 to 0.89.0
 
-> [!WARNING]  
+> [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
 As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.
