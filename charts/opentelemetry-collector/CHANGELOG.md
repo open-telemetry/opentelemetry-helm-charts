@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.112.1 / 2025-04-14
+- [Fix] fix dbMetrics use db.collection.name instead of db.collection_name
+
 ### v0.112.0 / 2024-04-11
 - [Feat] Update Collector to v0.123.0
 

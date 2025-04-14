@@ -942,7 +942,7 @@ connectors:
     dimensions:
       - name: db.namespace
       - name: db.operation.name
-      - name: db.collection_name
+      - name: db.collection.name
       - name: db.system
       {{- if .Values.presets.spanMetrics.dbMetrics.serviceVersion.enabled }}
       - name: service.version
