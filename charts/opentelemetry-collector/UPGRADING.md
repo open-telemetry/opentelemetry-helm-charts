@@ -16,10 +16,12 @@ Instead, the processor will be omitted from the final configuration.
 To maintain the same behavior as the previous version, replace `memory_limiter: null` with the following:
 
 ```yaml
-memory_limiter:
-  check_interval: 5s
-  limit_percentage: 80
-  spike_limit_percentage: 25
+config:
+  processors:
+    memory_limiter:
+      check_interval: 5s
+      limit_percentage: 80
+      spike_limit_percentage: 25
 ```
 
 ## 0.97.2 to 0.98.0
