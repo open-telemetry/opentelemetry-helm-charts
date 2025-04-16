@@ -683,12 +683,16 @@ processors:
   filter/k8s_extra_metrics:
     metrics:
       metric:
+        {{- if .Values.presets.kubernetesExtraMetrics.scrapeAll }}
+        - 'resource.attributes["service.name"] == "kubernetes-apiserver" and name != "kubernetes_build_info"'
+        {{- else }}
         - 'resource.attributes["service.name"] == "kubernetes-apiserver" and name != "kubernetes_build_info"'
         - 'resource.attributes["service.name"] == "kubernetes-cadvisor" and
           (name != "container_fs_writes_total" and name != "container_fs_reads_total" and
           name != "container_fs_writes_bytes_total" and name != "container_fs_reads_bytes_total" and
           name != "container_fs_usage_bytes" and name != "container_cpu_cfs_throttled_periods_total" and
           name != "container_cpu_cfs_periods_total")'
+        {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyMysqlConfig" -}}
