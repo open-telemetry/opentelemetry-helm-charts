@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.112.2 / 2025-04-18
+- [Feat] Add scrapeAll preset to collect all cadisor metrics
+
 ## v0.112.1 / 2025-04-14
 - [Fix] fix dbMetrics use db.collection.name instead of db.collection_name
 
