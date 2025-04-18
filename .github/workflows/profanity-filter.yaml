@@ -1,0 +1,29 @@
+---
+name: Profanity filter
+
+on:
+  issue_comment:
+    types: [created, edited]
+  issues:
+    types: [opened, edited, reopened]
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  call-apply-filter:
+    if: ${{ github.event_name == 'issue_comment' || github.event_name == 'issues' || (github.event_name == 'pull_request' && github.event.pull_request.base.repo.id == github.event.pull_request.head.repo.id) }}
+    uses: Netcracker/qubership-workflow-hub/.github/workflows/profanityFilter.yaml@main
+  warning:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.repo.id != github.event.pull_request.head.repo.id }}
+    steps:
+    - name: "Warning"
+      run: |
+        {
+          echo "⚠️ Pull request from fork! ⚠️"
+          echo "The action cannot be run over PRs from fork."
+        } >> "$GITHUB_STEP_SUMMARY"

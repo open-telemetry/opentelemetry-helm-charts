@@ -1,0 +1,45 @@
+---
+
+# The workflow template for automatic PR labeler.
+# It requires to have a configuration file with labels and conditions to apply them.
+# The configuration file should be placed in the .github folder and named auto-labeler-config.yaml.
+# Example file can be found there:
+# https://github.com/Netcracker/.github/blob/main/config/examples/auto-labeler-config.yaml
+
+name: Automatic PR Labeler
+
+on:
+  pull_request:
+    branches: [main]
+    types:
+      [opened, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+jobs:
+  assign-labels:
+    if: github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: "Execute assign labels"
+      id: action-assign-labels
+      uses: mauroalderete/action-assign-labels@v1
+      with:
+        pull-request-number: ${{ github.event.pull_request.number }}
+        github-token: ${{ github.token }}
+        conventional-commits: "./.github/auto-labeler-config.yaml"
+        maintain-labels-not-matched: true
+        apply-changes: ${{ github.event.pull_request.base.repo.id == github.event.pull_request.head.repo.id }}
+    - name: "Drop warning if PR from fork"
+      if: ${{ github.event.pull_request.base.repo.id != github.event.pull_request.head.repo.id }}
+      run: |
+        {
+          echo "⚠️ Pull request from fork! ⚠️"
+          echo "Labels will not be applied to PR. Assign them manually please."
+          echo "Labels to assign: ${{ steps.action-assign-labels.outputs.labels-next }}"
+        } >> "$GITHUB_STEP_SUMMARY"
