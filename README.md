@@ -46,6 +46,7 @@ Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemet
 
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
+- [Josh Voravong](https://github.com/jvoravong), Splunk
 - [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
 
