@@ -172,8 +172,12 @@ config:
   service:
     telemetry:
       metrics:
-          # if internalTelemetryViaOTLP.metrics.enabled = true, this address will be removed and an otel go sdk will be configured to emit otlp
-        address: ${env:MY_POD_IP}:8888
+        readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: ${env:MY_POD_IP}
+                  port: 8888
     extensions:
       - health_check
     pipelines:

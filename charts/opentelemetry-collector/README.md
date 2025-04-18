@@ -19,7 +19,7 @@ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm
 To install the chart with the release name my-opentelemetry-collector, run the following command:
 
 ```console
-helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value> --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s"
+helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value> --set image.repository="ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" --set command.name="otelcol-k8s"
 ```
 
 Where the `mode` value needs to be set to one of `daemonset`, `deployment` or `statefulset`.
