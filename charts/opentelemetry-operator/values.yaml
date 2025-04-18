@@ -355,6 +355,17 @@ securityContext:
   runAsUser: 65532
   fsGroup: 65532
 
+# Determines how the operator pod mounts the service account token and also
+# sets the corresponding field in the associated service account object.
+# - When set to `true` (default), the service account token is automatically
+#   mounted to the pod, and the service account object will have the
+#   `automountServiceAccountToken` field set to `true`.
+# - When set to `false`, automounting of the service account token is disabled,
+#   and the token is manually mounted using a volume and volumeMounts in
+#   the pod spec by the chart. This also updates the `automountServiceAccountToken`
+#   field in the service account object to `false`.
+automountServiceAccountToken: true
+
 testFramework:
   image:
     repository: busybox
