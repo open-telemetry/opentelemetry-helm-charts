@@ -29,6 +29,9 @@ spec:
           then exit 0
           else exit 1
           fi
+      {{- with .Values.testFramework.securityContext }}
+      securityContext: {{ toYaml . | nindent 12 }}
+      {{- end }}
   restartPolicy: Never
   {{- with .Values.affinity }}
   affinity: {{ toYaml . | nindent 4 }}
@@ -39,4 +42,6 @@ spec:
   {{- with .Values.nodeSelector }}
   nodeSelector: {{ toYaml . | nindent 4 }}
   {{- end }}
+  securityContext:
+{{ toYaml .Values.securityContext | indent 4 }}
 {{- end }}

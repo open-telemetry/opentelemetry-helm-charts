@@ -42,7 +42,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.120.0
+    tag: 0.122.1
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -204,11 +204,14 @@ manager:
 
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  securityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop:
-  #   - ALL
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
 
 ## Provide OpenTelemetry Operator kube-rbac-proxy container image.
 ##
@@ -234,11 +237,14 @@ kubeRBACProxy:
 
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  securityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop:
-  #   - ALL
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
 
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
 ## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
@@ -335,7 +341,8 @@ clusterRole:
 
 affinity: {}
 tolerations: []
-nodeSelector: {}
+nodeSelector:
+  kubernetes.io/os: linux
 topologySpreadConstraints: []
 hostNetwork: false
 
@@ -350,7 +357,26 @@ securityContext:
   runAsUser: 65532
   fsGroup: 65532
 
+# Determines how the operator pod mounts the service account token and also
+# sets the corresponding field in the associated service account object.
+# - When set to `true` (default), the service account token is automatically
+#   mounted to the pod, and the service account object will have the
+#   `automountServiceAccountToken` field set to `true`.
+# - When set to `false`, automounting of the service account token is disabled,
+#   and the token is manually mounted using a volume and volumeMounts in
+#   the pod spec by the chart. This also updates the `automountServiceAccountToken`
+#   field in the service account object to `false`.
+automountServiceAccountToken: true
+
 testFramework:
   image:
     repository: busybox
     tag: latest
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
