@@ -1,5 +1,9 @@
 # Upgrade guidelines
 
+## 0.85.0 to 0.85.1
+
+Add `manager.autoInstrumentationImage.nginx` to configure the image for the NGINX instrumentation.
+
 ## 0.84.2 to 0.85.0
 
 The `operator.observability.prometheus` feature gate is stable and may no longer be configured in `manager.featureGatesMap`.
