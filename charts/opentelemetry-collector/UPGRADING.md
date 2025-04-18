@@ -17,7 +17,7 @@ The deprecated memory ballast extension has been removed from the default config
 
 ## 0.88.0 to 0.89.0
 
-> [!WARNING]  
+> [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
 As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.
@@ -186,7 +186,7 @@ If you enable use of a _HorizontalPodAutoscaler_ for the collector when running 
 
 ## 0.34.0 to 0.34.0
 
-[config supports templating](TBD)
+link for config supports templating - TBD
 
 The chart now supports templating in `.Values.config`.  If you are currently using any `{{ }}` syntax in `.Values.yaml` it will now be rendered.  To escape existing instances of `{{ }}`, use ``` {{` <original content> `}} ```.  For example, `{{ REDACTED_EMAIL }}` becomes ``` {{` {{ REDACTED_EMAIL }} `}} ```.
 
