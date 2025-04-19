@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.86.0
+    helm.sh/chart: opentelemetry-operator-0.86.2
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.122.0"
     app.kubernetes.io/managed-by: Helm
@@ -24,7 +24,7 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        helm.sh/chart: opentelemetry-operator-0.86.0
+        helm.sh/chart: opentelemetry-operator-0.86.2
         app.kubernetes.io/name: opentelemetry-operator
         app.kubernetes.io/version: "0.122.0"
         app.kubernetes.io/managed-by: Helm
@@ -32,6 +32,7 @@ spec:
         app.kubernetes.io/instance: example
         app.kubernetes.io/component: controller-manager
     spec:
+      automountServiceAccountToken: true
       hostNetwork: false
       containers:
         - args:
@@ -104,6 +105,8 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
+      nodeSelector: 
+        kubernetes.io/os: linux
       serviceAccountName: opentelemetry-operator
       terminationGracePeriodSeconds: 10
       volumes:

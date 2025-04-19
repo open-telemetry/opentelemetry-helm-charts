@@ -59,3 +59,7 @@
 {{- if or (and (.Values.internalTelemetryViaOTLP.logs.enabled) (not (or .Values.internalTelemetryViaOTLP.endpoint .Values.internalTelemetryViaOTLP.logs.endpoint))) }}
 {{ fail "[ERROR] internalTelemetryViaOTLP.endpoint or .Values.internalTelemetryViaOTLP.logs.endpoint must be set when internalTelemetryViaOTLP.logs.enabled is true" }}
 {{ end }}
+
+{{- if .Values.config.service.telemetry.metrics.address }}
+[WARNING] config.service.telemetry.metrics.address should not be used and will be removed in the future. Use internalTelemetryViaOTLP or config.service.telemetry.metrics.readers  instead"
+{{ end }}
