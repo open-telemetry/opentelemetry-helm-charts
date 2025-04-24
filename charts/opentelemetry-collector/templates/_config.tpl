@@ -32,8 +32,15 @@ metrics:
     - pull:
         exporter:
           prometheus:
-            host: {{ ._0 | replace "{env!" "{env:" }}
-            port: {{ ._1 }}
+            host: {{ .address._0 | replace "{env!" "{env:" }}
+            port: {{ .address._1 }}
+            {{- if .Values.config.service.telemetry.resource }}
+            with_resource_constant_labels:
+              included:
+              {{- range (keys .Values.config.service.telemetry.resource) }}
+              - {{ println . }}
+              {{- end }}
+            {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.otelsdkotlp.logs" -}}
@@ -67,7 +74,7 @@ logs:
 {{/* First replace env: with env! so we can split the host with the port and replace it back later */}}
 {{- $address:= .Values.config.service.telemetry.metrics.address | replace "{env:" "{env!" | split ":" }}
 {{- $_ := unset $config.service.telemetry.metrics "address" }}
-{{- $_ := set $config.service "telemetry" (mustMerge (include "opentelemetry-collector.metrics.prometheus" $address | fromYaml) $config.service.telemetry ) }}
+{{- $_ := set $config.service "telemetry" (mustMerge (include "opentelemetry-collector.metrics.prometheus" (mustMerge (dict "address" $address) .) | fromYaml) $config.service.telemetry ) }}
 {{- end }}
 {{- if .Values.internalTelemetryViaOTLP.logs.enabled }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.logs" . | fromYaml)) }}
