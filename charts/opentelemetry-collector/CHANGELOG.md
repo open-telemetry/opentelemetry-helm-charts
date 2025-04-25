@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.113.0 / 2025-04-25
+- [Feat] Update Collector to v0.124.1
+- [Breaking] We are moving to ghcr image registry instead of dockerhub, as OTel doesn't use dockerhub due to rate limits.
+
 ## v0.112.2 / 2025-04-18
 - [Feat] Add scrapeAll preset to collect all cadisor metrics
 
