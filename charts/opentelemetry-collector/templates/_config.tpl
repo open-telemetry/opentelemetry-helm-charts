@@ -67,9 +67,7 @@ logs:
 {{- end }}
 {{- if .Values.internalTelemetryViaOTLP.metrics.enabled }}
 {{- $_ := unset $config.receivers "prometheus" }}
-{{- if $config.service.pipelines.metrics }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (mustWithout $config.service.pipelines.metrics.receivers "prometheus") }}
-{{- end }}
 {{- $_ := unset $config.service.telemetry.metrics "readers" }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.metrics" . | fromYaml)) }}
 {{- else if .Values.config.service.telemetry.metrics.address }}
