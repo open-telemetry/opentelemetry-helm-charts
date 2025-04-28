@@ -1,8 +1,8 @@
 # Upgrade guidelines
 
-## 0.84.2 to 0.85.0
+## 0.86.4 to 0.87.0
 
-The `operator.observability.prometheus` feature gate is stable and may no longer be configured in `manager.featureGatesMap`.
+In the v0.123.1 Collector release we stopped pushing images to Dockerhub due to how their new rate limit changes affected our CI. If you're using the dockerhub repository (`otel/`) for the image you should switch to `ghcr.io/open-telemetry/opentelemetry-collector-releases/` instead. See https://github.com/open-telemetry/community/issues/2641 for more details.
 
 ## 0.79.0 to 0.80.0
 
