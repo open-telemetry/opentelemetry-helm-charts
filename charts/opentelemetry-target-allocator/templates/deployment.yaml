@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ template "helper.namespace" . }}
+  name: {{ template "helper.fullname" . }}-ta
+  labels:
+    app: targetAllocator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: targetAllocator
+  template:
+    metadata:
+      labels:
+        app: targetAllocator
+    spec:
+      serviceAccountName: {{ template "helper.targetAllocatorServiceAccountName" . }}
+      automountServiceAccountToken: false
+      containers:
+        - name: targetallocator
+          image: {{ .Values.targetAllocator.image }}
+          ports:
+            - containerPort: 8080
+              name: http-port
+          volumeMounts:
+            - name: config-volume
+              mountPath: /conf/
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: serviceaccount-token
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ template "helper.targetAllocatorConfigMapName" . }}
+        - name: serviceaccount-token
+          projected:
+            defaultMode: 0444
+            sources:
+              - serviceAccountToken:
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace

@@ -1,0 +1,54 @@
+---
+# Source: opentelemetry-target-allocator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: example-opentelemetry-target-allocator-ta
+  labels:
+    app: targetAllocator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: targetAllocator
+  template:
+    metadata:
+      labels:
+        app: targetAllocator
+    spec:
+      serviceAccountName: example-opentelemetry-target-allocator-ta
+      automountServiceAccountToken: false
+      containers:
+        - name: targetallocator
+          image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:v0.123.0
+          ports:
+            - containerPort: 8080
+              name: http-port
+          volumeMounts:
+            - name: config-volume
+              mountPath: /conf/
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: serviceaccount-token
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: example-opentelemetry-target-allocator-ta-configmap
+        - name: serviceaccount-token
+          projected:
+            defaultMode: 0444
+            sources:
+              - serviceAccountToken:
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
