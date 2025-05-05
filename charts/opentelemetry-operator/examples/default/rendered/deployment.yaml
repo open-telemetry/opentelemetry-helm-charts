@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.88.3
+    helm.sh/chart: opentelemetry-operator-0.88.4
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.124.0"
     app.kubernetes.io/managed-by: Helm
@@ -15,6 +15,7 @@ metadata:
   namespace: default
 spec:
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-operator
@@ -24,7 +25,7 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        helm.sh/chart: opentelemetry-operator-0.88.3
+        helm.sh/chart: opentelemetry-operator-0.88.4
         app.kubernetes.io/name: opentelemetry-operator
         app.kubernetes.io/version: "0.124.0"
         app.kubernetes.io/managed-by: Helm
