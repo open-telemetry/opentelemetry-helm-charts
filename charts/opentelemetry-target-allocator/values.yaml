@@ -27,11 +27,12 @@ targetAllocator:
     # Service account annotations
     annotations: {}
   config:
-    allocation_strategy: per-node
-    collector_selector:
-      namespace: default
-      matchlabels:
-        app.kubernetes.io/component: agent-collector
+    allocation_strategy: consistent-hashing
+# Example of selector to choose which collectors will be allocated targets:
+#    collector_selector:
+#      namespace: default
+#      matchlabels:
+#        app.kubernetes.io/component: agent-collector
     prometheus_cr:
       enabled: true
       scrapeInterval: 30s
