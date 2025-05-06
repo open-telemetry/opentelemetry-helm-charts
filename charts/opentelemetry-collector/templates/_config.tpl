@@ -100,6 +100,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.headSampling.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHeadSamplingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.collectorMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyCollectorMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -167,6 +170,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.headSampling.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHeadSamplingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.collectorMetrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyCollectorMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1594,4 +1600,53 @@ service:
         - probabilistic_sampler
       exporters:
         - {{ $exporterName }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyCollectorMetricsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.collectorMetricsConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.metrics) (not (has "prometheus" $config.service.pipelines.metrics.receivers)) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "transform/prometheus" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "transform/prometheus" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.collectorMetricsConfig" -}}
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: opentelemetry-collector
+          scrape_interval: 30s
+          static_configs:
+            - targets:
+                - ${env:MY_POD_IP}:8888
+
+processors:
+  transform/prometheus:
+    error_mode: ignore
+    metric_statements:
+      - context: metric
+        statements:
+          - replace_pattern(name, "_total$", "")
+      - context: resource
+        statements:
+          - set(attributes["k8s.pod.ip"], attributes["net.host.name"]) where attributes["service.name"] == "opentelemetry-collector"
+          - delete_key(attributes, "service_name") where attributes["service.name"] == "opentelemetry-collector"
+      - context: datapoint
+        statements:
+          - delete_key(attributes, "service_name") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - delete_key(attributes, "otel_scope_name") where attributes["service.name"] == "opentelemetry-collector"
+
+service:
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: ${env:MY_POD_IP}
+                port: 8888
 {{- end }}

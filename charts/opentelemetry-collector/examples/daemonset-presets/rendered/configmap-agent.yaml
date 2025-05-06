@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.113.0
+    helm.sh/chart: opentelemetry-collector-0.113.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.124.1"
@@ -171,6 +171,24 @@ data:
           - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
             "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
+      transform/prometheus:
+        error_mode: ignore
+        metric_statements:
+        - context: metric
+          statements:
+          - replace_pattern(name, "_total$", "")
+        - context: resource
+          statements:
+          - set(attributes["k8s.pod.ip"], attributes["net.host.name"]) where attributes["service.name"]
+            == "opentelemetry-collector"
+          - delete_key(attributes, "service_name") where attributes["service.name"] ==
+            "opentelemetry-collector"
+        - context: datapoint
+          statements:
+          - delete_key(attributes, "service_name") where resource.attributes["service.name"]
+            == "opentelemetry-collector"
+          - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
+            == "opentelemetry-collector"
       transform/reduce:
         error_mode: ignore
         metric_statements:
@@ -449,6 +467,7 @@ data:
           - transform/k8s_attributes
           - filter/k8s_extra_metrics
           - transform/reduce
+          - transform/prometheus
           - batch
           receivers:
           - otlp

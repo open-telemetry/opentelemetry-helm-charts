@@ -230,7 +230,7 @@ presets:
   # Best used with mode = deployment or statefulset
   kubernetesExtraMetrics:
     enabled: false
-  # When false (default), collects only fs and cfs throttling metrics. When true, collect all metrics.
+    # When false (default), collects only fs and cfs throttling metrics. When true, collect all metrics.
     scrapeAll: false
 
   # Configures the collector to add k8s.cluster.name and cx.otel_integration.name
@@ -347,6 +347,15 @@ presets:
     percentage: 10
     # Sampling mode - "proportional", "equalizing", "hash_seed"
     mode: "proportional"
+
+  # Configures the collector to collect its own metrics using Prometheus receiver.
+  # Adds the prometheus receiver to the metrics pipeline with a scrape config
+  # targeting the collector's metrics endpoint.
+  # Also adds a transform processor to clean up metric names and attributes.
+  collectorMetrics:
+    enabled: false
+    # Scrape interval for collector metrics
+    scrapeInterval: "30s"
 
 configMap:
   # Specifies whether a configMap should be created (true by default)

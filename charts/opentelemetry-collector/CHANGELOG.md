@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.113.1 / 2025-05-05
+- [Feat] Add collectorMetrics preset to collect collector's own metrics using Prometheus receiver
+
 ## v0.113.0 / 2025-04-25
 - [Feat] Update Collector to v0.124.1
 - [Breaking] We are moving to ghcr image registry instead of dockerhub, as OTel doesn't use dockerhub due to rate limits.
