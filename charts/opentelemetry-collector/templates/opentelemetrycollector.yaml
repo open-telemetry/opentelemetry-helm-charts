@@ -12,6 +12,7 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
+  managementState: {{ .Values.collectorCRD.managementState | default "managed" | quote }}
   mode: {{ .Values.mode }}
   {{- if .Values.collectorCRD.updateStrategy }}
   updateStrategy: {{ .Values.collectorCRD.updateStrategy | quote }}
@@ -53,13 +54,18 @@ spec:
   podAnnotations:
     {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
   {{- end }}
-  {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled)) }}
+  {{- if and (not (.Values.podSecurityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled)) }}
   podSecurityContext:
     runAsUser: 0
     runAsGroup: 0
-  {{- if .Values.presets.hostMetrics.process.enabled }}
-    privileged: true
+  {{- else -}}
+    {{- if .Values.podSecurityContext }}
+    {{- toYaml .Values.podSecurityContext | nindent 6 }}
+    {{- end }}
   {{- end }}
+  {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled)) }}
+  securityContext:
+    privileged: true
   {{- else -}}
     {{- if .Values.securityContext }}
     {{- toYaml .Values.securityContext | nindent 6 }}

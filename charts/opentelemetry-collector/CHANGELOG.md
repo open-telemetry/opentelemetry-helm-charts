@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.113.2 / 2025-05-05
+- [Fix] Fix managementState for Collector CRD.
+- [Fix] Fix rendering of securityContext and podSecurityContext for Collector CRD.
+
 ## v0.113.1 / 2025-05-05
 - [Feat] Add collectorMetrics preset to collect collector's own metrics using Prometheus receiver
 

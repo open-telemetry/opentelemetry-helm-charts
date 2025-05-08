@@ -5,17 +5,20 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.113.1
+    helm.sh/chart: opentelemetry-collector-0.113.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.124.1"
     app.kubernetes.io/managed-by: Helm
     
 spec:
+  managementState: "managed"
   mode: daemonset
   podSecurityContext:
     runAsUser: 0
     runAsGroup: 0
+  securityContext:
+    privileged: true
   image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.124.1"
   imagePullPolicy: IfNotPresent
   ports:
