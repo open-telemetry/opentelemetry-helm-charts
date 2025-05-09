@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.113.4 / 2025-05-09
+- [Fix] Fix collectorMetrics preset schema validation
+
 ## v0.113.3 / 2025-05-06
 - [Fix] Fix collectorMetrics preset scrapeInterval setting.
 - [Fix] Fix target allocator namespace.
