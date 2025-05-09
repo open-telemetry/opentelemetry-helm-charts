@@ -4,6 +4,10 @@
 
 replicaCount: 1
 
+## The number of old history to retain to allow rollback.
+##
+revisionHistoryLimit: 10
+
 ## Provide a name in place of opentelemetry-operator (includes the chart's release name).
 ##
 nameOverride: ""
@@ -42,7 +46,7 @@ manager:
     tag: ""
   collectorImage:
     repository: ""
-    tag: 0.122.1
+    tag: 0.124.1
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -83,7 +87,6 @@ manager:
   # operator.targetallocator.fallbackstrategy: false
   # operator.collector.targetallocatorcr: false
   # operator.sidecarcontainers.native: false
-  # operator.observability.prometheus: false
   # operator.golang.flags: false
   # operator.collector.default.config: false
   ports:
@@ -219,7 +222,7 @@ kubeRBACProxy:
   enabled: true
   image:
     repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.18.1
+    tag: v0.19.1
   ports:
     proxyPort: 8443
   resources: {}
@@ -317,7 +320,9 @@ admissionWebhooks:
   serviceAnnotations: {}
 
   ## Secret annotations
-  secretAnnotations: {}
+  secretAnnotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
   ## Secret labels
   secretLabels: {}
 

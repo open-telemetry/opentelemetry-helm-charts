@@ -87,5 +87,10 @@ data:
           - pull:
               exporter:
                 prometheus:
-                  host: ${env:MY_POD_IP}
+                  host: example.com
                   port: 8888
+                  with_resource_constant_labels:
+                    included:
+                    - k8s.namespace.name
+        resource:
+          k8s.namespace.name: default
