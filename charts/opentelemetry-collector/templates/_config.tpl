@@ -1620,7 +1620,7 @@ receivers:
       scrape_configs:
         - job_name: opentelemetry-collector
           {{- if .Values.presets.collectorMetrics.scrapeInterval }}
-          scrape_interval: {{ .Values.presets.collectorMetrics.scrapeInterval }}
+          scrape_interval: "{{ .Values.presets.collectorMetrics.scrapeInterval }}"
           {{- else }}
           scrape_interval: 30s
           {{- end }}
