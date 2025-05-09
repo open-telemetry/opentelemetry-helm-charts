@@ -1,0 +1,20 @@
+{{- if .Values.targetAllocator.serviceAccount.create }}
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "helper.targetAllocatorClusterRoleBindingName" . }}
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+    app: {{ template "helper.name" . }}
+    chart: {{ template "helper.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "helper.targetAllocatorClusterRoleName" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "helper.targetAllocatorServiceAccountName" . }}
+  namespace: {{ template "helper.namespace" . }}
+  {{- end }}
