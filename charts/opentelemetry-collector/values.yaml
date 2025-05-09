@@ -353,7 +353,7 @@ presets:
   # targeting the collector's metrics endpoint.
   # Also adds a transform processor to clean up metric names and attributes.
   collectorMetrics:
-    enabled: false
+    enabled: true
     # Scrape interval for collector metrics
     scrapeInterval: "30s"
 
@@ -393,27 +393,12 @@ config:
           endpoint: ${env:MY_POD_IP}:4317
         http:
           endpoint: ${env:MY_POD_IP}:4318
-    prometheus:
-      config:
-        scrape_configs:
-          - job_name: opentelemetry-collector
-            scrape_interval: 10s
-            static_configs:
-              - targets:
-                  - ${env:MY_POD_IP}:8888
     zipkin:
       endpoint: ${env:MY_POD_IP}:9411
   service:
     telemetry:
       logs:
         encoding: json
-      metrics:
-        readers:
-          - pull:
-              exporter:
-                prometheus:
-                  host: ${env:MY_POD_IP}
-                  port: 8888
     extensions:
       - health_check
       - memory_ballast
@@ -434,7 +419,6 @@ config:
           - batch
         receivers:
           - otlp
-          - prometheus
       traces:
         exporters:
           - debug
@@ -775,7 +759,7 @@ podMonitor:
   enabled: false
   metricsEndpoints:
     - port: metrics
-      # interval: 15s
+  # interval: 15s
   targetLabels: []
 
   # additional labels for the PodMonitor

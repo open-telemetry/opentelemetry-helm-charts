@@ -1,9 +1,13 @@
 mode: daemonset
 
+presets:
+  collectorMetrics:
+    enabled: true
 targetAllocator:
   enabled: true
   prometheusCR:
     enabled: true
+    scrapeInterval: 60s
     podMonitorSelector:
       matchlabels:
         app: example-app
@@ -18,3 +22,6 @@ priorityClass:
   create: true
   name: ""
   priorityValue: 1000
+
+podMonitor:
+  enabled: true

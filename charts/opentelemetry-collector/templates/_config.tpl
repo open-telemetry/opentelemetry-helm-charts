@@ -1619,7 +1619,11 @@ receivers:
     config:
       scrape_configs:
         - job_name: opentelemetry-collector
+          {{- if .Values.presets.collectorMetrics.scrapeInterval }}
+          scrape_interval: {{ .Values.presets.collectorMetrics.scrapeInterval }}
+          {{- else }}
           scrape_interval: 30s
+          {{- end }}
           static_configs:
             - targets:
                 - ${env:MY_POD_IP}:8888

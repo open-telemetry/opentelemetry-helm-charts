@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.113.3 / 2025-05-06
+- [Fix] Fix collectorMetrics preset scrapeInterval setting.
+- [Fix] Fix target allocator namespace.
+
 ## v0.113.2 / 2025-05-05
 - [Fix] Fix managementState for Collector CRD.
 - [Fix] Fix rendering of securityContext and podSecurityContext for Collector CRD.

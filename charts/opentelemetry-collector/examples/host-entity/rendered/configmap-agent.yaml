@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.113.2
+    helm.sh/chart: opentelemetry-collector-0.113.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.124.1"
@@ -94,6 +94,24 @@ data:
         - context: resource
           statements:
           - keep_keys(attributes, [""])
+      transform/prometheus:
+        error_mode: ignore
+        metric_statements:
+        - context: metric
+          statements:
+          - replace_pattern(name, "_total$", "")
+        - context: resource
+          statements:
+          - set(attributes["k8s.pod.ip"], attributes["net.host.name"]) where attributes["service.name"]
+            == "opentelemetry-collector"
+          - delete_key(attributes, "service_name") where attributes["service.name"] ==
+            "opentelemetry-collector"
+        - context: datapoint
+          statements:
+          - delete_key(attributes, "service_name") where resource.attributes["service.name"]
+            == "opentelemetry-collector"
+          - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
+            == "opentelemetry-collector"
     receivers:
       hostmetrics:
         collection_interval: 10s
@@ -166,7 +184,7 @@ data:
         config:
           scrape_configs:
           - job_name: opentelemetry-collector
-            scrape_interval: 10s
+            scrape_interval: 30s
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
@@ -204,11 +222,12 @@ data:
           processors:
           - resource/metadata
           - memory_limiter
+          - transform/prometheus
           - batch
           receivers:
           - otlp
-          - prometheus
           - hostmetrics
+          - prometheus
         traces:
           exporters:
           - debug
