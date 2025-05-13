@@ -148,10 +148,3 @@ $ helm show values open-telemetry/opentelemetry-kube-stack
 ```
 
 When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
-
-
-# Upgrading
-
-## From 0.5.x to 0.6.x
-
-Value "crds.install" has been removed in favor of "crds.openTelemetry" and "crds.monitoringCoreOS" to allow selectively disabling them.
