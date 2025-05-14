@@ -1,0 +1,66 @@
+---
+# Source: opentelemetry-target-allocator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: example-opentelemetry-target-allocator-ta
+  labels:
+    helm.sh/chart: opentelemetry-target-allocator-0.0.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "0.123.0"
+    app.kubernetes.io/name: opentelemetry-target-allocator
+    app.kubernetes.io/instance: example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-target-allocator
+      app.kubernetes.io/instance: example
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: opentelemetry-target-allocator-0.0.1
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/version: "0.123.0"
+        app.kubernetes.io/name: opentelemetry-target-allocator
+        app.kubernetes.io/instance: example
+    spec:
+      serviceAccountName: example-opentelemetry-target-allocator-ta
+      automountServiceAccountToken: false
+      containers:
+        - name: targetallocator
+          image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:v0.124.0
+          ports:
+            - containerPort: 8080
+              name: http-port
+          volumeMounts:
+            - name: config-volume
+              mountPath: /conf/
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: serviceaccount-token
+              readOnly: true
+          env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
+            - name: OTELCOL_NAMESPACE
+              value: default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: example-opentelemetry-target-allocator-ta-configmap
+        - name: serviceaccount-token
+          projected:
+            defaultMode: 0444
+            sources:
+              - serviceAccountToken:
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
