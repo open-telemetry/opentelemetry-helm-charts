@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.0
+    helm.sh/chart: opentelemetry-collector-0.114.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -38,6 +38,17 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      metricstransform/kubeletstatscpu:
+        transforms:
+        - action: update
+          include: container.cpu.usage
+          new_name: container.cpu.utilization
+        - action: update
+          include: k8s.pod.cpu.usage
+          new_name: k8s.pod.cpu.utilization
+        - action: update
+          include: k8s.node.cpu.usage
+          new_name: k8s.node.cpu.utilization
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -115,6 +126,7 @@ data:
           - debug
           processors:
           - memory_limiter
+          - metricstransform/kubeletstatscpu
           - transform/prometheus
           - batch
           receivers:

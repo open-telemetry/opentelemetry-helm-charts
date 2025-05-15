@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.114.1 / 2025-05-15
+- [Fix] Add `metricstransformer` to `kubeletMetrics` preset to keep the metrics' backward compatibility for dashboards
+
 ## v0.114.0 / 2025-05-15
 - [Feat] Update Collector to v0.125.0
 - [Fix] Configure `kubeletstatsreceiver` to enable network metrics collection from all available interfaces on Node level 

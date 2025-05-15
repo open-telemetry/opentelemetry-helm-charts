@@ -402,6 +402,7 @@ receivers:
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "metricstransform/kubeletstatscpu" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -419,6 +420,18 @@ receivers:
     collect_all_network_interfaces:
       pod: false
       node: true
+processors:
+  metricstransform/kubeletstatscpu:
+    transforms:
+      - include: container.cpu.usage
+        action: update
+        new_name: container.cpu.utilization
+      - include: k8s.pod.cpu.usage
+        action: update
+        new_name: k8s.pod.cpu.utilization
+      - include: k8s.node.cpu.usage
+        action: update
+        new_name: k8s.node.cpu.utilization
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
