@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.113.5
+    helm.sh/chart: opentelemetry-collector-0.114.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.124.1"
+    app.kubernetes.io/version: "0.125.0"
     app.kubernetes.io/managed-by: Helm
     
 data:
@@ -154,6 +154,9 @@ data:
             endpoint: ${env:MY_POD_IP}:14268
       kubeletstats:
         auth_type: serviceAccount
+        collect_all_network_interfaces:
+          node: true
+          pod: false
         collection_interval: 20s
         endpoint: ${env:K8S_NODE_IP}:10250
         insecure_skip_verify: true

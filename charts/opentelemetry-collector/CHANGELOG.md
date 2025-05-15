@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.114.0 / 2025-05-15
+- [Feat] Update Collector to v0.125.0
+- [Fix] Configure `kubeletstatsreceiver` to enable network metrics collection from all available interfaces on Node level 
+
 ## v0.113.5 / 2025-05-09
 - [Fix] Fix collectorMetrics scrape interval setting
 
