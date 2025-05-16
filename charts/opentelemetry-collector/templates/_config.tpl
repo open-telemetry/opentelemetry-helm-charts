@@ -103,6 +103,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.collectorMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyCollectorMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.jaegerReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyJaegerReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -173,6 +176,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.collectorMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyCollectorMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.jaegerReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyJaegerReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1547,6 +1553,23 @@ processors:
 {{- define "opentelemetry-collector.podPortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
 {{- $distribution := .Values.distribution }}
+
+{{- if .Values.presets.jaegerReceiver.enabled }}
+  {{/* Add Jaeger ports only if they don't already exist */}}
+  {{- if not (hasKey $ports "jaeger-grpc") }}
+  {{- $_ := set $ports "jaeger-grpc" (dict "enabled" true "containerPort" 14250 "servicePort" 14250 "hostPort" 14250 "protocol" "TCP") }}
+  {{- end }}
+  {{- if not (hasKey $ports "jaeger-thrift") }}
+  {{- $_ := set $ports "jaeger-thrift" (dict "enabled" true "containerPort" 14268 "servicePort" 14268 "hostPort" 14268 "protocol" "TCP") }}
+  {{- end }}
+  {{- if not (hasKey $ports "jaeger-compact") }}
+  {{- $_ := set $ports "jaeger-compact" (dict "enabled" true "containerPort" 6831 "servicePort" 6831 "hostPort" 6831 "protocol" "UDP") }}
+  {{- end }}
+  {{- if not (hasKey $ports "jaeger-binary") }}
+  {{- $_ := set $ports "jaeger-binary" (dict "enabled" true "containerPort" 6832 "servicePort" 6832 "hostPort" 6832 "protocol" "TCP") }}
+  {{- end }}
+{{- end }}
+
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
 - name: {{ $key }}
@@ -1669,4 +1692,26 @@ service:
               prometheus:
                 host: ${env:MY_POD_IP}
                 port: 8888
+{{- end }}
+
+{{- define "opentelemetry-collector.applyJaegerReceiverConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.jaegerReceiverConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "jaeger" $config.service.pipelines.traces.receivers)) }}
+{{- $_ := set $config.service.pipelines.traces "receivers" (append $config.service.pipelines.traces.receivers "jaeger" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.jaegerReceiverConfig" -}}
+receivers:
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: ${env:MY_POD_IP}:14250
+      thrift_http:
+        endpoint: ${env:MY_POD_IP}:14268
+      thrift_compact:
+        endpoint: ${env:MY_POD_IP}:6831
+      thrift_binary:
+        endpoint: ${env:MY_POD_IP}:6832
 {{- end }}

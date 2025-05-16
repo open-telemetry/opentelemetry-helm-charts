@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.114.2 / 2025-05-16
+- [Feat] Add Jaeger receiver preset to support receiving Jaeger data in all supported protocols (grpc, thrift_http, thrift_compact, thrift_binary)
+- [Breaking] Removes jaeger ports and receiver from default config. Use jaegerReceiver preset instead.
+
 ## v0.114.1 / 2025-05-15
 - [Fix] Add `metricstransformer` to `kubeletMetrics` preset to keep the metrics' backward compatibility for dashboards
 

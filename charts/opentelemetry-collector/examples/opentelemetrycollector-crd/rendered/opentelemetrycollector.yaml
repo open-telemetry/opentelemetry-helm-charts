@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.1
+    helm.sh/chart: opentelemetry-collector-0.114.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -28,15 +28,6 @@ spec:
   image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.125.0"
   imagePullPolicy: IfNotPresent
   ports:
-    - name: jaeger-compact
-      port: 6831
-      protocol: UDP
-    - name: jaeger-grpc
-      port: 14250
-      protocol: TCP
-    - name: jaeger-thrift
-      port: 14268
-      protocol: TCP
     - name: otlp
       port: 4317
       protocol: TCP
@@ -283,14 +274,6 @@ spec:
               system.memory.utilization:
                 enabled: true
           network: null
-      jaeger:
-        protocols:
-          grpc:
-            endpoint: ${env:MY_POD_IP}:14250
-          thrift_compact:
-            endpoint: ${env:MY_POD_IP}:6831
-          thrift_http:
-            endpoint: ${env:MY_POD_IP}:14268
       otlp:
         protocols:
           grpc:
@@ -377,7 +360,6 @@ spec:
           - batch
           receivers:
           - otlp
-          - jaeger
           - zipkin
       telemetry:
         logs:

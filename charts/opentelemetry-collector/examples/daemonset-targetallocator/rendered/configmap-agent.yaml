@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.1
+    helm.sh/chart: opentelemetry-collector-0.114.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -44,14 +44,6 @@ data:
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
     receivers:
-      jaeger:
-        protocols:
-          grpc:
-            endpoint: ${env:MY_POD_IP}:14250
-          thrift_compact:
-            endpoint: ${env:MY_POD_IP}:6831
-          thrift_http:
-            endpoint: ${env:MY_POD_IP}:14268
       otlp:
         protocols:
           grpc:
@@ -102,7 +94,6 @@ data:
           - batch
           receivers:
           - otlp
-          - jaeger
           - zipkin
       telemetry:
         logs:

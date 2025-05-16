@@ -357,6 +357,11 @@ presets:
     # Scrape interval for collector metrics
     scrapeInterval: "30s"
 
+  # Configures the collector to receive Jaeger data in all supported protocols.
+  # Adds the jaeger receiver to the traces pipeline with all protocols configured.
+  jaegerReceiver:
+    enabled: false
+
 configMap:
   # Specifies whether a configMap should be created (true by default)
   create: true
@@ -379,14 +384,6 @@ config:
     # If set to null, will be overridden with values based on k8s resource limits
     memory_limiter: null
   receivers:
-    jaeger:
-      protocols:
-        grpc:
-          endpoint: ${env:MY_POD_IP}:14250
-        thrift_http:
-          endpoint: ${env:MY_POD_IP}:14268
-        thrift_compact:
-          endpoint: ${env:MY_POD_IP}:6831
     otlp:
       protocols:
         grpc:
@@ -427,7 +424,6 @@ config:
           - batch
         receivers:
           - otlp
-          - jaeger
           - zipkin
 
 image:
@@ -530,24 +526,6 @@ ports:
     containerPort: 4318
     servicePort: 4318
     hostPort: 4318
-    protocol: TCP
-  jaeger-compact:
-    enabled: true
-    containerPort: 6831
-    servicePort: 6831
-    hostPort: 6831
-    protocol: UDP
-  jaeger-thrift:
-    enabled: true
-    containerPort: 14268
-    servicePort: 14268
-    hostPort: 14268
-    protocol: TCP
-  jaeger-grpc:
-    enabled: true
-    containerPort: 14250
-    servicePort: 14250
-    hostPort: 14250
     protocol: TCP
   zipkin:
     enabled: true

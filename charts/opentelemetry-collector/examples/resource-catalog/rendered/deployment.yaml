@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.1
+    helm.sh/chart: opentelemetry-collector-0.114.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: f9362c2a6dfdf7ffb3cb81fb7389ad6e6c99b2b1704ee3fa0653f223d3584b81
+        checksum/config: 23f08e0cdae658536b86de5281689182ea1958736be21ecee0fded650560a69d
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -48,15 +48,6 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             
-            - name: jaeger-compact
-              containerPort: 6831
-              protocol: UDP
-            - name: jaeger-grpc
-              containerPort: 14250
-              protocol: TCP
-            - name: jaeger-thrift
-              containerPort: 14268
-              protocol: TCP
             - name: otlp
               containerPort: 4317
               protocol: TCP
