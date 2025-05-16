@@ -22,7 +22,7 @@ spec:
   mode: {{ $collector.mode }}
   config:
     {{- include "opentelemetry-kube-stack.config" $merged }}
-  {{- if and (not (eq $collector.mode "daemonset" )) (not $collector.autoscaling.enabled) }}
+  {{- if and (not (eq $collector.mode "daemonset" )) (not $collector.autoscaler) }}
   replicas: {{ $collector.replicas }}
   {{- end }}
   {{- if $collector.serviceAccount }}
