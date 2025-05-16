@@ -1,4 +1,14 @@
 mode: daemonset
+extraVolumes:
+  - name: etcmachineid
+    hostPath:
+      path: /etc/machine-id
+
+extraVolumeMounts:
+  - mountPath: /etc/machine-id
+    mountPropagation: HostToContainer
+    name: etcmachineid
+    readOnly: true
 
 config:
   exporters:
@@ -12,6 +22,8 @@ presets:
   jaegerReceiver:
     enabled: true
   zipkinReceiver:
+    enabled: true
+  resourceDetection:
     enabled: true
   logsCollection:
     enabled: true

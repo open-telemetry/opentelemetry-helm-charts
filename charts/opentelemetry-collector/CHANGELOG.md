@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.114.4 / 2025-05-16
+- [Feat] Add resourceDetection preset to add system and environment information to resource attributes
+
 ## v0.114.3 / 2025-05-16
 - [Feat] Add zipkin receiver preset to support receiving Zipkin-formatted trace data via HTTP on port 9411
 - [Breaking] Removes zipkin ports and receiver from default config. Use zipkinReceiver preset instead.

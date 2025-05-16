@@ -202,6 +202,12 @@ presets:
     # When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
     # The annotation's exact name will be the key.
     extractAllPodAnnotations: false
+
+  # Configures resource detection processors to add system and environment information.
+  # Also configures volumes and volume mounts for the collector.
+  resourceDetection:
+    enabled: false
+
   # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
   # Adds the kubeletstats receiver to the metrics pipeline
   # and adds the necessary rules to ClusteRole.
@@ -255,8 +261,18 @@ presets:
     # Configures the collector to collect and export error information from spans.
     errorTracking:
       enabled: true
-    extraDimensions: []
-    histogramBuckets: []
+    extraDimensions:
+      - name: http.method
+      - name: cgx.transaction
+      - name: cgx.transaction.root
+      - name: status_code
+      - name: db.namespace
+      - name: db.operation.name
+      - name: db.collection.name
+      - name: db.system
+    histogramBuckets:
+      [1ms, 4ms, 10ms, 20ms, 50ms, 100ms, 200ms, 500ms, 1s, 2s, 5s]
+
     # collectionInterval: 30s
     # metricsExpiration: 5m
     # spanNameReplacePattern configures a regex pattern to replace the span name. This is useful to reduce cardinality
@@ -272,7 +288,17 @@ presets:
   # using OTTL. For more information see https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/routingconnector
   spanMetricsMulti:
     enabled: false
-    defaultHistogramBuckets: []
+    extraDimensions:
+      - name: http.method
+      - name: cgx.transaction
+      - name: cgx.transaction.root
+      - name: status_code
+      - name: db.namespace
+      - name: db.operation.name
+      - name: db.collection.name
+      - name: db.system
+    defaultHistogramBuckets:
+      [1ms, 4ms, 10ms, 20ms, 50ms, 100ms, 200ms, 500ms, 1s, 2s, 5s]
     # collectionInterval: 30s
     # metricsExpiration: 5m
     configs:
@@ -334,7 +360,7 @@ presets:
       # mountPath specifies the path at which to mount the volume. This should correspond the mount path of your MySQL data volume.
       # Provide this parameter without trailing slash.
       mountPath: "/var/lib/mysql"
-      # logFilesPath specifies which directory to watch for log files. This will typically be the MySQL data directory,
+      # logFilesPath specifies which directory Rsto watch for log files. This will typically be the MySQL data directory,
       # such as /var/lib/mysql. If not specified, the value of mountPath will be used.
       logFilesPath: ""
       # logFilesExtension specifies the file extension of the log files to watch. This will normally be .log.
@@ -401,7 +427,6 @@ config:
         encoding: json
     extensions:
       - health_check
-      - memory_ballast
     pipelines:
       logs:
         exporters:

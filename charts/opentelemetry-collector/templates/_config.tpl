@@ -61,6 +61,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.kubernetesAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.resourceDetection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.kubernetesExtraMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesExtraMetrics" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -134,6 +137,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.kubernetesAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.resourceDetection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesEvents.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1534,6 +1540,45 @@ processors:
       - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
       - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1") where attributes["k8s.replicaset.name"] != nil
       - delete_key(attributes, "k8s.replicaset.name")
+{{- end }}
+
+{{- define "opentelemetry-collector.applyResourceDetectionConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.resourceDetectionConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (not (has "resourcedetection/env" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/env" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.logs) (not (has "resourcedetection/region" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/region" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "resourcedetection/env" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resourcedetection/env" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "resourcedetection/region" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resourcedetection/region" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (not (has "resourcedetection/env" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/env" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (not (has "resourcedetection/region" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/region" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.resourceDetectionConfig" -}}
+processors:
+  resourcedetection/env:
+    detectors: ["system", "env"]
+    timeout: 2s
+    override: false
+    system:
+      resource_attributes:
+        host.id:
+          enabled: true
+  resourcedetection/region:
+    detectors: ["gcp", "ec2", "azure"]
+    timeout: 2s
+    override: true
 {{- end }}
 
 {{/* Build the list of port for service */}}

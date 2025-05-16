@@ -214,6 +214,34 @@ containers:
         mountPropagation: HostToContainer
       {{- end }}
       {{- end }}
+      {{- if .Values.presets.resourceDetection.enabled }}
+      {{- if not .Values.isWindows }}
+      {{- $machineIdMountExists := false }}
+      {{- $dbusMachineIdMountExists := false }}
+      {{- if .Values.extraVolumeMounts }}
+      {{- range .Values.extraVolumeMounts }}
+      {{- if eq .mountPath "/etc/machine-id" }}
+      {{- $machineIdMountExists = true }}
+      {{- end }}
+      {{- if eq .mountPath "/var/lib/dbus/machine-id" }}
+      {{- $dbusMachineIdMountExists = true }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- if not $machineIdMountExists }}
+      - mountPath: /etc/machine-id
+        mountPropagation: HostToContainer
+        name: etcmachineid
+        readOnly: true
+      {{- end }}
+      {{- if not $dbusMachineIdMountExists }}
+      - mountPath: /var/lib/dbus/machine-id
+        mountPropagation: HostToContainer
+        name: varlibdbusmachineid
+        readOnly: true
+      {{- end }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.extraVolumeMounts }}
       {{- toYaml .Values.extraVolumeMounts | nindent 6 }}
       {{- end }}
@@ -287,6 +315,32 @@ volumes:
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
+  {{- end }}
+  {{- if .Values.presets.resourceDetection.enabled }}
+  {{- if not .Values.isWindows }}
+  {{- $machineIdVolumeExists := false }}
+  {{- $dbusMachineIdVolumeExists := false }}
+  {{- if .Values.extraVolumes }}
+  {{- range .Values.extraVolumes }}
+  {{- if and (eq .name "etcmachineid") (eq .hostPath.path "/etc/machine-id") }}
+  {{- $machineIdVolumeExists = true }}
+  {{- end }}
+  {{- if and (eq .name "varlibdbusmachineid") (eq .hostPath.path "/var/lib/dbus/machine-id") }}
+  {{- $dbusMachineIdVolumeExists = true }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if not $machineIdVolumeExists }}
+  - name: etcmachineid
+    hostPath:
+      path: /etc/machine-id
+  {{- end }}
+  {{- if not $dbusMachineIdVolumeExists }}
+  - name: varlibdbusmachineid
+    hostPath:
+      path: /var/lib/dbus/machine-id
+  {{- end }}
   {{- end }}
   {{- end }}
   {{- if .Values.extraVolumes }}

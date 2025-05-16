@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.3
+    helm.sh/chart: opentelemetry-collector-0.114.4
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 322079d34b681499bc8dbd739274fa974d86f609647f51181d2f2147542fc959
+        checksum/config: a3b4b1abc27b0e7b8ffe259e8e5c638e589a3ff19c34474a5d5209b9daabe759
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -108,6 +108,14 @@ spec:
             - name: varlibdockercontainers
               mountPath: /var/lib/docker/containers
               readOnly: true
+            - mountPath: /var/lib/dbus/machine-id
+              mountPropagation: HostToContainer
+              name: varlibdbusmachineid
+              readOnly: true
+            - mountPath: /etc/machine-id
+              mountPropagation: HostToContainer
+              name: etcmachineid
+              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -121,6 +129,12 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
+        - name: varlibdbusmachineid
+          hostPath:
+            path: /var/lib/dbus/machine-id
+        - hostPath:
+            path: /etc/machine-id
+          name: etcmachineid
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: false
