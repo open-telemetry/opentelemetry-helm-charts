@@ -106,6 +106,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.jaegerReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyJaegerReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.zipkinReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -179,6 +182,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.jaegerReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyJaegerReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.zipkinReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1553,7 +1559,6 @@ processors:
 {{- define "opentelemetry-collector.podPortsConfig" -}}
 {{- $ports := deepCopy .Values.ports }}
 {{- $distribution := .Values.distribution }}
-
 {{- if .Values.presets.jaegerReceiver.enabled }}
   {{/* Add Jaeger ports only if they don't already exist */}}
   {{- if not (hasKey $ports "jaeger-grpc") }}
@@ -1569,7 +1574,12 @@ processors:
   {{- $_ := set $ports "jaeger-binary" (dict "enabled" true "containerPort" 6832 "servicePort" 6832 "hostPort" 6832 "protocol" "TCP") }}
   {{- end }}
 {{- end }}
-
+{{- if .Values.presets.zipkinReceiver.enabled }}
+  {{/* Add Zipkin port only if it doesn't already exist */}}
+  {{- if not (hasKey $ports "zipkin") }}
+  {{- $_ := set $ports "zipkin" (dict "enabled" true "containerPort" 9411 "servicePort" 9411 "hostPort" 9411 "protocol" "TCP") }}
+  {{- end }}
+{{- end }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
 - name: {{ $key }}
@@ -1714,4 +1724,18 @@ receivers:
         endpoint: ${env:MY_POD_IP}:6831
       thrift_binary:
         endpoint: ${env:MY_POD_IP}:6832
+{{- end }}
+
+{{- define "opentelemetry-collector.applyZipkinReceiverConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.zipkinReceiverConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "zipkin" $config.service.pipelines.traces.receivers)) }}
+{{- $_ := set $config.service.pipelines.traces "receivers" (append $config.service.pipelines.traces.receivers "zipkin" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.zipkinReceiverConfig" -}}
+receivers:
+  zipkin:
+    endpoint: ${env:MY_POD_IP}:9411
 {{- end }}

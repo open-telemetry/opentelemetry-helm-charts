@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.2
+    helm.sh/chart: opentelemetry-collector-0.114.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -27,9 +27,6 @@ spec:
       protocol: TCP
     - name: otlp-http
       port: 4318
-      protocol: TCP
-    - name: zipkin
-      port: 9411
       protocol: TCP
   env:
     - name: MY_POD_IP
@@ -274,8 +271,6 @@ spec:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
-      zipkin:
-        endpoint: ${env:MY_POD_IP}:9411
     service:
       extensions:
       - health_check
@@ -309,7 +304,6 @@ spec:
           - batch
           receivers:
           - otlp
-          - zipkin
       telemetry:
         logs:
           encoding: json

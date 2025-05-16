@@ -362,6 +362,11 @@ presets:
   jaegerReceiver:
     enabled: false
 
+  # Configures the collector to receive Zipkin data.
+  # Adds the zipkin receiver to the traces pipeline.
+  zipkinReceiver:
+    enabled: false
+
 configMap:
   # Specifies whether a configMap should be created (true by default)
   create: true
@@ -390,8 +395,6 @@ config:
           endpoint: ${env:MY_POD_IP}:4317
         http:
           endpoint: ${env:MY_POD_IP}:4318
-    zipkin:
-      endpoint: ${env:MY_POD_IP}:9411
   service:
     telemetry:
       logs:
@@ -424,7 +427,6 @@ config:
           - batch
         receivers:
           - otlp
-          - zipkin
 
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
@@ -527,12 +529,7 @@ ports:
     servicePort: 4318
     hostPort: 4318
     protocol: TCP
-  zipkin:
-    enabled: true
-    containerPort: 9411
-    servicePort: 9411
-    hostPort: 9411
-    protocol: TCP
+
   metrics:
     # The metrics port is disabled by default. However you need to enable the port
     # in order to use the ServiceMonitor (serviceMonitor.enabled) or PodMonitor (podMonitor.enabled).

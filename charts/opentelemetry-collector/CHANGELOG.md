@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.114.3 / 2025-05-16
+- [Feat] Add zipkin receiver preset to support receiving Zipkin-formatted trace data via HTTP on port 9411
+- [Breaking] Removes zipkin ports and receiver from default config. Use zipkinReceiver preset instead.
+
 ## v0.114.2 / 2025-05-16
 - [Feat] Add Jaeger receiver preset to support receiving Jaeger data in all supported protocols (grpc, thrift_http, thrift_compact, thrift_binary)
 - [Breaking] Removes jaeger ports and receiver from default config. Use jaegerReceiver preset instead.
