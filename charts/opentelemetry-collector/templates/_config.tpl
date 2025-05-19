@@ -420,7 +420,7 @@ receivers:
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
-{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "metricstransform/kubeletstatscpu" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "transform/kubeletstatscpu" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -439,17 +439,17 @@ receivers:
       pod: false
       node: true
 processors:
-  metricstransform/kubeletstatscpu:
-    transforms:
-      - include: container.cpu.usage
-        action: update
-        new_name: container.cpu.utilization
-      - include: k8s.pod.cpu.usage
-        action: update
-        new_name: k8s.pod.cpu.utilization
-      - include: k8s.node.cpu.usage
-        action: update
-        new_name: k8s.node.cpu.utilization
+  transform/kubeletstatscpu:
+    error_mode: ignore
+    metric_statements:
+      - context: metric
+        statements:
+          - set(unit, "1") where name == "container.cpu.usage"
+          - set(name, "container.cpu.utilization") where name == "container.cpu.usage"
+          - set(unit, "1") where name == "k8s.pod.cpu.usage"
+          - set(name, "k8s.pod.cpu.utilization") where name == "k8s.pod.cpu.usage"
+          - set(unit, "1") where name == "k8s.node.cpu.usage"
+          - set(name, "k8s.node.cpu.utilization") where name == "k8s.node.cpu.usage"
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}

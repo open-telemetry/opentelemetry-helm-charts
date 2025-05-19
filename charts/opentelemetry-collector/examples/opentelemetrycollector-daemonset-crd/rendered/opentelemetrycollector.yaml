@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.114.4
+    helm.sh/chart: opentelemetry-collector-0.114.5
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.125.0"
@@ -152,17 +152,6 @@ spec:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      metricstransform/kubeletstatscpu:
-        transforms:
-        - action: update
-          include: container.cpu.usage
-          new_name: container.cpu.utilization
-        - action: update
-          include: k8s.pod.cpu.usage
-          new_name: k8s.pod.cpu.utilization
-        - action: update
-          include: k8s.node.cpu.usage
-          new_name: k8s.node.cpu.utilization
       resource/metadata:
         attributes:
         - action: upsert
@@ -193,6 +182,17 @@ spec:
           - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
             "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
+      transform/kubeletstatscpu:
+        error_mode: ignore
+        metric_statements:
+        - context: metric
+          statements:
+          - set(unit, "1") where name == "container.cpu.usage"
+          - set(name, "container.cpu.utilization") where name == "container.cpu.usage"
+          - set(unit, "1") where name == "k8s.pod.cpu.usage"
+          - set(name, "k8s.pod.cpu.utilization") where name == "k8s.pod.cpu.usage"
+          - set(unit, "1") where name == "k8s.node.cpu.usage"
+          - set(name, "k8s.node.cpu.utilization") where name == "k8s.node.cpu.usage"
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -411,7 +411,7 @@ spec:
           - resource/metadata
           - k8sattributes
           - memory_limiter
-          - metricstransform/kubeletstatscpu
+          - transform/kubeletstatscpu
           - transform/k8s_attributes
           - transform/prometheus
           - batch

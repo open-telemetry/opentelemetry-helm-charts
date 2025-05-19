@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.114.5 / 2025-05-19
+- [Fix] Fix utilization metric name and unit in `kubeletMetrics` preset to keep the metrics' backward compatibility for dashboards
+
 ## v0.114.4 / 2025-05-16
 - [Feat] Add resourceDetection preset to add system and environment information to resource attributes
 
@@ -18,7 +21,7 @@
 
 ## v0.114.0 / 2025-05-15
 - [Feat] Update Collector to v0.125.0
-- [Fix] Configure `kubeletstatsreceiver` to enable network metrics collection from all available interfaces on Node level 
+- [Fix] Configure `kubeletstatsreceiver` to enable network metrics collection from all available interfaces on Node level
 
 ## v0.113.5 / 2025-05-09
 - [Fix] Fix collectorMetrics scrape interval setting
