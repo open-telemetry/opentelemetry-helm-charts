@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.0 / 2025-05-19
+- [Feat] Update Collector to v0.126.0
 
 ## v0.114.5 / 2025-05-19
 - [Fix] Fix utilization metric name and unit in `kubeletMetrics` preset to keep the metrics' backward compatibility for dashboards
