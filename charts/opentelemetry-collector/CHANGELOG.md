@@ -1,6 +1,10 @@
 # Changelog
 
 ## OpenTelemetry Collector
+
+## v0.115.1 / 2025-05-19
+- [Update] `kubeletstatsreceiver`: set `collect_all_network_interfaces` on `pods`
+
 ## v0.115.0 / 2025-05-19
 - [Feat] Update Collector to v0.126.0
 

@@ -436,7 +436,7 @@ receivers:
     auth_type: "serviceAccount"
     endpoint: "${env:K8S_NODE_IP}:10250"
     collect_all_network_interfaces:
-      pod: false
+      pod: true
       node: true
 processors:
   transform/kubeletstatscpu:
