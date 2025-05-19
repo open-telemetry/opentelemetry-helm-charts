@@ -204,6 +204,9 @@ receivers:
 receivers:
   k8s_cluster:
     collection_interval: 10s
+    {{- if and .Values.presets.clusterMetrics.k8sLeaderElector (regexMatch "^[^[:space:]]+$" .Values.presets.clusterMetrics.k8sLeaderElector) }}
+    k8s_leader_elector: {{ .Values.presets.clusterMetrics.k8sLeaderElector }}
+    {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
