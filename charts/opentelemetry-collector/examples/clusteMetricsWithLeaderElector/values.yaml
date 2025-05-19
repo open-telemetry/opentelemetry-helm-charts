@@ -7,26 +7,21 @@ image:
 command:
   name: "otelcol-k8s"
 
-# Add the k8s_leader_elector extension
 config:
   extensions:
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
-    k8s_leader_elector:
-      lease_name: otel-collector-leader
-      lease_namespace: default
 
   service:
     extensions:
       - health_check
-      - k8s_leader_elector
 
 presets:
   clusterMetrics:
     enabled: true
-    # Reference the k8s_leader_elector extension to ensure only one collector instance
+    # Enable leader election to ensure only one collector instance
     # is collecting cluster metrics at a time
-    k8sLeaderElector: k8s_leader_elector
+    enableLeaderElection: true
 
 resources:
   limits:

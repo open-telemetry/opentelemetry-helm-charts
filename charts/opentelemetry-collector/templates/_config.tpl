@@ -195,7 +195,19 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyClusterMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.clusterMetricsConfig" .Values | fromYaml) .config }}
+{{- $config := .config }}
+
+{{- /* Add leader election extension if enabled */ -}}
+{{- if .Values.presets.clusterMetrics.enableLeaderElection }}
+{{- $config = mustMergeOverwrite (dict "extensions" (dict "k8s_leader_elector" (dict "lease_name" "otel-collector-leader" "lease_namespace" (include "opentelemetry-collector.namespace" .)))) $config }}
+{{- $config = mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
+{{- if not (has "k8s_leader_elector" $config.service.extensions) }}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "k8s_leader_elector" | uniq) }}
+{{- end }}
+{{- end }}
+
+{{- /* Add k8s_cluster receiver and configure it */ -}}
+{{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.clusterMetricsConfig" . | fromYaml) $config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "k8s_cluster" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
@@ -204,8 +216,8 @@ receivers:
 receivers:
   k8s_cluster:
     collection_interval: 10s
-    {{- if and .Values.presets.clusterMetrics.k8sLeaderElector (regexMatch "^[^[:space:]]+$" .Values.presets.clusterMetrics.k8sLeaderElector) }}
-    k8s_leader_elector: {{ .Values.presets.clusterMetrics.k8sLeaderElector }}
+    {{- if .Values.presets.clusterMetrics.enableLeaderElection }}
+    k8s_leader_elector: k8s_leader_elector
     {{- end }}
 {{- end }}
 

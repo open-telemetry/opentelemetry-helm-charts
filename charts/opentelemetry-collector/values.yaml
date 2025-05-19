@@ -73,15 +73,14 @@ presets:
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
   # Can be used with mode = deployment, statefulset, or daemonset.
-  # When running multiple replicas, the k8sleaderelector extension can be configured
+  # When running multiple replicas, leader election should be enabled
   # to ensure only one collector instance is collecting metrics at a time.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
   clusterMetrics:
     enabled: false
-    # Specify the k8sleaderelector extension ID to enable leader election when multiple replicas are used.
-    # This requires configuring and enabling the k8sleaderelector extension separately.
-    # Example: k8sleaderelector
-    k8sLeaderElector: ""
+    # When set to true, automatically configures leader election for k8s_cluster receiver
+    # to prevent duplicate metrics when running multiple replicas
+    enableLeaderElection: false
 
 configMap:
   # Specifies whether a configMap should be created (true by default)

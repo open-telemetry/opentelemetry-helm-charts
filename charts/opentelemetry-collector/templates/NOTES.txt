@@ -10,11 +10,8 @@
 {{- fail "[ERROR] dnsConfig should be provided when dnsPolicy is None" }}
 {{ end }}
 
-{{- if and .Values.presets.clusterMetrics.enabled .Values.presets.clusterMetrics.k8sLeaderElector (not (regexMatch "^[^[:space:]]+$" .Values.presets.clusterMetrics.k8sLeaderElector)) }}
-{{- fail "Cluster Metrics preset k8sLeaderElector value must be a valid extension ID or empty." }}
-{{ end }}
-{{- if and .Values.presets.clusterMetrics.enabled (gt (int .Values.replicaCount) 1) (eq .Values.presets.clusterMetrics.k8sLeaderElector "") }}
-[WARNING] Running multiple replicas with clusterMetrics preset without configuring k8sLeaderElector may cause duplicate metrics. Consider setting up the k8sleaderelector extension.
+{{- if and .Values.presets.clusterMetrics.enabled (gt (int .Values.replicaCount) 1) (not .Values.presets.clusterMetrics.enableLeaderElection) }}
+[WARNING] Running multiple replicas with clusterMetrics preset without enableLeaderElection may cause duplicate metrics. Consider setting enableLeaderElection to true.
 {{ end }}
 
 {{/* validate extensions must include health_check */}}

@@ -228,13 +228,14 @@ presets:
     enabled: true
 ```
 
-#### High Availability with k8sleaderelector
+#### Using leader election to keep cluster metrics from duplicating
 
 When running multiple collector replicas, you'll want to enable leader election to ensure only one collector instance is collecting cluster metrics at a time. This prevents duplicate metrics and reduces resource consumption.
 
-This feature requires:
-- The [k8sleaderelector extension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/k8sleaderelector) 
-- Appropriate RBAC permissions to create and manage lease objects
+The clusterMetrics preset supports built-in leader election configuration that automatically:
+- Adds the [k8sleaderelector extension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/k8sleaderelector)
+- Configures the necessary service extensions
+- Sets up appropriate RBAC permissions
 
 Here's an example configuration:
 
@@ -242,25 +243,21 @@ Here's an example configuration:
 mode: deployment
 replicaCount: 2
 
-# Add the k8s_leader_elector extension
 config:
   extensions:
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
-    k8s_leader_elector:
-      lease_name: otel-collector-leader
-      lease_namespace: default
 
   service:
     extensions:
       - health_check
-      - k8s_leader_elector
 
 presets:
   clusterMetrics:
     enabled: true
-    # Reference the k8s_leader_elector extension
-    k8sLeaderElector: k8s_leader_elector
+    # Enable leader election to ensure only one collector instance
+    # is collecting cluster metrics at a time
+    enableLeaderElection: true
 ```
 
 See the [clusteMetricsWithLeaderElector example](./examples/clusteMetricsWithLeaderElector) for more details.
