@@ -1,6 +1,6 @@
 apiVersion: v2
 name: opentelemetry-kube-stack
-version: 0.5.3
+version: 0.6.0
 description: |
   OpenTelemetry Quickstart chart for Kubernetes.
   Installs an operator and collector for an easy way to get started with Kubernetes observability.
@@ -18,9 +18,12 @@ icon: https://raw.githubusercontent.com/cncf/artwork/a718fa97fffec1b9fd14147682e
 # release, the collector's latest patch will be manually overridden.
 appVersion: 0.120.0
 dependencies:
-  - name: crds
+  - name: otel-crds
     version: "0.0.0"
-    condition: crds.install
+    condition: crds.install,crds.installOtel
+  - name: prometheus-crds
+    version: "0.0.0"
+    condition: crds.install,crds.installPrometheus
   - name: opentelemetry-operator
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
     version: 0.84.2
