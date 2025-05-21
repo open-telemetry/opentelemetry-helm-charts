@@ -210,12 +210,11 @@ presets:
 
 ### Configuration for Kubernetes Cluster Metrics
 
-The collector can be configured to collects cluster-level metrics from the Kubernetes API server. A single instance of this receiver can be used to monitor a cluster.
+The collector can be configured to collect cluster-level metrics from the Kubernetes API server.
 
 This feature is disabled by default. It has the following requirements:
 
 - It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
-- It requires statefulset or deployment mode with a single replica.
 
 To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
 
@@ -228,6 +227,40 @@ presets:
   clusterMetrics:
     enabled: true
 ```
+
+#### Using leader election to keep cluster metrics from duplicating
+
+When running multiple collector replicas, you'll want to enable leader election to ensure only one collector instance is collecting cluster metrics at a time. This prevents duplicate metrics and reduces resource consumption.
+
+The clusterMetrics preset supports built-in leader election configuration that automatically:
+- Adds the [k8sleaderelector extension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/k8sleaderelector)
+- Configures the necessary service extensions
+- Sets up appropriate RBAC permissions
+
+Here's an example configuration:
+
+```yaml
+mode: deployment
+replicaCount: 2
+
+config:
+  extensions:
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+
+  service:
+    extensions:
+      - health_check
+
+presets:
+  clusterMetrics:
+    enabled: true
+    # Enable leader election to ensure only one collector instance
+    # is collecting cluster metrics at a time
+    enableLeaderElection: true
+```
+
+See the [clusteMetricsWithLeaderElector example](./examples/clusteMetricsWithLeaderElector) for more details.
 
 ### Configuration for Retrieving Kubernetes Events
 

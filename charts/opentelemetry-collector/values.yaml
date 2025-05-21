@@ -72,10 +72,15 @@ presets:
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
-  # Best used with mode = deployment or statefulset.
+  # Can be used with mode = deployment, statefulset, or daemonset.
+  # When running multiple replicas, leader election should be enabled
+  # to ensure only one collector instance is collecting metrics at a time.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
   clusterMetrics:
     enabled: false
+    # When set to true, automatically configures leader election for k8s_cluster receiver
+    # to prevent duplicate metrics when running multiple replicas
+    enableLeaderElection: false
 
 configMap:
   # Specifies whether a configMap should be created (true by default)
