@@ -40,15 +40,22 @@ Helper used to define a namspace.
 {{- end -}}
 
 {{/*
+Selector Labels
+*/}}
+{{- define "helper.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "helper.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
 Common labels shared by all Kubernetes objects in this chart.
 */}}
 {{- define "helper.commonLabels" -}}
-app.kubernetes.io/name: {{ include "helper.name" . }}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end -}}
+{{ include "helper.selectorLabels" . }}
+{{- end }}
 
 {{/*
 Create the name of the target allocator service account to use
