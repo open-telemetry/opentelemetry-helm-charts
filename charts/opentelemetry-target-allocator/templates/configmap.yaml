@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "helper.targetAllocatorConfigMapName" . }}
+  namespace: {{ template "helper.namespace" . }}
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+    app: {{ template "helper.name" . }}
+    chart: {{ template "helper.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  targetallocator.yaml: |
+    {{- .Values.targetAllocator.config | toYaml | nindent 4 }}
