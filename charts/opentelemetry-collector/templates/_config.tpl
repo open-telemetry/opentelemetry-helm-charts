@@ -112,6 +112,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.batch.enabled }}
+{{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -191,6 +194,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.batch.enabled }}
+{{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1783,4 +1789,26 @@ receivers:
 receivers:
   zipkin:
     endpoint: ${env:MY_POD_IP}:9411
+{{- end }}
+
+{{- define "opentelemetry-collector.applyBatchProcessorConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.batchProcessorConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (not (has "batch" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "batch" | uniq) }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "batch" $config.service.pipelines.metrics.processors)) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "batch" | uniq) }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (not (has "batch" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "batch" | uniq) }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.batchProcessorConfig" -}}
+processors:
+  batch:
+    send_batch_size: {{ .Values.presets.batch.sendBatchSize }}
+    send_batch_max_size: {{ .Values.presets.batch.sendBatchMaxSize }}
+    timeout: {{ .Values.presets.batch.timeout }}
 {{- end }}

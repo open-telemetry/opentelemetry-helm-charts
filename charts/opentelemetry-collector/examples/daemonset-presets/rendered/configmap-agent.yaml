@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.1
+    helm.sh/chart: opentelemetry-collector-0.115.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -76,7 +76,10 @@ data:
         node: ${env:K8S_NODE_NAME}
         observe_pods: true
     processors:
-      batch: {}
+      batch:
+        send_batch_max_size: 2048
+        send_batch_size: 1024
+        timeout: 1s
       filter/db_spanmetrics:
         traces:
           span:
