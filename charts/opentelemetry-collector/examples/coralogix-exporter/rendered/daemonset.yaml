@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: f9fdb20fce7bf715ff521dc73418d8065b9ecc59fef2a38bf142c51854be0b6b
+        checksum/config: bc8125ef6cd342dcc03a82436013042d19844ae075cd7afc967ed2291bca643e
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -60,10 +60,6 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: MY_POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
           livenessProbe:
             httpGet:
               path: /
@@ -75,7 +71,6 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-      priorityClassName: "example-opentelemetry-collector"
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:

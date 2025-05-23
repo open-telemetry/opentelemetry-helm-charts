@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.3 / 2025-05-24
+- [Feat] Add coralogixExporter preset
+
 ## v0.115.2 / 2025-05-22
 - [Feat] Add batch processor preset
 
