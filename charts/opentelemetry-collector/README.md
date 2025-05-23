@@ -219,6 +219,8 @@ replicaCount: 1
 presets:
   kubernetesEvents:
     enabled: true
+    # Optional cluster name attribute for events
+    clusterName: "production"
 ```
 
 ### Configuration for Host Metrics

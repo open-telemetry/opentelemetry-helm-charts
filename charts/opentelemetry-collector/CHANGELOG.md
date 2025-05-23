@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.4 / 2025-05-24
+- [Feat] Enhance `kubernetesEvents` preset with `resource/kube-events` and `transform/kube-events` processors
+- [Feat] Make cluster name configurable via `presets.kubernetesEvents.clusterName`
+
 ## v0.115.3 / 2025-05-24
 - [Feat] Add coralogixExporter preset
 

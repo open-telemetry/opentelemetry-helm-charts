@@ -1694,6 +1694,12 @@ processors:
 {{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq)  }}
+{{- if and ($config.service.pipelines.logs) (not (has "resource/kube-events" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resource/kube-events" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.logs) (not (has "transform/kube-events" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "transform/kube-events" | uniq)  }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -1706,6 +1712,24 @@ receivers:
         group: "events.k8s.io"
         exclude_watch_type:
           - "DELETED"
+processors:
+  resource/kube-events:
+    attributes:
+      - key: service.name
+        value: "kube-events"
+        action: upsert
+      {{- if or .Values.presets.kubernetesEvents.clusterName .Values.global.clusterName }}
+      - key: k8s.cluster.name
+        value: "{{ .Values.presets.kubernetesEvents.clusterName | default .Values.global.clusterName }}"
+        action: upsert
+      {{- end }}
+  transform/kube-events:
+    log_statements:
+      - context: log
+        statements:
+          - keep_keys(body["object"], ["type", "eventTime", "reason", "regarding", "note", "metadata", "deprecatedFirstTimestamp", "deprecatedLastTimestamp"])
+          - keep_keys(body["object"]["metadata"], ["creationTimestamp"])
+          - keep_keys(body["object"]["regarding"], ["kind", "name", "namespace"])
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHeadSamplingConfig" -}}
