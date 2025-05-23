@@ -115,6 +115,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.statsdReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -200,6 +203,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.statsdReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1679,6 +1685,12 @@ processors:
   {{- $_ := set $ports "zipkin" (dict "enabled" true "containerPort" 9411 "servicePort" 9411 "hostPort" 9411 "protocol" "TCP") }}
   {{- end }}
 {{- end }}
+{{- if .Values.presets.statsdReceiver.enabled }}
+  {{/* Add StatsD port only if it doesn't already exist */}}
+  {{- if not (hasKey $ports "statsd") }}
+  {{- $_ := set $ports "statsd" (dict "enabled" true "containerPort" 8125 "servicePort" 8125 "hostPort" 8125 "protocol" "UDP") }}
+  {{- end }}
+{{- end }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
 - name: {{ $key }}
@@ -1861,6 +1873,20 @@ receivers:
 receivers:
   zipkin:
     endpoint: ${env:MY_POD_IP}:9411
+{{- end }}
+
+{{- define "opentelemetry-collector.applyStatsdReceiverConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.statsdReceiverConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.metrics) (not (has "statsd" $config.service.pipelines.metrics.receivers)) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "statsd" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.statsdReceiverConfig" -}}
+receivers:
+  statsd:
+    endpoint: ${env:MY_POD_IP}:8125
 {{- end }}
 
 {{- define "opentelemetry-collector.applyBatchProcessorConfig" -}}
