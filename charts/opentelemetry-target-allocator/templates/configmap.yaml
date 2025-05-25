@@ -7,4 +7,7 @@ metadata:
     {{- include "helper.commonLabels" . | nindent 4 }}
 data:
   targetallocator.yaml: |
-    {{- .Values.targetAllocator.config | toYaml | nindent 4 }}
+    {{-
+      $defaultConfig := dict "collector_namespace" .Release.Namespace
+    -}}
+    {{- mergeOverwrite $defaultConfig .Values.targetAllocator.config | toYaml | nindent 4 }}
