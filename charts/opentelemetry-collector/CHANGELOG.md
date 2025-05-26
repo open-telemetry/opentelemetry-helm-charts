@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.6 / 2025-05-24
+- [Feat] Add default node resource environment variables when `resourceDetection` preset is enabled
+
 ## v0.115.5 / 2025-05-24
 - [Feat] Add statsdReceiver preset
 

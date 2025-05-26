@@ -73,6 +73,31 @@ containers:
       - name: GOMEMLIMIT
         value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
       {{- end }}
+      {{- if .Values.presets.resourceDetection.enabled }}
+      {{- $otelAttrExists := false }}
+      {{- $kubeNodeExists := false }}
+      {{- if .Values.extraEnvs }}
+      {{- range .Values.extraEnvs }}
+      {{- if eq .name "OTEL_RESOURCE_ATTRIBUTES" }}
+      {{- $otelAttrExists = true }}
+      {{- end }}
+      {{- if eq .name "KUBE_NODE_NAME" }}
+      {{- $kubeNodeExists = true }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- if not $otelAttrExists }}
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: "k8s.node.name=$(K8S_NODE_NAME)"
+      {{- end }}
+      {{- if not $kubeNodeExists }}
+      - name: KUBE_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      {{- end }}
+      {{- end }}
       {{- with .Values.extraEnvs }}
       {{- . | toYaml | nindent 6 }}
       {{- end }}
