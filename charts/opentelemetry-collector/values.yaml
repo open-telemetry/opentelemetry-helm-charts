@@ -204,12 +204,6 @@ presets:
     # When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
     # The annotation's exact name will be the key.
     extractAllPodAnnotations: false
-
-  # Configures resource detection processors to add system and environment information.
-  # Also configures volumes and volume mounts for the collector.
-  resourceDetection:
-    enabled: false
-
   # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
   # Adds the kubeletstats receiver to the metrics pipeline
   # and adds the necessary rules to ClusteRole.
@@ -234,6 +228,8 @@ presets:
   clusterMetrics:
     enabled: false
     # collectionInterval: 30s
+    customMetrics:
+      enabled: false
 
   # Configures the collector to collect extra Kubernetes metrics, such as pod status and Kubernetes API version.
   # Best used with mode = deployment or statefulset
@@ -416,6 +412,11 @@ presets:
     sendBatchSize: 1024
     sendBatchMaxSize: 2048
     timeout: "1s"
+
+  # Configures resource detection processors to add system and environment information.
+  # Also configures volumes and volume mounts for the collector.
+  resourceDetection:
+    enabled: false
 
 configMap:
   # Specifies whether a configMap should be created (true by default)

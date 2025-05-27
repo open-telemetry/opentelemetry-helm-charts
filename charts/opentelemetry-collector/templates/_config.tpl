@@ -422,17 +422,84 @@ receivers:
 {{- define "opentelemetry-collector.applyClusterMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.clusterMetricsConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "k8s_cluster" | uniq)  }}
+{{- if .Values.Values.presets.clusterMetrics.customMetrics.enabled }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "metricstransform/k8s-dashboard" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "transform/k8s-dashboard" | uniq)  }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.clusterMetricsConfig" -}}
 receivers:
   k8s_cluster:
-    {{- if .Values.presets.clusterMetrics.collectionInterval }}
+    {{- if and .Values.presets.clusterMetrics .Values.presets.clusterMetrics.collectionInterval }}
     collection_interval: "{{ .Values.presets.clusterMetrics.collectionInterval }}"
     {{- else }}
     collection_interval: 10s
     {{- end }}
+    {{- if and .Values.presets.clusterMetrics .Values.presets.clusterMetrics.customMetrics .Values.presets.clusterMetrics.customMetrics.enabled }}
+    resource_attributes:
+      k8s.kubelet.version:
+        enabled: true
+      k8s.pod.qos_class:
+        enabled: true
+      k8s.container.status.last_terminated_reason:
+        enabled: true
+    metrics:
+      k8s.pod.status_reason:
+        enabled: true
+    {{- end }}
+processors:
+  {{- if  .Values.presets.clusterMetrics.customMetrics.enabled }}
+  metricstransform/k8s-dashboard:
+    transforms:
+      - include: k8s.pod.phase
+        match_type: strict
+        action: insert
+        new_name: kube_pod_status_qos_class
+      - include: k8s.pod.status_reason
+        match_type: strict
+        action: insert
+        new_name: kube_pod_status_reason
+      - include: k8s.node.allocatable_cpu
+        match_type: strict
+        action: insert
+        new_name: kube_node_info
+      - include: k8s.container.ready
+        match_type: strict
+        action: insert
+        new_name: k8s.container.status.last_terminated_reason
+  transform/k8s-dashboard:
+    error_mode: ignore
+    metric_statements:
+      - context: metric
+        statements:
+          - set(unit, "1") where name == "k8s.pod.phase"
+          - set(unit, "") where name == "kube_node_info"
+          - set(unit, "") where name == "k8s.container.status.last_terminated_reason"
+      - context: datapoint
+        statements:
+          - set(value_int, 1) where metric.name == "kube_pod_status_qos_class"
+          - set(attributes["qos_class"], resource.attributes["k8s.pod.qos_class"]) where metric.name == "kube_pod_status_qos_class"
+          - set(attributes["pod"], resource.attributes["k8s.pod.name"]) where metric.name == "kube_pod_status_reason"
+          - set(attributes["reason"], "Evicted") where metric.name == "kube_pod_status_reason" and value_int == 1
+          - set(attributes["reason"], "NodeAffinity") where metric.name == "kube_pod_status_reason" and value_int == 2
+          - set(attributes["reason"], "NodeLost") where metric.name == "kube_pod_status_reason" and value_int == 3
+          - set(attributes["reason"], "Shutdown") where metric.name == "kube_pod_status_reason" and value_int == 4
+          - set(attributes["reason"], "UnexpectedAdmissionError") where metric.name == "kube_pod_status_reason" and value_int == 5
+          - set(value_int, 0) where metric.name == "kube_pod_status_reason" and value_int == 6
+          - set(value_int, 1) where metric.name == "kube_pod_status_reason" and value_int != 0
+          - set(value_int, 1) where metric.name == "kube_node_info"
+          - set(attributes["kubelet_version"], resource.attributes["k8s.kubelet.version"]) where metric.name == "kube_node_info"
+          - set(value_int, 1) where metric.name == "k8s.container.status.last_terminated_reason"
+          - set(attributes["reason"], "") where metric.name == "k8s.container.status.last_terminated_reason"
+          - set(attributes["reason"], resource.attributes["k8s.container.status.last_terminated_reason"]) where metric.name == "k8s.container.status.last_terminated_reason"
+      - context: resource
+        statements:
+          - delete_key(attributes, "k8s.container.status.last_terminated_reason")
+          - delete_key(attributes, "k8s.pod.qos_class")
+          - delete_key(attributes, "k8s.kubelet.version")
+  {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
@@ -1910,3 +1977,5 @@ processors:
     send_batch_max_size: {{ .Values.presets.batch.sendBatchMaxSize }}
     timeout: {{ .Values.presets.batch.timeout }}
 {{- end }}
+
+rewritten_file>

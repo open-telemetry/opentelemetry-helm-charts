@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.7 / 2025-05-24
+- [Feat] Make cluster metrics collection interval configurable through preset
+- [Feat] Add optional custom Kubernetes metrics for dashboards via `presets.clusterMetrics.customMetrics`
+
 ## v0.115.6 / 2025-05-24
 - [Feat] Add default node resource environment variables when `resourceDetection` preset is enabled
 
