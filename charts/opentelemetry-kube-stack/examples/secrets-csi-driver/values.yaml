@@ -1,0 +1,46 @@
+clusterName: demo
+collectors:
+  cluster:
+    # Environment variables are added from the generated secret
+    envFrom:
+      - secretRef:
+          name: collector-credentials-secret
+    # The Secrets CSI Driver volume is mounted in the collector
+    volumeMounts:
+      - name: secrets-csi
+        readOnly: true
+        mountPath: /mnt/secrets-store
+    # Volume definition, using the SecretProviderClass deployed as extra
+    volumes:
+      - name: secrets-csi
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: collector-credentials
+    config:
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:443
+          headers:
+            "access-token": "${env:ACCESS_TOKEN}"
+
+extraObjects:
+  - apiVersion: secrets-store.csi.x-k8s.io/v1
+    kind: SecretProviderClass
+    metadata:
+      name: collector-credentials
+    spec:
+      parameters:
+        objects: >
+          - secretPath: data/collector-credentials
+            objectName: token
+            secretKey: token
+        vaultAddress: https://your-vault.com
+      provider: vault
+      secretObjects:
+        - data:
+            - key: ACCESS_TOKEN
+              objectName: token
+          secretName: collector-credentials-secret
+          type: Opaque

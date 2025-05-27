@@ -10,7 +10,6 @@ metadata:
     app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
-    opentelemetry.io/opamp-reporting: "true"
 spec:
   managementState: managed
   mode: deployment
@@ -20,7 +19,7 @@ spec:
       otlp:
         endpoint: ingest.example.com:443
         headers:
-          access-token: ${ACCESS_TOKEN}
+          access-token: ${env:ACCESS_TOKEN}
     processors:
       batch:
         send_batch_max_size: 1500
@@ -125,7 +124,6 @@ spec:
         metrics:
           exporters:
           - debug
-          - otlp
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -146,6 +144,9 @@ spec:
   securityContext:
     {}
   volumeMounts:
+  - mountPath: /mnt/secrets-store
+    name: secrets-csi
+    readOnly: true
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
@@ -173,12 +174,16 @@ spec:
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name=demo"
   
-  - name: ACCESS_TOKEN
-    valueFrom:
-      secretKeyRef:
-        key: access_token
-        name: otel-collector-secret
+  envFrom:
+    - secretRef:
+        name: collector-credentials-secret
   volumes:
+  - csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: collector-credentials
+    name: secrets-csi
 ---
 # Source: opentelemetry-kube-stack/templates/collector.yaml
 apiVersion: opentelemetry.io/v1beta1
@@ -191,17 +196,12 @@ metadata:
     app.kubernetes.io/version: "0.120.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
-    opentelemetry.io/opamp-reporting: "true"
 spec:
   managementState: managed
   mode: daemonset
   config:
     exporters:
       debug: {}
-      otlp:
-        endpoint: ingest.example.com:443
-        headers:
-          access-token: ${ACCESS_TOKEN}
     processors:
       batch:
         send_batch_max_size: 1500
@@ -554,7 +554,6 @@ spec:
         logs:
           exporters:
           - debug
-          - otlp
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -565,7 +564,6 @@ spec:
         metrics:
           exporters:
           - debug
-          - otlp
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -578,7 +576,6 @@ spec:
         traces:
           exporters:
           - debug
-          - otlp
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -608,12 +605,6 @@ spec:
     mountPath: /hostfs
     readOnly: true
     mountPropagation: HostToContainer
-  ports:
-    - appProtocol: grpc
-      hostPort: 4317
-      name: otlp-grpc
-      port: 4317
-      protocol: TCP
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
@@ -641,11 +632,6 @@ spec:
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name=demo"
   
-  - name: ACCESS_TOKEN
-    valueFrom:
-      secretKeyRef:
-        key: access_token
-        name: otel-collector-secret
   volumes:
   - name: varlogpods
     hostPath:
