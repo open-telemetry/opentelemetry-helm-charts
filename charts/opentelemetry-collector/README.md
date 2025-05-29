@@ -262,6 +262,23 @@ presets:
 
 The HTTP endpoint can be configured via `presets.zpages.endpoint`.
 
+### Configuration for Pprof
+
+The collector can expose [pprof](https://github.com/google/pprof) for profiling.
+
+This feature is disabled by default.
+
+To enable this feature, set the `presets.pprof.enabled` property to `true`.
+Here is an example `values.yaml`:
+
+```yaml
+presets:
+  pprof:
+    enabled: true
+```
+
+The HTTP endpoint can be configured via `presets.pprof.endpoint`.
+
 ### Configuration for GKE autopilot distribution
 
 GKE Autopilot has limited access to host filesystems and host ports, due to this some features of OpenTelemetry Collector doesn't work.

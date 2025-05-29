@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.10 / 2025-05-30
+- [Feat] Add pprof preset for profiling
 ## v0.115.9 / 2025-05-30
 - [Feat] Add zpages preset for debugging
 ## v0.115.8 / 2025-05-29

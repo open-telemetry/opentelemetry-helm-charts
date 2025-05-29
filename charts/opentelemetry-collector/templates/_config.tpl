@@ -124,6 +124,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.zpages.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZpagesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.pprof.enabled }}
+{{- $config = (include "opentelemetry-collector.applyPprofConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -219,6 +222,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.zpages.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZpagesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.pprof.enabled }}
+{{- $config = (include "opentelemetry-collector.applyPprofConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -2036,4 +2042,18 @@ receivers:
 extensions:
   zpages:
     endpoint: {{ .Values.presets.zpages.endpoint }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyPprofConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.pprofConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.extensions) (not (has "pprof" $config.service.extensions)) }}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "pprof" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.pprofConfig" -}}
+extensions:
+  pprof:
+    endpoint: {{ .Values.presets.pprof.endpoint }}
 {{- end }}
