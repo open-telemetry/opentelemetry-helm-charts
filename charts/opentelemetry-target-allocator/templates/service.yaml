@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ template "helper.namespace" . }}
+  name: {{ template "helper.fullname" . }}-ta
+spec:
+  selector:
+    {{- include "helper.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http-port
+      protocol: TCP
+      port: 80
+      targetPort: http-port

@@ -1,0 +1,20 @@
+---
+# Source: opentelemetry-target-allocator/templates/clusterRoleBinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: example-opentelemetry-target-allocator-ta-clusterRoleBinding
+  labels:
+    helm.sh/chart: opentelemetry-target-allocator-0.0.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "0.123.0"
+    app.kubernetes.io/name: opentelemetry-target-allocator
+    app.kubernetes.io/instance: example
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: example-opentelemetry-target-allocator-ta-clusterRole
+subjects:
+- kind: ServiceAccount
+  name: example-opentelemetry-target-allocator-ta
+  namespace: default

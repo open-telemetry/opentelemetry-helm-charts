@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "helper.targetAllocatorConfigMapName" . }}
+  namespace: {{ template "helper.namespace" . }}
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+data:
+  targetallocator.yaml: |
+    {{-
+      $defaultConfig := dict "collector_namespace" .Release.Namespace
+    -}}
+    {{- mergeOverwrite $defaultConfig .Values.targetAllocator.config | toYaml | nindent 4 }}

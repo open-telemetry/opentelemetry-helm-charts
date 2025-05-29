@@ -1,0 +1,46 @@
+################################################################################
+# Target Allocator
+#
+# The Target Allocator is running as a deployment with a replica count of 1.
+# It discovers scraping configurations from ServiceMonitor and PodMonitor CRDs and
+# assigns them to collectors.
+# Related documentation: https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
+################################################################################
+
+# nameOverride replaces the name of the chart, when this is used to construct
+# Kubernetes object names.
+nameOverride: ""
+# fullnameOverride completely replaces the generated name.
+fullnameOverride: ""
+
+targetAllocator:
+  image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:v0.124.0
+  # Secrets to attach to the respective serviceaccount to pull docker images
+  imagePullSecrets: []
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+    # Service account annotations
+    annotations: {}
+  config:
+    allocation_strategy: consistent-hashing
+    # Example of selector to choose which collectors will be allocated targets:
+    # collector_namespace: default
+    # collector_selector:
+    #  matchlabels:
+    #    app.kubernetes.io/component: agent-collector
+    prometheus_cr:
+      enabled: true
+      scrapeInterval: 30s
+      # An empty value means any service monitor will be accepted.
+      service_monitor_selector: {}
+      # An empty value means any pod monitor will be accepted.
+      pod_monitor_selector: {}
+
+    filter_strategy: relabel-config
+    config:
+      scrape_configs: []
