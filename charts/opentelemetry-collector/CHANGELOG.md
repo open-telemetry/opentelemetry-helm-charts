@@ -1,6 +1,10 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.8 / 2025-05-29
+- [Feat] Add otlp receiver preset to support receiving otlp trace data
+- [Breaking] Remove batch processor from default values.yaml
+- [Feat] Remove otlp receiver from default values.yaml, enabled otlpReceiver preset instead.
 
 ## v0.115.7 / 2025-05-24
 - [Feat] Make cluster metrics collection interval configurable through preset

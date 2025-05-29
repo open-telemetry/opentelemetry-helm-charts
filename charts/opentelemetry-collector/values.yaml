@@ -401,6 +401,11 @@ presets:
   zipkinReceiver:
     enabled: false
 
+  # Configures the collector to receive OTLP data.
+  # Adds the OTLP receiver to the traces, metrics, and logs pipelines.
+  otlpReceiver:
+    enabled: true
+
   # Configures the collector to receive StatsD metrics.
   # Adds the statsd receiver to the metrics pipeline.
   statsdReceiver:
@@ -435,17 +440,10 @@ config:
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
     memory_ballast: {}
+  receivers: {}
   processors:
-    batch: {}
     # If set to null, will be overridden with values based on k8s resource limits
     memory_limiter: null
-  receivers:
-    otlp:
-      protocols:
-        grpc:
-          endpoint: ${env:MY_POD_IP}:4317
-        http:
-          endpoint: ${env:MY_POD_IP}:4318
   service:
     telemetry:
       logs:
@@ -458,25 +456,19 @@ config:
           - debug
         processors:
           - memory_limiter
-          - batch
-        receivers:
-          - otlp
+        receivers: []
       metrics:
         exporters:
           - debug
         processors:
           - memory_limiter
-          - batch
-        receivers:
-          - otlp
+        receivers: []
       traces:
         exporters:
           - debug
         processors:
           - memory_limiter
-          - batch
-        receivers:
-          - otlp
+        receivers: []
 
 image:
   # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.

@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.7
+    helm.sh/chart: opentelemetry-collector-0.115.8
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -455,33 +455,33 @@ data:
           exporters:
           - debug
           processors:
+          - memory_limiter
           - resourcedetection/region
           - resourcedetection/env
           - k8sattributes
-          - memory_limiter
           - transform/k8s_attributes
           - batch
           receivers:
-          - otlp
           - filelog
+          - otlp
         metrics:
           exporters:
           - debug
           processors:
+          - memory_limiter
           - resourcedetection/region
           - resourcedetection/env
           - k8sattributes
-          - memory_limiter
           - transform/k8s_attributes
           - filter/k8s_extra_metrics
           - transform/reduce
           - batch
           receivers:
-          - otlp
           - receiver_creator/mysql
           - prometheus/k8s_extra_metrics
           - spanmetrics
           - spanmetrics/db
+          - otlp
         traces:
           exporters:
           - debug
@@ -489,19 +489,19 @@ data:
           - forward/db
           - forward/sampled
           processors:
+          - memory_limiter
           - transform/span_name
           - resourcedetection/region
           - resourcedetection/env
           - k8sattributes
-          - memory_limiter
           - transform/k8s_attributes
           - transform/spanmetrics
           - transform/test
           - batch
           receivers:
-          - otlp
           - jaeger
           - zipkin
+          - otlp
         traces/db:
           exporters:
           - spanmetrics/db

@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.7
+    helm.sh/chart: opentelemetry-collector-0.115.8
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -43,7 +43,6 @@ data:
               Authorization: Bearer ${env:CORALOGIX_PRIVATE_KEY}
             polling_interval: 2m
     processors:
-      batch: {}
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -189,9 +188,8 @@ data:
           exporters:
           - debug
           processors:
-          - resource/metadata
           - memory_limiter
-          - batch
+          - resource/metadata
           receivers:
           - otlp
         logs/resource_catalog:
@@ -210,21 +208,19 @@ data:
           exporters:
           - debug
           processors:
-          - resource/metadata
           - memory_limiter
+          - resource/metadata
           - transform/prometheus
-          - batch
           receivers:
-          - otlp
           - hostmetrics
           - prometheus
+          - otlp
         traces:
           exporters:
           - debug
           processors:
-          - resource/metadata
           - memory_limiter
-          - batch
+          - resource/metadata
           receivers:
           - otlp
       telemetry:

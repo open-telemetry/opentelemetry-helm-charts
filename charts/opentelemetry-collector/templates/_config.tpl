@@ -115,6 +115,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.otlpReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyOtlpReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.statsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -122,6 +125,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -203,6 +207,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.otlpReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyOtlpReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.statsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1758,6 +1765,15 @@ processors:
   {{- $_ := set $ports "statsd" (dict "enabled" true "containerPort" 8125 "servicePort" 8125 "hostPort" 8125 "protocol" "UDP") }}
   {{- end }}
 {{- end }}
+{{- if .Values.presets.otlpReceiver.enabled }}
+  {{/* Add OTLP ports only if they don't already exist */}}
+  {{- if not (hasKey $ports "otlp") }}
+  {{- $_ := set $ports "otlp" (dict "enabled" true "containerPort" 4317 "servicePort" 4317 "hostPort" 4317 "protocol" "TCP" "appProtocol" "grpc") }}
+  {{- end }}
+  {{- if not (hasKey $ports "otlp-http") }}
+  {{- $_ := set $ports "otlp-http" (dict "enabled" true "containerPort" 4318 "servicePort" 4318 "hostPort" 4318 "protocol" "TCP") }}
+  {{- end }}
+{{- end }}
 {{- range $key, $port := $ports }}
 {{- if $port.enabled }}
 - name: {{ $key }}
@@ -1978,4 +1994,26 @@ processors:
     timeout: {{ .Values.presets.batch.timeout }}
 {{- end }}
 
-rewritten_file>
+{{- define "opentelemetry-collector.applyOtlpReceiverConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.otlpReceiverConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "otlp" $config.service.pipelines.traces.receivers)) }}
+{{- $_ := set $config.service.pipelines.traces "receivers" (append $config.service.pipelines.traces.receivers "otlp" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.metrics) (not (has "otlp" $config.service.pipelines.metrics.receivers)) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "otlp" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.logs) (not (has "otlp" $config.service.pipelines.logs.receivers)) }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "otlp" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.otlpReceiverConfig" -}}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: ${env:MY_POD_IP}:4317
+      http:
+        endpoint: ${env:MY_POD_IP}:4318
+{{- end }}

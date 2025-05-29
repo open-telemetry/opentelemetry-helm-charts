@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.7
+    helm.sh/chart: opentelemetry-collector-0.115.8
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -119,7 +119,6 @@ spec:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
-      batch: {}
       k8sattributes:
         extract:
           metadata:
@@ -396,39 +395,36 @@ spec:
           exporters:
           - debug
           processors:
+          - memory_limiter
           - resource/metadata
           - k8sattributes
-          - memory_limiter
           - transform/k8s_attributes
-          - batch
           receivers:
-          - otlp
           - filelog
+          - otlp
         metrics:
           exporters:
           - debug
           processors:
+          - memory_limiter
           - resource/metadata
           - k8sattributes
-          - memory_limiter
           - transform/kubeletstatscpu
           - transform/k8s_attributes
           - transform/prometheus
-          - batch
           receivers:
-          - otlp
           - hostmetrics
           - kubeletstats
           - prometheus
+          - otlp
         traces:
           exporters:
           - debug
           processors:
+          - memory_limiter
           - resource/metadata
           - k8sattributes
-          - memory_limiter
           - transform/k8s_attributes
-          - batch
           receivers:
           - otlp
       telemetry:
