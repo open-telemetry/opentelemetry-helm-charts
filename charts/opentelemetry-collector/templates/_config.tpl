@@ -121,6 +121,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.statsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.zpages.enabled }}
+{{- $config = (include "opentelemetry-collector.applyZpagesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -213,6 +216,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.statsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.zpages.enabled }}
+{{- $config = (include "opentelemetry-collector.applyZpagesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -2016,4 +2022,18 @@ receivers:
         endpoint: ${env:MY_POD_IP}:4317
       http:
         endpoint: ${env:MY_POD_IP}:4318
+{{- end }}
+
+{{- define "opentelemetry-collector.applyZpagesConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.zpagesConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.extensions) (not (has "zpages" $config.service.extensions)) }}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "zpages" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.zpagesConfig" -}}
+extensions:
+  zpages:
+    endpoint: {{ .Values.presets.zpages.endpoint }}
 {{- end }}

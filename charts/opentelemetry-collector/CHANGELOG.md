@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.9 / 2025-05-30
+- [Feat] Add zpages preset for debugging
 ## v0.115.8 / 2025-05-29
 - [Feat] Add otlp receiver preset to support receiving otlp trace data
 - [Breaking] Remove batch processor from default values.yaml
