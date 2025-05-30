@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.90.0
+    helm.sh/chart: opentelemetry-operator-0.90.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.126.0"
     app.kubernetes.io/managed-by: Helm
@@ -36,12 +36,63 @@ rules:
       - events
     verbs:
       - create
+      - get
+      - list
       - patch
+      - watch
   - apiGroups:
       - ""
     resources:
       - namespaces
     verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/spec
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - resourcequotas
+    verbs:
+      - get
       - list
       - watch
   - apiGroups:
@@ -68,6 +119,22 @@ rules:
       - list
       - watch
   - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
@@ -83,6 +150,14 @@ rules:
       - batch
     resources:
       - jobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - cronjobs
     verbs:
       - get
       - list
@@ -117,6 +192,13 @@ rules:
       - get
       - list
       - update
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - list
+      - watch
   - apiGroups:
       - monitoring.coreos.com
     resources:
@@ -269,7 +351,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.90.0
+    helm.sh/chart: opentelemetry-operator-0.90.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.126.0"
     app.kubernetes.io/managed-by: Helm
@@ -288,7 +370,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.90.0
+    helm.sh/chart: opentelemetry-operator-0.90.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.126.0"
     app.kubernetes.io/managed-by: Helm
