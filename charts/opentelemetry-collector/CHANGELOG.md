@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.12 / 2025-05-30
+- [Feat] Make Kubernetes attributes node filter configurable via `presets.kubernetesAttributes.nodeFilter.enabled` and automatically inject `K8S_NODE_NAME` env var when enabled
 ## v0.115.11 / 2025-05-30
 - [Feat] Make k8s.node.name resource attribute injection configurable via `presets.resourceDetection.k8sNodeName.enabled`
 ## v0.115.10 / 2025-05-30

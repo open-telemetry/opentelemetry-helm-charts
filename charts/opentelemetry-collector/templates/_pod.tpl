@@ -56,7 +56,7 @@ containers:
           fieldRef:
             fieldPath: metadata.name
       {{- end }}
-      {{- if and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset") }}
+      {{- if and .Values.presets.kubernetesAttributes.enabled (or (eq .Values.mode "daemonset") .Values.presets.kubernetesAttributes.nodeFilter.enabled) }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:

@@ -1626,7 +1626,7 @@ exporters:
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
 processors:
   k8sattributes:
-  {{- if eq .Values.mode "daemonset" }}
+  {{- if or (eq .Values.mode "daemonset") .Values.presets.kubernetesAttributes.nodeFilter.enabled }}
     filter:
       node_from_env_var: K8S_NODE_NAME
   {{- end }}
