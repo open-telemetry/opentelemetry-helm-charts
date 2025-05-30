@@ -1653,8 +1653,12 @@ processors:
         - "k8s.job.name"
         - "k8s.node.name"
         - "k8s.pod.name"
+        {{- if .Values.presets.kubernetesAttributes.podUid.enabled }}
         - "k8s.pod.uid"
+        {{- end }}
+        {{- if .Values.presets.kubernetesAttributes.podStartTime.enabled }}
         - "k8s.pod.start_time"
+        {{- end }}
       {{- if .Values.presets.kubernetesAttributes.extractAllPodLabels }}
       labels:
         - tag_name: $$1

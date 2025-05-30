@@ -161,6 +161,10 @@ presets:
     # The label/annotation name will become the resource attribute's key.
     extractAllPodLabels: true
     extractAllPodAnnotations: true
+    podUid:
+      enabled: true
+    podStartTime:
+      enabled: true
     # When enabled adds a node_from_env_var filter and sets the K8S_NODE_NAME
     # environment variable automatically when required.
     nodeFilter:

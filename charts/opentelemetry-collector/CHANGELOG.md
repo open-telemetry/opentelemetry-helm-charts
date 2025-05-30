@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.13 / 2025-05-30
+- [Feat] Make extraction of `k8s.pod.uid` and `k8s.pod.start_time` configurable via `presets.kubernetesAttributes.podUid.enabled` and `presets.kubernetesAttributes.podStartTime.enabled`
 ## v0.115.12 / 2025-05-30
 - [Feat] Make Kubernetes attributes node filter configurable via `presets.kubernetesAttributes.nodeFilter.enabled` and automatically inject `K8S_NODE_NAME` env var when enabled
 ## v0.115.11 / 2025-05-30
