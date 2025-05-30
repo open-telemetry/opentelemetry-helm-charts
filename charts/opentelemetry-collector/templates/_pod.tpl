@@ -74,6 +74,7 @@ containers:
         value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
       {{- end }}
       {{- if .Values.presets.resourceDetection.enabled }}
+      {{- if .Values.presets.resourceDetection.k8sNodeName.enabled }}
       {{- $otelAttrExists := false }}
       {{- $kubeNodeExists := false }}
       {{- if .Values.extraEnvs }}
@@ -96,6 +97,7 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: spec.nodeName
+      {{- end }}
       {{- end }}
       {{- end }}
       {{- with .Values.extraEnvs }}
