@@ -43,6 +43,11 @@ metrics:
             {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.telemetry.resource"  -}}
+resource:
+  service.name: "{{ .Release.Name }}"
+{{- end }}
+
 {{- define "opentelemetry-collector.otelsdkotlp.logs" -}}
 logs:
   processors:
@@ -62,6 +67,7 @@ logs:
 {{- .Values.alternateConfig | toYaml }}
 {{- else}}
 {{- $config := deepCopy .Values.config }}
+{{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.telemetry.resource" . | fromYaml)) }}
 {{- if .Values.internalTelemetryViaOTLP.traces.enabled }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.traces" . | fromYaml)) }}
 {{- end }}
