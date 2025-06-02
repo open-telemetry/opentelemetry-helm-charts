@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.14 / 2025-05-30
+- [Feat] Allow configuring `max_recv_msg_size_mib` for the OTLP receiver via `presets.otlpReceiver.maxRecvMsgSizeMiB` (default 20 MiB)
 ## v0.115.13 / 2025-05-30
 - [Feat] Make extraction of `k8s.pod.uid` and `k8s.pod.start_time` configurable via `presets.kubernetesAttributes.podUid.enabled` and `presets.kubernetesAttributes.podStartTime.enabled`
 ## v0.115.12 / 2025-05-30

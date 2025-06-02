@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-statefulset
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.13
+    helm.sh/chart: opentelemetry-collector-0.115.14
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -47,6 +47,7 @@ data:
         protocols:
           grpc:
             endpoint: ${env:MY_POD_IP}:4317
+            max_recv_msg_size_mib: 20
           http:
             endpoint: ${env:MY_POD_IP}:4318
       prometheus:

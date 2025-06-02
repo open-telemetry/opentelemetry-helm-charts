@@ -2030,6 +2030,8 @@ receivers:
     protocols:
       grpc:
         endpoint: ${env:MY_POD_IP}:4317
+        # Default otlp grpc server message size limit is 4mib, which might be too low.
+        max_recv_msg_size_mib: {{ .Values.presets.otlpReceiver.maxRecvMsgSizeMiB }}
       http:
         endpoint: ${env:MY_POD_IP}:4318
 {{- end }}
