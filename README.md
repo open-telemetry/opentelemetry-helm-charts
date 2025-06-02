@@ -8,7 +8,8 @@ This repository contains [Helm](https://helm.sh/) charts for OpenTelemetry proje
 ## Usage
 
 [Helm](https://helm.sh) must be installed to use the charts.
-Please refer to Helm's [documentation](https://helm.sh/docs/) to get started.
+- Please refer to Helm's [documentation](https://helm.sh/docs/) to get started.
+- This project is maintained using Helm v3.18.0.
 
 Once Helm is set up properly, add the repo as follows:
 
