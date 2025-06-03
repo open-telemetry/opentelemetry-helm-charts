@@ -56,11 +56,18 @@ containers:
           fieldRef:
             fieldPath: metadata.name
       {{- end }}
-      {{- if and .Values.presets.kubernetesAttributes.enabled (or (eq .Values.mode "daemonset") .Values.presets.kubernetesAttributes.nodeFilter.enabled) }}
+      {{- if or .Values.presets.k8sResourceAttributes.enabled (and .Values.presets.kubernetesAttributes.enabled (or (eq .Values.mode "daemonset") .Values.presets.kubernetesAttributes.nodeFilter.enabled)) }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:
             fieldPath: spec.nodeName
+      {{- end }}
+      {{- if .Values.presets.k8sResourceAttributes.enabled }}
+      - name: KUBE_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
       {{- end }}
       {{- if or .Values.presets.kubeletMetrics.enabled .Values.presets.kubernetesExtraMetrics.perNode }}
       - name: K8S_NODE_IP

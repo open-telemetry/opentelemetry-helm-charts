@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.15 / 2025-05-30
+- [Feat] Add `k8sResourceAttributes` preset to populate service telemetry resource attributes with Kubernetes metadata
 ## v0.115.14 / 2025-05-30
 - [Feat] Allow configuring `max_recv_msg_size_mib` for the OTLP receiver via `presets.otlpReceiver.maxRecvMsgSizeMiB` (default 20 MiB)
 ## v0.115.13 / 2025-05-30

@@ -100,6 +100,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.fleetManagement.enabled }}
 {{- $config = (include "opentelemetry-collector.applyFleetManagementConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.k8sResourceAttributes.enabled }}
+{{- $config = (include "opentelemetry-collector.applyK8sResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -198,6 +201,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.fleetManagement.enabled }}
 {{- $config = (include "opentelemetry-collector.applyFleetManagementConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.k8sResourceAttributes.enabled }}
+{{- $config = (include "opentelemetry-collector.applyK8sResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1008,6 +1014,28 @@ extensions:
           cx.integrationID: "{{.Values.presets.fleetManagement.integrationID}}"
         {{- end }}
           k8s.node.name: ${env:KUBE_NODE_NAME}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyK8sResourceAttributesConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.k8sResourceAttributesConfig" .Values | fromYaml) .config }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.k8sResourceAttributesConfig" -}}
+{{- $root := $ }}
+service:
+  telemetry:
+    resource:
+      {{- if eq $root.Values.mode "daemonset" }}
+      k8s.daemonset.name: "{{ include "opentelemetry-collector.fullname" $root }}"
+      {{- else if eq $root.Values.mode "statefulset" }}
+      k8s.statefulset.name: "{{ include "opentelemetry-collector.fullname" $root }}"
+      {{- else }}
+      k8s.deployment.name: "{{ include "opentelemetry-collector.fullname" $root }}"
+      {{- end }}
+      k8s.namespace.name: "{{ $root.Release.Namespace }}"
+      k8s.node.name: ${env:KUBE_NODE_NAME}
+      k8s.pod.name: ${env:KUBE_POD_NAME}
 {{- end }}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}
