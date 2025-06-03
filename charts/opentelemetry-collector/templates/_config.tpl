@@ -103,6 +103,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.k8sResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyK8sResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.semconv.enabled }}
+{{- $config = (include "opentelemetry-collector.applySemconvConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -204,6 +207,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.k8sResourceAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyK8sResourceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.semconv.enabled }}
+{{- $config = (include "opentelemetry-collector.applySemconvConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -983,6 +989,24 @@ processors:
           - delete_key(attributes, "net.host.name")
           - delete_key(attributes, "net.host.port")
 
+{{- end }}
+
+{{- define "opentelemetry-collector.applySemconvConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.semconvConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "transform/semconv" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "transform/semconv" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.semconvConfig" -}}
+processors:
+  transform/semconv:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        statements:
+          - set(attributes["http.method"], attributes["http.request.method"]) where attributes["http.request.method"] != nil
 {{- end }}
 
 {{- define "opentelemetry-collector.applyFleetManagementConfig" -}}
