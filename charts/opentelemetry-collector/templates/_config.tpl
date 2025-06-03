@@ -1060,6 +1060,10 @@ service:
       k8s.namespace.name: "{{ $root.Release.Namespace }}"
       k8s.node.name: ${env:KUBE_NODE_NAME}
       k8s.pod.name: ${env:KUBE_POD_NAME}
+      service.name: "opentelemetry-collector"
+      {{- if $root.Values.presets.k8sResourceAttributes.agentType }}
+      cx.agent.type: "{{$root.Values.presets.k8sResourceAttributes.agentType}}"
+      {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}

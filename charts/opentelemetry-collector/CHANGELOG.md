@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.17 / 2025-05-30
+- [Feat] Extend `k8sResourceAttributes` preset with `service.name` and configurable `cx.agent.type`
 ## v0.115.16 / 2025-05-30
 - [Feat] Add `semconv` preset for `transform/semconv` processor to map `http.request.method` to `http.method`
 ## v0.115.15 / 2025-05-30
