@@ -1750,22 +1750,29 @@ processors:
 
 {{- define "opentelemetry-collector.applyResourceDetectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.resourceDetectionConfig" .Values | fromYaml) .config }}
-{{- if and ($config.service.pipelines.logs) (not (has "resourcedetection/env" $config.service.pipelines.logs.processors)) }}
+{{- $pipeline := "all" }}
+{{- with .Values.Values.presets.resourceDetection.pipeline }}
+{{- $pipeline = . }}
+{{- end }}
+{{- $includeLogs := eq $pipeline "all" }}
+{{- $includeMetrics := or (eq $pipeline "all") (eq $pipeline "metrics") }}
+{{- $includeTraces := or (eq $pipeline "all") (eq $pipeline "traces") }}
+{{- if and $includeLogs ($config.service.pipelines.logs) (not (has "resourcedetection/env" $config.service.pipelines.logs.processors)) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/env" | uniq)  }}
 {{- end }}
-{{- if and ($config.service.pipelines.logs) (not (has "resourcedetection/region" $config.service.pipelines.logs.processors)) }}
+{{- if and $includeLogs ($config.service.pipelines.logs) (not (has "resourcedetection/region" $config.service.pipelines.logs.processors)) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/region" | uniq)  }}
 {{- end }}
-{{- if and ($config.service.pipelines.metrics) (not (has "resourcedetection/env" $config.service.pipelines.metrics.processors)) }}
+{{- if and $includeMetrics ($config.service.pipelines.metrics) (not (has "resourcedetection/env" $config.service.pipelines.metrics.processors)) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resourcedetection/env" | uniq)  }}
 {{- end }}
-{{- if and ($config.service.pipelines.metrics) (not (has "resourcedetection/region" $config.service.pipelines.metrics.processors)) }}
+{{- if and $includeMetrics ($config.service.pipelines.metrics) (not (has "resourcedetection/region" $config.service.pipelines.metrics.processors)) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resourcedetection/region" | uniq)  }}
 {{- end }}
-{{- if and ($config.service.pipelines.traces) (not (has "resourcedetection/env" $config.service.pipelines.traces.processors)) }}
+{{- if and $includeTraces ($config.service.pipelines.traces) (not (has "resourcedetection/env" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/env" | uniq)  }}
 {{- end }}
-{{- if and ($config.service.pipelines.traces) (not (has "resourcedetection/region" $config.service.pipelines.traces.processors)) }}
+{{- if and $includeTraces ($config.service.pipelines.traces) (not (has "resourcedetection/region" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/region" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}

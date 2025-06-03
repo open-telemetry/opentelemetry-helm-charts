@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.17
+    helm.sh/chart: opentelemetry-collector-0.115.18
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: a755b367bada773efda4e8a2fd248d63b4762883add453604289aee61b9b09b6
+        checksum/config: c212bb5868a187030bfa35240151ed32928fcf8284f3199a190b5c5c78e295b6
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -63,6 +63,13 @@ spec:
                   fieldPath: status.podIP
             - name: GOMEMLIMIT
               value: "152MiB"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "k8s.node.name=$(K8S_NODE_NAME)"
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
           livenessProbe:
             httpGet:
               path: /
@@ -78,6 +85,14 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - mountPath: /etc/machine-id
+              mountPropagation: HostToContainer
+              name: etcmachineid
+              readOnly: true
+            - mountPath: /var/lib/dbus/machine-id
+              mountPropagation: HostToContainer
+              name: varlibdbusmachineid
+              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -85,6 +100,12 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: etcmachineid
+          hostPath:
+            path: /etc/machine-id
+        - name: varlibdbusmachineid
+          hostPath:
+            path: /var/lib/dbus/machine-id
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: false

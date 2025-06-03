@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.17
+    helm.sh/chart: opentelemetry-collector-0.115.18
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -37,6 +37,23 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resourcedetection/env:
+        detectors:
+        - system
+        - env
+        override: false
+        system:
+          resource_attributes:
+            host.id:
+              enabled: true
+        timeout: 2s
+      resourcedetection/region:
+        detectors:
+        - gcp
+        - ec2
+        - azure
+        override: true
+        timeout: 2s
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -120,6 +137,8 @@ data:
           - debug
           processors:
           - memory_limiter
+          - resourcedetection/region
+          - resourcedetection/env
           - filter/k8s_extra_metrics
           - transform/prometheus
           receivers:
