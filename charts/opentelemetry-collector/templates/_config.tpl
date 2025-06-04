@@ -1950,10 +1950,15 @@ service:
 
 {{- define "opentelemetry-collector.applyCollectorMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.collectorMetricsConfig" .Values | fromYaml) .config }}
-{{- if and ($config.service.pipelines.metrics) (not (has "prometheus" $config.service.pipelines.metrics.receivers)) }}
+{{- $pipeline := "metrics" }}
+{{- with .Values.Values.presets.collectorMetrics.pipeline }}
+{{- $pipeline = . }}
+{{- end }}
+{{- $includeMetrics := eq $pipeline "metrics" }}
+{{- if and $includeMetrics ($config.service.pipelines.metrics) (not (has "prometheus" $config.service.pipelines.metrics.receivers)) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus" | uniq)  }}
 {{- end }}
-{{- if and ($config.service.pipelines.metrics) (not (has "transform/prometheus" $config.service.pipelines.metrics.processors)) }}
+{{- if and $includeMetrics ($config.service.pipelines.metrics) (not (has "transform/prometheus" $config.service.pipelines.metrics.processors)) }}
 {{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "transform/prometheus" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
