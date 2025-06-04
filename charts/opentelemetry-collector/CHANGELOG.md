@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.20 / 2025-05-30
+- [Feat] Make coralogixExporter preset pipeline configurable via `presets.coralogixExporter.pipeline`
 ## v0.115.19 / 2025-05-30
 - [Feat] Make collector metrics preset pipeline configurable via `presets.collectorMetrics.pipeline`
 ## v0.115.18 / 2025-05-30
