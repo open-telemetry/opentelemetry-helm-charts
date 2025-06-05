@@ -80,8 +80,8 @@ containers:
       - name: GOMEMLIMIT
         value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
       {{- end }}
-      {{- if .Values.presets.resourceDetection.enabled }}
-      {{- if .Values.presets.resourceDetection.k8sNodeName.enabled }}
+      {{- $kubeNodeNeeded := or (and .Values.presets.resourceDetection.enabled .Values.presets.resourceDetection.k8sNodeName.enabled) .Values.presets.fleetManagement.enabled }}
+      {{- if $kubeNodeNeeded }}
       {{- $otelAttrExists := false }}
       {{- $kubeNodeExists := false }}
       {{- if .Values.extraEnvs }}
@@ -94,7 +94,7 @@ containers:
       {{- end }}
       {{- end }}
       {{- end }}
-      {{- if not $otelAttrExists }}
+      {{- if and .Values.presets.resourceDetection.enabled .Values.presets.resourceDetection.k8sNodeName.enabled (not $otelAttrExists) }}
       - name: OTEL_RESOURCE_ATTRIBUTES
         value: "k8s.node.name=$(K8S_NODE_NAME)"
       {{- end }}
@@ -104,7 +104,6 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: spec.nodeName
-      {{- end }}
       {{- end }}
       {{- end }}
       {{- with .Values.extraEnvs }}
