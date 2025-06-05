@@ -1,0 +1,21 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "obi.fullname" . }}
+  labels:
+    {{- include "obi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rbac
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "obi.serviceAccountName" . }}
+    namespace: {{ include "obi.namespace" .}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "obi.fullname" . }}
+{{- end }}
