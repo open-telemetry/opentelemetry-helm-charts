@@ -84,3 +84,10 @@ Create the name of the target allocator cluster role binding to use
 {{- define "helper.targetAllocatorClusterRoleBindingName" -}}
 {{- printf "%s-ta-clusterRoleBinding" ( include "helper.fullname" . ) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create the target allocator docker image name.
+*/}}
+{{- define "helper.dockerImageName" -}}
+{{- printf "%s:%s" .Values.targetAllocator.image.repository (.Values.targetAllocator.image.tag | default .Chart.AppVersion) -}}
+{{- end -}}

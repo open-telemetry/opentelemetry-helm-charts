@@ -30,12 +30,63 @@ rules:
       - events
     verbs:
       - create
+      - get
+      - list
       - patch
+      - watch
   - apiGroups:
       - ""
     resources:
       - namespaces
     verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/spec
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - resourcequotas
+    verbs:
+      - get
       - list
       - watch
   - apiGroups:
@@ -57,6 +108,22 @@ rules:
       - extensions
     resources:
       - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - deployments
     verbs:
       - get
       - list
@@ -107,6 +174,14 @@ rules:
       - list
       - watch
   - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
       - ""
     resources:
       - nodes/proxy
@@ -136,6 +211,13 @@ rules:
       - get
       - list
       - update
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - list
+      - watch
   - apiGroups:
       - monitoring.coreos.com
     resources:
