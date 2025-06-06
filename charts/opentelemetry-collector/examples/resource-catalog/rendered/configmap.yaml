@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.21
+    helm.sh/chart: opentelemetry-collector-0.115.22
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -38,6 +38,11 @@ data:
             ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")
           - body["kind"] == "Pod" and not IsMatch(String(body["metadata"]["ownerReferences"]),
             ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")
+      filter/workflow-custom:
+        error_mode: silent
+        logs:
+          log_record:
+          - body["kind"] == "Service"
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -263,6 +268,7 @@ data:
           - resourcedetection/resource_catalog
           - transform/entity-event
           - filter/workflow
+          - filter/workflow-custom
           - resource/metadata
           - batch
           receivers:

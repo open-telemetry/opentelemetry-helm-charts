@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.22 / 2025-05-30
+- [Feat] Allow filtering Kubernetes Resources using custom OTTL statements via `presets.kubernetesResources.filterStatements`
 ## v0.115.21 / 2025-05-30
 - [Fix] Add `KUBE_NODE_NAME` env var when fleet management preset is enabled
 ## v0.115.20 / 2025-05-30

@@ -1336,6 +1336,15 @@ processors:
         - 'body["object"]["kind"] == "Pod" and not IsMatch(String(body["object"]["metadata"]["ownerReferences"]), ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")'
         - 'body["kind"] == "Pod" and not IsMatch(String(body["metadata"]["ownerReferences"]), ".*StatefulSet.*|.*ReplicaSet.*|.*Job.*|.*DaemonSet.*")'
   {{- end }}
+  {{- if .Values.presets.kubernetesResources.filterStatements }}
+  filter/workflow-custom:
+    error_mode: silent
+    logs:
+      log_record:
+        {{- range $index, $stmt := .Values.presets.kubernetesResources.filterStatements }}
+        - {{ $stmt }}
+        {{- end }}
+  {{- end }}
   transform/entity-event:
     error_mode: silent
     log_statements:
@@ -1528,6 +1537,9 @@ service:
         - transform/entity-event
         {{- if .Values.presets.kubernetesResources.filterWorkflows.enabled }}
         - filter/workflow
+        {{- end }}
+        {{- if .Values.presets.kubernetesResources.filterStatements }}
+        - filter/workflow-custom
         {{- end }}
         - resource/metadata
         - batch
