@@ -1,0 +1,29 @@
+mode: deployment
+replicaCount: 2
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+  
+command:
+  name: "otelcol-k8s"
+
+config:
+  extensions:
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+
+  service:
+    extensions:
+      - health_check
+
+presets:
+  clusterMetrics:
+    enabled: true
+    # Enable leader election to ensure only one collector instance
+    # is collecting cluster metrics at a time
+    enableLeaderElection: true
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 400M
