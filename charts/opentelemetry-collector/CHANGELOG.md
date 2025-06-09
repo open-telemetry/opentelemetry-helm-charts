@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.25 / 2025-06-09
+- [Feat] Allow transforming Kubernetes Resources using custom OTTL statements via `presets.kubernetesResources.transformStatements`
 ## v0.115.24 / 2025-06-09
 - [Feat] Allow dropping managed fields from Kubernetes resources via `presets.kubernetesResources.dropManagedFields.enabled`
 ## v0.115.23 / 2025-05-30

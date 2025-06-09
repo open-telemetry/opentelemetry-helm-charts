@@ -1359,6 +1359,14 @@ processors:
           - delete_key(body["object"]["metadata"], "managedFields")
           - delete_key(body["metadata"], "managedFields")
   {{- end }}
+  {{- if .Values.presets.kubernetesResources.transformStatements }}
+  transform/kubernetes_transform:
+    error_mode: silent
+    log_statements:
+      {{- range $index, $stmt := .Values.presets.kubernetesResources.transformStatements }}
+      - {{ $stmt }}
+      {{- end }}
+  {{- end }}
   resourcedetection/resource_catalog:
     detectors:
     - eks
@@ -1555,6 +1563,9 @@ service:
         - filter/workflow-custom
         {{- end }}
         - resource/metadata
+        {{- if .Values.presets.kubernetesResources.transformStatements }}
+        - transform/kubernetes_transform
+        {{- end }}
         - batch
       receivers:
         - k8sobjects/resource_catalog

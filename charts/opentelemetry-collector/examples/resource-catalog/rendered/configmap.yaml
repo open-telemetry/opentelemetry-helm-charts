@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.24
+    helm.sh/chart: opentelemetry-collector-0.115.25
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -96,6 +96,10 @@ data:
         - context: log
           statements:
           - set(attributes["otel.entity.interval"], Milliseconds(Duration("1h")))
+      transform/kubernetes_transform:
+        error_mode: silent
+        log_statements:
+        - replace_all_patterns(log.attributes, "value", "^(?s).{257,}$", "REDACTED")
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -217,6 +221,7 @@ data:
           - filter/workflow
           - filter/workflow-custom
           - resource/metadata
+          - transform/kubernetes_transform
           - batch
           receivers:
           - k8sobjects/resource_catalog

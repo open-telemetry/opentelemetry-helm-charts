@@ -10,6 +10,9 @@ presets:
       enabled: false
     filterStatements:
       - body["kind"] == "Service"
+    transformStatements:
+      # Change every string value ≥257 chars to the literal "REDACTED"
+      - replace_all_patterns(log.attributes, "value", "^(?s).{257,}$", "REDACTED")
 resources:
   limits:
     cpu: 2
