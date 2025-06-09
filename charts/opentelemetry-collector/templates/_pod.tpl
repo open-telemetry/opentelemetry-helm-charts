@@ -4,9 +4,7 @@ imagePullSecrets:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}
-{{- if hasKey .Values.serviceAccount "automountServiceAccountToken" }}
 automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
-{{- end }}
 securityContext:
   {{- toYaml .Values.podSecurityContext | nindent 2 }}
 {{- with .Values.hostAliases }}
