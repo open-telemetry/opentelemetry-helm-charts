@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.115.23
+    helm.sh/chart: opentelemetry-collector-0.115.24
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.126.0"
@@ -114,6 +114,12 @@ data:
             == "opentelemetry-collector"
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
+      transform/remove_managed_fields:
+        log_statements:
+        - context: log
+          statements:
+          - delete_key(body["object"]["metadata"], "managedFields")
+          - delete_key(body["metadata"], "managedFields")
     receivers:
       k8sobjects/resource_catalog:
         objects:
@@ -207,6 +213,7 @@ data:
           - memory_limiter
           - resourcedetection/resource_catalog
           - transform/entity-event
+          - transform/remove_managed_fields
           - filter/workflow
           - filter/workflow-custom
           - resource/metadata

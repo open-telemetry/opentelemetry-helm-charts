@@ -1351,6 +1351,14 @@ processors:
       - context: log
         statements:
           - set(attributes["otel.entity.interval"], Milliseconds(Duration("1h")))
+  {{- if .Values.presets.kubernetesResources.dropManagedFields.enabled }}
+  transform/remove_managed_fields:
+    log_statements:
+      - context: log
+        statements:
+          - delete_key(body["object"]["metadata"], "managedFields")
+          - delete_key(body["metadata"], "managedFields")
+  {{- end }}
   resourcedetection/resource_catalog:
     detectors:
     - eks
@@ -1537,6 +1545,9 @@ service:
         - memory_limiter
         - resourcedetection/resource_catalog
         - transform/entity-event
+        {{- if .Values.presets.kubernetesResources.dropManagedFields.enabled }}
+        - transform/remove_managed_fields
+        {{- end }}
         {{- if .Values.presets.kubernetesResources.filterWorkflows.enabled }}
         - filter/workflow
         {{- end }}
