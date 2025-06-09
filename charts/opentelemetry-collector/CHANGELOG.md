@@ -1,6 +1,8 @@
 # Changelog
 
 ## OpenTelemetry Collector
+## v0.115.23 / 2025-05-30
+- [Feat] Allow disabling periodic Kubernetes resource collection via `presets.kubernetesResources.periodicCollection.enabled`
 ## v0.115.22 / 2025-05-30
 - [Feat] Allow filtering Kubernetes Resources using custom OTTL statements via `presets.kubernetesResources.filterStatements`
 ## v0.115.21 / 2025-05-30

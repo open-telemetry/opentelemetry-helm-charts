@@ -1409,6 +1409,7 @@ exporters:
 receivers:
   k8sobjects/resource_catalog:
     objects:
+      {{- if .Values.presets.kubernetesResources.periodicCollection.enabled }}
       - name: namespaces
         mode: "pull"
         group: ""
@@ -1469,6 +1470,7 @@ receivers:
       - name: roles
         mode: "pull"
         group: "rbac.authorization.k8s.io"
+      {{- end }}
       - name: namespaces
         mode: "watch"
         group: ""
