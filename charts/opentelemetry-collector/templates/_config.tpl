@@ -1353,6 +1353,7 @@ processors:
           - set(attributes["otel.entity.interval"], Milliseconds(Duration("1h")))
   {{- if .Values.presets.kubernetesResources.dropManagedFields.enabled }}
   transform/remove_managed_fields:
+    error_mode: silent
     log_statements:
       - context: log
         statements:
