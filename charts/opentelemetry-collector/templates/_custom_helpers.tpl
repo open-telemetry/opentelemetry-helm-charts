@@ -39,9 +39,9 @@ Create a filter expression for multiline logs configuration.
 Determine the container image to use based on presets and user overrides.
 */}}
 {{- define "opentelemetry-collector.image" }}
-{{- $imageRepository := "" }}
+{{- $imageRepository := "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib" }}
 {{- $imageTag := .Chart.AppVersion }}
-{{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled)) }}
+{{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) (not .Values.collectorCRD.generate)) }}
 {{- $imageRepository = "coralogixrepo/otel-supervised-collector" }}
 {{- end }}
 {{- if .Values.image.repository }}

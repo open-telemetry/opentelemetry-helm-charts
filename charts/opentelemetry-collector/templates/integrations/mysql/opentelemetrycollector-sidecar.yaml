@@ -4,11 +4,8 @@ kind: OpenTelemetryCollector
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}-mysql-logs-sidecar
 spec:
-  mode: sidecar  {{- if .Values.image.digest }}
-  image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
-  {{- else }}
-  image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-  {{- end }}
+  mode: sidecar
+  image: "{{ include "opentelemetry-collector.image" . }}"
   volumeMounts:
   - mountPath: {{ .Values.presets.mysql.extraLogs.mountPath }}
     name: {{ .Values.presets.mysql.extraLogs.volumeMountName }}

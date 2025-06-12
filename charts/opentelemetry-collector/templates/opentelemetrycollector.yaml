@@ -71,11 +71,7 @@ spec:
     {{- toYaml .Values.securityContext | nindent 6 }}
     {{- end }}
   {{- end }}
-  {{- if .Values.image.digest }}
-  image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
-  {{- else }}
-  image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-  {{- end }}
+  image: "{{ include "opentelemetry-collector.image" . }}"
   imagePullPolicy: {{ .Values.image.pullPolicy }}
   ports:
     {{- range $key, $port := .Values.ports }}

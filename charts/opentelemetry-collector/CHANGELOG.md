@@ -2,6 +2,8 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.27 / 2025-06-11
+- [Fix] Fix `image` template helper when using the Supervisor preset and when using the Collector CRDs.
 ## v0.115.26 / 2025-06-11
 - [Feat] Add an alpha `supervisor` preset under the `fleetManagement` preset
 - [Feat] Certain attributes related to the `fleetManagement` preset are now added
