@@ -9,20 +9,7 @@ securityContext:
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     command:
-      {{- if .Values.isWindows }}
-      - "C:\\otelcol-contrib.exe"
-      {{- if .Values.configMap.create }}
-      - --config=C:\\conf\relay.yaml
-      {{- end }}
-      {{- else }}
-      - /{{ .Values.command.name }}
-      {{- if .Values.configMap.create }}
-      - --config=/conf/relay.yaml
-      {{- end }}
-      {{- range .Values.command.extraArgs }}
-      - {{ . }}
-      {{- end }}
-      {{- end }}
+      {{- include "opentelemetry-collector.command" . | nindent 6 }}
     securityContext:
       {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled)) }}
       runAsUser: 0
@@ -33,11 +20,7 @@ containers:
       {{- else -}}
       {{- toYaml .Values.securityContext | nindent 6 }}
       {{- end }}
-    {{- if .Values.image.digest }}
-    image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
-    {{- else }}
-    image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-    {{- end }}
+    image: "{{ include "opentelemetry-collector.image" . }}"
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     {{- $ports := include "opentelemetry-collector.podPortsConfig" . }}
     {{- if $ports }}
@@ -117,6 +100,7 @@ containers:
     lifecycle:
       {{- toYaml .Values.lifecycleHooks | nindent 6 }}
     {{- end }}
+    {{- if not .Values.presets.fleetManagement.supervisor.enabled }}
     livenessProbe:
       {{- if .Values.livenessProbe.initialDelaySeconds | empty | not }}
       initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
@@ -163,6 +147,7 @@ containers:
         {{- end }}
       {{- end }}
     {{- end }}
+    {{- end }}
     readinessProbe:
       {{- if .Values.readinessProbe.initialDelaySeconds | empty | not }}
       initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
@@ -190,6 +175,12 @@ containers:
       {{- if .Values.configMap.create }}
       - mountPath: {{ .Values.isWindows | ternary "C:\\conf" "/conf" }}
         name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
+      {{- end }}
+      {{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled)) }}
+      - mountPath: /etc/otelcol-contrib/supervisor.yaml
+        subPath: supervisor.yaml
+        readOnly: true
+        name: {{ include "opentelemetry-collector.fullname" . }}-supervisor
       {{- end }}
       {{- range .Values.extraConfigMapMounts }}
       - name: {{ .name }}
@@ -298,6 +289,14 @@ volumes:
       items:
         - key: relay
           path: relay.yaml
+  {{- end }}
+  {{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled)) }}
+  - name: {{ include "opentelemetry-collector.fullname" . }}-supervisor
+    configMap:
+      name: {{ include "opentelemetry-collector.fullname" . }}-supervisor
+      items:
+        - key: supervisor.yaml
+          path: supervisor.yaml
   {{- end }}
   {{- range .Values.extraConfigMapMounts }}
   - name: {{ .name }}

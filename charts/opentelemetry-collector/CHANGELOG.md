@@ -1,6 +1,11 @@
 # Changelog
 
 ## OpenTelemetry Collector
+
+## v0.115.26 / 2025-06-11
+- [Feat] Add an alpha `supervisor` preset under the `fleetManagement` preset
+- [Feat] Certain attributes related to the `fleetManagement` preset are now added
+  as non-identifying attributes even when `k8sResourceAttributes` preset is disabled.
 ## v0.115.25 / 2025-06-09
 - [Feat] Allow transforming Kubernetes Resources using custom OTTL statements via `presets.kubernetesResources.transformStatements`
 ## v0.115.24 / 2025-06-09

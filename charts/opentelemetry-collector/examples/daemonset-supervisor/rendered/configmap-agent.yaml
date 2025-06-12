@@ -66,14 +66,34 @@ data:
     exporters:
       coralogix:
         application_name: otel
-        domain: coralogix.com
+        application_name_attributes:
+        - k8s.namespace.name
+        - service.namespace
+        domain: eu2.coralogix.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        metrics:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        private_key: ${env:CORALOGIX_PRIVATE_KEY}
+        subsystem_name: integration
+        subsystem_name_attributes:
+        - k8s.deployment.name
+        - k8s.statefulset.name
+        - k8s.daemonset.name
+        - k8s.cronjob.name
+        - service.name
+        timeout: 30s
+        traces:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
       debug: {}
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
       k8s_observer:
         auth_type: serviceAccount
-        node: ${env:K8S_NODE_NAME}
         observe_pods: true
     processors:
       batch:
@@ -199,6 +219,24 @@ data:
           - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
             "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
+      transform/prometheus:
+        error_mode: ignore
+        metric_statements:
+        - context: metric
+          statements:
+          - replace_pattern(name, "_total$", "")
+        - context: resource
+          statements:
+          - set(attributes["k8s.pod.ip"], attributes["net.host.name"]) where attributes["service.name"]
+            == "opentelemetry-collector"
+          - delete_key(attributes, "service_name") where attributes["service.name"] ==
+            "opentelemetry-collector"
+        - context: datapoint
+          statements:
+          - delete_key(attributes, "service_name") where resource.attributes["service.name"]
+            == "opentelemetry-collector"
+          - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
+            == "opentelemetry-collector"
       transform/reduce:
         error_mode: ignore
         metric_statements:
@@ -382,16 +420,6 @@ data:
         retry_on_failure:
           enabled: true
         start_at: beginning
-      jaeger:
-        protocols:
-          grpc:
-            endpoint: ${env:MY_POD_IP}:14250
-          thrift_binary:
-            endpoint: ${env:MY_POD_IP}:6832
-          thrift_compact:
-            endpoint: ${env:MY_POD_IP}:6831
-          thrift_http:
-            endpoint: ${env:MY_POD_IP}:14268
       otlp:
         protocols:
           grpc:
@@ -399,6 +427,14 @@ data:
             max_recv_msg_size_mib: 20
           http:
             endpoint: ${env:MY_POD_IP}:4318
+      prometheus:
+        config:
+          scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 30s
+            static_configs:
+            - targets:
+              - ${env:MY_POD_IP}:8888
       prometheus/k8s_extra_metrics:
         config:
           scrape_configs:
@@ -413,40 +449,6 @@ data:
             tls_config:
               ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
               insecure_skip_verify: true
-      receiver_creator/mysql:
-        receivers:
-          mysql:
-            config:
-              collection_interval: 30s
-              metrics:
-                mysql.client.network.io:
-                  enabled: true
-                mysql.commands:
-                  enabled: true
-                mysql.connection.errors:
-                  enabled: true
-                mysql.joins:
-                  enabled: true
-                mysql.query.count:
-                  enabled: true
-                mysql.query.slow.count:
-                  enabled: true
-                mysql.sorts:
-                  enabled: true
-                mysql.table_open_cache:
-                  enabled: true
-              password: ${env:MYSQL_PASSWORD}
-              statement_events:
-                digest_text_limit: 120
-                limit: 250
-                time_limit: 24h
-              username: root
-            rule: type == "port" && port == 3306 && pod.labels["env"] == "test" && pod.labels["team"]
-              == "teamA"
-        watch_observers:
-        - k8s_observer
-      zipkin:
-        endpoint: ${env:MY_POD_IP}:9411
     service:
       extensions:
       - health_check
@@ -455,6 +457,7 @@ data:
         logs:
           exporters:
           - debug
+          - coralogix
           processors:
           - memory_limiter
           - resourcedetection/region
@@ -468,6 +471,7 @@ data:
         metrics:
           exporters:
           - debug
+          - coralogix
           processors:
           - memory_limiter
           - resourcedetection/region
@@ -476,12 +480,13 @@ data:
           - transform/k8s_attributes
           - filter/k8s_extra_metrics
           - transform/reduce
+          - transform/prometheus
           - batch
           receivers:
-          - receiver_creator/mysql
           - prometheus/k8s_extra_metrics
           - spanmetrics
           - spanmetrics/db
+          - prometheus
           - otlp
         traces:
           exporters:
@@ -500,8 +505,6 @@ data:
           - transform/test
           - batch
           receivers:
-          - jaeger
-          - zipkin
           - otlp
         traces/db:
           exporters:
@@ -523,9 +526,10 @@ data:
       telemetry:
         logs:
           encoding: json
-        resource:
-          k8s.daemonset.name: example-opentelemetry-collector
-          k8s.namespace.name: default
-          k8s.node.name: ${env:KUBE_NODE_NAME}
-          k8s.pod.name: ${env:KUBE_POD_NAME}
-          service.name: opentelemetry-collector
+        metrics:
+          readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: ${env:MY_POD_IP}
+                  port: 8888

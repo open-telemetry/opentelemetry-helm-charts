@@ -34,3 +34,56 @@ Create a filter expression for multiline logs configuration.
 {{- end }}
 {{- $expr | trimSuffix "&&" | trim }}
 {{- end -}}
+
+{{/*
+Determine the container image to use based on presets and user overrides.
+*/}}
+{{- define "opentelemetry-collector.image" }}
+{{- $imageRepository := "" }}
+{{- $imageTag := .Chart.AppVersion }}
+{{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled)) }}
+{{- $imageRepository = "coralogixrepo/otel-supervised-collector" }}
+{{- end }}
+{{- if .Values.image.repository }}
+{{- $imageRepository = .Values.image.repository }}
+{{- end }}
+{{- if .Values.image.tag }}
+{{- $imageTag = .Values.image.tag }}
+{{- end }}
+{{- if .Values.image.digest }}
+{{- printf "%s@%s" $imageRepository .Values.image.digest }}
+{{- else }}
+{{- printf "%s:%s" $imageRepository $imageTag }}
+{{- end }}
+{{- end }}
+
+{{/*
+Determine the command to use based on platform and configuration.
+*/}}
+{{- define "opentelemetry-collector.command" -}}
+{{- $executable := printf "/%s" .Values.command.name -}}
+{{- $configPath := "/conf/relay.yaml" -}}
+{{- $configArg := "" -}}
+{{- /* Step 1: If on Windows, the executable path is different */ -}}
+{{- if .Values.isWindows -}}
+{{- $executable = "C:\\otelcol-contrib.exe" | quote -}}
+{{- end -}}
+{{- /* Step 2: Determine config path and argument based on configuration */ -}}
+{{- if .Values.configMap.create -}}
+{{- if .Values.isWindows -}}
+{{- $configPath = `C:\\conf\relay.yaml` -}}
+{{- end -}}
+{{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled)) -}}
+{{- $configPath = "/etc/otelcol-contrib/supervisor.yaml" -}}
+{{- end -}}
+{{- $configArg = printf "--config=%s" $configPath -}}
+{{- end -}}
+{{- /* Step 3: Build the command array */ -}}
+- {{ $executable }}
+{{- if $configArg }}
+- {{ $configArg }}
+{{- end }}
+{{- range .Values.command.extraArgs }}
+- {{ . }}
+{{- end }}
+{{- end }}

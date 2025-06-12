@@ -1,0 +1,124 @@
+global:
+  domain: "eu2.coralogix.com"
+  clusterName: "douglas-kind-test"
+  defaultApplicationName: otel
+  defaultSubsystemName: integration
+  version: "1.0"
+
+image:
+  tag: 0.128.0
+
+command:
+  name: opampsupervisor
+
+mode: daemonset
+extraVolumes:
+  - name: etcmachineid
+    hostPath:
+      path: /etc/machine-id
+
+extraVolumeMounts:
+  - mountPath: /etc/machine-id
+    mountPropagation: HostToContainer
+    name: etcmachineid
+    readOnly: true
+
+presets:
+  coralogixExporter:
+    enabled: true
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+  batch:
+    enabled: true
+  fleetManagement:
+    enabled: true
+    agentType: "agent"
+    supervisor:
+      enabled: true
+  k8sResourceAttributes:
+    enabled: true
+  collectorMetrics:
+    enabled: true
+  resourceDetection:
+    enabled: true
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+    extraFilelogOperators:
+      - type: recombine
+        combine_field: body
+        source_identifier: attributes["log.file.path"]
+        is_first_entry: body matches "^([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})"
+    multilineConfigs:
+      - namespaceName:
+          value: kube-system
+        podName:
+          value: app-.*
+          useRegex: true
+        containerName:
+          value: http
+        firstEntryRegex: ^[^\s].*
+        combineWith: ""
+      - namespaceName:
+          value: default
+        podName:
+          value: app-.*
+          useRegex: true
+        firstEntryRegex: ^[^\s].*
+        combineWith: ""
+      - namespaceName:
+          value: test
+        firstEntryRegex: ^[^\s].*
+        combineWith: ""
+  headSampling:
+    enabled: true
+  spanMetrics:
+    enabled: true
+    transformStatements:
+      - set(attributes["http.response.status_code"], attributes["http.status_code"]) where attributes["http.response.status_code"] == nil
+    dbMetrics:
+      enabled: true
+      extraDimensions:
+        - name: cgx.transaction
+        - name: cgx.transaction.root
+      transformStatements:
+        - set(attributes["db.namespace"], attributes["db.name"]) where attributes["db.namespace"] == nil
+        - set(attributes["db.namespace"], attributes["server.address"]) where attributes["db.namespace"] == nil
+        - set(attributes["db.namespace"], attributes["network.peer.name"]) where attributes["db.namespace"] == nil
+        - set(attributes["db.namespace"], attributes["net.peer.name"]) where attributes["db.namespace"] == nil
+        - set(attributes["db.namespace"], attributes["db.system"]) where attributes["db.namespace"] == nil
+        - set(attributes["db.operation.name"], attributes["db.operation"]) where attributes["db.operation.name"] == nil
+        - set(attributes["db.collection_name"], attributes["db.sql.table"]) where attributes["db.collection_name"] == nil
+        - set(attributes["db.collection_name"], attributes["db.cassandra.table"]) where attributes["db.collection.name"] == nil
+        - set(attributes["db.collection_name"], attributes["db.mongodb.collection"]) where attributes["db.collection.name"] == nil
+        - set(attributes["db.collection_name"], attributes["db.redis.database_index"]) where attributes["db.collection.name"] == nil
+        - set(attributes["db.collection_name"], attributes["db.elasticsearch.path_parts.index"]) where attributes["db.collection.name"] == nil
+        - set(attributes["db.collection_name"], attributes["db.cosmosdb.container"]) where attributes["db.collection.name"] == nil
+        - set(attributes["db.collection_name"], attributes["aws_dynamodb.table_names"]) where attributes["db.collection.name"] == nil
+    errorTracking:
+      enabled: true
+    collectionInterval: 30s
+    metricsExpiration: 5m
+    histogramBuckets: [1ms, 1s, 10s]
+    spanNameReplacePattern:
+      - regex: "^(.*)$"
+        replacement: "$$1"
+  kubernetesAttributes:
+    enabled: true
+  reduceResourceAttributes:
+    enabled: true
+  kubernetesExtraMetrics:
+    enabled: true
+    perNode: true
+extraConfig:
+  processors:
+    transform/test:
+      error_mode: silent
+      trace_statements:
+        - context: span
+          statements:
+            - set(attributes["http.response.status_code"], attributes["http.status_code"]) where attributes["http.response.status_code"] == nil
+  service:
+    pipelines:
+      traces:
+        processors:
+          - transform/test

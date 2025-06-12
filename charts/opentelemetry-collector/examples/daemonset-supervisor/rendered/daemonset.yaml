@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: c4c8dde5819cc8a946f28af07555435e0f4361794436e978760125df6c6577cc
+        checksum/config: 1e09f5fd762a0983c902b28406de59c7a1b11e3f5d02a98fdb42a8801e14ca48
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -38,11 +38,11 @@ spec:
       containers:
         - name: opentelemetry-collector
           command:
-            - /otelcol-contrib
-            - --config=/conf/relay.yaml
+            - /opampsupervisor
+            - --config=/etc/otelcol-contrib/supervisor.yaml
           securityContext:
             {}
-          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.126.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.128.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -61,28 +61,52 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: KUBE_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
             - name: K8S_NODE_IP
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.hostIP
-            - name: GOMEMLIMIT
-              value: "152MiB"
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 13133
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "k8s.node.name=$(K8S_NODE_NAME)"
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
           readinessProbe:
             httpGet:
               path: /
               port: 13133
-          resources:
-            limits:
-              cpu: 100m
-              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - mountPath: /etc/otelcol-contrib/supervisor.yaml
+              subPath: supervisor.yaml
+              readOnly: true
+              name: example-opentelemetry-collector-supervisor
+            - name: varlogpods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - mountPath: /var/lib/dbus/machine-id
+              mountPropagation: HostToContainer
+              name: varlibdbusmachineid
+              readOnly: true
+            - mountPath: /etc/machine-id
+              mountPropagation: HostToContainer
+              name: etcmachineid
+              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -90,6 +114,24 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: example-opentelemetry-collector-supervisor
+          configMap:
+            name: example-opentelemetry-collector-supervisor
+            items:
+              - key: supervisor.yaml
+                path: supervisor.yaml
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: varlibdbusmachineid
+          hostPath:
+            path: /var/lib/dbus/machine-id
+        - hostPath:
+            path: /etc/machine-id
+          name: etcmachineid
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: false
