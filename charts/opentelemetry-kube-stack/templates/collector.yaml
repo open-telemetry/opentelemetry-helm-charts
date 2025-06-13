@@ -113,6 +113,7 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   volumeMounts:
+  {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumeMounts) }}
   {{- if $collector.presets.logsCollection.enabled }}
   - name: varlogpods
     mountPath: /var/log/pods
@@ -133,6 +134,9 @@ spec:
   {{- end }}
   {{- with $collector.volumeMounts }}
   {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- else }}
+  {{- toYaml $collector.volumeMounts | nindent 4 }}
   {{- end }}
   {{- with $collector.ports }}
   ports:
@@ -180,11 +184,12 @@ spec:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   volumes:
+  {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumes) }}
   {{- if $collector.presets.logsCollection.enabled }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
-  {{- if $collector.presets.logsCollection.storeCheckpoints}}
+  {{- if $collector.presets.logsCollection.storeCheckpoints }}
   - name: varlibotelcol
     hostPath:
       path: /var/lib/otelcol
@@ -201,6 +206,9 @@ spec:
   {{- end }}
   {{- with $collector.volumes }}
   {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- else }}
+  {{- toYaml $collector.volumes | nindent 4 }}
   {{- end }}
   {{- with $collector.initContainers }}
   initContainers:
