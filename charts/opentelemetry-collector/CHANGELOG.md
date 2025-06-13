@@ -2,12 +2,14 @@
 
 ## OpenTelemetry Collector
 
-## v0.115.27 / 2025-06-11
+## v0.115.28 / 2025-06-12
 - [Fix] Fix `image` template helper when using the Supervisor preset and when using the Collector CRDs.
-## v0.115.26 / 2025-06-11
+## v0.115.27 / 2025-06-11
 - [Feat] Add an alpha `supervisor` preset under the `fleetManagement` preset
 - [Feat] Certain attributes related to the `fleetManagement` preset are now added
   as non-identifying attributes even when `k8sResourceAttributes` preset is disabled.
+## v0.115.26 / 2025-06-09
+- [Fix] Add error mode `silent` for managed fields removal in the `kubernetesResources` preset
 ## v0.115.25 / 2025-06-09
 - [Feat] Allow transforming Kubernetes Resources using custom OTTL statements via `presets.kubernetesResources.transformStatements`
 ## v0.115.24 / 2025-06-09
