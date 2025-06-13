@@ -61,12 +61,15 @@ Determine the container image to use based on presets and user overrides.
 Determine the command to use based on platform and configuration.
 */}}
 {{- define "opentelemetry-collector.command" -}}
-{{- $executable := printf "/%s" .Values.command.name -}}
+{{- $executable := "/otelcol-contrib" -}}
 {{- $configPath := "/conf/relay.yaml" -}}
 {{- $configArg := "" -}}
 {{- /* Step 1: If on Windows, the executable path is different */ -}}
 {{- if .Values.isWindows -}}
 {{- $executable = "C:\\otelcol-contrib.exe" | quote -}}
+{{- end -}}
+{{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled)) -}}
+{{- $executable = "/opampsupervisor" }}
 {{- end -}}
 {{- /* Step 2: Determine config path and argument based on configuration */ -}}
 {{- if .Values.configMap.create -}}

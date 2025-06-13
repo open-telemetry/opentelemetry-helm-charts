@@ -2,6 +2,8 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.29 / 2025-06-13
+- [Fix] Fix `command` template helper when using the Supervisor preset.
 ## v0.115.28 / 2025-06-12
 - [Fix] Fix `image` template helper when using the Supervisor preset and when using the Collector CRDs.
 ## v0.115.27 / 2025-06-11
