@@ -1,0 +1,36 @@
+name: Coralogix-OpenTelemetry-ebpf-instrumentation-Helm-Chart
+on:
+  push:
+    branches: main
+    paths:
+    - 'charts/opentelemetry-ebpf-instrumentation/**'
+
+env:
+  CHART_VERSION: $(yq eval '.version' charts/opentelemetry-ebpf-instrumentation/Chart.yaml)
+  CHART_NAME: opentelemetry-ebpf-instrumentation
+  ARTIFACTORY_URL: https://cgx.jfrog.io/artifactory/
+  ARTIFACTORY_USERNAME: integrations-actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Setup Helm Repo
+        run: |
+          cd charts/opentelemetry-ebpf-instrumentation
+          helm package .
+      -
+        name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v2.1.0
+        with:
+          version: 2.12.1
+      -
+        name: use-jfrog-cli
+        run: |
+          cd charts/opentelemetry-ebpf-instrumentation
+          jfrog rt upload --access-token ${{ secrets.ARTIFACTORY_NONUSER_ACCESS_TOKEN }} "${{ env.CHART_NAME }}-*.tgz" coralogix-charts --url ${{ env.ARTIFACTORY_URL }}
+
