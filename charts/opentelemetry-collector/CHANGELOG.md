@@ -2,6 +2,8 @@
 
 ## OpenTelemetry Collector
 
+## v0.115.30 / 2025-06-16
+- [Fix] Recover metrics `k8s_node_allocatable_cpu__cpu` and `k8s_node_allocatable_memory__By` in `k8sclusterreceiver` on the collector side
 ## v0.115.29 / 2025-06-13
 - [Fix] Fix `command` template helper when using the Supervisor preset.
 ## v0.115.28 / 2025-06-12
