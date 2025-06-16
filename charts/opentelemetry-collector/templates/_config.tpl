@@ -463,6 +463,7 @@ receivers:
 {{- define "opentelemetry-collector.clusterMetricsConfig" -}}
 receivers:
   k8s_cluster:
+    allocatable_types_to_report: [cpu, memory]
     {{- if and .Values.presets.clusterMetrics .Values.presets.clusterMetrics.collectionInterval }}
     collection_interval: "{{ .Values.presets.clusterMetrics.collectionInterval }}"
     {{- else }}
