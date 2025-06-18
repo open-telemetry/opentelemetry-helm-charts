@@ -267,3 +267,70 @@ serviceMonitor:
   # -- Prometheus job label.
   # If empty, chart release name is used
   jobLabel: ""
+
+# -- Options to deploy the Kubernetes metadata cache as a separate service
+k8sCache:
+  # -- Number of replicas for the Kubernetes metadata cache service. 0 disables the service.
+  replicas: 0
+  # -- Enables the profile port for the Opentelemetry eBPF Instrumentation cache
+  profilePort: 0
+  ## Env variables that will override configmap values
+  ## For example:
+  ##   Opentelemetry eBPF Instrumentation_K8S_CACHE_LOG_LEVEL: "debug"
+  # -- extra environment variables
+  env: {}
+  # Opentelemetry eBPF Instrumentation_K8S_CACHE_LOG_LEVEL: "debug"
+
+  # -- extra environment variables to be set from resources such as k8s configMaps/secrets
+  envValueFrom: {}
+    #  ENV_NAME:
+    #    secretKeyRef:
+  #      name: secret-name
+  #      key: value_key
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  image:
+    # -- K8s Cache image registry (defaults to docker.io)
+    registry: "docker.io"
+    # -- K8s Cache image repository.
+    repository: otel/opentelemetry-ebpf-k8s-cache
+    # -- (string) K8s Cache image tag. When empty, the Chart's appVersion is used.
+    tag: main
+    # -- K8s Cache image's SHA256 digest (either in format "sha256:XYZ" or "XYZ"). When set, will override `image.tag`.
+    digest: null
+    # -- K8s Cache image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Optional set of image pull secrets.
+    pullSecrets: []
+  service:
+    # -- Name of both the Service and Deployment
+    name: opentelemetry-ebpf-instrumentation-k8s-cache
+    # -- Port of the Kubernetes metadata cache service.
+    port: 50055
+    # -- Service annotations.
+    annotations: {}
+    # -- Service labels.
+    labels: {}
+  internalMetrics:
+    # 0: disabled by default
+    port: 0
+    path: /metrics
+    portName: metrics
+    #  prometheus:
+    #     port: 6060
+    #     path: /metrics
+  # -- Deployment annotations.
+  annotations: {}
+  # -- Adds custom annotations to the Opentelemetry eBPF Instrumentation Kube Cache Pods.
+  podAnnotations: {}
+  # -- Adds custom labels to the Opentelemetry eBPF Instrumentation Kube Cache Pods.
+  podLabels: {}
