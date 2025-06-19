@@ -59,13 +59,15 @@ jobs:
           helm install --namespace=opentelemetry-operator-system --create-namespace my-opentelemetry-operator ./charts/opentelemetry-operator \
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
-            --set "manager.podLabels.control-plane=controller-manager"
+            --set "manager.podLabels.control-plane=controller-manager" \
+            --set "manager.targetAllocator.enabled=true"
           kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=targetallocator -n opentelemetry-operator-system --timeout=120s
 
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
         # see https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1180 for flaky test
-        run:  chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config"
+        run: chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config"
 
   operator-test-no-certmanager:
     runs-on: ubuntu-latest
@@ -113,10 +115,12 @@ jobs:
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
             --set "manager.podLabels.control-plane=controller-manager" \
-            --set "admissionWebhooks.certManager.enabled=false"
+            --set "admissionWebhooks.certManager.enabled=false" \
+            --set "manager.targetAllocator.enabled=true"
           kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=targetallocator -n opentelemetry-operator-system --timeout=120s
 
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
         # see https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1180 for flaky test
-        run:  chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config"
+        run: chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config"
