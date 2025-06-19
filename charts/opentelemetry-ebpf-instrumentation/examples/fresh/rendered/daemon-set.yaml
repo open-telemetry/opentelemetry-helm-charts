@@ -1,0 +1,63 @@
+---
+# Source: opentelemetry-ebpf-instrumentation/templates/daemon-set.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: example-opentelemetry-ebpf-instrumentation
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-instrumentation-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: obi
+    app.kubernetes.io/component: workload
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+      app.kubernetes.io/instance: example
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 4031914f5f279f51212dc3836601946a3d3468a459a306323a0df554644f04c1
+      labels:
+        helm.sh/chart: opentelemetry-ebpf-instrumentation-0.1.0
+        app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+        app.kubernetes.io/instance: example
+        app.kubernetes.io/version: "0.1.0"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: obi
+        app.kubernetes.io/component: workload
+    spec:
+      serviceAccountName: example-opentelemetry-ebpf-instrumentation
+      hostPID: true
+      initContainers:
+      containers:
+        - name: ebpf-instrument
+          image: docker.io/otel/ebpf-instrument:main
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          ports:
+          - name: metrics
+            containerPort: 9090
+            protocol: TCP
+          env:
+            - name: OTEL_EBPF_CONFIG_PATH
+              value: "/etc/ebpf-instrument/config/ebpf-instrument-config.yml"
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - mountPath: /etc/ebpf-instrument/config
+              name: ebpf-instrument-config
+      volumes:
+        - name: ebpf-instrument-config
+          configMap:
+            name: example-opentelemetry-ebpf-instrumentation
