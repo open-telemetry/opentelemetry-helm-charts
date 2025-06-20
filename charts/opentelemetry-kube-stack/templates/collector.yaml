@@ -112,8 +112,8 @@ spec:
   deploymentUpdateStrategy:
   {{- toYaml . | nindent 4}}
   {{- end }}
-  volumeMounts:
   {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumeMounts) }}
+  volumeMounts:
   {{- if $collector.presets.logsCollection.enabled }}
   - name: varlogpods
     mountPath: /var/log/pods
@@ -121,10 +121,10 @@ spec:
   - name: varlibdockercontainers
     mountPath: /var/lib/docker/containers
     readOnly: true
+  {{- end }}
   {{- if $collector.presets.logsCollection.storeCheckpoints}}
   - name: varlibotelcol
     mountPath: /var/lib/otelcol
-  {{- end }}
   {{- end }}
   {{- if $collector.presets.hostMetrics.enabled }}
   - name: hostfs
@@ -133,10 +133,8 @@ spec:
     mountPropagation: HostToContainer
   {{- end }}
   {{- with $collector.volumeMounts }}
-  {{- toYaml . | nindent 2 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- else }}
-  {{- toYaml $collector.volumeMounts | nindent 4 }}
   {{- end }}
   {{- with $collector.ports }}
   ports:
@@ -183,8 +181,8 @@ spec:
   tolerations:
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  volumes:
   {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumes) }}
+  volumes:
   {{- if $collector.presets.logsCollection.enabled }}
   - name: varlogpods
     hostPath:
@@ -205,10 +203,8 @@ spec:
       path: /
   {{- end }}
   {{- with $collector.volumes }}
-  {{- toYaml . | nindent 2 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- else }}
-  {{- toYaml $collector.volumes | nindent 4 }}
   {{- end }}
   {{- with $collector.initContainers }}
   initContainers:
