@@ -166,7 +166,7 @@ config:
 
 ### Configuration for Kubernetes Attributes Processor
 
-The collector can be configured to add Kubernetes metadata, such as pod name and namespace name, as resource attributes to incoming logs, metrics and traces. 
+The collector can be configured to add Kubernetes metadata, such as pod name and namespace name, as resource attributes to incoming logs, metrics and traces.
 
 This feature is disabled by default. It has the following requirements:
 
@@ -269,6 +269,20 @@ presets:
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
+
+### Service Account Configuration
+
+The chart allows you to control the `automountServiceAccountToken` setting for the collector pods. This can be useful for security purposes when you want to prevent automatic mounting of the service account token.
+
+*Example*: Disable automatic mounting of service account token:
+
+```yaml
+serviceAccount:
+  create: true
+  automountServiceAccountToken: false
+```
+
+By default, `automountServiceAccountToken` is set to `true` (Kubernetes default behavior). When set to `false`, the service account token will not be automatically mounted into the collector pods.
 
 ### Other configuration options
 
