@@ -63,3 +63,7 @@
 {{- if .Values.config.service.telemetry.metrics.address }}
 [WARNING] config.service.telemetry.metrics.address should not be used and will be removed in the future. Use internalTelemetryViaOTLP or config.service.telemetry.metrics.readers  instead"
 {{ end }}
+
+{{- if and .Values.presets.logsCollection.enabled .Values.presets.annotationDiscovery.logs.enabled }}
+{{- fail "[ERROR] logsCollection and annotationDiscovery.logs are mutually exclusive" }}
+{{- end }}
