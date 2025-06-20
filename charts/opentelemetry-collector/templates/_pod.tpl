@@ -52,7 +52,7 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
-      {{- if or .Values.presets.kubeletMetrics.enabled (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset")) }}
+      {{- if or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled .Values.presets.kubeletMetrics.enabled (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset")) }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:
@@ -145,7 +145,7 @@ containers:
       - mountPath: /conf
         name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
       {{- end }}
-      {{- if .Values.presets.logsCollection.enabled }}
+      {{- if or .Values.presets.logsCollection.enabled .Values.presets.annotationDiscovery.logs.enabled }}
       - name: varlogpods
         mountPath: /var/log/pods
         readOnly: true
@@ -185,7 +185,7 @@ volumes:
         - key: relay
           path: relay.yaml
   {{- end }}
-  {{- if .Values.presets.logsCollection.enabled }}
+  {{- if or .Values.presets.logsCollection.enabled .Values.presets.annotationDiscovery.logs.enabled }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
