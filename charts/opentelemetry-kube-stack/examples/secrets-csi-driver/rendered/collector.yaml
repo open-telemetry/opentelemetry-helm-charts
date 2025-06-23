@@ -144,9 +144,9 @@ spec:
   securityContext:
     {}
   volumeMounts:
-    - mountPath: /mnt/secrets-store
-      name: secrets-csi
-      readOnly: true
+  - mountPath: /mnt/secrets-store
+    name: secrets-csi
+    readOnly: true
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
@@ -178,12 +178,12 @@ spec:
     - secretRef:
         name: collector-credentials-secret
   volumes:
-    - csi:
-        driver: secrets-store.csi.k8s.io
-        readOnly: true
-        volumeAttributes:
-          secretProviderClass: collector-credentials
-      name: secrets-csi
+  - csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: collector-credentials
+    name: secrets-csi
 ---
 # Source: opentelemetry-kube-stack/templates/collector.yaml
 apiVersion: opentelemetry.io/v1beta1
