@@ -205,6 +205,7 @@ spec:
           exporters: [debug]
 EOF
 ```
+
 ### StatefulSet Mode
 There are basically three main advantages to deploy the Collector as the StatefulSet:
 - Predictable names of the Collector instance will be expected \
