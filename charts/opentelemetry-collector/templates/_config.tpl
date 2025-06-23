@@ -1033,6 +1033,7 @@ extensions:
           {{- include "opentelemetry-collector.k8sResourceAttributes" . | nindent 10 }}
         {{- end }}
         {{- include "opentelemetry-collector.fleetAttributes" . | nindent 10 }}
+        {{- include "opentelemetry-collector.chartMetadataAttributes" . | nindent 10 }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyK8sResourceAttributesConfig" -}}
@@ -1046,6 +1047,7 @@ service:
     resource:
 {{ include "opentelemetry-collector.k8sResourceAttributes" . | indent 6 }}
 {{ include "opentelemetry-collector.fleetAttributes" . | indent 6 }}
+{{ include "opentelemetry-collector.chartMetadataAttributes" . | indent 6 }}
 {{- end }}
 
 {{- define "opentelemetry-collector.k8sResourceAttributes" -}}
@@ -2183,4 +2185,8 @@ extensions:
 extensions:
   pprof:
     endpoint: {{ .Values.presets.pprof.endpoint }}
+{{- end }}
+
+{{- define "opentelemetry-collector.chartMetadataAttributes" -}}
+helm.chart.{{ .Chart.Name }}.version: "{{ .Chart.Version }}"
 {{- end }}
