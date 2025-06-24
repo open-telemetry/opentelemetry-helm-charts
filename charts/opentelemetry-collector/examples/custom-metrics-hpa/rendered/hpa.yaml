@@ -45,31 +45,31 @@ spec:
         target:
           type: Utilization
           averageUtilization: 80
-    - type: Pods
-      pods:
+    - pods:
         metric:
           name: otelcol_k8s_collector_scrape_duration_seconds
         target:
-          type: AverageValue
           averageValue: "1"
-    - type: Object
-      object:
-        metric:
-          name: otelcol_k8s_collector_scrape_duration_seconds
+          type: AverageValue
+      type: Pods
+    - object:
         describedObject:
           apiVersion: apps/v1
           kind: Deployment
           name: example-opentelemetry-collector
+        metric:
+          name: otelcol_k8s_collector_scrape_duration_seconds
         target:
-          type: AverageValue
           averageValue: "1"
-    - type: External
-      external:
+          type: AverageValue
+      type: Object
+    - external:
         metric:
           name: otelcol_k8s_collector_scrape_duration_seconds
           selector:
             matchLabels:
-              app.kubernetes.io/component: standalone-collector # Ensure proper indentation
+              app.kubernetes.io/component: standalone-collector
         target:
-          type: AverageValue
           averageValue: "1"
+          type: AverageValue
+      type: External

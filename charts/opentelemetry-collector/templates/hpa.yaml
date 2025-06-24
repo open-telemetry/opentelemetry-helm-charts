@@ -34,66 +34,7 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
   {{- end }}
-  {{- if .Values.autoscaling.podsMetrics }}
-  {{- range .Values.autoscaling.podsMetrics }}
-    - type: Pods
-      pods:
-        metric:
-          name: {{ .pods.metric.name }}
-        target:
-          type: {{ .pods.target.type }}
-          {{- if eq .pods.target.type "AverageValue" }}
-          averageValue: "{{ .pods.target.averageValue }}"
-          {{- else }}
-          value: "{{ .pods.target.value }}"
-          {{- end }}
-  {{- end }}
-  {{- end }}
-  {{- if .Values.autoscaling.objectMetrics }}
-  {{- range .Values.autoscaling.objectMetrics }}
-    - type: Object
-      object:
-        metric:
-          name: {{ .object.metric.name }}
-        describedObject:
-          apiVersion: {{ .object.describedObject.apiVersion }}
-          kind: {{ .object.describedObject.kind }}
-          name: {{ .object.describedObject.name }}
-        target:
-          type: {{ .object.target.type }}
-          {{- if eq .object.target.type "AverageValue" }}
-          averageValue: "{{ .object.target.averageValue }}"
-          {{- else }}
-          value: "{{ .object.target.value }}"
-          {{- end }}
-  {{- end }}
-  {{- end }}
-  {{- if .Values.autoscaling.externalMetrics }}
-  {{- range .Values.autoscaling.externalMetrics }}
-    - type: External
-      external:
-        metric:
-          name: {{ .external.metric.name }}
-          {{- if .external.metric.selector }}
-          selector:
-            matchLabels:
-            {{- toYaml .external.metric.selector.matchLabels | nindent 14 }} # Ensure proper indentation
-          {{- end }}
-        target:
-          type: {{ .external.target.type }}
-          {{- if eq .external.target.type "AverageValue" }}
-          averageValue: "{{ .external.target.averageValue }}"
-          {{- else }}
-          value: "{{ .external.target.value }}"
-          {{- end }}
-  {{- end }}
-{{/*  {{- if .Values.autoscaling.podsMetrics }}*/}}
-{{/*  {{- toYaml .Values.autoscaling.podsMetrics | nindent 4 }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .Values.autoscaling.objectMetrics }}*/}}
-{{/*  {{- toYaml .Values.autoscaling.objectMetrics | nindent 4 }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .Values.autoscaling.externalMetrics }}*/}}
-{{/*  {{- toYaml .Values.autoscaling.externalMetrics | nindent 4 }}*/}}
+  {{- with .Values.autoscaling.additionalMetrics }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}
