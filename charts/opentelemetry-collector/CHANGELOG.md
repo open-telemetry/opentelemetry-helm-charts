@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.116.0 / 2025-06-24
+- [Feat] Update Collector to v0.128.0
+
 ## v0.115.31 / 2025-01-16
 - [Feat] Add Helm chart metadata to telemetry resource attributes.
 ## v0.115.30 / 2025-06-16
