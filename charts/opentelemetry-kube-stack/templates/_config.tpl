@@ -34,11 +34,11 @@ the config is written as YAML.
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- if .collector.presets.kubernetesEvents.enabled }}
-{{- $config = (include "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" (dict "collector" $collector) | fromYaml) -}}
+{{- $config = (include "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" (dict "collector" $collector "namespace" .namespace) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- if .collector.presets.clusterMetrics.enabled }}
-{{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector) | fromYaml) -}}
+{{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector "namespace" .namespace) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- toYaml $collector.config | nindent 4 }}
@@ -227,16 +227,23 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.clusterMetricsConfig" .collector | fromYaml) .collector.config }}
+{{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.clusterMetricsConfig" (dict "collector" .collector "namespace" .namespace) | fromYaml) .collector.config }}
 {{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "k8s_cluster" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "k8s_cluster" | uniq)  }}
+{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "k8s_leader_elector/k8scluster" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
+extensions:
+  k8s_leader_elector/k8scluster:
+    auth_type: serviceAccount
+    lease_name: k8s.cluster.receiver.opentelemetry.io
+    lease_namespace: {{ .namespace }}
 receivers:
   k8s_cluster:
+    k8s_leader_elector: k8s_leader_elector/k8scluster
     collection_interval: 10s
     auth_type: serviceAccount
     node_conditions_to_report: [Ready, MemoryPressure, DiskPressure, NetworkUnavailable]
@@ -326,16 +333,23 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesEventsConfig" .collector | fromYaml) .collector.config }}
+{{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesEventsConfig" (dict "collector" .collector "namespace" .namespace) | fromYaml) .collector.config }}
 {{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sobjects" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "k8sobjects" | uniq)  }}
+{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "k8s_leader_elector/k8sobjects" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
+extensions:
+  k8s_leader_elector/k8sobjects:
+    auth_type: serviceAccount
+    lease_name: k8s.objects.receiver.opentelemetry.io
+    lease_namespace: {{ .namespace }}
 receivers:
   k8sobjects:
+    k8s_leader_elector: k8s_leader_elector/k8sobjects
     objects:
       - name: events
         mode: "watch"
