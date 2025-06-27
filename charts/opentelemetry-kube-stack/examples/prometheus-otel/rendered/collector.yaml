@@ -21,6 +21,15 @@ spec:
         endpoint: ingest.example.com:443
         headers:
           access-token: ${ACCESS_TOKEN}
+    extensions:
+      k8s_leader_elector/k8scluster:
+        auth_type: serviceAccount
+        lease_name: k8s.cluster.receiver.opentelemetry.io
+        lease_namespace: default
+      k8s_leader_elector/k8sobjects:
+        auth_type: serviceAccount
+        lease_name: k8s.objects.receiver.opentelemetry.io
+        lease_namespace: default
     processors:
       batch:
         send_batch_max_size: 1500
@@ -32,6 +41,27 @@ spec:
         override: false
         timeout: 2s
     receivers:
+      k8s_cluster:
+        allocatable_types_to_report:
+        - cpu
+        - memory
+        - storage
+        auth_type: serviceAccount
+        collection_interval: 10s
+        k8s_leader_elector: k8s_leader_elector/k8scluster
+        node_conditions_to_report:
+        - Ready
+        - MemoryPressure
+        - DiskPressure
+        - NetworkUnavailable
+      k8sobjects:
+        k8s_leader_elector: k8s_leader_elector/k8sobjects
+        objects:
+        - exclude_watch_type:
+          - DELETED
+          group: events.k8s.io
+          mode: watch
+          name: events
       otlp:
         protocols:
           grpc:
@@ -42,6 +72,9 @@ spec:
         config:
           scrape_configs: []
     service:
+      extensions:
+      - k8s_leader_elector/k8sobjects
+      - k8s_leader_elector/k8scluster
       pipelines:
         logs:
           exporters:
@@ -51,6 +84,7 @@ spec:
           - batch
           receivers:
           - otlp
+          - k8sobjects
         metrics:
           exporters:
           - debug
@@ -60,6 +94,7 @@ spec:
           - batch
           receivers:
           - prometheus
+          - k8s_cluster
         traces:
           exporters:
           - debug
