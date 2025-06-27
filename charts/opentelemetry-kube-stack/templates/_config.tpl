@@ -230,7 +230,7 @@ receivers:
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.clusterMetricsConfig" (dict "collector" .collector "namespace" .namespace) | fromYaml) .collector.config }}
 {{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "k8s_cluster" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "k8s_cluster" | uniq)  }}
-{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "k8s_leader_elector/k8scluster" | uniq)  }}
+{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "k8s_leader_elector/k8s_cluster" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
@@ -336,7 +336,7 @@ receivers:
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesEventsConfig" (dict "collector" .collector "namespace" .namespace) | fromYaml) .collector.config }}
 {{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sobjects" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "k8sobjects" | uniq)  }}
-{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "k8s_leader_elector/k8sobjects" | uniq)  }}
+{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "k8s_leader_elector/k8s_objects" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
