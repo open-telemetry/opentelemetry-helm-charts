@@ -269,10 +269,10 @@ receivers:
 {{- define "opentelemetry-collector.applyAnnotationDiscoveryConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.annotationDiscoveryConfig" .Values | fromYaml) .config }}
 {{- $_ := set $config.service "extensions" (append $config.service.extensions "k8s_observer" | uniq) }}
-{{- if .Values.presets.annotationDiscovery.logs.enabled }}
-{{- $_ := set $config.service.pipelines "logs/discovery" (dict "receivers" (list "receiver_creator/logs") "processors" (list "memory_limiter") "exporters" (list)) }}
+{{- if .Values.Values.presets.annotationDiscovery.logs.enabled }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "receiver_creator/logs" | uniq)  }}
 {{- end }}
-{{- if .Values.presets.annotationDiscovery.metrics.enabled }}
+{{- if .Values.Values.presets.annotationDiscovery.metrics.enabled }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "receiver_creator/metrics" | uniq) }}
 {{- end }}
 {{- $config | toYaml }}
@@ -292,8 +292,7 @@ receivers:
     discovery:
       enabled: true
       default_annotations:
-        io.opentelemetry.discovery.logs/enabled: true
-    receivers:
+        io.opentelemetry.discovery.logs/enabled: "true"
   {{- end }}
   {{- if .Values.presets.annotationDiscovery.metrics.enabled }}
   receiver_creator/metrics:
@@ -301,7 +300,6 @@ receivers:
       - k8s_observer
     discovery:
       enabled: true
-    receivers:
   {{- end }}
 {{- end }}
 
