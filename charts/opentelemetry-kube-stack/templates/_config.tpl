@@ -237,13 +237,13 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
 extensions:
-  k8s_leader_elector/k8scluster:
+  k8s_leader_elector/k8s_cluster:
     auth_type: serviceAccount
     lease_name: k8s.cluster.receiver.opentelemetry.io
     lease_namespace: {{ .namespace }}
 receivers:
   k8s_cluster:
-    k8s_leader_elector: k8s_leader_elector/k8scluster
+    k8s_leader_elector: k8s_leader_elector/k8s_cluster
     collection_interval: 10s
     auth_type: serviceAccount
     node_conditions_to_report: [Ready, MemoryPressure, DiskPressure, NetworkUnavailable]
@@ -343,13 +343,13 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
 extensions:
-  k8s_leader_elector/k8sobjects:
+  k8s_leader_elector/k8s_objects:
     auth_type: serviceAccount
     lease_name: k8s.objects.receiver.opentelemetry.io
     lease_namespace: {{ .namespace }}
 receivers:
   k8sobjects:
-    k8s_leader_elector: k8s_leader_elector/k8sobjects
+    k8s_leader_elector: k8s_leader_elector/k8s_objects
     objects:
       - name: events
         mode: "watch"
