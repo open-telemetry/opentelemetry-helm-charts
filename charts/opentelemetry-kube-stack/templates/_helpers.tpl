@@ -177,6 +177,19 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- $eventsEnabled = true }}
 {{- end }}
 {{- end }}
+{{- if or $clusterMetricsEnabled $eventsEnabled}}
+- verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+  apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
 {{- if $clusterMetricsEnabled }}
 - apiGroups:
   - ""
@@ -239,6 +252,7 @@ Optionally include the RBAC for the k8sCluster receiver
 - apiGroups: ["events.k8s.io"]
   resources: ["events"]
   verbs: ["watch", "list"]
+{{- end }}
 {{- end }}
 {{- end }}
 
