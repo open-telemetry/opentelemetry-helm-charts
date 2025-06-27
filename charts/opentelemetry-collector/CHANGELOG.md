@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.116.1 / 2025-06-24
+- [Feat] Allow setting `deployment.environment.name` via `presets.resourceDetection.deploymentEnvironmentName`.
+
 ## v0.116.0 / 2025-06-24
 - [Feat] Update Collector to v0.128.0
 

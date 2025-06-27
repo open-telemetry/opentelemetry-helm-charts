@@ -77,9 +77,10 @@ containers:
       {{- end }}
       {{- end }}
       {{- end }}
-      {{- if and .Values.presets.resourceDetection.enabled .Values.presets.resourceDetection.k8sNodeName.enabled (not $otelAttrExists) }}
+      {{- $defaultAttrs := include "opentelemetry-collector.defaultResourceAttributes" . }}
+      {{- if and (ne $defaultAttrs "") (not $otelAttrExists) }}
       - name: OTEL_RESOURCE_ATTRIBUTES
-        value: "k8s.node.name=$(K8S_NODE_NAME)"
+        value: {{ $defaultAttrs | quote }}
       {{- end }}
       {{- if not $kubeNodeExists }}
       - name: KUBE_NODE_NAME
