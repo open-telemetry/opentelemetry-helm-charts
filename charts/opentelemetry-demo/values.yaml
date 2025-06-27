@@ -165,6 +165,10 @@ components:
         value: kafka:9092
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: DB_CONNECTION_STRING
+        value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
+      - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 120Mi
@@ -680,6 +684,33 @@ components:
       runAsUser: 999  # valkey
       runAsGroup: 1000
       runAsNonRoot: true
+
+  postgresql:
+    enabled: true
+    useDefault:
+      env: true
+    imageOverride:
+      repository: postgres
+      tag: "17.5"
+    replicas: 1
+    ports:
+      - name: postgresql
+        value: 5432
+    env:
+      - name: POSTGRES_USER
+        value: root
+      - name: POSTGRES_PASSWORD
+        value: otel
+      - name: POSTGRES_DB
+        value: otel
+    resources:
+      limits:
+        memory: 500Mi
+    mountedConfigMaps:
+      - name: init
+        mountPath: /docker-entrypoint-initdb.d/
+        existingConfigMap: postgresql-init
+
 
 opentelemetry-collector:
   enabled: true
