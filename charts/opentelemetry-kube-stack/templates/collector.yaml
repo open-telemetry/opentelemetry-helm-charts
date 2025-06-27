@@ -45,9 +45,9 @@ spec:
   priorityClassName: {{ $collector.priorityClassName }}
   {{- end }}
   terminationGracePeriodSeconds: {{ $collector.terminationGracePeriodSeconds }}
-  {{- with $collector.resources }}
+  {{- if or $collector.resources.limits $collector.resources.requests }}
   resources:
-  {{- toYaml . | nindent 4}}
+    {{- toYaml $collector.resources | nindent 4 }}
   {{- end }}
   {{- with $collector.nodeSelector }}
   nodeSelector:
