@@ -110,6 +110,7 @@ processors:
     - sources:
       - from: connection
     extract:
+      otel_annotations: true
       metadata:
         - k8s.namespace.name
         - k8s.pod.name
@@ -130,18 +131,14 @@ processors:
         - container.image.tag
         - container.image.name
         - k8s.cluster.uid
+        - service.name
+        - service.version
       labels:
-      - tag_name: service.name
-        key: app.kubernetes.io/name
-        from: pod
       - tag_name: service.name
         key: k8s-app
         from: pod
       - tag_name: k8s.app.instance
         key: app.kubernetes.io/instance
-        from: pod
-      - tag_name: service.version
-        key: app.kubernetes.io/version
         from: pod
       - tag_name: k8s.app.component
         key: app.kubernetes.io/component
