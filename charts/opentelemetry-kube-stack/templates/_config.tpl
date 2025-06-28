@@ -235,7 +235,7 @@ receivers:
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
 {{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection}}
 {{- if not $disableLeaderElection}}
-{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
 {{- end}}
 receivers:
   k8s_cluster:
@@ -344,7 +344,7 @@ receivers:
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
 {{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection}}
 {{- if not $disableLeaderElection}}
-{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
 {{- end}}
 receivers:
   k8sobjects:
