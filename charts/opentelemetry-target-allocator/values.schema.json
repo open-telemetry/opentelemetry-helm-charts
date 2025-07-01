@@ -1,81 +1,140 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "fullnameOverride": {
-      "type": "string"
-    },
-    "nameOverride": {
-      "type": "string"
-    },
-    "targetAllocator": {
+  "$schema": "http://json-schema.org/schema#",
+  "$ref": "#/definitions/top",
+  "definitions": {
+    "top": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "config": {
-          "type": "object",
-          "properties": {
-            "allocation_strategy": {
-              "type": "string"
-            },
-            "config": {
-              "type": "object",
-              "properties": {
-                "scrape_configs": {
-                  "type": "array"
-                }
-              }
-            },
-            "filter_strategy": {
-              "type": "string"
-            },
-            "prometheus_cr": {
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "pod_monitor_selector": {
-                  "type": "object"
-                },
-                "scrapeInterval": {
-                  "type": "string"
-                },
-                "service_monitor_selector": {
-                  "type": "object"
-                }
-              }
-            }
-          }
+        "targetAllocator": {
+          "$ref": "#/definitions/TargetAllocator"
         },
+        "nameOverride": {
+          "type": "string"
+        },
+        "fullnameOverride": {
+          "type": "string"
+        }
+      },
+      "title": "top"
+    },
+    "TargetAllocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
         "image": {
-          "type": "object",
-          "properties": {
-            "repository": {
-              "type": "string"
-            },
-            "tag": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/ContainerImage"
         },
         "imagePullSecrets": {
           "type": "array"
         },
         "serviceAccount": {
-          "type": "object",
-          "properties": {
-            "annotations": {
-              "type": "object"
-            },
-            "create": {
-              "type": "boolean"
-            },
-            "name": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/ServiceAccount"
+        },
+        "config": {
+          "$ref": "#/definitions/Config"
+        }
+      },
+      "title": "TargetAllocator"
+    },
+    "ContainerImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
         }
       }
+    },
+    "Config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allocation_strategy": {
+          "type": "string"
+        },
+        "collector_namespace": {
+          "type": "string"
+        },
+        "collector_selector": {
+          "$ref": "#/definitions/CollectorSelector"
+        },
+        "prometheus_cr": {
+          "$ref": "#/definitions/PrometheusCR"
+        },
+        "config": {
+          "$ref": "#/definitions/PrometheusConfig"
+        },
+        "filter_strategy": {
+          "type": "string"
+        },
+        "scrape_configs": {
+          "type": "array"
+        }
+      },
+      "title": "Config"
+    },
+    "CollectorSelector": {
+      "type": "object",
+      "additionalProperties": true,
+      "title": "CollectorSelector"
+    },
+    "Matchlabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "type": "string"
+        }
+      },
+      "title": "Matchlabels"
+    },
+    "PrometheusConfig": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "PrometheusCR": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "scrapeInterval": {
+          "type": "string"
+        },
+        "service_monitor_selector": {
+          "$ref": "#/definitions/Annotations"
+        },
+        "pod_monitor_selector": {
+          "$ref": "#/definitions/Annotations"
+        }
+      },
+      "title": "PrometheusCR"
+    },
+    "Annotations": {
+      "type": "object",
+      "additionalProperties": true,
+      "title": "Annotations"
+    },
+    "ServiceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "annotations": {
+          "$ref": "#/definitions/Annotations"
+        }
+      },
+      "title": "ServiceAccount"
     }
   }
 }
