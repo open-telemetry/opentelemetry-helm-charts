@@ -1,5 +1,8 @@
 mode: deployment
 
+global:
+  environment: test
+
 presets:
   kubernetesExtraMetrics:
     enabled: true
@@ -8,7 +11,7 @@ presets:
   resourceDetection:
     enabled: true
     pipeline: metrics
-    deploymentEnvironmentName: test
+    deploymentEnvironmentName: "{{ .Values.global.environment }}"
 
 resources:
   limits:

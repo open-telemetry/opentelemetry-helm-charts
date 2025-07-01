@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.116.2 / 2025-06-24
+- [Fix] Support templating for `presets.resourceDetection.deploymentEnvironmentName`.
+
 ## v0.116.1 / 2025-06-24
 - [Feat] Allow setting `deployment.environment.name` via `presets.resourceDetection.deploymentEnvironmentName`.
 
