@@ -1687,13 +1687,19 @@ exporters:
 
 {{- define "opentelemetry-collector.applyCoralogixExporterConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.coralogixExporterConfig" .Values | fromYaml) .config }}
-{{- $pipeline := "all" }}
+{{- $pipeline := list "all" }}
 {{- with .Values.Values.presets.coralogixExporter.pipeline }}
-{{- $pipeline = . }}
+  {{- if kindIs "string" . }}
+    {{- $pipeline = list . }}
+  {{- else if kindIs "slice" . }}
+    {{- $pipeline = . }}
+  {{- end }}
 {{- end }}
-{{- $includeLogs := or (eq $pipeline "all") (eq $pipeline "logs") }}
-{{- $includeMetrics := or (eq $pipeline "all") (eq $pipeline "metrics") }}
-{{- $includeTraces := or (eq $pipeline "all") (eq $pipeline "traces") }}
+
+{{- $includeLogs := or (has "all" $pipeline) (has "logs" $pipeline) }}
+{{- $includeMetrics := or (has "all" $pipeline) (has "metrics" $pipeline) }}
+{{- $includeTraces := or (has "all" $pipeline) (has "traces" $pipeline) }}
+
 {{- if and $includeLogs ($config.service.pipelines.logs) (not (has "coralogix" $config.service.pipelines.logs.exporters)) }}
 {{- $_ := set $config.service.pipelines.logs "exporters" (append $config.service.pipelines.logs.exporters "coralogix" | uniq) }}
 {{- end }}
