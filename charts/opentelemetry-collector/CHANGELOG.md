@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.116.3 / 2025-07-02
+- [Feat] Add new variable `presets.coralogixExporter.pipelines` as an `array[string]` to allow enabling exporter on 2 pipelines at once.
+
 ## v0.116.2 / 2025-06-24
 - [Fix] Support templating for `presets.resourceDetection.deploymentEnvironmentName`.
 

@@ -50,6 +50,10 @@
 
 {{ end }}
 
+{{- if .Values.presets.coralogixExporter.pipeline }}
+[WARNING] The variable "presets.coralogixExporter.pipeline" is deprecated. Use the variable "presets.coralogixExporter.pipelines" instead. If both are present, then the "presets.coralogixExporter.pipelines" will take a precedence.
+{{- end }}
+
 {{- if .Values.configMap.create }}
 {{- range $key, $value := (((.Values.config).service).pipelines) }}
 {{- if has "logging" ($value.exporters) }}

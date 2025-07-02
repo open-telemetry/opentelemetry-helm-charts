@@ -14,70 +14,31 @@ metadata:
     
 data:
   relay: |
-    connectors:
-      routing:
-        default_pipelines:
-        - traces/default
-        error_mode: ignore
-        match_once: false
-        table:
-        - pipelines:
-          - traces/0
-          statement: route() where attributes["service.name"] == "one"
-        - pipelines:
-          - traces/1
-          statement: route() where attributes["service.name"] == "one"
-      spanmetrics/0:
-        dimensions:
-        - name: http.method
-        - name: cgx.transaction
-        - name: cgx.transaction.root
-        histogram:
-          explicit:
-            buckets:
-            - 1s
-            - 2s
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: ""
-      spanmetrics/1:
-        dimensions:
-        - name: http.method
-        - name: cgx.transaction
-        - name: cgx.transaction.root
-        histogram:
-          explicit:
-            buckets:
-            - 5s
-            - 10s
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: ""
-      spanmetrics/default:
-        dimensions:
-        - name: http.method
-        - name: cgx.transaction
-        - name: cgx.transaction.root
-        - name: http.response.status_code
-        - name: rpc.grpc.status_code
-        histogram:
-          explicit:
-            buckets:
-            - 1ms
-            - 4ms
-            - 10ms
-            - 20ms
-            - 50ms
-            - 100ms
-            - 200ms
-            - 500ms
-            - 1s
-            - 2s
-            - 5s
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: ""
     exporters:
+      coralogix:
+        application_name: otel
+        application_name_attributes:
+        - k8s.namespace.name
+        - service.namespace
+        domain: coralogix.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        metrics:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        private_key: ${env:CORALOGIX_PRIVATE_KEY}
+        subsystem_name: integration
+        subsystem_name_attributes:
+        - k8s.deployment.name
+        - k8s.statefulset.name
+        - k8s.daemonset.name
+        - k8s.cronjob.name
+        - service.name
+        timeout: 30s
+        traces:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
       debug: {}
     extensions:
       health_check:
@@ -135,46 +96,21 @@ data:
         metrics:
           exporters:
           - debug
+          - coralogix
           processors:
           - memory_limiter
           - transform/prometheus
           receivers:
-          - spanmetrics/0
-          - spanmetrics/1
-          - spanmetrics/default
           - prometheus
           - otlp
         traces:
           exporters:
-          - routing
+          - debug
+          - coralogix
           processors:
           - memory_limiter
           receivers:
           - otlp
-        traces/0:
-          exporters:
-          - debug
-          - spanmetrics/0
-          processors:
-          - batch
-          receivers:
-          - routing
-        traces/1:
-          exporters:
-          - debug
-          - spanmetrics/1
-          processors:
-          - batch
-          receivers:
-          - routing
-        traces/default:
-          exporters:
-          - debug
-          - spanmetrics/default
-          processors:
-          - batch
-          receivers:
-          - routing
       telemetry:
         logs:
           encoding: json

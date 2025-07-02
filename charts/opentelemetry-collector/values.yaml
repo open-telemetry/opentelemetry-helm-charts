@@ -326,9 +326,16 @@ presets:
   # Configures the collector to export data to Coralogix.
   coralogixExporter:
     enabled: false
-    # Pipeline to add the Coralogix exporter to. Possible values are
-    # "all", "metrics", "traces", "logs" and "none".
-    pipeline: all
+    # Use pipelines (plural) for multiple pipeline selection.
+    # When pipelines is set, it takes precedence over pipeline.
+    # Possible values: "all", "metrics", "traces", "logs" and "none".
+    # Examples:
+    #   pipelines: ["metrics", "traces"]       # Both metrics and traces
+    #   pipelines: ["all"]                     # All pipelines
+    #   pipelines: ["none"]                    # No pipelines
+    pipelines: ["all"]
+    # DEPRECATED: Please use `pipelines` instead.
+    # pipeline: "all"
     privateKey: ${env:CORALOGIX_PRIVATE_KEY}
     domain: ""
     version: ""
