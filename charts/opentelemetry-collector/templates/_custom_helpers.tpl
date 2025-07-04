@@ -100,7 +100,8 @@ Generate default OTEL_RESOURCE_ATTRIBUTES value when resourceDetection preset is
 {{- if and .Values.presets.resourceDetection.enabled .Values.presets.resourceDetection.k8sNodeName.enabled -}}
 {{-   $attrs = append $attrs "k8s.node.name=$(K8S_NODE_NAME)" -}}
 {{- end -}}
-{{- with .Values.presets.resourceDetection.deploymentEnvironmentName }}
+{{- $deploymentEnvName := .Values.presets.resourceDetection.deploymentEnvironmentName | default .Values.global.deploymentEnvironmentName }}
+{{- with $deploymentEnvName }}
 {{-   $val := tpl . $ -}}
 {{-   if ne $val "" -}}
 {{-     $attrs = append $attrs (printf "deployment.environment.name=%s" $val) -}}

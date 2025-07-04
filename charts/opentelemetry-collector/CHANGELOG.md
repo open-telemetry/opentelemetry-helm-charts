@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.117.1 / 2025-07-04
+- [Feat] Support global `deploymentEnvironmentName` for the resource detection preset.
+
 ## v0.117.0 / 2025-07-04
 - [Feat] Update Collector to v0.129.1
 
