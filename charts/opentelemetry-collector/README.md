@@ -190,6 +190,91 @@ presets:
     extractAllPodAnnotations: true
 ```
 
+### Configuration for Annotation-Based Discovery
+
+The collector can be configured to automatically discover and collect telemetry from pods based on annotations. This feature provides a drop-in replacement for the `logsCollection` preset, allowing for selective collection of logs and metrics from specific pods rather than collecting from all pods in the cluster.
+
+> [!WARNING]
+> Annotation-based discovery and `logsCollection` are mutually exclusive. You should use either:
+>
+> - `presets.logsCollection.enabled: true` (collects logs from all pods)
+> - `presets.annotationDiscovery.logs.enabled: true` (collects logs only from pods with specific annotations)
+>
+> Using both simultaneously will result in configuration conflicts.
+
+To enable this feature, set the `presets.annotationDiscovery.logs.enabled` and/or `presets.annotationDiscovery.metrics.enabled` properties to `true`.
+
+Here is an example `values.yaml`:
+
+```yaml
+mode: daemonset
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+presets:
+  annotationDiscovery:
+    logs:
+      enabled: true
+    metrics:
+      enabled: true
+```
+
+#### How Annotation-Based Discovery Works
+
+When annotation-based discovery is enabled, the collector will:
+
+1. **Discover Pods**: Use the Receiver Creator receiver to watch for pods with specific annotations
+2. **Generate Receiver Configurations**: Automatically generate receiver configuration
+
+**Default Behavior**: When `presets.annotationDiscovery.logs.enabled` is `true`, the collector will collect logs from all containers by default, unless a pod explicitly opts out using the `io.opentelemetry.discovery.logs/enabled: "false"` annotation.
+
+This approach provides the same functionality as `logsCollection` but with fine-grained control over which pods are monitored, making it ideal for environments where you want to selectively collect telemetry from specific applications or services.
+
+#### Customizing Receiver Configuration
+
+The default receiver configuration can be extended or overridden using the respective annotation: `io.opentelemetry.discovery.logs/config`.
+
+Example with custom filelog configuration:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+  annotations:
+    io.opentelemetry.discovery.logs/config: |
+      include_file_name: true
+      max_log_size: "2MiB"
+      operators:
+        - type: container
+          id: container-parser
+        - type: regex_parser
+          regex: "^(?P<time>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) (?P<sev>[A-Z]*) (?P<msg>.*)$"
+spec: ...
+```
+
+This allows you to customize the filelog receiver configuration for specific pods.
+
+#### Selective Collection
+
+You can also disable collection for specific pods by setting the annotation to `"false"`:
+
+```yaml
+metadata:
+  annotations:
+    io.opentelemetry.discovery.logs/enabled: "false"
+```
+
+This is useful when you want to enable discovery globally but exclude specific pods from collection.
+
+#### :memo: Note: RBAC Permissions
+
+When annotation-based discovery is enabled, the chart automatically creates the necessary RBAC rules to allow the collector to list pods in the cluster. This is required for the Receiver Creator receiver to discover pods with the relevant annotations.
+
 ### Configuration for Retrieving Kubelet Metrics
 
 The collector can be configured to collect node, pod, and container metrics from the API server on a kubelet.
