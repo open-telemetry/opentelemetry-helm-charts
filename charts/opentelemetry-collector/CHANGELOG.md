@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.117.0 / 2025-07-04
+- [Feat] Update Collector to v0.129.1
+
 ## v0.116.3 / 2025-07-02
 - [Feat] Add new variable `presets.coralogixExporter.pipelines` as an `array[string]` to allow enabling exporter on 2 pipelines at once.
 
