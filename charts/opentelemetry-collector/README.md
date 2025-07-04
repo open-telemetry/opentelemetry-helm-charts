@@ -46,7 +46,7 @@ Some care must be taken when using `hostNetwork: true`, as then OpenTelemetry Co
 By default this chart will deploy an OpenTelemetry Collector with three pipelines (logs, metrics and traces)
 and debug exporter enabled by default. The collector can be installed either as daemonset (agent), deployment or stateful set.
 
-*Example*: Install collector as a deployment.
+_Example_: Install collector as a deployment.
 
 ```yaml
 mode: deployment
@@ -62,7 +62,7 @@ By default collector has the following receivers enabled:
 
 The Collector's configuration is set via the `config` section. Default components can be removed with `null`. Remember that lists in helm are not merged, so if you want to modify any default list you must specify all items, including any default items you want to keep.
 
-*Example*: Disable metrics and logs pipelines and non-otlp receivers:
+_Example_: Disable metrics and logs pipelines and non-otlp receivers:
 
 ```yaml
 config:
@@ -89,7 +89,7 @@ This feature is disabled by default. It has the following requirements:
 - It needs agent collector to be deployed.
 - It requires the [Filelog receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
-To enable this feature, set the  `presets.logsCollection.enabled` property to `true`.
+To enable this feature, set the `presets.logsCollection.enabled` property to `true`.
 Here is an example `values.yaml`:
 
 ```yaml
@@ -176,7 +176,7 @@ This feature is disabled by default. It has the following requirements:
 
 In order to minimize the collector's privileges, the [Kubernetes RBAC Rules](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) that are applied to the collector as part of this chart are the minimum required for the `presets.kubernetesAttributes` preset to work. If additional configuration scopes are desired outside of the preset you must apply the corresponding RBAC rules to grant the collector access.
 
-To enable this feature, set the  `presets.kubernetesAttributes.enabled` property to `true`.
+To enable this feature, set the `presets.kubernetesAttributes.enabled` property to `true`.
 Here is an example `values.yaml`:
 
 ```yaml
@@ -192,10 +192,9 @@ presets:
 
 ### Configuration for Annotation-Based Discovery
 
-The collector can be configured to automatically discover and collect telemetry from pods based on annotations. This feature provides a drop-in replacement for the `logsCollection` preset, allowing for selective collection of logs and metrics from specific pods rather than collecting from all pods in the cluster.
+The collector can be configured to automatically discover and collect telemetry from pods based on annotations. This feature provides a drop-in replacement for the `logsCollection` preset, allowing for selective collection of logs.
 
-> [!WARNING]
-> Annotation-based discovery and `logsCollection` are mutually exclusive. You should use either:
+> [!WARNING] > `annotationDiscovery.logs` and `logsCollection` are mutually exclusive. You should use either:
 >
 > - `presets.logsCollection.enabled: true` (collects logs from all pods)
 > - `presets.annotationDiscovery.logs.enabled: true` (collects logs only from pods with specific annotations)
@@ -234,42 +233,7 @@ When annotation-based discovery is enabled, the collector will:
 
 This approach provides the same functionality as `logsCollection` but with fine-grained control over which pods are monitored, making it ideal for environments where you want to selectively collect telemetry from specific applications or services.
 
-#### Customizing Receiver Configuration
-
-The default receiver configuration can be extended or overridden using the respective annotation: `io.opentelemetry.discovery.logs/config`.
-
-Example with custom filelog configuration:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: my-app
-  annotations:
-    io.opentelemetry.discovery.logs/config: |
-      include_file_name: true
-      max_log_size: "2MiB"
-      operators:
-        - type: container
-          id: container-parser
-        - type: regex_parser
-          regex: "^(?P<time>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) (?P<sev>[A-Z]*) (?P<msg>.*)$"
-spec: ...
-```
-
-This allows you to customize the filelog receiver configuration for specific pods.
-
-#### Selective Collection
-
-You can also disable collection for specific pods by setting the annotation to `"false"`:
-
-```yaml
-metadata:
-  annotations:
-    io.opentelemetry.discovery.logs/enabled: "false"
-```
-
-This is useful when you want to enable discovery globally but exclude specific pods from collection.
+For more details and configuration options, see the [Receiver Creator](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/receivercreator/README.md#generate-receiver-configurations-from-provided-hints) documentation.
 
 #### :memo: Note: RBAC Permissions
 
@@ -283,7 +247,7 @@ This feature is disabled by default. It has the following requirements:
 
 - It requires the [Kubeletstats receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
-To enable this feature, set the  `presets.kubeletMetrics.enabled` property to `true`.
+To enable this feature, set the `presets.kubeletMetrics.enabled` property to `true`.
 Here is an example `values.yaml`:
 
 ```yaml
@@ -302,7 +266,7 @@ This feature is disabled by default. It has the following requirements:
 - It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 - It requires statefulset or deployment mode with a single replica.
 
-To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
+To enable this feature, set the `presets.clusterMetrics.enabled` property to `true`.
 
 Here is an example `values.yaml`:
 
@@ -322,7 +286,7 @@ This feature is disabled by default. It has the following requirements:
 
 - It requires [Kubernetes Objects receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
-To enable this feature, set the  `presets.kubernetesEvents.enabled` property to `true`.
+To enable this feature, set the `presets.kubernetesEvents.enabled` property to `true`.
 Here is an example `values.yaml`:
 
 ```yaml
@@ -341,7 +305,7 @@ This feature is disabled by default. It has the following requirements:
 
 - It requires [Host Metrics receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
 
-To enable this feature, set the  `presets.hostMetrics.enabled` property to `true`.
+To enable this feature, set the `presets.hostMetrics.enabled` property to `true`.
 Here is an example `values.yaml`:
 
 ```yaml
@@ -359,7 +323,7 @@ At this time, Prometheus CRDs are supported but other CRDs are not.
 
 The chart allows you to control the `automountServiceAccountToken` setting for the collector pods. This can be useful for security purposes when you want to prevent automatic mounting of the service account token.
 
-*Example*: Disable automatic mounting of service account token:
+_Example_: Disable automatic mounting of service account token:
 
 ```yaml
 serviceAccount:
