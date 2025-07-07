@@ -35,6 +35,27 @@ default:
     tolerations: []
   # Default securityContext for all components
   securityContext: {}
+  resources:
+    requests:
+      cpu: 100m
+  keda:
+    enabled: false
+    pollingInterval: 5
+    cooldownPeriod: 30
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUMillicores: 80
+    # Advanced KEDA configuration - any valid ScaledObject spec fields
+    # These will be merged into the ScaledObject spec
+    advanced: {}
+
+keda:
+  install:
+    enabled: true
+    # Values to pass to the KEDA subchart can be placed here.
+    # For example:
+    # extraArgs:
+    #   v: "1"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -460,6 +481,10 @@ components:
     enabled: true
     useDefault:
       env: true
+    keda:
+      # Users should consider scaling Locust _vertically_ using an env LOCUST_PROCESSES. Doing that 
+      # allows Locust to generate aggregate statistics and respect the configured total users and spawn rate.
+      maxReplicas: 1 # Disable horizontal scaling for Locust
     service:
       port: 8089
     env:
@@ -977,7 +1002,7 @@ prometheus:
       servicePort: 9090
     resources:
       limits:
-        memory: 300Mi
+        memory: 1000Mi
 
 grafana:
   enabled: true
