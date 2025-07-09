@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.117.2 / 2025-07-09
+- [Fix] Apply `transform/prometheus` rule only for metrics from the Collector itself.
+
 ## v0.117.1 / 2025-07-04
 - [Feat] Support global `deploymentEnvironmentName` for the resource detection preset.
 

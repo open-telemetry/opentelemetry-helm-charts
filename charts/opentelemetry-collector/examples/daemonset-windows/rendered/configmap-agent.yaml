@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.117.1
+    helm.sh/chart: opentelemetry-collector-0.117.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.129.1"
@@ -31,7 +31,8 @@ data:
         metric_statements:
         - context: metric
           statements:
-          - replace_pattern(name, "_total$", "")
+          - replace_pattern(name, "_total$", "") where resource.attributes["service.name"]
+            == "opentelemetry-collector"
         - context: resource
           statements:
           - set(attributes["k8s.pod.ip"], attributes["net.host.name"]) where attributes["service.name"]
