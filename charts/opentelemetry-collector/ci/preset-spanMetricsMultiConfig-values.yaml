@@ -1,0 +1,17 @@
+mode: daemonset
+
+presets:
+  spanMetricsMulti:
+    enabled: true
+    collectionInterval: "30s"
+    metricsExpiration: 5m
+    configs:
+      - selector: route() where attributes["service.name"] == "one"
+        histogramBuckets: [1s, 2s]
+      - selector: route() where attributes["service.name"] == "two"
+        histogramBuckets: [5s, 10s]
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

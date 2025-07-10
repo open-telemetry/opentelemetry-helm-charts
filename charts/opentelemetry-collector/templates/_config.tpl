@@ -1273,7 +1273,6 @@ connectors:
   routing:
     default_pipelines: [traces/default]
     error_mode: ignore
-    match_once: false
     table:
       {{- range $index, $cfg := .Values.presets.spanMetricsMulti.configs }}
       - statement: {{ $cfg.selector | toYaml }}

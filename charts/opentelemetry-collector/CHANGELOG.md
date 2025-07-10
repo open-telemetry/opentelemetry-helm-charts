@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+## v0.117.3 / 2025-07-10
+- [Fix] Remove deprecated match_once key from `spanMetricsMultiConfig` config.
+
 ## v0.117.2 / 2025-07-09
 - [Fix] Apply `transform/prometheus` rule only for metrics from the Collector itself.
 
