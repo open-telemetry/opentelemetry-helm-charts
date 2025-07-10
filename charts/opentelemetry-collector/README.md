@@ -192,16 +192,11 @@ presets:
 
 ### Configuration for Annotation-Based Discovery
 
-The collector can be configured to automatically discover and collect telemetry from pods based on annotations. This feature provides a drop-in replacement for the `logsCollection` preset, allowing for selective collection of logs.
+The collector can be configured to automatically discover and collect telemetry from pods based on annotations. For logs specifically the feature can be used as a drop-in replacement for the `logsCollection` preset, allowing for more selective collection of logs and additional parsing capabilities.
 
-> [!WARNING] > `annotationDiscovery.logs` and `logsCollection` are mutually exclusive. You should use either:
->
-> - `presets.logsCollection.enabled: true` (collects logs from all pods)
-> - `presets.annotationDiscovery.logs.enabled: true` (collects logs only from pods with specific annotations)
->
-> Using both simultaneously will result in configuration conflicts.
+> [!WARNING] > `annotationDiscovery.logs` and `logsCollection` are mutually exclusive.
 
-To enable this feature, set the `presets.annotationDiscovery.logs.enabled` and/or `presets.annotationDiscovery.metrics.enabled` properties to `true`.
+`presets.annotationDiscovery.logs.enabled: true`: Collects logs only from all pods by-default, and allows to define additional configuration through annotations. Log collection from specific Pods/containers, can disabled by using the proper annotation.
 
 Here is an example `values.yaml`:
 
