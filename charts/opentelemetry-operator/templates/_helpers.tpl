@@ -24,6 +24,17 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Allow the release namespace to be overridden
+*/}}
+{{- define "opentelemetry-operator.namespace" -}}
+  {{- if .Values.namespaceOverride -}}
+    {{- .Values.namespaceOverride -}}
+  {{- else -}}
+    {{- .Release.Namespace -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "opentelemetry-operator.chart" -}}
@@ -113,19 +124,19 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- $certCrtEnc := "" }}
 {{- $certKeyEnc := "" }}
 {{- if .Values.admissionWebhooks.autoGenerateCert.enabled }}
-{{- $prevSecret := (lookup "v1" "Secret" .Release.Namespace (default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName )) }}
+{{- $prevSecret := (lookup "v1" "Secret" (include "opentelemetry-operator.namespace" .) (default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName )) }}
 {{- if and (not .Values.admissionWebhooks.autoGenerateCert.recreate) $prevSecret }}
 {{- $certCrtEnc = index $prevSecret "data" "tls.crt" }}
 {{- $certKeyEnc = index $prevSecret "data" "tls.key" }}
 {{- $caCertEnc = index $prevSecret "data" "ca.crt" }}
 {{- if not $caCertEnc }}
-{{- $prevHook := (lookup "admissionregistration.k8s.io/v1" "MutatingWebhookConfiguration" .Release.Namespace (print (include "opentelemetry-operator.MutatingWebhookName" . ) "-mutation")) }}
+{{- $prevHook := (lookup "admissionregistration.k8s.io/v1" "MutatingWebhookConfiguration" (include "opentelemetry-operator.namespace" .) (print (include "opentelemetry-operator.MutatingWebhookName" . ) "-mutation")) }}
 {{- if not (eq (toString $prevHook) "<nil>") }}
 {{- $caCertEnc = (first $prevHook.webhooks).clientConfig.caBundle }}
 {{- end }}
 {{- end }}
 {{- else }}
-{{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) .Release.Namespace ) -}}
+{{- $altNames := list ( printf "%s-webhook.%s" (include "opentelemetry-operator.fullname" .) (include "opentelemetry-operator.namespace" .) ) ( printf "%s-webhook.%s.svc" (include "opentelemetry-operator.fullname" .) (include "opentelemetry-operator.namespace" .) ) -}}
 {{- $tmpperioddays := int .Values.admissionWebhooks.autoGenerateCert.certPeriodDays | default 365 }}
 {{- $ca := genCA "opentelemetry-operator-operator-ca" $tmpperioddays }}
 {{- $cert := genSignedCert (include "opentelemetry-operator.fullname" .) nil $altNames $tmpperioddays $ca }}
@@ -156,7 +167,7 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 {{- if not .Values.admissionWebhooks.certManager.enabled }}
 {{- "none" }}
 {{- else }}
-{{- printf "%s/%s" .Release.Namespace (include "opentelemetry-operator.webhookCertName" .) }}
+{{- printf "%s/%s" (include "opentelemetry-operator.namespace" .) (include "opentelemetry-operator.webhookCertName" .) }}
 {{- end }}
 {{- end }}
 

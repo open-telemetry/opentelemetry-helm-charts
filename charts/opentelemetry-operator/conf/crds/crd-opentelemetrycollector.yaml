@@ -17,7 +17,7 @@ spec:
       clientConfig:
         service:
           name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-          namespace: {{ .Release.Namespace }}
+          namespace: {{ template "opentelemetry-operator.namespace" . }}
           path: /convert
           port: {{ .Values.admissionWebhooks.servicePort }}
 {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}
