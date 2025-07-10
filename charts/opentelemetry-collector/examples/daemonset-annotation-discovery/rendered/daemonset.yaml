@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/deployment.yaml
+# Source: opentelemetry-collector/templates/daemonset.yaml
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: example-opentelemetry-collector
+  name: example-opentelemetry-collector-agent
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.128.1
@@ -11,26 +11,24 @@ metadata:
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.128.0"
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: standalone-collector
+    app.kubernetes.io/component: agent-collector
 spec:
-  replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
       app.kubernetes.io/instance: example
-      component: standalone-collector
-  strategy:
+      component: agent-collector
+  updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 7773b4a54711f6b8cdc9279b26da33722d1bbcf3a034b903e9002c087ad80418
-        
+        checksum/config: 2408fcdcf585b78bb2b2e308093faccec4b81f6f7e71437556cec9b7dfc69a8f
+        io.opentelemetry.discovery.logs/enabled: "false"
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
-        component: standalone-collector
+        component: agent-collector
         
     spec:
       
@@ -40,6 +38,8 @@ spec:
         {}
       containers:
         - name: opentelemetry-collector
+          command:
+            - /otelcol-k8s
           args:
             - --config=/conf/relay.yaml
           securityContext:
@@ -51,29 +51,41 @@ spec:
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
+              hostPort: 6831
             - name: jaeger-grpc
               containerPort: 14250
               protocol: TCP
+              hostPort: 14250
             - name: jaeger-thrift
               containerPort: 14268
               protocol: TCP
+              hostPort: 14268
             - name: otlp
               containerPort: 4317
               protocol: TCP
+              hostPort: 4317
             - name: otlp-http
               containerPort: 4318
               protocol: TCP
+              hostPort: 4318
             - name: zipkin
               containerPort: 9411
               protocol: TCP
+              hostPort: 9411
           env:
             - name: MY_POD_IP
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: GOMEMLIMIT
-              value: "152MiB"
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
           livenessProbe:
             httpGet:
               path: /
@@ -82,18 +94,26 @@ spec:
             httpGet:
               path: /
               port: 13133
-          resources:
-            limits:
-              cpu: 100m
-              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - name: varlogpods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector
+            name: example-opentelemetry-collector-agent
             items:
               - key: relay
                 path: relay.yaml
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
       hostNetwork: false

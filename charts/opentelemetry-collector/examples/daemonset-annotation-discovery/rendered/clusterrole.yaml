@@ -1,14 +1,17 @@
 ---
-# Source: opentelemetry-collector/templates/serviceaccount.yaml
-apiVersion: v1
-kind: ServiceAccount
+# Source: opentelemetry-collector/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
   name: example-opentelemetry-collector
-  namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.128.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.128.0"
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: statefulset-collector
+    app.kubernetes.io/component: agent-collector
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
