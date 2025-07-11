@@ -53,6 +53,7 @@ Common labels shared by all Kubernetes objects in this chart.
 {{- define "helper.commonLabels" -}}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: opentelemetry-target-allocator
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{ include "helper.selectorLabels" . }}
 {{- end }}
