@@ -48,7 +48,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 - [Jacob Aronoff](https://github.com/jaronoff97), Lightstep
 - [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
 
-For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer).
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
 ### Approvers
 
@@ -58,17 +58,17 @@ For more information about the maintainer role, see the [community repository](h
 - [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
 
-For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver).
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 ### Emeritus Maintainers
 
-- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
+- [Tigran Najaryan](https://github.com/tigrannajaryan)
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
 ### Emeritus Approvers
 
-- [Naseem K. Ullah](https://github.com/naseemkullah), Transit
+- [Naseem K. Ullah](https://github.com/naseemkullah)
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
