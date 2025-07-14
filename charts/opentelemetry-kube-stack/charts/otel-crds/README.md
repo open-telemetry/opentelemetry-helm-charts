@@ -18,4 +18,6 @@ Right now, upgrades are NOT handled by this chart, however that could change in 
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/config/crd/bases/opentelemetry.io_opentelemetrycollectors.yaml
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/config/crd/bases/opentelemetry.io_opampbridges.yaml
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/config/crd/bases/opentelemetry.io_instrumentations.yaml
+wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/refs/heads/main/config/crd/bases/opentelemetry.io_targetallocators.yaml
 ```
+
