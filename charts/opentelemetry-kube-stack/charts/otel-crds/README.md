@@ -20,4 +20,3 @@ wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/mai
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/config/crd/bases/opentelemetry.io_instrumentations.yaml
 wget https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/refs/heads/main/config/crd/bases/opentelemetry.io_targetallocators.yaml
 ```
-
