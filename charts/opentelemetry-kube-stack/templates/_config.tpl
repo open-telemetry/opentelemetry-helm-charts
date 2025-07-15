@@ -236,11 +236,7 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
-extensions:
-  k8s_leader_elector/k8s_cluster:
-    auth_type: serviceAccount
-    lease_name: k8s.cluster.receiver.opentelemetry.io
-    lease_namespace: {{ .namespace }}
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" "k8s_cluster" "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
 receivers:
   k8s_cluster:
     k8s_leader_elector: k8s_leader_elector/k8s_cluster
@@ -342,11 +338,7 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
-extensions:
-  k8s_leader_elector/k8s_objects:
-    auth_type: serviceAccount
-    lease_name: k8s.objects.receiver.opentelemetry.io
-    lease_namespace: {{ .namespace }}
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" "k8s_objects" "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
 receivers:
   k8sobjects:
     k8s_leader_elector: k8s_leader_elector/k8s_objects
@@ -356,4 +348,12 @@ receivers:
         group: "events.k8s.io"
         exclude_watch_type:
           - "DELETED"
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.collector.leaderElectionConfig" -}}
+extensions:
+  k8s_leader_elector/{{ .name }}:
+    auth_type: serviceAccount
+    lease_name: {{ .leaseName }}
+    lease_namespace: {{ .leaseNamespace }}
 {{- end }}
