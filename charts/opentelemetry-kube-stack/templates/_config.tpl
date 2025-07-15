@@ -236,10 +236,11 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
-{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" "k8s_cluster" "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- $electorName := "k8s_cluster" }}
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" $electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
 receivers:
   k8s_cluster:
-    k8s_leader_elector: k8s_leader_elector/k8s_cluster
+    k8s_leader_elector: k8s_leader_elector/{{ $electorName }}
     collection_interval: 10s
     auth_type: serviceAccount
     node_conditions_to_report: [Ready, MemoryPressure, DiskPressure, NetworkUnavailable]
@@ -338,10 +339,11 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
-{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" "k8s_objects" "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- $electorName := "k8s_objects" }}
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" $electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
 receivers:
   k8sobjects:
-    k8s_leader_elector: k8s_leader_elector/k8s_objects
+    k8s_leader_elector: k8s_leader_elector/{{ $electorName }}
     objects:
       - name: events
         mode: "watch"
