@@ -1128,6 +1128,7 @@ connectors:
 {{- else }}
     namespace: ""
 {{- end }}
+    aggregation_cardinality_limit: {{ .Values.presets.spanMetrics.aggregationCardinalityLimit }}
 {{- if .Values.presets.spanMetrics.histogramBuckets }}
     histogram:
       explicit:
@@ -1151,6 +1152,7 @@ connectors:
 {{- if .Values.presets.spanMetrics.dbMetrics.enabled }}
   spanmetrics/db:
     namespace: "db"
+    aggregation_cardinality_limit: {{ .Values.presets.spanMetrics.aggregationCardinalityLimit }}
     histogram:
       explicit:
         buckets: [100us, 1ms, 2ms, 2.5ms, 4ms, 6ms, 10ms, 100ms, 250ms]
@@ -1284,6 +1286,7 @@ connectors:
 {{- else }}
     namespace: ""
 {{- end }}
+    aggregation_cardinality_limit: {{ .Values.presets.spanMetricsMulti.aggregationCardinalityLimit }}
     histogram:
       explicit:
         buckets: {{ .Values.presets.spanMetricsMulti.defaultHistogramBuckets | toYaml | nindent 12 }}
@@ -1310,6 +1313,7 @@ connectors:
     {{- else }}
     namespace: ""
     {{- end }}
+    aggregation_cardinality_limit: {{ $root.Values.presets.spanMetricsMulti.aggregationCardinalityLimit }}
     histogram:
       explicit:
         buckets: {{ $cfg.histogramBuckets | toYaml | nindent 12 }}

@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.117.4 / 2025-07-16
+- [Feat] Allow configuring `aggregation_cardinality_limit` for spanMetrics presets.
+
 ## v0.117.3 / 2025-07-10
 - [Fix] Remove deprecated match_once key from `spanMetricsMultiConfig` config.
 

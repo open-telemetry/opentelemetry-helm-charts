@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.117.3
+    helm.sh/chart: opentelemetry-collector-0.117.4
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.129.1"
@@ -18,6 +18,7 @@ data:
       forward/db: {}
       forward/sampled: {}
       spanmetrics:
+        aggregation_cardinality_limit: 100
         dimensions:
         - name: http.method
         - name: cgx.transaction
@@ -40,6 +41,7 @@ data:
         metrics_flush_interval: 30s
         namespace: ""
       spanmetrics/db:
+        aggregation_cardinality_limit: 100
         dimensions:
         - name: db.namespace
         - name: db.operation.name
@@ -524,7 +526,7 @@ data:
         logs:
           encoding: json
         resource:
-          helm.chart.opentelemetry-collector.version: 0.117.3
+          helm.chart.opentelemetry-collector.version: 0.117.4
           k8s.daemonset.name: example-opentelemetry-collector
           k8s.namespace.name: default
           k8s.node.name: ${env:KUBE_NODE_NAME}

@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.117.3
+    helm.sh/chart: opentelemetry-collector-0.117.4
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.129.1"
@@ -27,6 +27,7 @@ data:
           - traces/1
           statement: route() where attributes["service.name"] == "one"
       spanmetrics/0:
+        aggregation_cardinality_limit: 100
         dimensions:
         - name: http.method
         - name: cgx.transaction
@@ -40,6 +41,7 @@ data:
         metrics_flush_interval: 30s
         namespace: ""
       spanmetrics/1:
+        aggregation_cardinality_limit: 100
         dimensions:
         - name: http.method
         - name: cgx.transaction
@@ -53,6 +55,7 @@ data:
         metrics_flush_interval: 30s
         namespace: ""
       spanmetrics/default:
+        aggregation_cardinality_limit: 100
         dimensions:
         - name: http.method
         - name: cgx.transaction
