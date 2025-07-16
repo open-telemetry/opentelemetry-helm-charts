@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.2 / 2025-07-16
+- [Feat] Add transactions preset to group spans into transactions and enable Coralogix transaction processor
+
 ### v0.118.1 / 2025-07-16
 - [Feat] Add `networkMode` option to configure IPv4 or IPv6 endpoints
 

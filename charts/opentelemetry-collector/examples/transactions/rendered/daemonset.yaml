@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 65444cfaef774b4af2bc577f054fa81658b24ce68615a3a55e7661b685002a5e
+        checksum/config: af67a414c5dcfc1226d80491bf364d45439592fb38d0856ee8673a3a57f01a6f
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -61,13 +61,6 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: GOMEMLIMIT
-              value: "3276MiB"
-            - name: KUBE_NODE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: spec.nodeName
           livenessProbe:
             httpGet:
               path: /
@@ -76,17 +69,9 @@ spec:
             httpGet:
               path: /
               port: 13133
-          resources:
-            limits:
-              cpu: 2
-              memory: 4Gi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-            - name: hostfs
-              mountPath: /hostfs
-              readOnly: true
-              mountPropagation: HostToContainer
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -94,9 +79,6 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
-        - name: hostfs
-          hostPath:
-            path: /
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: false

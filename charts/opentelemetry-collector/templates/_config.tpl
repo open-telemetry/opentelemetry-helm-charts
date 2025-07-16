@@ -106,6 +106,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.semconv.enabled }}
 {{- $config = (include "opentelemetry-collector.applySemconvConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.transactions.enabled }}
+{{- $config = (include "opentelemetry-collector.applyTransactionsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -210,6 +213,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.semconv.enabled }}
 {{- $config = (include "opentelemetry-collector.applySemconvConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.transactions.enabled }}
+{{- $config = (include "opentelemetry-collector.applyTransactionsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.extraConfig }}
 {{- $config = (include "opentelemetry-collector.applyExtraConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -2192,6 +2198,26 @@ extensions:
 extensions:
   pprof:
     endpoint: {{ .Values.presets.pprof.endpoint }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyTransactionsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.transactionsConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.traces) (not (has "groupbytrace/transactions" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "groupbytrace/transactions" | uniq) }}
+{{- end }}
+{{- if and ($config.service.pipelines.traces) (not (has "coralogix" $config.service.pipelines.traces.processors)) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "coralogix" | uniq) }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.transactionsConfig" -}}
+processors:
+  groupbytrace/transactions:
+    wait_duration: {{ .Values.presets.transactions.waitDuration }}
+  coralogix:
+    transactions:
+      enabled: true
 {{- end }}
 
 {{- define "opentelemetry-collector.chartMetadataAttributes" -}}

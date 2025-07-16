@@ -15,35 +15,16 @@ metadata:
 data:
   relay: |
     exporters:
-      coralogix:
-        application_name: otel
-        application_name_attributes:
-        - k8s.namespace.name
-        - service.namespace
-        domain: coralogix.com
-        logs:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/1.0
-        metrics:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/1.0
-        private_key: ${env:CORALOGIX_PRIVATE_KEY}
-        subsystem_name: integration
-        subsystem_name_attributes:
-        - k8s.deployment.name
-        - k8s.statefulset.name
-        - k8s.daemonset.name
-        - k8s.cronjob.name
-        - service.name
-        timeout: 30s
-        traces:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/1.0
       debug: {}
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
+      coralogix:
+        transactions:
+          enabled: true
+      groupbytrace/transactions:
+        wait_duration: 30s
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -97,7 +78,6 @@ data:
         metrics:
           exporters:
           - debug
-          - coralogix
           processors:
           - memory_limiter
           - transform/prometheus
@@ -107,9 +87,10 @@ data:
         traces:
           exporters:
           - debug
-          - coralogix
           processors:
           - memory_limiter
+          - groupbytrace/transactions
+          - coralogix
           receivers:
           - otlp
       telemetry:
