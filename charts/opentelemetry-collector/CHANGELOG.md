@@ -2,6 +2,12 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.0 / 2025-07-16
+- [Feat] Update Collector to v0.130.0
+
+### v0.117.5 / 2025-07-16
+- [Feat] Update Collector to v0.130.0
+
 ### v0.117.4 / 2025-07-16
 - [Feat] Allow configuring `aggregation_cardinality_limit` for spanMetrics presets.
 
