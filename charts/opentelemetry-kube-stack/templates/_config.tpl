@@ -237,10 +237,15 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
+{{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection}}
+{{- if not $disableLeaderElection}}
 {{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- end}}
 receivers:
   k8s_cluster:
+    {{- if not $disableLeaderElection}}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
+    {{- end}}
     collection_interval: 10s
     auth_type: serviceAccount
     node_conditions_to_report: [Ready, MemoryPressure, DiskPressure, NetworkUnavailable]
@@ -340,10 +345,15 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
+{{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection}}
+{{- if not $disableLeaderElection}}
 {{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- end}}
 receivers:
   k8sobjects:
+    {{- if not $disableLeaderElection}}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
+    {{- end}}
     objects:
       - name: events
         mode: "watch"
