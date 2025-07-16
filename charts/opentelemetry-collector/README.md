@@ -39,6 +39,8 @@ More info is available in the [Security Best Practices docummentation](https://g
 
 Some care must be taken when using `hostNetwork: true`, as then OpenTelemetry Collector will listen on all the addresses in the host network namespace.
 
+By default the chart configures endpoints for IPv4 addresses. When deploying in an IPv6 environment set `networkMode: ipv6` so the endpoints use bracket notation around IP variables.
+
 ## Configuration
 
 ### Default configuration

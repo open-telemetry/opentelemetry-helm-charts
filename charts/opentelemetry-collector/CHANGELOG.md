@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.1 / 2025-07-16
+- [Feat] Add `networkMode` option to configure IPv4 or IPv6 endpoints
+
 ### v0.118.0 / 2025-07-16
 - [Feat] Update Collector to v0.130.0
 

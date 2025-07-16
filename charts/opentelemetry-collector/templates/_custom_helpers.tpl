@@ -109,3 +109,21 @@ Generate default OTEL_RESOURCE_ATTRIBUTES value when resourceDetection preset is
 {{- end -}}
 {{- join "," $attrs -}}
 {{- end -}}
+
+{{/*
+Return pod or node IP environment variable wrapped for IPv6 when required.*/}}
+{{- define "opentelemetry-collector.envHost" -}}
+{{- $ip := printf "${env:%s}" .env -}}
+{{- if eq .context.Values.networkMode "ipv6" -}}
+{{ printf "[%s]" $ip }}
+{{- else -}}
+{{ $ip }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Compose endpoint from IP environment variable and port taking networkMode into account.*/}}
+{{- define "opentelemetry-collector.envEndpoint" -}}
+{{- $host := include "opentelemetry-collector.envHost" (dict "env" .env "context" .context) -}}
+{{ printf "%s:%s" $host .port }}
+{{- end -}}

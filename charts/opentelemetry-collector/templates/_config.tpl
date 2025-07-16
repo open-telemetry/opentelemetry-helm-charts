@@ -307,7 +307,7 @@ receivers:
         scrape_interval: 30s
         static_configs:
           - targets:
-              - ${env:MY_POD_IP}:8888
+              - {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "8888" "context" $) }}
     target_allocator:
       endpoint: http://{{ include "opentelemetry-collector.fullname" . }}-targetallocator
       interval: 30s
@@ -551,7 +551,7 @@ receivers:
     {{- end }}
     insecure_skip_verify: true
     auth_type: "serviceAccount"
-    endpoint: "${env:K8S_NODE_IP}:10250"
+    endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "K8S_NODE_IP" "port" "10250" "context" $) | quote }}
     collect_all_network_interfaces:
       pod: true
       node: true
@@ -799,7 +799,7 @@ receivers:
         scheme: https
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
         static_configs:
-          - targets: [ "${env:K8S_NODE_IP}:10250" ]
+          - targets: [ {{ include "opentelemetry-collector.envEndpoint" (dict "env" "K8S_NODE_IP" "port" "10250" "context" $) | quote }} ]
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           insecure_skip_verify: true
@@ -2039,7 +2039,7 @@ receivers:
           {{- end }}
           static_configs:
             - targets:
-                - ${env:MY_POD_IP}:8888
+                - {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "8888" "context" $) }}
 
 processors:
   transform/prometheus:
@@ -2064,7 +2064,7 @@ service:
         - pull:
             exporter:
               prometheus:
-                host: ${env:MY_POD_IP}
+                host: {{ include "opentelemetry-collector.envHost" (dict "env" "MY_POD_IP" "context" $) }}
                 port: 8888
 {{- end }}
 
@@ -2081,13 +2081,13 @@ receivers:
   jaeger:
     protocols:
       grpc:
-        endpoint: ${env:MY_POD_IP}:14250
+        endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "14250" "context" $) }}
       thrift_http:
-        endpoint: ${env:MY_POD_IP}:14268
+        endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "14268" "context" $) }}
       thrift_compact:
-        endpoint: ${env:MY_POD_IP}:6831
+        endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "6831" "context" $) }}
       thrift_binary:
-        endpoint: ${env:MY_POD_IP}:6832
+        endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "6832" "context" $) }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyZipkinReceiverConfig" -}}
@@ -2101,7 +2101,7 @@ receivers:
 {{- define "opentelemetry-collector.zipkinReceiverConfig" -}}
 receivers:
   zipkin:
-    endpoint: ${env:MY_POD_IP}:9411
+    endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "9411" "context" $) }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyStatsdReceiverConfig" -}}
@@ -2115,7 +2115,7 @@ receivers:
 {{- define "opentelemetry-collector.statsdReceiverConfig" -}}
 receivers:
   statsd:
-    endpoint: ${env:MY_POD_IP}:8125
+    endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "8125" "context" $) }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyBatchProcessorConfig" -}}
@@ -2159,11 +2159,11 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: ${env:MY_POD_IP}:4317
+        endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "4317" "context" $) }}
         # Default otlp grpc server message size limit is 4mib, which might be too low.
         max_recv_msg_size_mib: {{ .Values.presets.otlpReceiver.maxRecvMsgSizeMiB }}
       http:
-        endpoint: ${env:MY_POD_IP}:4318
+        endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "4318" "context" $) }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyZpagesConfig" -}}
