@@ -190,7 +190,9 @@ Allow the release namespace to be overridden
     {{- $mem = mulf (trimSuffix "g" $mem | float64) 1e9 -}}
   {{- else if hasSuffix "gi" $mem -}}
     {{- $mem = mulf (trimSuffix "gi" $mem | float64) 0x1p30 -}}
-  {{- else if hasSuffix "m" $mem -}}
+  {{- else if hasSuffix "m" . -}}
+    {{- $mem = divf (trimSuffix "m" $mem | float64) 1e3 -}}
+  {{- else if hasSuffix "M" . -}}
     {{- $mem = mulf (trimSuffix "m" $mem | float64) 1e6 -}}
   {{- else if hasSuffix "mi" $mem -}}
     {{- $mem = mulf (trimSuffix "mi" $mem | float64) 0x1p20 -}}
