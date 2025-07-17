@@ -1,0 +1,128 @@
+################################################################################
+# Production-Ready Target Allocator Configuration
+#
+# This example demonstrates production-ready configuration with:
+# - Security contexts and non-root execution
+# - Resource limits and requests
+# - Health probes for monitoring
+# - Node affinity and pod distribution controls
+# - Singleton deployment (Target Allocator must run as single instance)
+################################################################################
+
+targetAllocator:
+  # Target Allocator must run as singleton to avoid target allocation conflicts
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
+    tag: "0.126.0"
+    pullPolicy: IfNotPresent
+
+  # Image pull secrets for private registries
+  imagePullSecrets: []
+
+  serviceAccount:
+    create: true
+    name: ""
+    annotations:
+      # Example: AWS IAM role annotation
+      # eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/TargetAllocatorRole
+
+  # Pod-level security context - secure defaults
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+    # Enable if using Pod Security Standards
+    # supplementalGroups: [65534]
+
+  # Container-level security context - restrictive defaults
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    capabilities:
+      drop:
+        - ALL
+    # Add specific capabilities if needed
+    # capabilities:
+    #   add:
+    #     - NET_BIND_SERVICE
+
+  # Production resource allocation
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+  # Node selection for stable nodes (optional - remove if not needed)
+  nodeSelector: {}
+    # Example: Use specific node labels if needed
+    # monitoring: "true"
+    # kubernetes.io/arch: amd64
+
+  # Tolerations for control plane nodes (matching affinity preference)
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  # Node affinity for stable placement (prefer control plane nodes)
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+
+  # Pod annotations for monitoring and configuration
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+    # Example: Istio sidecar injection
+    # sidecar.istio.io/inject: "false"
+
+  # Additional pod labels
+  podLabels:
+    component: target-allocator
+    tier: monitoring
+
+  # Priority class for critical workloads
+  priorityClassName: "system-cluster-critical"
+
+  # No topology spread constraints needed for singleton deployment
+  topologySpreadConstraints: []
+
+  config:
+    allocation_strategy: consistent-hashing
+    collector_namespace: opentelemetry-system
+    collector_selector:
+      matchLabels:
+        app.kubernetes.io/component: opentelemetry-collector
+    
+    prometheus_cr:
+      enabled: true
+      scrapeInterval: 30s
+      # Select specific ServiceMonitors
+      service_monitor_selector:
+        matchLabels:
+          monitoring: "enabled"
+      # Select specific PodMonitors
+      pod_monitor_selector:
+        matchLabels:
+          monitoring: "enabled"
+
+    filter_strategy: relabel-config
+    config:
+      scrape_configs: [] 

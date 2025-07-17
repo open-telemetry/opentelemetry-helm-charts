@@ -22,6 +22,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "replicaCount": {
+          "type": "integer",
+          "minimum": 1
+        },
         "image": {
           "$ref": "#/definitions/ContainerImage"
         },
@@ -30,6 +34,46 @@
         },
         "serviceAccount": {
           "$ref": "#/definitions/ServiceAccount"
+        },
+        "podSecurityContext": {
+          "$ref": "#/definitions/SecurityContext"
+        },
+        "securityContext": {
+          "$ref": "#/definitions/SecurityContext"
+        },
+        "resources": {
+          "$ref": "#/definitions/Resources"
+        },
+        "livenessProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "readinessProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "startupProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "nodeSelector": {
+          "$ref": "#/definitions/Annotations"
+        },
+        "tolerations": {
+          "type": "array"
+        },
+        "affinity": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "podAnnotations": {
+          "$ref": "#/definitions/Annotations"
+        },
+        "podLabels": {
+          "$ref": "#/definitions/Annotations"
+        },
+        "priorityClassName": {
+          "type": "string"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
         },
         "config": {
           "$ref": "#/definitions/Config"
@@ -46,6 +90,91 @@
         },
         "tag": {
           "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "Never", "IfNotPresent"]
+        }
+      }
+    },
+    "SecurityContext": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "runAsNonRoot": {
+          "type": "boolean"
+        },
+        "runAsUser": {
+          "type": "integer"
+        },
+        "runAsGroup": {
+          "type": "integer"
+        },
+        "fsGroup": {
+          "type": "integer"
+        },
+        "allowPrivilegeEscalation": {
+          "type": "boolean"
+        },
+        "readOnlyRootFilesystem": {
+          "type": "boolean"
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "seccompProfile": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/ResourceLimits"
+        },
+        "requests": {
+          "$ref": "#/definitions/ResourceLimits"
+        }
+      }
+    },
+    "ResourceLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cpu": {
+          "type": "string"
+        },
+        "memory": {
+          "type": "string"
+        }
+      }
+    },
+    "Probe": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "httpGet": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "initialDelaySeconds": {
+          "type": "integer"
+        },
+        "periodSeconds": {
+          "type": "integer"
+        },
+        "timeoutSeconds": {
+          "type": "integer"
+        },
+        "failureThreshold": {
+          "type": "integer"
+        },
+        "successThreshold": {
+          "type": "integer"
         }
       }
     },

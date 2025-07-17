@@ -6,7 +6,7 @@ metadata:
   namespace: default
   name: example-opentelemetry-target-allocator-ta
   labels:
-    helm.sh/chart: opentelemetry-target-allocator-0.126.0
+    helm.sh/chart: opentelemetry-target-allocator-0.127.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/version: "0.126.0"
     app.kubernetes.io/name: opentelemetry-target-allocator
@@ -19,8 +19,10 @@ spec:
       app.kubernetes.io/instance: example
   template:
     metadata:
+      annotations:
+        checksum/config: 271b02cca294f505baef78f908cd7944052fe2c2451173d0d0a147b9b97facc4
       labels:
-        helm.sh/chart: opentelemetry-target-allocator-0.126.0
+        helm.sh/chart: opentelemetry-target-allocator-0.127.0
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/version: "0.126.0"
         app.kubernetes.io/name: opentelemetry-target-allocator
@@ -28,18 +30,69 @@ spec:
     spec:
       serviceAccountName: example-opentelemetry-target-allocator-ta
       automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: targetallocator
           image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.126.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
           ports:
             - containerPort: 8080
               name: http-port
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http-port
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http-port
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /
+              port: http-port
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
           volumeMounts:
             - name: config-volume
               mountPath: /conf/
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: serviceaccount-token
               readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: foo
@@ -64,3 +117,5 @@ spec:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
+        - name: tmp-volume
+          emptyDir: {}
