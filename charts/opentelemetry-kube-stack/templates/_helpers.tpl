@@ -167,15 +167,32 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- end }}
 {{- $clusterMetricsEnabled := false }}
 {{- $eventsEnabled := false }}
+{{- $useLeaderElection := false }}
 {{ range $_, $collector := $.Values.collectors -}}
 {{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
 {{- $clusterMetricsEnabled = true }}
+{{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "clusterMetrics" "disableLeaderElection" false $collector))) }}
 {{- end }}
 {{- $eventsEnabled = (any $eventsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
 {{- $eventsEnabled = true }}
+{{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "kubernetesEvents" "disableLeaderElection" false $collector))) }}
 {{- end }}
+{{- end }}
+{{- if $useLeaderElection }}
+- verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+  apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
 {{- end }}
 {{- if $clusterMetricsEnabled }}
 - apiGroups:
