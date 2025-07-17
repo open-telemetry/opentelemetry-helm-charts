@@ -27,11 +27,7 @@ If release name contains chart name it will be used as a full name.
 Allow the release namespace to be overridden
 */}}
 {{- define "opentelemetry-operator.namespace" -}}
-  {{- if .Values.namespaceOverride -}}
-    {{- .Values.namespaceOverride -}}
-  {{- else -}}
-    {{- .Release.Namespace -}}
-  {{- end -}}
+{{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
