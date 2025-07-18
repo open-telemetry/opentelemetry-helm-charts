@@ -22,10 +22,10 @@ containers:
       {{- end }}
     image: "{{ include "opentelemetry-collector.image" . }}"
     imagePullPolicy: {{ .Values.image.pullPolicy }}
-    {{- $ports := include "opentelemetry-collector.podPortsConfig" . }}
+    {{- $ports := include "opentelemetry-collector.podPortsConfig" . | trim }}
     {{- if $ports }}
     ports:
-      {{- $ports | nindent 6}}
+{{ $ports | indent 6 }}
     {{- end }}
     env:
       - name: MY_POD_IP

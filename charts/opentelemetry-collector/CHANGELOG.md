@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.5 / 2025-07-18
+- [Fix] Remove extra blank lines when rendering container ports
+
 ### v0.118.4 / 2025-07-18
 - [Feat] Allow disabling the /var/lib/dbus/machine-id mount via `presets.resourceDetection.dbusMachineId.enabled`
 
