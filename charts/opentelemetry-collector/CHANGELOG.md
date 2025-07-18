@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.6 / 2025-07-18
+- [Fix] Skip prometheus receiver from collectorMetrics preset when PodMonitor or ServiceMonitor is enabled
+
 ### v0.118.5 / 2025-07-18
 - [Fix] Remove extra blank lines when rendering container ports
 
