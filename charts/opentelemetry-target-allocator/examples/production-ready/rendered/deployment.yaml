@@ -20,15 +20,20 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: eca36c61207faa2a9e4f804b19ab5dbd484e6a3df98243cd79682e316388023c
+        checksum/config: 02dcc44791e68e17bf4b386206c0363378c41c872f7d90dbcbbb6e0dcb7390c8
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
       labels:
         helm.sh/chart: opentelemetry-target-allocator-0.127.0
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/version: "0.126.0"
         app.kubernetes.io/name: opentelemetry-target-allocator
         app.kubernetes.io/instance: example
+        component: target-allocator
+        tier: monitoring
     spec:
-      serviceAccountName: my-service-account
+      serviceAccountName: example-opentelemetry-target-allocator-ta
       automountServiceAccountToken: false
       securityContext:
         fsGroup: 65534
@@ -37,6 +42,19 @@ spec:
         runAsUser: 65534
         seccompProfile:
           type: RuntimeDefault
+      priorityClassName: system-cluster-critical
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            weight: 100
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
       containers:
         - name: targetallocator
           image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.126.0
@@ -57,7 +75,7 @@ spec:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
+              path: /livez
               port: http-port
             initialDelaySeconds: 30
             periodSeconds: 30
@@ -65,7 +83,7 @@ spec:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
+              path: /readyz
               port: http-port
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -73,18 +91,18 @@ spec:
           startupProbe:
             failureThreshold: 10
             httpGet:
-              path: /
+              path: /readyz
               port: http-port
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
           resources:
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 1000m
+              memory: 1Gi
             requests:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 200m
+              memory: 256Mi
           volumeMounts:
             - name: config-volume
               mountPath: /conf/
@@ -95,7 +113,7 @@ spec:
               mountPath: /tmp
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
-              value: default
+              value: opentelemetry-system
       volumes:
         - name: config-volume
           configMap:
