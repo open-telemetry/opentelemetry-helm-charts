@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.4 / 2025-07-18
+- [Feat] Allow disabling the /var/lib/dbus/machine-id mount via `presets.resourceDetection.dbusMachineId.enabled`
+
 ### v0.118.3 / 2025-07-18
 - [Feat] Enable `without_units` in collector metrics preset
 
