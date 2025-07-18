@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.8 / 2025-07-18
+- [Feat] The `reduceResourceAttributes` preset now also removes attributes from traces and logs pipelines.
+- [Feat] The `reduceResourceAttributes` preset now removes a few more attributes.
+
 ### v0.118.7 / 2025-07-18
 - [Fix] Remove `without_units` from collector metrics preset
 

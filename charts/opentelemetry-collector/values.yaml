@@ -352,10 +352,117 @@ presets:
     enabled: false
     waitDuration: 30s
 
-  # Removes uids and other uneeded attributes from metric resources.
-  # This reduces target_info cardinality.
+  # Removes a subset of attributes to be sent to Coralogix. It uses a denylist policy.
+  # The possible values for `pipelines` are:
+  # - "all" - applied to all pipelines
+  # - "metrics" - applied to the metrics pipeline
+  # - "traces" - applied to the traces pipeline
+  # - "logs" - applied to the logs pipeline
   reduceResourceAttributes:
     enabled: false
+    pipelines: ["all"]
+    denylist:
+      metrics:
+        - azure.resourcegroup.name
+        - azure.vm.name
+        - azure.vm.scaleset.name
+        - azure.vm.size
+        - cloud.account.id
+        - cloud.availability_zone
+        - cloud.platform
+        - cloud.provider
+        - cloud.region
+        - container.id
+        - faas.id
+        - faas.instance
+        - faas.name
+        - faas.version
+        - gcp.cloud_run.job.execution
+        - gcp.cloud_run.job.task_index
+        - gcp.gce.instance_group_manager.name
+        - gcp.gce.instance_group_manager.region
+        - gcp.gce.instance_group_manager.zone
+        - host.type
+        - k8s.cronjob.uid
+        - k8s.daemonset.uid
+        - k8s.deployment.uid
+        - k8s.hpa.uid
+        - k8s.job.uid
+        - k8s.namespace.uid
+        - k8s.node.uid
+        - k8s.pod.start_time
+        - k8s.pod.uid
+        - k8s.replicaset.uid
+        - k8s.statefulset.uid
+        - os.type
+        - net.host.name
+        - net.host.port
+      traces:
+        - azure.resourcegroup.name
+        - azure.vm.name
+        - azure.vm.scaleset.name
+        - azure.vm.size
+        - cloud.account.id
+        - cloud.availability_zone
+        - cloud.platform
+        - cloud.provider
+        - cloud.region
+        - container.id
+        - faas.id
+        - faas.instance
+        - faas.name
+        - faas.version
+        - gcp.cloud_run.job.execution
+        - gcp.cloud_run.job.task_index
+        - gcp.gce.instance_group_manager.name
+        - gcp.gce.instance_group_manager.region
+        - gcp.gce.instance_group_manager.zone
+        - host.type
+        - k8s.cronjob.uid
+        - k8s.daemonset.uid
+        - k8s.deployment.uid
+        - k8s.hpa.uid
+        - k8s.job.uid
+        - k8s.namespace.uid
+        - k8s.node.uid
+        - k8s.pod.start_time
+        - k8s.pod.uid
+        - k8s.replicaset.uid
+        - k8s.statefulset.uid
+        - os.type
+      logs:
+        - azure.resourcegroup.name
+        - azure.vm.name
+        - azure.vm.scaleset.name
+        - azure.vm.size
+        - cloud.account.id
+        - cloud.availability_zone
+        - cloud.platform
+        - cloud.provider
+        - cloud.region
+        - container.id
+        - faas.id
+        - faas.instance
+        - faas.name
+        - faas.version
+        - gcp.cloud_run.job.execution
+        - gcp.cloud_run.job.task_index
+        - gcp.gce.instance_group_manager.name
+        - gcp.gce.instance_group_manager.region
+        - gcp.gce.instance_group_manager.zone
+        - host.type
+        - k8s.cronjob.uid
+        - k8s.daemonset.uid
+        - k8s.deployment.uid
+        - k8s.hpa.uid
+        - k8s.job.uid
+        - k8s.namespace.uid
+        - k8s.node.uid
+        - k8s.pod.start_time
+        - k8s.pod.uid
+        - k8s.replicaset.uid
+        - k8s.statefulset.uid
+        - os.type
   # Applies semantic convention transformations.
   semconv:
     enabled: false

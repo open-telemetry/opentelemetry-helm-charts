@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.7
+    helm.sh/chart: opentelemetry-collector-0.118.8
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.0"
@@ -242,22 +242,113 @@ data:
             == "opentelemetry-collector"
       transform/reduce:
         error_mode: ignore
+        log_statements:
+        - context: resource
+          statements:
+          - delete_key(attributes, "azure.resourcegroup.name")
+          - delete_key(attributes, "azure.vm.name")
+          - delete_key(attributes, "azure.vm.scaleset.name")
+          - delete_key(attributes, "azure.vm.size")
+          - delete_key(attributes, "cloud.account.id")
+          - delete_key(attributes, "cloud.availability_zone")
+          - delete_key(attributes, "cloud.platform")
+          - delete_key(attributes, "cloud.provider")
+          - delete_key(attributes, "cloud.region")
+          - delete_key(attributes, "container.id")
+          - delete_key(attributes, "faas.id")
+          - delete_key(attributes, "faas.instance")
+          - delete_key(attributes, "faas.name")
+          - delete_key(attributes, "faas.version")
+          - delete_key(attributes, "gcp.cloud_run.job.execution")
+          - delete_key(attributes, "gcp.cloud_run.job.task_index")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.name")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.region")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.zone")
+          - delete_key(attributes, "host.type")
+          - delete_key(attributes, "k8s.cronjob.uid")
+          - delete_key(attributes, "k8s.daemonset.uid")
+          - delete_key(attributes, "k8s.deployment.uid")
+          - delete_key(attributes, "k8s.hpa.uid")
+          - delete_key(attributes, "k8s.job.uid")
+          - delete_key(attributes, "k8s.namespace.uid")
+          - delete_key(attributes, "k8s.node.uid")
+          - delete_key(attributes, "k8s.pod.start_time")
+          - delete_key(attributes, "k8s.pod.uid")
+          - delete_key(attributes, "k8s.replicaset.uid")
+          - delete_key(attributes, "k8s.statefulset.uid")
+          - delete_key(attributes, "os.type")
         metric_statements:
         - context: resource
           statements:
+          - delete_key(attributes, "azure.resourcegroup.name")
+          - delete_key(attributes, "azure.vm.name")
+          - delete_key(attributes, "azure.vm.scaleset.name")
+          - delete_key(attributes, "azure.vm.size")
+          - delete_key(attributes, "cloud.account.id")
+          - delete_key(attributes, "cloud.availability_zone")
+          - delete_key(attributes, "cloud.platform")
+          - delete_key(attributes, "cloud.provider")
+          - delete_key(attributes, "cloud.region")
           - delete_key(attributes, "container.id")
-          - delete_key(attributes, "k8s.pod.uid")
-          - delete_key(attributes, "k8s.replicaset.uid")
+          - delete_key(attributes, "faas.id")
+          - delete_key(attributes, "faas.instance")
+          - delete_key(attributes, "faas.name")
+          - delete_key(attributes, "faas.version")
+          - delete_key(attributes, "gcp.cloud_run.job.execution")
+          - delete_key(attributes, "gcp.cloud_run.job.task_index")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.name")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.region")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.zone")
+          - delete_key(attributes, "host.type")
+          - delete_key(attributes, "k8s.cronjob.uid")
           - delete_key(attributes, "k8s.daemonset.uid")
           - delete_key(attributes, "k8s.deployment.uid")
-          - delete_key(attributes, "k8s.statefulset.uid")
-          - delete_key(attributes, "k8s.cronjob.uid")
-          - delete_key(attributes, "k8s.job.uid")
           - delete_key(attributes, "k8s.hpa.uid")
+          - delete_key(attributes, "k8s.job.uid")
           - delete_key(attributes, "k8s.namespace.uid")
           - delete_key(attributes, "k8s.node.uid")
+          - delete_key(attributes, "k8s.pod.start_time")
+          - delete_key(attributes, "k8s.pod.uid")
+          - delete_key(attributes, "k8s.replicaset.uid")
+          - delete_key(attributes, "k8s.statefulset.uid")
+          - delete_key(attributes, "os.type")
           - delete_key(attributes, "net.host.name")
           - delete_key(attributes, "net.host.port")
+        trace_statements:
+        - context: resource
+          statements:
+          - delete_key(attributes, "azure.resourcegroup.name")
+          - delete_key(attributes, "azure.vm.name")
+          - delete_key(attributes, "azure.vm.scaleset.name")
+          - delete_key(attributes, "azure.vm.size")
+          - delete_key(attributes, "cloud.account.id")
+          - delete_key(attributes, "cloud.availability_zone")
+          - delete_key(attributes, "cloud.platform")
+          - delete_key(attributes, "cloud.provider")
+          - delete_key(attributes, "cloud.region")
+          - delete_key(attributes, "container.id")
+          - delete_key(attributes, "faas.id")
+          - delete_key(attributes, "faas.instance")
+          - delete_key(attributes, "faas.name")
+          - delete_key(attributes, "faas.version")
+          - delete_key(attributes, "gcp.cloud_run.job.execution")
+          - delete_key(attributes, "gcp.cloud_run.job.task_index")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.name")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.region")
+          - delete_key(attributes, "gcp.gce.instance_group_manager.zone")
+          - delete_key(attributes, "host.type")
+          - delete_key(attributes, "k8s.cronjob.uid")
+          - delete_key(attributes, "k8s.daemonset.uid")
+          - delete_key(attributes, "k8s.deployment.uid")
+          - delete_key(attributes, "k8s.hpa.uid")
+          - delete_key(attributes, "k8s.job.uid")
+          - delete_key(attributes, "k8s.namespace.uid")
+          - delete_key(attributes, "k8s.node.uid")
+          - delete_key(attributes, "k8s.pod.start_time")
+          - delete_key(attributes, "k8s.pod.uid")
+          - delete_key(attributes, "k8s.replicaset.uid")
+          - delete_key(attributes, "k8s.statefulset.uid")
+          - delete_key(attributes, "os.type")
       transform/span_name:
         trace_statements:
         - context: span
@@ -467,6 +558,7 @@ data:
           - resourcedetection/env
           - k8sattributes
           - transform/k8s_attributes
+          - transform/reduce
           - batch
           receivers:
           - filelog
@@ -505,6 +597,7 @@ data:
           - k8sattributes
           - transform/k8s_attributes
           - transform/spanmetrics
+          - transform/reduce
           - transform/test
           - batch
           receivers:
