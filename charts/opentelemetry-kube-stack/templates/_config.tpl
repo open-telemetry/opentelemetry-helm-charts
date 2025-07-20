@@ -131,12 +131,11 @@ processors:
         - container.image.tag
         - container.image.name
         - k8s.cluster.uid
+        - service.namespace
         - service.name
         - service.version
+        - service.instance.id
       labels:
-      - tag_name: service.name
-        key: k8s-app
-        from: pod
       - tag_name: k8s.app.instance
         key: app.kubernetes.io/instance
         from: pod
