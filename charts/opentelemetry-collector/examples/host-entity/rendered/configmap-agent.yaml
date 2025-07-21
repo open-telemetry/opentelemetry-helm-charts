@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.8
+    helm.sh/chart: opentelemetry-collector-0.118.9
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.0"
@@ -31,12 +31,12 @@ data:
         endpoint: ${env:MY_POD_IP}:13133
       opamp:
         agent_description:
+          include_resource_attributes: true
           non_identifying_attributes:
             cx.agent.type: agent
             cx.cluster.name: test
             cx.integrationID: test
-            helm.chart.opentelemetry-collector.version: 0.118.8
-            service.name: opentelemetry-collector
+            helm.chart.opentelemetry-collector.version: 0.118.9
         server:
           http:
             endpoint: https://ingress.coralogix.com/opamp/v1

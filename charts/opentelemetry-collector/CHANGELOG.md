@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.9 / 2025-07-18
+- [Fix] `k8sResourceAttributes` preset works correctly when the `fleetManagement` preset is enabled.
+
 ### v0.118.8 / 2025-07-18
 - [Feat] The `reduceResourceAttributes` preset now also removes attributes from traces and logs pipelines.
 - [Feat] The `reduceResourceAttributes` preset now removes a few more attributes.
