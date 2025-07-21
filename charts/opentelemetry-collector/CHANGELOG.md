@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.10 / 2025-07-21
+- [Fix] `command.name` override put back in place.
+
 ### v0.118.9 / 2025-07-18
 - [Fix] `k8sResourceAttributes` preset works correctly when the `fleetManagement` preset is enabled.
 
