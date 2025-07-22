@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.11 / 2025-07-21
+- [Feat] Add `host.image.id` to the `reduceResourceAttributes` preset.
+
 ### v0.118.10 / 2025-07-21
 - [Fix] `command.name` override put back in place.
 
