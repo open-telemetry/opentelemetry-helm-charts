@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.11
+    helm.sh/chart: opentelemetry-collector-0.118.12
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.0"
@@ -202,7 +202,7 @@ data:
             "$$1") where attributes["k8s.replicaset.name"] != nil
           - delete_key(attributes, "k8s.replicaset.name")
       transform/reduce:
-        error_mode: ignore
+        error_mode: silent
         log_statements:
         - context: resource
           statements:
@@ -313,6 +313,15 @@ data:
           - delete_key(attributes, "k8s.replicaset.uid")
           - delete_key(attributes, "k8s.statefulset.uid")
           - delete_key(attributes, "os.type")
+      transform/reduce_log_attributes:
+        error_mode: silent
+        log_statements:
+        - context: log
+          statements:
+          - delete_key(attributes, "log.iostream")
+          - delete_key(attributes, "log.file.path")
+          - delete_key(attributes, "logtag")
+          - delete_key(attributes, "time")
       transform/span_name:
         trace_statements:
         - context: span
@@ -556,6 +565,7 @@ data:
           - resourcedetection/region
           - resourcedetection/env
           - k8sattributes
+          - transform/reduce_log_attributes
           - transform/k8s_attributes
           - transform/reduce
           - batch

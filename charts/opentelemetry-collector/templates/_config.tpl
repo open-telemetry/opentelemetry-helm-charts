@@ -45,6 +45,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- if .Values.presets.logsCollection.reduceLogAttributes.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- end }}
 {{- if .Values.presets.profilesCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -153,6 +156,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- if .Values.presets.logsCollection.reduceLogAttributes.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- end }}
 {{- if .Values.presets.mysql.metrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -754,6 +760,23 @@ receivers:
       {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.logsCollectionReduceAttributesConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "transform/reduce_log_attributes" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.logsCollectionReduceAttributesConfig" -}}
+processors:
+  transform/reduce_log_attributes:
+    error_mode: silent
+    log_statements:
+      - context: log
+        statements:
+{{- range .Values.presets.logsCollection.reduceLogAttributes.denylist }}
+          - delete_key(attributes, "{{ . }}")
+{{- end }}
+{{- end }}
 
 {{- define "opentelemetry-collector.profilesCollectionConfig" -}}
 exporters:
@@ -990,7 +1013,7 @@ processors:
 {{- $pipelines := .Values.presets.reduceResourceAttributes.pipelines }}
 processors:
   transform/reduce:
-    error_mode: ignore
+    error_mode: silent
 {{- if or (has "metrics" $pipelines) (has "all" $pipelines) }}
     metric_statements:
       - context: resource
