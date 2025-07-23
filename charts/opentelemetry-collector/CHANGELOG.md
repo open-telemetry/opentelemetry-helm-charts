@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.14 / 2025-07-23
+- [Feat] Set spanMetrics aggregationCardinalityLimit default to 100000.
+
 ### v0.118.13 / 2025-07-22
 - [Feat] Update Collector to v0.130.1
 
