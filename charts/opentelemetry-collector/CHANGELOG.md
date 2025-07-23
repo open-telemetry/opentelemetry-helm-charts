@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.13 / 2025-07-22
+- [Feat] Update Collector to v0.130.1
+
 ### v0.118.12 / 2025-07-22
 - [Feat] Add `reduceLogAttributes` preset to remove specified log record attributes from collected logs.
 - [Fix] Set `error_mode` to `silent` for the transformations of the `reduceResourceAttributes` and `reduceLogAttributes` presets.
