@@ -3,6 +3,11 @@
 The helm chart installs [OpenTelemetry eBPF Instrumentation](https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation)
 in kubernetes cluster.
 
+## Prerequisites
+
+- Kubernetes 1.24+
+- Helm 3.9+
+
 ## Installing the Chart
 
 Add OpenTelemetry Helm repository:
