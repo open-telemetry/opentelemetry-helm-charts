@@ -1,0 +1,21 @@
+---
+# Source: opentelemetry-ebpf-instrumentation/templates/cluster-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: example-opentelemetry-ebpf-instrumentation
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-instrumentation-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: obi
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [ "apps" ]
+    resources: [ "replicasets" ]
+    verbs: [ "list", "watch" ]
+  - apiGroups: [ "" ]
+    resources: [ "pods", "services", "nodes" ]
+    verbs: [ "list", "watch", "get" ]
