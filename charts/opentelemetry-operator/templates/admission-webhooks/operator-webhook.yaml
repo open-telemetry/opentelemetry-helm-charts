@@ -18,7 +18,7 @@ metadata:
     {{- toYaml .Values.admissionWebhooks.secretLabels | nindent 4 }}
     {{- end }}
   name: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 data:
   tls.crt: {{ $certCrtEnc }}
   tls.key: {{ $certKeyEnc }}
@@ -38,7 +38,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /mutate-opentelemetry-io-v1alpha1-instrumentation
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -70,7 +70,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /mutate-opentelemetry-io-v1beta1-opentelemetrycollector
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -102,7 +102,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /mutate-v1-pod
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.pods.failurePolicy }}
@@ -142,7 +142,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy:  {{ .Values.admissionWebhooks.failurePolicy }}
@@ -174,7 +174,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /validate-opentelemetry-io-v1alpha1-instrumentation
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: Ignore
@@ -205,7 +205,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /validate-opentelemetry-io-v1beta1-opentelemetrycollector
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
@@ -237,7 +237,7 @@ webhooks:
       caBundle: {{ $caCertEnc }}
       service:
         name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /validate-opentelemetry-io-v1beta1-opentelemetrycollector
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: Ignore
