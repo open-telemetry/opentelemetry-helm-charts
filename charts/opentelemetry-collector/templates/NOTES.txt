@@ -15,6 +15,12 @@
 {{ end }}
 {{ end }}
 
+{{- if .Values.presets.kubernetesResources.enabled }}
+{{- if eq .Values.mode "daemonset"}}
+{{- fail "Kubernetes Resources preset is not suitable for daemonset mode. Please use statefulset or deployment mode."}}
+{{ end }}
+{{ end }}
+
 {{- if not .Values.configMap.create }}
 [WARNING] "configMap" wil not be created and "config" will not take effect.
 {{ end }}

@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.15 / 2025-07-23
+- [Feat] Fail installation if kubernetesResources preset is enabled in daemonset mode.
+
 ### v0.118.14 / 2025-07-23
 - [Feat] Set spanMetrics aggregationCardinalityLimit default to 100000.
 
