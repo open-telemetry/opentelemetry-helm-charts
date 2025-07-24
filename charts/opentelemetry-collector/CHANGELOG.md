@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.18 / 2025-07-24
+- [Feat] Remove the attribute `cx.otel_integration.name` through the `reduceResourceAttributes` preset.
+
 ### v0.118.17 / 2025-07-24
 - [Feat] Add more attribute coming from auto-instrumentation SDKs to the `reduceResourceAttributes` preset.
 
