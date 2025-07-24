@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.16 / 2025-07-24
+- [Feat] Add additional Prometheus transform rules for collector metrics preset.
+
 ### v0.118.15 / 2025-07-23
 - [Feat] Fail installation if kubernetesResources preset is enabled in daemonset mode.
 
