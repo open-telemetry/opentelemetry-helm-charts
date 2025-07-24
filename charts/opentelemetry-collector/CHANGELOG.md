@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.19 / 2025-07-24
+- [Fix] Correct transform rule for `otelcol_otelsvc_k8s_pod_deleted_ratio` metric.
+
 ### v0.118.18 / 2025-07-24
 - [Feat] Remove the attribute `cx.otel_integration.name` through the `reduceResourceAttributes` preset.
 

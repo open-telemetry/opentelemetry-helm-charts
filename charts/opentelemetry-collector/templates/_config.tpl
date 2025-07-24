@@ -2107,7 +2107,7 @@ processors:
           - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_added$", "otelcol_otelsvc_k8s_pod_added_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
           - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_table_size_ratio$", "otelcol_otelsvc_k8s_pod_table_size_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
           - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_updated$", "otelcol_otelsvc_k8s_pod_updated_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_deleted_ratio$", "otelcol_otelsvc_k8s_pod_deleted_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_deleted$", "otelcol_otelsvc_k8s_pod_deleted_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
           - replace_pattern(name, "^otelcol_processor_filter_spans\\.filtered$", "otelcol_processor_filter_spans.filtered_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
       - context: resource
         statements:
