@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script to generate release notes with links to upstream OpenTelemetry releases
 
-set -e
+set -euo pipefail
 
 # Function to get OpenTelemetry Collector release notes URL
 get_otel_collector_release_url() {
@@ -33,14 +33,14 @@ generate_release_notes() {
     local chart_version="$2"
     local app_version="$3"
     local chart_path="$4"
-    
+
     echo "# ${chart_name} ${chart_version}"
     echo ""
     echo "## What's Changed"
     echo ""
     echo "This release updates the ${chart_name} to version ${app_version}."
     echo ""
-    
+
     # Add links to upstream release notes based on chart type
     case "$chart_name" in
         "opentelemetry-collector")
@@ -83,7 +83,7 @@ generate_release_notes() {
             echo ""
             ;;
     esac
-    
+
     echo "## Chart Information"
     echo ""
     echo "- **Chart Version**: ${chart_version}"
