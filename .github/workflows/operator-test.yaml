@@ -7,6 +7,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   operator-test:
     runs-on: ubuntu-latest
@@ -65,7 +68,9 @@ jobs:
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
         # see https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1180 for flaky test
-        run:  chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config" --exclude-test-regex "chainsaw/operator-metrics"
+        run: |
+          mkdir -p ./.testresults/e2e
+          chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config" --exclude-test-regex "chainsaw/operator-metrics"
 
   operator-test-no-certmanager:
     runs-on: ubuntu-latest
@@ -119,4 +124,6 @@ jobs:
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
         # see https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1180 for flaky test
-        run:  chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config" --exclude-test-regex "chainsaw/operator-metrics"
+        run: |
+          mkdir -p ./.testresults/e2e
+          chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config" --exclude-test-regex "chainsaw/operator-metrics"
