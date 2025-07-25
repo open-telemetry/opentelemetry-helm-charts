@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.20 / 2025-07-25
+- [Fix] Quote IPv6 endpoints when `networkMode: ipv6` is used.
+- [Feat] Add example demonstrating IPv6 network mode.
+
 ### v0.118.19 / 2025-07-24
 - [Fix] Correct transform rule for `otelcol_otelsvc_k8s_pod_deleted_ratio` metric.
 
