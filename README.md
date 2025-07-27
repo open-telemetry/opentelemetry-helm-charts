@@ -49,7 +49,15 @@ in a Kubernetes cluster. More detailed documentation can be found in
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemetry/teams/helm-approvers)):
+### Maintainers
+
+- [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
+- [Jacob Aronoff](https://github.com/jaronoff97), Lightstep
+- [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
+
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
+
+### Approvers
 
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
@@ -57,21 +65,19 @@ Approvers ([@open-telemetry/helm-approvers](https://github.com/orgs/open-telemet
 - [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
 
-Emeritus Approvers:
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
-- [Naseem K. Ullah](https://github.com/naseemkullah), Transit
+### Emeritus Maintainers
 
-Maintainers ([@open-telemetry/helm-maintainers](https://github.com/orgs/open-telemetry/teams/helm-maintainers)):
+- [Tigran Najaryan](https://github.com/tigrannajaryan)
 
-- [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Jacob Aronoff](https://github.com/jaronoff97), Lightstep
-- [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
+For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
-Emeritus Maintainers:
+### Emeritus Approvers
 
-- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
+- [Naseem K. Ullah](https://github.com/naseemkullah)
 
-Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md).
+For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
 ## License
 

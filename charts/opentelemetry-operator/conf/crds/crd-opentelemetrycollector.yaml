@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ include "opentelemetry-operator.webhookCertAnnotation" . }}
-    controller-gen.kubebuilder.io/version: v0.17.1
+    controller-gen.kubebuilder.io/version: v0.18.0
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
@@ -17,7 +17,7 @@ spec:
       clientConfig:
         service:
           name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-          namespace: {{ .Release.Namespace }}
+          namespace: {{ template "opentelemetry-operator.namespace" . }}
           path: /convert
           port: {{ .Values.admissionWebhooks.servicePort }}
 {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}
@@ -2493,6 +2493,7 @@ spec:
               priorityClassName:
                 type: string
               replicas:
+                default: 1
                 format: int32
                 type: integer
               resources:
@@ -2601,6 +2602,8 @@ spec:
                     type: object
                 type: object
               serviceAccount:
+                type: string
+              serviceName:
                 type: string
               shareProcessNamespace:
                 type: boolean
@@ -7151,6 +7154,7 @@ spec:
                     type: integer
                 type: object
               replicas:
+                default: 1
                 format: int32
                 type: integer
               resources:
@@ -7259,6 +7263,8 @@ spec:
                     type: object
                 type: object
               serviceAccount:
+                type: string
+              serviceName:
                 type: string
               shareProcessNamespace:
                 type: boolean
@@ -9284,8 +9290,23 @@ spec:
                 x-kubernetes-list-type: atomic
             required:
             - config
-            - managementState
             type: object
+            x-kubernetes-validations:
+            - message: the OpenTelemetry Collector mode is set to sidecar, which does
+                not support the attribute 'tolerations'
+              rule: '!(self.mode == ''sidecar'' && size(self.tolerations) > 0) ||
+                !has(self.tolerations)'
+            - message: the OpenTelemetry Collector mode is set to sidecar, which does
+                not support the attribute 'priorityClassName'
+              rule: '!(self.mode == ''sidecar'' && self.priorityClassName != '''')
+                || !has(self.priorityClassName)'
+            - message: the OpenTelemetry Collector mode is set to sidecar, which does
+                not support the attribute 'affinity'
+              rule: '!(self.mode == ''sidecar'' && self.affinity != null) || !has(self.affinity)'
+            - message: the OpenTelemetry Collector mode is set to sidecar, which does
+                not support the attribute 'additionalContainers'
+              rule: '!(self.mode == ''sidecar'' && size(self.additionalContainers)
+                > 0) || !has(self.additionalContainers)'
           status:
             properties:
               image:
