@@ -133,3 +133,22 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ toYaml . }}
 {{- end }}
 {{- end }}
+
+{{/*
+Generate the configmap data based on preset and configuration values
+*/}}
+{{- define "obi.configData" -}}
+{{- $config := deepCopy .Values.config.data }}
+{{- if eq .Values.preset "network" }}
+{{- if not .Values.config.data.network }}
+{{- $_ := set $config "network" (dict "enable" true) }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.preset "application" }}
+{{- if not .Values.config.data.discovery }}
+{{- $discovery := dict "services" (list (dict "k8s_namespace" ".")) "exclude_services" (list (dict "exe_path" ".*ebpf-instrument.*|.*otelcol.*")) }}
+{{- $_ := set $config "discovery" $discovery }}
+{{- end }}
+{{- end }}
+{{- toYaml $config }}
+{{- end }}

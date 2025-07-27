@@ -15,14 +15,14 @@ metadata:
     app.kubernetes.io/component: config
 data:
   ebpf-instrument-config.yml: |
-    discovery:
-      services:
-        - k8s_namespace: .
-      exclude_services:
-        - exe_path: ".*ebpf-instrument.*|.*otelcol.*"
     attributes:
       kubernetes:
         enable: true
+    discovery:
+      exclude_services:
+      - exe_path: .*ebpf-instrument.*|.*otelcol.*
+      services:
+      - k8s_namespace: .
     filter:
       network:
         k8s_dst_owner_name:

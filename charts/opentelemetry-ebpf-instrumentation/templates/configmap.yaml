@@ -18,20 +18,5 @@ metadata:
   {{- end }}
 data:
   ebpf-instrument-config.yml: |
-    {{- if eq .Values.preset "network" }}
-    {{- if not .Values.config.data.network }}
-    network:
-      enable: true
-    {{- end }}
-    {{- end }}
-    {{- if eq .Values.preset "application" }}
-    {{- if not .Values.config.data.discovery }}
-    discovery:
-      services:
-        - k8s_namespace: .
-      exclude_services:
-        - exe_path: ".*ebpf-instrument.*|.*otelcol.*"
-    {{- end }}
-    {{- end }}
-  {{- toYaml .Values.config.data | nindent 4}}
+{{- include "obi.configData" . | nindent 4 }}
 {{- end }}
