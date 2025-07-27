@@ -380,7 +380,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-opensearch-datasource",
+        "type": "loki",
         "uid": "webstore-logs"
       },
       "description": "",
@@ -415,7 +415,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "count()"
+              "options": "Value"
             },
             "properties": [
               {
@@ -448,35 +448,14 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "alias": "",
-          "bucketAggs": [
-            {
-              "field": "severity.text.keyword",
-              "id": "3",
-              "settings": {
-                "min_doc_count": "1",
-                "order": "desc",
-                "orderBy": "_count",
-                "size": "0"
-              },
-              "type": "terms"
-            }
-          ],
           "datasource": {
-            "type": "grafana-opensearch-datasource",
+            "type": "loki",
             "uid": "webstore-logs"
           },
-          "format": "table",
-          "metrics": [
-            {
-              "id": "1",
-              "type": "count"
-            }
-          ],
-          "query": "search source=otel-logs-*\n| where resource.service.name=\"${service}\"\n| stats count() by severity.text",
-          "queryType": "PPL",
-          "refId": "A",
-          "timeField": "observedTimestamp"
+          "editorMode": "code",
+          "expr": "sum by (severity_text) (count_over_time({service_name=\"${service}\"}[$__range]))",
+          "queryType": "",
+          "refId": "A"
         }
       ],
       "title": "Log Records by Severity",
@@ -488,8 +467,8 @@
             "includeByName": {},
             "indexByName": {},
             "renameByName": {
-              "Count": "",
-              "severity.text.keyword": "Severity"
+              "severity_text": "Severity",
+              "Value": "Count"
             }
           }
         }
@@ -498,7 +477,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-opensearch-datasource",
+        "type": "loki",
         "uid": "webstore-logs"
       },
       "fieldConfig": {
@@ -534,14 +513,19 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "observedTimestamp"
+              "options": "Time"
             },
-            "properties": []
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "body"
+              "options": "Line"
             },
             "properties": [
               {
@@ -553,12 +537,36 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "severity.text"
+              "options": "severity_text"
             },
             "properties": [
               {
                 "id": "custom.width",
                 "value": 127
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "span_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trace_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
               }
             ]
           }
@@ -582,34 +590,25 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Time"
+          }
+        ]
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "alias": "",
-          "bucketAggs": [],
           "datasource": {
-            "type": "grafana-opensearch-datasource",
+            "type": "loki",
             "uid": "webstore-logs"
           },
-          "format": "table",
-          "hide": false,
-          "metrics": [
-            {
-              "id": "1",
-              "settings": {
-                "order": "desc",
-                "size": "100",
-                "useTimeRange": true
-              },
-              "type": "raw_data"
-            }
-          ],
-          "query": "search source=otel-logs-*\n| where resource.service.name=\"${service}\"\n| sort - observedTimestamp \n| head 100",
-          "queryType": "PPL",
-          "refId": "A",
-          "timeField": "observedTimestamp"
+          "editorMode": "code",
+          "expr": "{service_name=\"${service}\"}",
+          "maxLines": 100,
+          "queryType": "",
+          "refId": "A"
         }
       ],
       "title": "Log Records (100 recent entries)",
@@ -618,33 +617,28 @@
           "id": "organize",
           "options": {
             "excludeByName": {
-              "@timestamp": true
+              "id": true,
+              "labels": true
             },
             "includeByName": {},
             "indexByName": {
-              "@timestamp": 1,
-              "attributes.data_stream.dataset": 4,
-              "attributes.data_stream.namespace": 5,
-              "attributes.data_stream.type": 6,
-              "attributes.productId": 7,
-              "attributes.quantity": 8,
-              "attributes.userId": 9,
-              "body": 3,
-              "instrumentationScope.name": 10,
-              "observedTimestamp": 0,
-              "resource.container.id": 11,
-              "resource.docker.cli.cobra.command_path": 12,
-              "resource.host.name": 13,
-              "resource.service.name": 14,
-              "resource.telemetry.sdk.language": 15,
-              "resource.telemetry.sdk.name": 16,
-              "resource.telemetry.sdk.version": 17,
-              "severity.number": 18,
-              "severity.text": 2,
-              "spanId": 19,
-              "traceId": 20
+              "Time": 0,
+              "severity_text": 1,
+              "Line": 2,
+              "span_id": 3,
+              "trace_id": 4,
+              "service_name": 5,
+              "k8s_pod_name": 6,
+              "detected_level": 7
             },
-            "renameByName": {}
+            "renameByName": {
+              "severity_text": "Severity",
+              "span_id": "Span ID",
+              "trace_id": "Trace ID",
+              "service_name": "Service",
+              "k8s_pod_name": "Pod Name",
+              "detected_level": "Level"
+            }
           }
         }
       ],
