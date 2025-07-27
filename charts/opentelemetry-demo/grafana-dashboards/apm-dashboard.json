@@ -21,7 +21,7 @@
       }
     ]
   },
-  "description": "APM dashboard for monitoring OpenTelemetry-based services.  \n\nInstrument your applications using OpenTelemetry SDKs and send traces, metrics, and logs to Jaeger for traces, a Prometheus-compatible database for metrics, and OpenSearch for logs. This dashboard provides a centralized view of your application's health and performance. ",
+  "description": "APM dashboard for monitoring OpenTelemetry-based services.  \n\nInstrument your applications using OpenTelemetry SDKs and send traces, metrics, and logs to Jaeger for traces, a Prometheus-compatible database for metrics, and Loki for logs. This dashboard provides a centralized view of your application's health and performance. ",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -1507,8 +1507,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-opensearch-datasource",
-        "uid": "${opensearch_datasource}"
+        "type": "loki",
+        "uid": "webstore-logs"
       },
       "description": "Logs of the service, filtered by `service.name`, `service.namespace`, and `deployment.environment.name`.\n\nTo explore the logs, open the menu clicking on the icon `⋮` of this panel and click on `Explore`.",
       "fieldConfig": {
@@ -1600,34 +1600,15 @@
       "pluginVersion": "12.0.2",
       "targets": [
         {
-          "alias": "",
-          "bucketAggs": [
-            {
-              "field": "observedTimestamp",
-              "id": "2",
-              "settings": {
-                "interval": "auto"
-              },
-              "type": "date_histogram"
-            }
-          ],
           "datasource": {
-            "type": "grafana-opensearch-datasource",
-            "uid": "${opensearch_datasource}"
+            "type": "loki",
+            "uid": "webstore-logs"
           },
           "format": "table",
           "hide": false,
-          "luceneQueryType": "Logs",
-          "metrics": [
-            {
-              "id": "1",
-              "type": "logs"
-            }
-          ],
-          "query": "search source=otel | where resource.service.name=\"$service_name\" and resource.service.namespace=\"$service_namespace\" | fields @timestamp, severity.text, body, instrumentationScope.name\n",
-          "queryType": "PPL",
-          "refId": "B",
-          "timeField": "observedTimestamp"
+          "expr": "{service_name=\"$service_name\", service_namespace=\"$service_namespace\"}",
+          "refId": "B"
+
         }
       ],
       "title": "",
@@ -1848,14 +1829,14 @@
       {
         "allowCustomValue": false,
         "current": {
-          "text": "OpenSearch",
+          "text": "Loki",
           "value": "webstore-logs"
         },
         "description": "OpenTelemetry logs.",
         "label": "Logs",
-        "name": "opensearch_datasource",
+        "name": "loki_datasource",
         "options": [],
-        "query": "grafana-opensearch-datasource",
+        "query": "loki",
         "refresh": 1,
         "regex": "",
         "type": "datasource"
@@ -1865,7 +1846,7 @@
           "text": ".*",
           "value": ".*"
         },
-        "description": "Waiting to implement support of the optional value of `deployment.environment.name` in the OpenSearch and Jager panels, hide variable.",
+        "description": "Waiting to implement support of the optional value of `deployment.environment.name` in the Loki and Jaeger panels, hide variable.",
         "hide": 2,
         "label": "Environment",
         "name": "deployment_environment_name",
@@ -1932,7 +1913,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "APM Dashboard (Jaeger, Prometheus, OpenSearch)",
+  "title": "APM Dashboard (Jaeger, Prometheus, Loki)",
   "uid": "febljk0a32qyoa",
   "version": 1
 }
