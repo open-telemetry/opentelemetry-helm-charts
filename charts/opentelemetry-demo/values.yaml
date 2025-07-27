@@ -730,12 +730,10 @@ opentelemetry-collector:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
-      opensearch:
-        logs_index: otel
-        http:
-          endpoint: http://opensearch:9200
-          tls:
-            insecure: true
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+        tls:
+          insecure: true
 
     processors:
       # This processor is used to help limit high cardinality on next.js span names
@@ -769,7 +767,7 @@ opentelemetry-collector:
           exporters: [otlphttp/prometheus, debug]
         logs:
           processors: [memory_limiter, resource, batch]
-          exporters: [opensearch, debug]
+          exporters: [otlphttp/loki, debug]
       telemetry:
         metrics:
           level: detailed
@@ -884,8 +882,7 @@ grafana:
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       serve_from_sub_path: true
   adminPassword: admin
-  plugins:
-    - grafana-opensearch-datasource
+  plugins: []
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -912,21 +909,13 @@ grafana:
           editable: true
           isDefault: false
 
-        - name: OpenSearch
+        - name: Loki
           uid: webstore-logs
-          type: grafana-opensearch-datasource
-          url: http://opensearch:9200/
+          type: loki
+          url: http://loki:3100
           access: proxy
           editable: true
           isDefault: false
-          jsonData:
-            database: otel
-            flavor: opensearch
-            logLevelField: severity.text.keyword
-            logMessageField: body
-            pplEnabled: true
-            timeField: observedTimestamp
-            version: 2.18.0
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -946,21 +935,59 @@ grafana:
       memory: 150Mi
 
 opensearch:
+  enabled: false
+
+loki:
   enabled: true
-  fullnameOverride: opensearch
-  clusterName: demo-cluster
-  nodeGroup: otel-demo
-  singleNode: true
-  opensearchJavaOpts: "-Xms300m -Xmx300m"
-  persistence:
-    enabled: false
-  extraEnvs:
-    - name: "bootstrap.memory_lock"
-      value: "true"
-    - name: "DISABLE_INSTALL_DEMO_CONFIG"
-      value: "true"
-    - name: "DISABLE_SECURITY_PLUGIN"
-      value: "true"
-  resources:
-    limits:
-      memory: 1100Mi
+  fullnameOverride: loki
+  deploymentMode: SingleBinary
+  singleBinary:
+    replicas: 1
+    resources:
+      limits:
+        memory: 2Gi
+      requests:
+        memory: 1Gi
+  loki:
+    commonConfig:
+      replication_factor: 1
+    schemaConfig:
+      configs:
+        - from: 2024-04-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+    storage:
+      type: filesystem
+      filesystem:
+        chunks_directory: /var/loki/chunks
+        rules_directory: /var/loki/rules
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9095
+    auth_enabled: false
+    limits_config:
+      retention_period: 24h
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
