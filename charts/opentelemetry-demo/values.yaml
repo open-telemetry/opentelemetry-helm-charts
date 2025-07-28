@@ -948,6 +948,29 @@ loki:
         memory: 2Gi
       requests:
         memory: 1Gi
+  # Cache configurations for improved performance
+  chunksCache:
+    enabled: true
+    replicas: 1
+    allocatedMemory: 512
+    resources:
+      limits:
+        cpu: 250m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+  resultsCache:
+    enabled: true
+    replicas: 1
+    allocatedMemory: 512
+    resources:
+      limits:
+        cpu: 200m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
   loki:
     commonConfig:
       replication_factor: 1
@@ -991,3 +1014,7 @@ loki:
     replicas: 0
   indexGateway:
     replicas: 0
+  lokiCanary:
+    enabled: false
+  test:
+    enabled: false
