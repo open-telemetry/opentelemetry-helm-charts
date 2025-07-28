@@ -1006,6 +1006,11 @@ processors:
   {{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "transform/reduce" | uniq)  }}
   {{- end }}
 {{- end }}
+{{- if or (has "profiles" $pipelines) (has "all" $pipelines) }}
+  {{- if and ($config.service.pipelines.profiles) (not (has "transform/reduce" $config.service.pipelines.profiles.processors)) }}
+  {{- $_ := set $config.service.pipelines.profiles "processors" (append $config.service.pipelines.profiles.processors "transform/reduce" | uniq)  }}
+  {{- end }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 

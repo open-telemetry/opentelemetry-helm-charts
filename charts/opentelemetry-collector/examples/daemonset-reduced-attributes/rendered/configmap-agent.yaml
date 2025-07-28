@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.22
+    helm.sh/chart: opentelemetry-collector-0.118.23
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.1"
@@ -69,6 +69,18 @@ data:
       coralogix:
         application_name: otel
         domain: coralogix.com
+      coralogix/profiles:
+        application_name: resource
+        batcher:
+          enabled: true
+          flush_timeout: 1s
+          max_size: 2048
+          min_size: 1024
+          sizer: items
+        domain: ""
+        private_key: ${CORALOGIX_PRIVATE_KEY}
+        subsystem_name: catalog
+        timeout: 30s
       debug: {}
     extensions:
       health_check:
@@ -641,6 +653,15 @@ data:
           - prometheus/k8s_extra_metrics
           - spanmetrics
           - spanmetrics/db
+          - otlp
+        profiles:
+          exporters:
+          - coralogix/profiles
+          processors:
+          - memory_limiter
+          - resource/metadata
+          - transform/reduce
+          receivers:
           - otlp
         traces:
           exporters:
