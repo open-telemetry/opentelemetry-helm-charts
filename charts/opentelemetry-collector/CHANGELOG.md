@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.21 / 2025-07-28
+- [Fix] Quote IPv6 host in metrics reader when `networkMode: ipv6` is used.
+
 ### v0.118.20 / 2025-07-25
 - [Fix] Quote IPv6 endpoints when `networkMode: ipv6` is used.
 - [Feat] Add example demonstrating IPv6 network mode.

@@ -2125,7 +2125,7 @@ service:
         - pull:
             exporter:
               prometheus:
-                host: {{ include "opentelemetry-collector.envHost" (dict "env" "MY_POD_IP" "context" $) }}
+                host: {{ include "opentelemetry-collector.envHost" (dict "env" "MY_POD_IP" "context" $) | quote }}
                 port: 8888
 {{- end }}
 
