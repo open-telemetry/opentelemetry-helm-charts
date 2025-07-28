@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.22 / 2025-07-28
+- [Feat] Add `k8s.container.restart_count` to the `reduceResourceAttributes` preset.
+
 ### v0.118.21 / 2025-07-28
 - [Fix] Quote IPv6 host in metrics reader when `networkMode: ipv6` is used.
 
