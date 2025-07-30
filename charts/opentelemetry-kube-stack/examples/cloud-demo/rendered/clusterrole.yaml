@@ -52,6 +52,18 @@ rules:
 - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
   verbs: ["get"]
 
+- verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+  apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
 - apiGroups:
   - ""
   resources:
@@ -131,21 +143,6 @@ rules:
     verbs:
       - 'list'
       - 'get'
----
-# Source: opentelemetry-kube-stack/templates/clusterrole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: example-cluster-stats
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: example-collector
-subjects:
-- kind: ServiceAccount
-  # quirk of the Operator
-  name: "example-cluster-stats-collector"
-  namespace: default
 ---
 # Source: opentelemetry-kube-stack/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
