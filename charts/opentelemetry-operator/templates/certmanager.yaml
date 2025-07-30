@@ -10,7 +10,7 @@ metadata:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
   name: {{ template "opentelemetry-operator.webhookCertName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   {{- if .Values.admissionWebhooks.certManager.duration }}
   duration: {{ .Values.admissionWebhooks.certManager.duration }}
@@ -19,8 +19,8 @@ spec:
   renewBefore: {{ .Values.admissionWebhooks.certManager.renewBefore }}
   {{- end }}
   dnsNames:
-    - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc
-    - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}
+    - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ template "opentelemetry-operator.namespace" . }}.svc
+    - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ template "opentelemetry-operator.namespace" . }}.svc.{{ .Values.clusterDomain }}
   issuerRef:
     {{- if .Values.admissionWebhooks.certManager.issuerRef }}
     {{- toYaml .Values.admissionWebhooks.certManager.issuerRef | nindent 4 }}
@@ -45,7 +45,7 @@ metadata:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: webhook
   name: {{ template "opentelemetry-operator.fullname" . }}-selfsigned-issuer
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   selfSigned: {}
 {{- end }}
