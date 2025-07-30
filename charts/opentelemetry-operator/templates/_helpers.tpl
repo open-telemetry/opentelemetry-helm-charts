@@ -41,7 +41,7 @@ Create chart name and version as used by the chart label.
 Create Operator version.
 */}}
 {{- define "opentelemetry-operator.appVersion" -}}
-{{ default .Chart.AppVersion .Values.manager.image.tag }}
+{{ default .Chart.AppVersion .Values.manager.image.tag | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
