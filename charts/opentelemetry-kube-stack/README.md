@@ -11,15 +11,15 @@ This Helm chart serves as a quickstart for OpenTelemetry in a Kubernetes environ
 
 ## Features
 
-This chart installs the OpenTelemetry Operator and two collector pools with the following features:
-* Daemonset collector
-  * Kubernetes infrastructure metrics
-  * Applications logs
-  * OTLP trace receiver
-  * Kubernetes resource enrichment
-* Standalone collector
-  * Kubernetes events
-  * Cluster metrics
+This chart installs the OpenTelemetry Operator and a daemonset collector pool with the following features:
+* Kubernetes infrastructure metrics
+* Applications logs
+* OTLP trace receiver
+* Kubernetes resource enrichment
+* Kubernetes events
+* Cluster metrics
+
+**Note**: This setup requires the usage of leader election extension, if this isn't posible for any reason, this extension can be avoided with [this alternative setup](/charts/opentelemetry-kube-stack/examples/no-leader-election-extension/README.md)
 
 ## Usage
 
@@ -138,6 +138,11 @@ With Helm v3.0, CRDs created by this chart are not updated by default and should
 Consult also the [Helm Documentation on CRDs](https://helm.sh/docs/chart_best_practices/custom_resource_definitions).
 
 _See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documentation._
+
+### Upgrade from 0.6.x to 0.7.x
+
+Version 0.7.0 has unified the previous collectors (daemonset and deployment) in a single one. If you are using custom configurations for `cluster` collector, you will need to merge your `cluster` collector configuration with `daemon` collector and remove `collectors.cluster` section from your values file.
+If you are using helm, upgrade command is enough the prune old resources, but gitops approaches like 'ArgoCD' could require to select pruning options during sync process to get rid of removed resources.
 
 ## Configuration
 
