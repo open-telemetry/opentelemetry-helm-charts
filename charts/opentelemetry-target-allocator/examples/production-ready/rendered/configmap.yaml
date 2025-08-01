@@ -14,15 +14,19 @@ metadata:
 data:
   targetallocator.yaml: |
     allocation_strategy: consistent-hashing
-    collector_namespace: default
+    collector_namespace: opentelemetry-system
     collector_selector:
-      matchlabels:
-        app.kubernetes.io/component: agent-standalone
+      matchLabels:
+        app.kubernetes.io/component: opentelemetry-collector
     config:
       scrape_configs: []
     filter_strategy: relabel-config
     prometheus_cr:
       enabled: true
-      pod_monitor_selector: {}
+      pod_monitor_selector:
+        matchLabels:
+          monitoring: enabled
       scrapeInterval: 30s
-      service_monitor_selector: {}
+      service_monitor_selector:
+        matchLabels:
+          monitoring: enabled

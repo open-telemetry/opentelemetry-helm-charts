@@ -6,29 +6,90 @@ metadata:
   labels:
     {{- include "helper.commonLabels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.targetAllocator.replicaCount }}
   selector:
     matchLabels:
       {{- include "helper.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.targetAllocator.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "helper.commonLabels" . | nindent 8 }}
+        {{- with .Values.targetAllocator.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "helper.targetAllocatorServiceAccountName" . }}
       automountServiceAccountToken: false
+      {{- with .Values.targetAllocator.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.targetAllocator.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.targetAllocator.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.targetAllocator.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.targetAllocator.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.targetAllocator.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.targetAllocator.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: targetallocator
           image: {{ template "helper.dockerImageName" . }}
+          imagePullPolicy: {{ .Values.targetAllocator.image.pullPolicy }}
+          {{- with .Values.targetAllocator.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 8080
               name: http-port
+              protocol: TCP
+          {{- with .Values.targetAllocator.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.targetAllocator.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.targetAllocator.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.targetAllocator.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config-volume
               mountPath: /conf/
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: serviceaccount-token
               readOnly: true
+            {{- if .Values.targetAllocator.securityContext.readOnlyRootFilesystem }}
+            - name: tmp-volume
+              mountPath: /tmp
+            {{- end }}
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: {{ .Values.targetAllocator.config.collector_namespace | default .Release.Namespace }}
@@ -53,3 +114,7 @@ spec:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
+        {{- if .Values.targetAllocator.securityContext.readOnlyRootFilesystem }}
+        - name: tmp-volume
+          emptyDir: {}
+        {{- end }}

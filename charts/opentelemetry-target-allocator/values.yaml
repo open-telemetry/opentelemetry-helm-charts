@@ -14,21 +14,108 @@ nameOverride: ""
 fullnameOverride: ""
 
 targetAllocator:
+  # Number of replicas for the target allocator deployment
+  replicaCount: 1
+
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
     # The tag of the Target Allocator image, default value is the chart appVersion
     tag: ""
+    # Image pull policy
+    pullPolicy: IfNotPresent
+
   # Secrets to attach to the respective serviceaccount to pull docker images
   imagePullSecrets: []
+
   serviceAccount:
     # Specifies whether a ServiceAccount should be created
     create: true
     # The name of the ServiceAccount to use.
     # If not set and create is true, a name is generated using the fullname template
     name: ""
-
     # Service account annotations
     annotations: {}
+
+  # Security context for the pod
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Security context for the container
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    capabilities:
+      drop:
+        - ALL
+
+  # Resource requests and limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Liveness probe configuration
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http-port
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  # Readiness probe configuration
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http-port
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  # Startup probe configuration
+  startupProbe:
+    httpGet:
+      path: /
+      port: http-port
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 10
+
+  # Node selector for pod assignment
+  nodeSelector: {}
+
+  # Tolerations for pod assignment
+  tolerations: []
+
+  # Affinity for pod assignment
+  affinity: {}
+
+  # Pod annotations
+  podAnnotations: {}
+
+  # Pod labels
+  podLabels: {}
+
+  # Priority class name
+  priorityClassName: ""
+
+  # Topology spread constraints
+  topologySpreadConstraints: []
+
   config:
     allocation_strategy: consistent-hashing
     # Example of selector to choose which collectors will be allocated targets:
