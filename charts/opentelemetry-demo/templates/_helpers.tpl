@@ -32,7 +32,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Workload (Pod) labels
 */}}
 {{- define "otel-demo.workloadLabels" -}}
-app.kubernetes.io/part-of: {{ .Release.Name }}
 {{- if .name }}
 app.kubernetes.io/component: {{ .name}}
 app.kubernetes.io/name: {{ .name }}
