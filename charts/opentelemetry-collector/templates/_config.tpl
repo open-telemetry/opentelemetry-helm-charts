@@ -37,7 +37,7 @@ metrics:
             {{- if .Values.config.service.telemetry.resource }}
             with_resource_constant_labels:
               included:
-              {{- range (keys .Values.config.service.telemetry.resource) }}
+              {{- range (keys .Values.config.service.telemetry.resource | sortAlpha) }}
               - {{ println . }}
               {{- end }}
             {{- end }}
