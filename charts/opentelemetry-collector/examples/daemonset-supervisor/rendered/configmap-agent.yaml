@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.23
+    helm.sh/chart: opentelemetry-collector-0.118.24
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.1"
@@ -79,6 +79,9 @@ data:
           headers:
             X-Coralogix-Distribution: helm-otel-integration/1.0
         private_key: ${env:CORALOGIX_PRIVATE_KEY}
+        profiles:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
         subsystem_name: integration
         subsystem_name_attributes:
         - k8s.deployment.name
@@ -673,6 +676,7 @@ data:
           - spanmetrics
           - forward/db
           - forward/sampled
+          - coralogix
           processors:
           - memory_limiter
           - transform/span_name

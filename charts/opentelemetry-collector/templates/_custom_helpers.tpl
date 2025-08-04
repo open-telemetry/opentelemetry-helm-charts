@@ -90,6 +90,9 @@ Determine the command to use based on platform and configuration.
 {{- if $configArg }}
 - {{ $configArg }}
 {{- end }}
+{{- if .Values.presets.profilesCollection.enabled }}
+- "--feature-gates=+service.profilesSupport"
+{{- end }}
 {{- range .Values.command.extraArgs }}
 - {{ . }}
 {{- end }}

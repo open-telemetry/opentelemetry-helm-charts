@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.23
+    helm.sh/chart: opentelemetry-collector-0.118.24
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.1"
@@ -15,23 +15,29 @@ metadata:
 data:
   relay: |
     exporters:
-      coralogix/profiles:
-        application_name: resource
-        batcher:
-          enabled: true
-          flush_timeout: 1s
-          max_size: 2048
-          min_size: 1024
-          sizer: items
-        domain: ""
-        private_key: ${CORALOGIX_PRIVATE_KEY}
-        subsystem_name: catalog
-        timeout: 30s
       debug: {}
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
+      k8sattributes/profiles:
+        extract:
+          metadata:
+          - k8s.namespace.name
+          - k8s.replicaset.name
+          - k8s.statefulset.name
+          - k8s.daemonset.name
+          - k8s.deployment.name
+          - k8s.cronjob.name
+          - k8s.job.name
+          - k8s.pod.name
+          - k8s.node.name
+          - container.id
+        passthrough: false
+        pod_association:
+        - sources:
+          - from: resource_attribute
+            name: container.id
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -44,6 +50,16 @@ data:
         - action: upsert
           key: cx.otel_integration.name
           value: coralogix-integration-helm
+      transform/profiles:
+        profile_statements:
+        - set(resource.attributes["service.name"], resource.attributes["k8s.deployment.name"])
+          where resource.attributes["k8s.deployment.name"] != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.statefulset.name"])
+          where resource.attributes["k8s.statefulset.name"] != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.daemonset.name"])
+          where resource.attributes["k8s.daemonset.name"] != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.cronjob.name"])
+          where resource.attributes["k8s.cronjob.name"] != nil
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -131,11 +147,11 @@ data:
           - prometheus
           - otlp
         profiles:
-          exporters:
-          - coralogix/profiles
+          exporters: []
           processors:
           - memory_limiter
-          - resource/metadata
+          - k8sattributes/profiles
+          - transform/profiles
           receivers:
           - otlp
         traces:

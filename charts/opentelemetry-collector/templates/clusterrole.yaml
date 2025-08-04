@@ -1,4 +1,4 @@
-{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.mysql.metrics.enabled) (.Values.presets.kubernetesResources.enabled) -}}
+{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.mysql.metrics.enabled) (.Values.presets.kubernetesResources.enabled) (.Values.presets.profilesCollection.enabled) -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -15,7 +15,7 @@ rules:
   {{- if .Values.clusterRole.rules -}}
   {{ toYaml .Values.clusterRole.rules | nindent 2 -}}
   {{- end }}
-  {{- if or (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.mysql.metrics.enabled)}}
+  {{- if or (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.mysql.metrics.enabled) (.Values.presets.profilesCollection.enabled) }}
   - apiGroups: [""]
     resources: ["pods", "namespaces"]
     verbs: ["get", "watch", "list"]

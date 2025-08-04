@@ -49,9 +49,6 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- end }}
-{{- if .Values.presets.profilesCollection.enabled }}
-{{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
-{{- end }}
 {{- if .Values.presets.mysql.metrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -126,6 +123,12 @@ Build config file for daemonset OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.profilesCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.coralogixExporter.enabled }}
+{{- $config = (include "opentelemetry-collector.applyCoralogixExporterConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.otlpReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyOtlpReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -284,6 +287,10 @@ Build config file for deployment OpenTelemetry Collector
 {{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "routing" | uniq)  }}
 {{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "routing" | uniq)  }}
 {{- end }}
+{{- if and ($config.service.pipelines.profiles) (has "routing" $config.service.pipelines.profiles.processors) }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (without $config.service.pipelines.profiles.processors "routing" | uniq)  }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (append $config.service.pipelines.profiles.processors "routing" | uniq)  }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -300,6 +307,10 @@ Build config file for deployment OpenTelemetry Collector
 {{- if and ($config.service.pipelines.traces) (has "memory_limiter" $config.service.pipelines.traces.processors) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (without $config.service.pipelines.traces.processors "memory_limiter" | uniq)  }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "memory_limiter" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.profiles) (has "memory_limiter" $config.service.pipelines.profiles.processors) }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (without $config.service.pipelines.profiles.processors "memory_limiter" | uniq)  }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "memory_limiter" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
@@ -779,29 +790,50 @@ processors:
 {{- end }}
 
 {{- define "opentelemetry-collector.profilesCollectionConfig" -}}
-exporters:
-  coralogix/profiles:
-    timeout: "30s"
-    private_key: "${CORALOGIX_PRIVATE_KEY}"
-    domain: "{{.Values.global.domain}}"
-    application_name: "resource"
-    subsystem_name: "catalog"
-    batcher:
-      enabled: true
-      min_size: 1024
-      max_size: 2048
-      sizer: "items"
-      flush_timeout: "1s"
+processors:
+  transform/profiles:
+    profile_statements:
+      - set(resource.attributes["service.name"], resource.attributes["k8s.deployment.name"])
+        where resource.attributes["k8s.deployment.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.statefulset.name"])
+        where resource.attributes["k8s.statefulset.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.daemonset.name"])
+        where resource.attributes["k8s.daemonset.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.cronjob.name"])
+        where resource.attributes["k8s.cronjob.name"] != nil
+
+  k8sattributes/profiles:
+    extract:
+      metadata:
+        - k8s.namespace.name
+        - k8s.replicaset.name
+        - k8s.statefulset.name
+        - k8s.daemonset.name
+        - k8s.deployment.name
+        - k8s.cronjob.name
+        - k8s.job.name
+        - k8s.pod.name
+        - k8s.node.name
+        - container.id
+
+    passthrough: false
+    pod_association:
+      - sources:
+          - from: resource_attribute
+            name: container.id
+
 service:
   pipelines:
     profiles:
-      receivers:
-        - otlp
+      receivers: []
       processors:
         - memory_limiter
-        - resource/metadata
-      exporters:
-        - coralogix/profiles
+        - k8sattributes/profiles
+        - transform/profiles
+      exporters: []
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesExtraMetrics" -}}
@@ -968,6 +1000,9 @@ receivers:
 {{- end }}
 {{- if and ($config.service.pipelines.traces) (not (has "resource/metadata" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resource/metadata" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.profiles) (not (has "resource/metadata" $config.service.pipelines.profiles.processors)) }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "resource/metadata" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
@@ -1749,6 +1784,7 @@ exporters:
 {{- $includeLogs := or (has "all" $pipeline) (has "logs" $pipeline) }}
 {{- $includeMetrics := or (has "all" $pipeline) (has "metrics" $pipeline) }}
 {{- $includeTraces := or (has "all" $pipeline) (has "traces" $pipeline) }}
+{{- $includeProfiles := or (has "all" $pipeline) (has "profiles" $pipeline) }}
 
 {{- if and $includeLogs ($config.service.pipelines.logs) (not (has "coralogix" $config.service.pipelines.logs.exporters)) }}
 {{- $_ := set $config.service.pipelines.logs "exporters" (append $config.service.pipelines.logs.exporters "coralogix" | uniq) }}
@@ -1758,6 +1794,9 @@ exporters:
 {{- end }}
 {{- if and $includeTraces ($config.service.pipelines.traces) (not (has "coralogix" $config.service.pipelines.traces.exporters)) }}
 {{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "coralogix" | uniq) }}
+{{- end }}
+{{- if and $includeProfiles ($config.service.pipelines.profiles) (not (has "coralogix" $config.service.pipelines.profiles.exporters)) }}
+{{- $_ := set $config.service.pipelines.profiles "exporters" (append $config.service.pipelines.profiles.exporters "coralogix" | uniq) }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
@@ -1775,6 +1814,9 @@ exporters:
       headers:
         X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     traces:
+      headers:
+        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
+    profiles:
       headers:
         X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     application_name: "{{ .Values.presets.coralogixExporter.defaultApplicationName | default .Values.global.defaultApplicationName }}"
@@ -1868,6 +1910,7 @@ processors:
 {{- $includeLogs := eq $pipeline "all" }}
 {{- $includeMetrics := or (eq $pipeline "all") (eq $pipeline "metrics") }}
 {{- $includeTraces := or (eq $pipeline "all") (eq $pipeline "traces") }}
+{{- $includeProfiles := or (eq $pipeline "all") (eq $pipeline "profiles") }}
 {{- if and $includeLogs ($config.service.pipelines.logs) (not (has "resourcedetection/env" $config.service.pipelines.logs.processors)) }}
 {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/env" | uniq)  }}
 {{- end }}
@@ -1885,6 +1928,12 @@ processors:
 {{- end }}
 {{- if and $includeTraces ($config.service.pipelines.traces) (not (has "resourcedetection/region" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/region" | uniq)  }}
+{{- end }}
+{{- if and $includeProfiles ($config.service.pipelines.profiles) (not (has "resourcedetection/env" $config.service.pipelines.profiles.processors)) }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "resourcedetection/env" | uniq)  }}
+{{- end }}
+{{- if and $includeProfiles ($config.service.pipelines.profiles) (not (has "resourcedetection/region" $config.service.pipelines.profiles.processors)) }}
+{{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "resourcedetection/region" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
@@ -2216,6 +2265,9 @@ processors:
 {{- end }}
 {{- if and ($config.service.pipelines.logs) (not (has "otlp" $config.service.pipelines.logs.receivers)) }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "otlp" | uniq)  }}
+{{- end }}
+{{- if and ($config.service.pipelines.profiles) (not (has "otlp" $config.service.pipelines.profiles.receivers)) }}
+{{- $_ := set $config.service.pipelines.profiles "receivers" (append $config.service.pipelines.profiles.receivers "otlp" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
