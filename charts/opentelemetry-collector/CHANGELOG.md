@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.24 / 2025-08-04
+
+- [Feat] Add k8sattributes support for profiles.
+
 ### v0.118.23 / 2025-07-28
 - [Feat] Add support for profiles in the `reduceResourceAttributes` preset.
 
