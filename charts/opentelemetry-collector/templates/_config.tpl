@@ -1171,6 +1171,11 @@ cx.integrationID: "{{ .Values.presets.fleetManagement.integrationID }}"
 {{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "forward/db" | uniq)  }}
 {{- end }}
 {{- end }}
+{{- if .Values.Values.presets.spanMetrics.compactMetrics.enabled}}
+{{- if and ($config.service.pipelines.traces) (not (has "forward/compact" $config.service.pipelines.traces.exporters)) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "forward/compact" | uniq)  }}
+{{- end }}
+{{- end }}
 {{- if .Values.Values.presets.spanMetrics.transformStatements}}
 {{- if and ($config.service.pipelines.traces) (not (has "transform/spanmetrics" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "transform/spanmetrics" | uniq)  }}
@@ -1263,7 +1268,30 @@ connectors:
 {{- end }}
   forward/db: {}
 {{- end }}
-{{- if or (.Values.presets.spanMetrics.spanNameReplacePattern) (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.transformStatements) }}
+{{- if .Values.presets.spanMetrics.compactMetrics.enabled }}
+  forward/compact: {}
+  spanmetrics/compact:
+    aggregation_cardinality_limit: {{ .Values.presets.spanMetrics.aggregationCardinalityLimit }}
+    exclude_dimensions:
+    - span.name
+{{- if .Values.presets.spanMetrics.histogramBuckets }}
+    histogram:
+      explicit:
+        buckets: {{ .Values.presets.spanMetrics.histogramBuckets | toYaml | nindent 12 }}
+{{- end }}
+{{- if .Values.presets.spanMetrics.metricsExpiration }}
+    metrics_expiration: "{{ .Values.presets.spanMetrics.metricsExpiration }}"
+{{- else }}
+    metrics_expiration: 0
+{{- end }}
+{{- if .Values.presets.spanMetrics.collectionInterval }}
+    metrics_flush_interval: "{{ .Values.presets.spanMetrics.collectionInterval }}"
+{{- else }}
+    metrics_flush_interval: 15s
+{{- end }}
+    namespace: compact
+{{- end }}
+{{- if or (.Values.presets.spanMetrics.spanNameReplacePattern) (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.transformStatements) (.Values.presets.spanMetrics.compactMetrics.enabled) }}
 processors:
 {{- end}}
 {{- if .Values.presets.spanMetrics.spanNameReplacePattern }}
@@ -1301,9 +1329,17 @@ processors:
         - {{ $pattern }}
         {{- end}}
 {{- end }}
-{{- if .Values.presets.spanMetrics.dbMetrics.enabled }}
+{{- if .Values.presets.spanMetrics.compactMetrics.enabled }}
+  transform/compact:
+    trace_statements:
+      - context: resource
+        statements:
+          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
+{{- end }}
+{{- if or (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.compactMetrics.enabled) }}
 service:
   pipelines:
+{{- if .Values.presets.spanMetrics.dbMetrics.enabled }}
     traces/db:
       exporters:
       - spanmetrics/db
@@ -1315,6 +1351,25 @@ service:
       - batch
       receivers:
       - forward/db
+{{- end }}
+{{- if .Values.presets.spanMetrics.compactMetrics.enabled }}
+    traces/compact:
+      exporters:
+      - spanmetrics/compact
+      processors:
+      - transform/compact
+      - batch
+      receivers:
+      - forward/compact
+    metrics/compact:
+      receivers:
+      - spanmetrics/compact
+      processors:
+      - memory_limiter
+      - batch
+      exporters:
+      - coralogix
+{{- end }}
 {{- end }}
 {{- end }}
 

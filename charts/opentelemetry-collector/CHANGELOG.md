@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.25 / 2025-08-05
+- [Feat] Add compactMetrics option to spanMetrics preset.
+
 ### v0.118.24 / 2025-08-04
 
 - [Feat] Add k8sattributes support for profiles.

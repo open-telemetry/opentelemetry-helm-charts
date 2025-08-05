@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.24
+    helm.sh/chart: opentelemetry-collector-0.118.25
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.1"
@@ -15,6 +15,7 @@ metadata:
 data:
   relay: |
     connectors:
+      forward/compact: {}
       forward/db: {}
       forward/sampled: {}
       spanmetrics:
@@ -40,6 +41,19 @@ data:
         metrics_expiration: 5m
         metrics_flush_interval: 30s
         namespace: ""
+      spanmetrics/compact:
+        aggregation_cardinality_limit: 100
+        exclude_dimensions:
+        - span.name
+        histogram:
+          explicit:
+            buckets:
+            - 1ms
+            - 1s
+            - 10s
+        metrics_expiration: 5m
+        metrics_flush_interval: 30s
+        namespace: compact
       spanmetrics/db:
         aggregation_cardinality_limit: 100
         dimensions:
@@ -148,6 +162,11 @@ data:
         - azure
         override: true
         timeout: 2s
+      transform/compact:
+        trace_statements:
+        - context: resource
+          statements:
+          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
       transform/db:
         error_mode: silent
         trace_statements:
@@ -632,11 +651,20 @@ data:
           - spanmetrics
           - spanmetrics/db
           - otlp
+        metrics/compact:
+          exporters:
+          - coralogix
+          processors:
+          - memory_limiter
+          - batch
+          receivers:
+          - spanmetrics/compact
         traces:
           exporters:
           - debug
           - spanmetrics
           - forward/db
+          - forward/compact
           - forward/sampled
           processors:
           - memory_limiter
@@ -653,6 +681,14 @@ data:
           - jaeger
           - zipkin
           - otlp
+        traces/compact:
+          exporters:
+          - spanmetrics/compact
+          processors:
+          - transform/compact
+          - batch
+          receivers:
+          - forward/compact
         traces/db:
           exporters:
           - spanmetrics/db
