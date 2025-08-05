@@ -127,9 +127,6 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.profilesCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- if .Values.presets.coralogixExporter.enabled }}
-{{- $config = (include "opentelemetry-collector.applyCoralogixExporterConfig" (dict "Values" $data "config" $config) | fromYaml) }}
-{{- end }}
 {{- if .Values.presets.otlpReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyOtlpReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}

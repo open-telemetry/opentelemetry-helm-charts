@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.26 / 2025-08-05
+- [Fix] `headSampling` preset correctly removes `coralogix` exporter from the `traces` pipeline.
+
 ### v0.118.25 / 2025-08-05
 - [Feat] Add compactMetrics option to spanMetrics preset.
 
