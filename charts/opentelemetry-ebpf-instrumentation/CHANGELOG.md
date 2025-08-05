@@ -2,6 +2,9 @@
 
 ## OpenTelemetry eBPF Instrumentation
 
+### v0.1.3 / 2025-08-04
+- [Fix] Fix redis db cache enable to enabled
+
 ### v0.1.2 / 2025-07-13
 - [Feat] Add context propagation value in `values.yaml` ([port from beyla](https://github.com/grafana/beyla/commit/37749b58ef616bbb304216ee5407ba95bae9c6fb))
 - [Feat] Change default values to add redis db cache, k8s cache and mysql large buffers
