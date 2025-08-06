@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: prometheus-1
+spec:
+  replicas: 20
+  selector:
+    matchLabels:
+      app: prom
+  template:
+    metadata:
+      labels:
+        app: prom
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: prom
+          image: quay.io/brancz/prometheus-example-app:v0.3.0
+          ports:
+            - containerPort: 8080
+              name: http-port

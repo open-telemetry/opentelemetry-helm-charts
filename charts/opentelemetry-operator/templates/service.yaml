@@ -9,7 +9,7 @@ metadata:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   ports:
     {{- if .Values.kubeRBACProxy.enabled }}
@@ -39,7 +39,7 @@ metadata:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   ports:
     - port: {{ .Values.admissionWebhooks.servicePort }}

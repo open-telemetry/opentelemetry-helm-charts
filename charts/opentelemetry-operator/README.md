@@ -43,7 +43,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+--set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
@@ -51,14 +51,14 @@ If you created a custom namespace, like in the TLS Certificate Requirement secti
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
 --namespace opentelemetry-operator-system \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+--set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s \
+--set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
 --set admissionWebhooks.certManager.enabled=false \
 --set admissionWebhooks.autoGenerateCert.enabled=true
 ```

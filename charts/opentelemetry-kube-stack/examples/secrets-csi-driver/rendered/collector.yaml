@@ -3,197 +3,11 @@
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
-  name: example-cluster-stats
-  namespace: default
-  labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.6.1
-    app.kubernetes.io/version: "0.120.0"
-    app.kubernetes.io/managed-by: Helm
-    release: "example"        
-spec:
-  managementState: managed
-  mode: deployment
-  config:
-    exporters:
-      debug: {}
-      otlp:
-        endpoint: ingest.example.com:443
-        headers:
-          access-token: ${env:ACCESS_TOKEN}
-    processors:
-      batch:
-        send_batch_max_size: 1500
-        send_batch_size: 1000
-        timeout: 1s
-      k8sattributes:
-        extract:
-          labels:
-          - from: pod
-            key: app.kubernetes.io/name
-            tag_name: service.name
-          - from: pod
-            key: k8s-app
-            tag_name: service.name
-          - from: pod
-            key: app.kubernetes.io/instance
-            tag_name: k8s.app.instance
-          - from: pod
-            key: app.kubernetes.io/version
-            tag_name: service.version
-          - from: pod
-            key: app.kubernetes.io/component
-            tag_name: k8s.app.component
-          metadata:
-          - k8s.namespace.name
-          - k8s.pod.name
-          - k8s.pod.uid
-          - k8s.node.name
-          - k8s.pod.start_time
-          - k8s.deployment.name
-          - k8s.replicaset.name
-          - k8s.replicaset.uid
-          - k8s.daemonset.name
-          - k8s.daemonset.uid
-          - k8s.job.name
-          - k8s.job.uid
-          - k8s.container.name
-          - k8s.cronjob.name
-          - k8s.statefulset.name
-          - k8s.statefulset.uid
-          - container.image.tag
-          - container.image.name
-          - k8s.cluster.uid
-        passthrough: false
-        pod_association:
-        - sources:
-          - from: resource_attribute
-            name: k8s.pod.uid
-        - sources:
-          - from: resource_attribute
-            name: k8s.pod.name
-          - from: resource_attribute
-            name: k8s.namespace.name
-          - from: resource_attribute
-            name: k8s.node.name
-        - sources:
-          - from: resource_attribute
-            name: k8s.pod.ip
-        - sources:
-          - from: resource_attribute
-            name: k8s.pod.name
-          - from: resource_attribute
-            name: k8s.namespace.name
-        - sources:
-          - from: connection
-      resourcedetection/env:
-        detectors:
-        - env
-        override: false
-        timeout: 2s
-    receivers:
-      k8s_cluster:
-        allocatable_types_to_report:
-        - cpu
-        - memory
-        - storage
-        auth_type: serviceAccount
-        collection_interval: 10s
-        node_conditions_to_report:
-        - Ready
-        - MemoryPressure
-        - DiskPressure
-        - NetworkUnavailable
-      k8sobjects:
-        objects:
-        - exclude_watch_type:
-          - DELETED
-          group: events.k8s.io
-          mode: watch
-          name: events
-    service:
-      pipelines:
-        logs:
-          exporters:
-          - debug
-          processors:
-          - k8sattributes
-          - resourcedetection/env
-          - batch
-          receivers:
-          - k8sobjects
-        metrics:
-          exporters:
-          - debug
-          processors:
-          - k8sattributes
-          - resourcedetection/env
-          - batch
-          receivers:
-          - k8s_cluster
-  replicas: 1
-  imagePullPolicy: IfNotPresent
-  upgradeStrategy: automatic
-  terminationGracePeriodSeconds: 30
-  resources:
-    limits:
-      cpu: 200m
-      memory: 500Mi
-    requests:
-      cpu: 100m
-      memory: 250Mi
-  securityContext:
-    {}
-  volumeMounts:
-  - mountPath: /mnt/secrets-store
-    name: secrets-csi
-    readOnly: true
-  env:
-  - name: OTEL_K8S_NODE_NAME
-    valueFrom:
-      fieldRef:
-        fieldPath: spec.nodeName
-  - name: OTEL_K8S_NODE_IP
-    valueFrom:
-      fieldRef:
-        fieldPath: status.hostIP
-  - name: OTEL_K8S_NAMESPACE
-    valueFrom:
-      fieldRef:
-        apiVersion: v1
-        fieldPath: metadata.namespace
-  - name: OTEL_K8S_POD_NAME
-    valueFrom:
-      fieldRef:
-        apiVersion: v1
-        fieldPath: metadata.name
-  - name: OTEL_K8S_POD_IP
-    valueFrom:
-      fieldRef:
-        apiVersion: v1
-        fieldPath: status.podIP
-  - name: OTEL_RESOURCE_ATTRIBUTES
-    value: "k8s.cluster.name=demo"
-  
-  envFrom:
-    - secretRef:
-        name: collector-credentials-secret
-  volumes:
-  - csi:
-      driver: secrets-store.csi.k8s.io
-      readOnly: true
-      volumeAttributes:
-        secretProviderClass: collector-credentials
-    name: secrets-csi
----
-# Source: opentelemetry-kube-stack/templates/collector.yaml
-apiVersion: opentelemetry.io/v1beta1
-kind: OpenTelemetryCollector
-metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.6.1
-    app.kubernetes.io/version: "0.120.0"
+    helm.sh/chart: opentelemetry-kube-stack-0.8.0
+    app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
 spec:
@@ -202,6 +16,15 @@ spec:
   config:
     exporters:
       debug: {}
+    extensions:
+      k8s_leader_elector/k8s_cluster:
+        auth_type: serviceAccount
+        lease_name: k8s.cluster.receiver.opentelemetry.io
+        lease_namespace: default
+      k8s_leader_elector/k8s_objects:
+        auth_type: serviceAccount
+        lease_name: k8s.objects.receiver.opentelemetry.io
+        lease_namespace: default
     processors:
       batch:
         send_batch_max_size: 1500
@@ -343,6 +166,27 @@ spec:
               system.memory.utilization:
                 enabled: true
           network: {}
+      k8s_cluster:
+        allocatable_types_to_report:
+        - cpu
+        - memory
+        - storage
+        auth_type: serviceAccount
+        collection_interval: 10s
+        k8s_leader_elector: k8s_leader_elector/k8s_cluster
+        node_conditions_to_report:
+        - Ready
+        - MemoryPressure
+        - DiskPressure
+        - NetworkUnavailable
+      k8sobjects:
+        k8s_leader_elector: k8s_leader_elector/k8s_objects
+        objects:
+        - exclude_watch_type:
+          - DELETED
+          group: events.k8s.io
+          mode: watch
+          name: events
       kubeletstats:
         auth_type: serviceAccount
         collection_interval: 15s
@@ -550,6 +394,9 @@ spec:
               ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
               insecure_skip_verify: true
     service:
+      extensions:
+      - k8s_leader_elector/k8s_objects
+      - k8s_leader_elector/k8s_cluster
       pipelines:
         logs:
           exporters:
@@ -561,6 +408,7 @@ spec:
           receivers:
           - otlp
           - filelog
+          - k8sobjects
         metrics:
           exporters:
           - debug
@@ -573,6 +421,7 @@ spec:
           - otlp
           - hostmetrics
           - kubeletstats
+          - k8s_cluster
         traces:
           exporters:
           - debug

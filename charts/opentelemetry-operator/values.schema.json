@@ -7,6 +7,7 @@
   "required": [
     "replicaCount",
     "nameOverride",
+    "namespaceOverride",
     "imagePullSecrets",
     "clusterDomain",
     "pdb",
@@ -60,6 +61,14 @@
       "type": "string",
       "default": "",
       "title": "The fullnameOverride Schema",
+      "examples": [
+        ""
+      ]
+    },
+    "namespaceOverride": {
+      "type": "string",
+      "default": "",
+      "title": "Top level field indicating an override for the namespace",
       "examples": [
         ""
       ]
@@ -191,6 +200,14 @@
               "title": "The tag Schema",
               "examples": [
                 "v0.93.0"
+              ]
+            },
+            "imagePullPolicy": {
+              "type": "string",
+              "default": "IfNotPresent",
+              "title": "The imagePullPolicy Schema",
+              "examples": [
+                "IfNotPresent"
               ]
             }
           },
@@ -661,103 +678,7 @@
           ]
         },
         "resources": {
-          "type": "object",
-          "default": {},
-          "title": "The resources Schema",
-          "required": [],
-          "additionalProperties": false,
-          "properties": {
-            "limits": {
-              "type": "object",
-              "default": {},
-              "title": "The limits Schema",
-              "required": [],
-              "additionalProperties": true,
-              "properties": {
-                "cpu": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The cpu Schema",
-                  "examples": [
-                    "100m"
-                  ]
-                },
-                "memory": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The memory Schema",
-                  "examples": [
-                    "128Mi"
-                  ]
-                },
-                "ephemeral-storage": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The ephemeral-storage Schema",
-                  "examples": [
-                    "50Mi"
-                  ]
-                }
-              },
-              "examples": [
-                {
-                  "cpu": "100m",
-                  "memory": "128Mi"
-                }
-              ]
-            },
-            "requests": {
-              "type": "object",
-              "default": {},
-              "title": "The requests Schema",
-              "required": [],
-              "additionalProperties": true,
-              "properties": {
-                "cpu": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The cpu Schema",
-                  "examples": [
-                    "100m"
-                  ]
-                },
-                "memory": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The memory Schema",
-                  "examples": [
-                    "64Mi"
-                  ]
-                },
-                "ephemeral-storage": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The ephemeral-storage Schema",
-                  "examples": [
-                    "50Mi"
-                  ]
-                }
-              },
-              "examples": [
-                {
-                  "cpu": "100m",
-                  "memory": "64Mi"
-                }
-              ]
-            }
-          },
-          "examples": [
-            {
-              "limits": {
-                "cpu": "100m",
-                "memory": "128Mi"
-              },
-              "requests": {
-                "cpu": "100m",
-                "memory": "64Mi"
-              }
-            }
-          ]
+          "$ref": "#/definitions/resources"
         },
         "env": {
           "type": "object",
@@ -2100,6 +2021,9 @@
           "examples": [
             {}
           ]
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
         }
       },
       "examples": [
@@ -2320,5 +2244,106 @@
         }
       }
     }
-  ]
+  ],
+  "definitions": {
+    "resources": {
+      "type": "object",
+      "default": {},
+      "title": "The resources Schema",
+      "required": [],
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "type": "object",
+          "default": {},
+          "title": "The limits Schema",
+          "required": [],
+          "additionalProperties": true,
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "default": "",
+              "title": "The cpu Schema",
+              "examples": [
+                "100m"
+              ]
+            },
+            "memory": {
+              "type": "string",
+              "default": "",
+              "title": "The memory Schema",
+              "examples": [
+                "128Mi"
+              ]
+            },
+            "ephemeral-storage": {
+              "type": "string",
+              "default": "",
+              "title": "The ephemeral-storage Schema",
+              "examples": [
+                "50Mi"
+              ]
+            }
+          },
+          "examples": [
+            {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          ]
+        },
+        "requests": {
+          "type": "object",
+          "default": {},
+          "title": "The requests Schema",
+          "required": [],
+          "additionalProperties": true,
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "default": "",
+              "title": "The cpu Schema",
+              "examples": [
+                "100m"
+              ]
+            },
+            "memory": {
+              "type": "string",
+              "default": "",
+              "title": "The memory Schema",
+              "examples": [
+                "64Mi"
+              ]
+            },
+            "ephemeral-storage": {
+              "type": "string",
+              "default": "",
+              "title": "The ephemeral-storage Schema",
+              "examples": [
+                "50Mi"
+              ]
+            }
+          },
+          "examples": [
+            {
+              "cpu": "100m",
+              "memory": "64Mi"
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "limits": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "64Mi"
+          }
+        }
+      ]
+    }
+  }
 }
