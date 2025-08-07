@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.27 / 2025-08-07
+- [Feat] add option to drop compact duration histogram in spanMetrics preset.
+
 ### v0.118.26 / 2025-08-05
 - [Fix] `headSampling` preset correctly removes `coralogix` exporter from the `traces` pipeline.
 

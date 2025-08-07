@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.26
+    helm.sh/chart: opentelemetry-collector-0.118.27
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.1"
@@ -100,6 +100,10 @@ data:
         traces:
           span:
           - attributes["db.system"] == nil
+      filter/drop_histogram:
+        metrics:
+          metric:
+          - name == "compact.duration"
       filter/k8s_extra_metrics:
         metrics:
           metric:
@@ -167,6 +171,14 @@ data:
         - context: resource
           statements:
           - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
+      transform/compact_histogram:
+        metric_statements:
+        - context: metric
+          statements:
+          - extract_sum_metric(false, ".sum") where name == "compact.duration"
+          - extract_count_metric(false, ".count") where name == "compact.duration"
+          - set(unit, "") where name == "compact.duration.sum"
+          - set(unit, "") where name == "compact.duration.count"
       transform/db:
         error_mode: silent
         trace_statements:
@@ -656,6 +668,8 @@ data:
           - coralogix
           processors:
           - memory_limiter
+          - transform/compact_histogram
+          - filter/drop_histogram
           - batch
           receivers:
           - spanmetrics/compact

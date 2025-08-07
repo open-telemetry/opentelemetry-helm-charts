@@ -1333,6 +1333,20 @@ processors:
         statements:
           - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
 {{- end }}
+{{- if and (.Values.presets.spanMetrics.compactMetrics.enabled) (.Values.presets.spanMetrics.compactMetrics.dropHistogram) }}
+  transform/compact_histogram:
+    metric_statements:
+      - context: metric
+        statements:
+          - extract_sum_metric(false, ".sum") where name == "compact.duration"
+          - extract_count_metric(false, ".count") where name == "compact.duration"
+          - set(unit, "") where name == "compact.duration.sum"
+          - set(unit, "") where name == "compact.duration.count"
+  filter/drop_histogram:
+    metrics:
+      metric:
+        - 'name == "compact.duration"'
+{{- end }}
 {{- if or (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.compactMetrics.enabled) }}
 service:
   pipelines:
@@ -1363,6 +1377,10 @@ service:
       - spanmetrics/compact
       processors:
       - memory_limiter
+      {{- if .Values.presets.spanMetrics.compactMetrics.dropHistogram }}
+      - transform/compact_histogram
+      - filter/drop_histogram
+      {{- end }}
       - batch
       exporters:
       - coralogix
