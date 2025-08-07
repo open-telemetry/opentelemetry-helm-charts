@@ -196,7 +196,7 @@ The collector can be configured to automatically discover and collect telemetry 
 
 > [!WARNING] > `annotationDiscovery.logs` and `logsCollection` are mutually exclusive.
 
-`presets.annotationDiscovery.logs.enabled: true`: Collects logs only from all pods by-default, and allows to define additional configuration through annotations. Log collection from specific Pods/containers, can disabled by using the proper annotation.
+`presets.annotationDiscovery.logs.enabled: true`: Collects logs only from all pods by-default, and allows to define additional configuration through annotations. Log collection from specific Pods/containers, can be disabled by using the proper annotation.
 
 Here is an example `values.yaml`:
 
