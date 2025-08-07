@@ -62,13 +62,13 @@ For more information about the approver role, see the [community repository](htt
 
 ### Emeritus Maintainers
 
-- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
+- [Tigran Najaryan](https://github.com/tigrannajaryan)
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
 ### Emeritus Approvers
 
-- [Naseem K. Ullah](https://github.com/naseemkullah), Transit
+- [Naseem K. Ullah](https://github.com/naseemkullah)
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
