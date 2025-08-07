@@ -165,6 +165,10 @@ components:
         value: kafka:9092
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: DB_CONNECTION_STRING
+        value: "Host=postgresql;Username=otelu;Password=otelp;Database=otel"
+      - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 120Mi
@@ -172,6 +176,9 @@ components:
       - name: wait-for-kafka
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+      - name: wait-for-postgresql
+        image: busybox:latest
+        command: ["sh", "-c", "until nc -z -v -w30 postgresql 5432; do echo waiting for postgresql; sleep 2; done;"]
 
   ad:
     enabled: true
@@ -718,6 +725,32 @@ opentelemetry-collector:
       redis:
         endpoint: "valkey-cart:6379"
         collection_interval: 10s
+      nginx:
+        endpoint: "http://frontend-proxy:8080/status"
+        collection_interval: 10s
+      postgresql:
+        endpoint: "postgresql:5432"
+        username: "postgres"
+        password: "postgres"
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+        tls:
+          insecure: true
 
     exporters:
       ## Create an exporter to Jaeger using the standard `otlp` export format
@@ -762,7 +795,7 @@ opentelemetry-collector:
           processors: [memory_limiter, resource, transform, batch]
           exporters: [otlp, debug, spanmetrics]
         metrics:
-          receivers: [httpcheck/frontend-proxy, redis, otlp, spanmetrics]
+          receivers: [httpcheck/frontend-proxy, redis, nginx, postgresql, otlp, spanmetrics]
           processors: [memory_limiter, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
@@ -1018,3 +1051,57 @@ loki:
     enabled: false
   test:
     enabled: false
+
+postgresql:
+  enabled: true
+  fullnameOverride: postgresql
+  auth:
+    username: otelu
+    password: otelp
+    database: otel
+    postgresPassword: postgres
+  primary:
+    initdb:
+      scripts:
+        init.sql: |
+          -- Copyright The OpenTelemetry Authors
+          -- SPDX-License-Identifier: Apache-2.0
+
+          CREATE USER otelu WITH PASSWORD 'otelp';
+
+          -- Create a table
+          CREATE TABLE "order" (
+              order_id TEXT PRIMARY KEY
+          );
+
+          CREATE TABLE shipping (
+              shipping_tracking_id TEXT PRIMARY KEY,
+              shipping_cost_currency_code TEXT NOT NULL,
+              shipping_cost_units BIGINT NOT NULL,
+              shipping_cost_nanos INT NOT NULL,
+              street_address TEXT,
+              city TEXT,
+              state TEXT,
+              country TEXT,
+              zip_code TEXT,
+              order_id TEXT NOT NULL,
+              FOREIGN KEY (order_id) REFERENCES "order"(order_id) ON DELETE CASCADE
+          );
+
+          CREATE TABLE orderitem (
+              item_cost_currency_code TEXT NOT NULL,
+              item_cost_units BIGINT NOT NULL,
+              item_cost_nanos INT NOT NULL,
+              product_id TEXT NOT NULL,
+              quantity INT NOT NULL,
+              order_id TEXT NOT NULL,
+              PRIMARY KEY (order_id, product_id),
+              FOREIGN KEY (order_id) REFERENCES "order"(order_id) ON DELETE CASCADE
+          );
+
+          GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO otelu;
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      memory: 128Mi
