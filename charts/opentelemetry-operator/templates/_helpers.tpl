@@ -41,7 +41,7 @@ Create chart name and version as used by the chart label.
 Create Operator version.
 */}}
 {{- define "opentelemetry-operator.appVersion" -}}
-{{ default .Chart.AppVersion .Values.manager.image.tag }}
+{{ default .Chart.AppVersion .Values.manager.image.tag | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -171,7 +171,7 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
-{{- printf "%s:%s" .Values.manager.image.repository (include "opentelemetry-operator.appVersion" .) }}
+{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
 {{- end }}
 
 {{- define "opentelemetry-operator.featureGatesMap" -}}
