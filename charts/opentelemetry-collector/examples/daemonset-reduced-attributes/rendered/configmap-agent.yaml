@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.118.28
+    helm.sh/chart: opentelemetry-collector-0.118.29
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.130.1"
@@ -559,11 +559,43 @@ data:
           expr: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/opentelemetry-collector/.*.log")
             and ((body contains "logRecord") or (body contains "ResourceLog"))
           type: filter
+        - default: export
+          routes:
+          - expr: (body matches "\"resource\":{.*?},?")
+            output: parse-body
+          type: router
+        - id: parse-body
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          parse_to: attributes["parsed_body_tmp"]
+          type: json_parser
+        - field: body
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          regex: \"resource\":{.*?},?
+          replace_with: ""
+          type: regex_replace
+        - from: attributes["parsed_body_tmp"]["resource"]
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          to: resource["attributes_tmp"]
+          type: move
+        - field: attributes["parsed_body_tmp"]
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          type: remove
+        - field: resource["attributes_tmp"]
+          id: flatten-resource
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          type: flatten
         - combine_field: body
           is_first_entry: body matches "^([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{2}-[0-9]{2}
             [0-9]{2}:[0-9]{2}:[0-9]{2})"
           source_identifier: attributes["log.file.path"]
           type: recombine
+        - id: export
+          type: noop
         retry_on_failure:
           enabled: true
         start_at: beginning

@@ -761,11 +761,49 @@ receivers:
       - type: filter
         drop_ratio: 1.0
         expr: '(attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/.*.log") and ((body contains "logRecord") or (body contains "ResourceLog"))'
-# (body startsWith "{\"level\":\"debug") or
+      # The operators below should only apply to the logs of our own Collector and are necessary
+      # to get the `resource` field from them into the resource attributes that are emitted.
+      # This logic should encompass logs of all agents.
+      # We do an additional check to ensure the log body has the `resource` field to avoid wasting
+      # time and resources on operators that would simply fail.
+      - type: router
+        routes:
+          - output: parse-body
+            expr: '(body matches "\"resource\":{.*?},?")'
+        default: export
+      - type: json_parser
+        id: parse-body
+        parse_to: attributes["parsed_body_tmp"]
+        if: (attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/.*/.*.log")
+        on_error: send_quiet
+      - type: regex_replace
+        field: body
+        regex: \"resource\":{.*?},?
+        replace_with: ""
+        if: (attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/.*/.*.log")
+        on_error: send_quiet
+      - type: move
+        from: attributes["parsed_body_tmp"]["resource"]
+        to: resource["attributes_tmp"]
+        if: (attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/.*/.*.log")
+        on_error: send_quiet
+      - type: remove
+        field: attributes["parsed_body_tmp"]
+        if: (attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/.*/.*.log")
+        on_error: send_quiet
+      - type: flatten
+        id: flatten-resource
+        if: (attributes["log.file.path"] matches "/var/log/pods/{{ .Release.Namespace }}_{{ include "opentelemetry-collector.fullname" . }}.*_.*/.*/.*.log")
+        field: resource["attributes_tmp"]
+        on_error: send_quiet
       {{- end }}
       {{- if .Values.presets.logsCollection.extraFilelogOperators }}
       {{- .Values.presets.logsCollection.extraFilelogOperators | toYaml | nindent 6 }}
       {{- end }}
+      # This noop operator is a helper to quickly route an entry to be exported.
+      # It must always be the last operator in the receiver.
+      - type: noop
+        id: export
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" -}}

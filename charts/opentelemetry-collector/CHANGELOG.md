@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.118.29 / 2025-08-07
+- [Fix] Fix resource attributes of the Collector's logs in the `filelog` receiver.
+
 ### v0.118.28 / 2025-08-07
 - [Fix] `profilesCollection` preset correctly adds `coralogix` exporter to `profiles` pipeline.
 
