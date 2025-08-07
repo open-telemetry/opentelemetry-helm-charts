@@ -176,6 +176,18 @@ components:
       - name: wait-for-kafka
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+      - name: wait-for-kafka-topic-orders
+        image: confluentinc/cp-kafka:latest
+        command:
+          - "sh"
+          - "-c"
+          - |
+            echo "Waiting for Kafka topic 'orders' to be available..."
+            until kafka-topics --bootstrap-server kafka:9092 --list | grep -q "^orders$"; do
+              echo "Topic 'orders' not found, waiting..."
+              sleep 5
+            done
+            echo "Topic 'orders' is available!"
       - name: wait-for-postgresql
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 postgresql 5432; do echo waiting for postgresql; sleep 2; done;"]
@@ -319,6 +331,18 @@ components:
       - name: wait-for-kafka
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+      - name: wait-for-kafka-topic-orders
+        image: confluentinc/cp-kafka:latest
+        command:
+          - "sh"
+          - "-c"
+          - |
+            echo "Waiting for Kafka topic 'orders' to be available..."
+            until kafka-topics --bootstrap-server kafka:9092 --list | grep -q "^orders$"; do
+              echo "Topic 'orders' not found, waiting..."
+              sleep 5
+            done
+            echo "Topic 'orders' is available!"
 
   frontend:
     enabled: true
