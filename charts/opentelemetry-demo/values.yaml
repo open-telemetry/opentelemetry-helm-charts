@@ -199,7 +199,7 @@ components:
         value: otlp
     resources:
       limits:
-        memory: 300Mi
+        memory: 512Mi
 
   cart:
     enabled: true
@@ -259,7 +259,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 20Mi
+        memory: 128Mi
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
@@ -297,7 +297,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
     resources:
       limits:
-        memory: 100Mi
+        memory: 256Mi
 
   fraud-detection:
     enabled: true
@@ -660,10 +660,10 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
-        value: "-Xmx400M -Xms400M"
+        value: "-Xmx800M -Xms800M"
     resources:
       limits:
-        memory: 600Mi
+        memory: 1Gi
     securityContext:
       runAsUser: 1000  # appuser
       runAsGroup: 1000
@@ -835,7 +835,7 @@ jaeger:
         value: 0.0.0.0:4318
     resources:
       limits:
-        memory: 400Mi
+        memory: 1Gi
   storage:
     type: memory
   agent:
@@ -897,7 +897,7 @@ prometheus:
       servicePort: 9090
     resources:
       limits:
-        memory: 300Mi
+        memory: 1Gi
 
 grafana:
   enabled: true
@@ -965,7 +965,7 @@ grafana:
     default: grafana-dashboards
   resources:
     limits:
-      memory: 150Mi
+      memory: 1Gi
 
 opensearch:
   enabled: false
@@ -980,7 +980,7 @@ loki:
       limits:
         memory: 2Gi
       requests:
-        memory: 1Gi
+        memory: 2Gi
   # Cache configurations for improved performance
   chunksCache:
     enabled: true
