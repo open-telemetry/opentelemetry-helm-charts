@@ -21,7 +21,7 @@
       }
     ]
   },
-  "description": "Performance metrics for PostgreSQL instrumented with the OpenTelemetry Collector PostgreSQL receiver.",
+  "description": "Comprehensive PostgreSQL database performance monitoring dashboard using OpenTelemetry Collector PostgreSQL receiver. Tracks connection pools, query performance, transaction rates, buffer cache efficiency, background writer activity, replication lag, and database health metrics essential for database administration and performance optimization.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -53,10 +53,24 @@
       "type": "row"
     },
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 16,
+      "panels": [],
+      "title": "Database Health & Performance",
+      "description": "Key performance indicators and health metrics for database monitoring including transaction rates, connection status, and operational metrics",
+      "type": "row"
+    },
+    {
       "datasource": {
         "uid": "$datasource"
       },
-      "description": "Queries per seconds. Queries being commits or rollbacks.\n",
+      "description": "Database transaction rate showing queries per second (QPS). Measures the combined rate of committed and rolled back transactions, providing insight into overall database activity and workload intensity.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -91,7 +105,7 @@
         "h": 7,
         "w": 4,
         "x": 0,
-        "y": 1
+        "y": 2
       },
       "id": 11,
       "maxDataPoints": 100,
@@ -178,9 +192,226 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Total database size on disk showing storage utilization across all databases. Monitor for storage growth trends and capacity planning.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(31, 120, 193)",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1073741824
+              },
+              {
+                "color": "red",
+                "value": 5368709120
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 4,
+        "y": 2
+      },
+      "id": 17,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(postgresql_db_size_bytes)",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Database Size",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Transaction rollback rate showing failed transactions per second. High rollback rates may indicate application errors, deadlocks, or constraint violations requiring investigation.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(255, 115, 115)",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 8,
+        "y": 2
+      },
+      "id": 18,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(postgresql_rollbacks_total[5m]))",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Rollback Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Total number of user tables across all databases. Useful for monitoring database schema growth and complexity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(115, 191, 105)",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 12,
+        "y": 2
+      },
+      "id": 19,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(postgresql_table_count)",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Table Count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
         "uid": "$datasource"
       },
-      "description": "See [pg_stat_database / `tup_fetched`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-DATABASE-VIEW)",
+      "description": "Database row operation rates showing tuple (row) activity over time. Tracks fetched, returned, inserted, updated, and deleted rows per second, providing insight into database read/write patterns and query performance characteristics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -240,7 +471,7 @@
         "h": 7,
         "w": 20,
         "x": 4,
-        "y": 1
+        "y": 9
       },
       "id": 1,
       "options": {
@@ -567,6 +798,7 @@
       "datasource": {
         "uid": "$datasource"
       },
+      "description": "PostgreSQL background writer buffer activity showing buffer allocation, writes, and checkpoint operations. Monitors buffer pool efficiency and background writer performance for memory management optimization.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -899,6 +1131,7 @@
         "type": "prometheus",
         "uid": "$datasource"
       },
+      "description": "Database concurrency issues tracking deadlocks and conflicts. Monitors transaction conflicts and deadlock occurrences that can impact application performance and indicate contention problems requiring optimization.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1141,6 +1374,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
+      "description": "Buffer cache hit ratio showing the percentage of data blocks found in memory versus read from disk. Higher ratios (>95%) indicate efficient memory usage and better performance. Low ratios suggest need for memory tuning.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1241,6 +1475,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
+      "description": "Active database connections by database showing current client connection count. Monitor for connection pool exhaustion, connection leaks, and capacity planning. Compare against max_connections setting.",
       "fieldConfig": {
         "defaults": {
           "color": {

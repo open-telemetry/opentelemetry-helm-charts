@@ -21,7 +21,7 @@
       }
     ]
   },
-  "description": "Comprehensive Kafka monitoring dashboard with cluster overview, topic-level metrics, consumer performance, and broker health using OpenTelemetry.",
+  "description": "Comprehensive Kafka monitoring dashboard with cluster overview, topic-level metrics, cluster health, consumer performance, and network performance using OpenTelemetry. Monitors message throughput, latency, partition health, and operational metrics for complete Kafka ecosystem observability.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -39,6 +39,7 @@
       "id": 15,
       "panels": [],
       "title": "Kafka Cluster Overview",
+      "description": "High-level cluster health metrics including broker status, topic counts, and overall cluster performance indicators",
       "type": "row"
     },
     {
@@ -350,6 +351,7 @@
       "id": 16,
       "panels": [],
       "title": "Topic-Level Performance",
+      "description": "Topic-specific throughput and performance metrics showing message rates, sizes, and operational characteristics per topic",
       "type": "row"
     },
     {
@@ -552,9 +554,10 @@
         "x": 0,
         "y": 17
       },
-      "id": 22,
+      "id": 28,
       "panels": [],
-      "title": "Consumer Performance & Lag",
+      "title": "Cluster Health",
+      "description": "Kafka cluster health metrics including controller status, partition health, and broker operational indicators",
       "type": "row"
     },
     {
@@ -562,7 +565,309 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
-      "description": "Consumer lag by topic and partition",
+      "description": "Number of active Kafka controllers in the cluster. Should always be 1 for a healthy cluster. 0 indicates no controller, >1 indicates split-brain condition.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(31, 120, 193)",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 0,
+        "y": 18
+      },
+      "id": 31,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "kafka_controller_active_count",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Active Controllers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Total number of partitions across all topics in the cluster. Monitors cluster size and partition distribution.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(115, 191, 105)",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 6,
+        "y": 18
+      },
+      "id": 32,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(kafka_partition_count)",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Partitions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Number of offline partitions that are currently unavailable. Should be 0 for a healthy cluster. Non-zero values indicate partition availability issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(255, 115, 115)",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 12,
+        "y": 18
+      },
+      "id": 33,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(kafka_partition_offline)",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Offline Partitions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Number of under-replicated partitions that don't have enough replicas. Should be 0 for a healthy cluster. Indicates replication issues or broker failures.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(255, 152, 48)",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 18
+      },
+      "id": 34,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(kafka_partition_underReplicated)",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Under-Replicated Partitions",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 22,
+      "panels": [],
+      "title": "Consumer Performance & Lag",
+      "description": "Consumer group performance monitoring including lag analysis, consumption rates, and processing efficiency metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Consumer lag by topic and partition showing the number of messages behind the latest offset. High lag indicates slow consumption or processing issues requiring scaling or optimization.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -626,7 +931,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 18
+        "y": 35
       },
       "id": 23,
       "options": {
@@ -722,9 +1027,9 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 18
+        "y": 35
       },
-      "id": 24,
+      "id": 29,
       "options": {
         "legend": {
           "calcs": [],
@@ -744,8 +1049,8 @@
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "kafka_consumer_fetch_latency_avg",
-          "legendFormat": "Avg Fetch Latency - {{client_id}}",
+          "expr": "kafka_consumer_fetch_latency_avg{client_id=~\"$consumer\"}",
+          "legendFormat": "Avg Latency - {{client_id}}",
           "range": true,
           "refId": "A"
         },
@@ -755,8 +1060,8 @@
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "kafka_consumer_fetch_latency_max",
-          "legendFormat": "Max Fetch Latency - {{client_id}}",
+          "expr": "kafka_consumer_fetch_latency_max{client_id=~\"$consumer\"}",
+          "legendFormat": "Max Latency - {{client_id}}",
           "range": true,
           "refId": "B"
         }
@@ -829,9 +1134,9 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 18
+        "y": 35
       },
-      "id": 25,
+      "id": 30,
       "options": {
         "legend": {
           "calcs": [],
@@ -870,6 +1175,380 @@
       ],
       "title": "Network I/O Throughput",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Consumer bytes consumption rate showing data throughput per consumer. Monitors data volume being processed by each consumer group.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "id": 36,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "kafka_consumer_bytes_consumed_rate{topic=~\"$topic\", client_id=~\"$consumer\"}",
+          "legendFormat": "{{client_id}} - {{topic}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Consumer Bytes Consumption Rate",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 51
+      },
+      "id": 37,
+      "panels": [],
+      "title": "Network & Performance",
+      "description": "Kafka cluster network I/O, request metrics, and overall performance indicators for monitoring throughput and operational health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Total request count showing all requests processed by Kafka brokers. Monitors overall cluster activity and request volume.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 52
+      },
+      "id": 38,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "rate(kafka_request_count_total[5m])",
+          "legendFormat": "Total Requests",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Request Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Failed request rate showing requests that resulted in errors. High failure rates indicate broker issues, client problems, or configuration errors.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(255, 115, 115)",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 52
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "rate(kafka_request_failed_total[5m])",
+          "legendFormat": "Failed Requests",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Request Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Total message count showing cumulative messages processed by the Kafka cluster. Provides insight into overall cluster throughput and activity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(115, 191, 105)",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "id": 40,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(kafka_message_count_total)",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Messages",
+      "type": "stat"
     }
   ],
   "templating": {
