@@ -718,6 +718,27 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
+  jaeger-mcp-server:
+    enabled: true
+    useDefault:
+      env: false
+    service:
+      type: NodePort
+      port: 8000
+      nodePort: 30002
+    env:
+      - name: JAEGER_URL
+        value: "jaeger-query"
+      - name: JAEGER_PROTOCOL
+        value: "GRPC"
+      - name: JAEGER_PORT
+        value: "16685"
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        memory: 512Mi
+
 opentelemetry-collector:
   enabled: true
   image:
@@ -1273,7 +1294,7 @@ grafana:
 grafana-mcp:
   fullnameOverride: grafana-mcp
   grafana:
-    url: "http://grafana:3000"
+    url: "http://grafana:80"
     apiKey: "na"
   resources:
     limits:
