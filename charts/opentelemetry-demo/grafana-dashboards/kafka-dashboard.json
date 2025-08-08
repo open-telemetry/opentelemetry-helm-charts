@@ -21,10 +21,10 @@
       }
     ]
   },
-  "description": "Performance metrics for Kafka instrumented with the OpenTelemetry Collector and Java agent JMX monitoring.",
+  "description": "Comprehensive Kafka monitoring dashboard with cluster overview, topic-level metrics, consumer performance, and broker health using OpenTelemetry.",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": 7,
   "links": [],
   "panels": [
@@ -38,7 +38,7 @@
       },
       "id": 15,
       "panels": [],
-      "title": "Kafka Broker Overview",
+      "title": "Kafka Cluster Overview",
       "type": "row"
     },
     {
@@ -46,7 +46,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
-      "description": "Messages per second being processed by Kafka",
+      "description": "Total messages processed per second across all topics",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -54,22 +54,20 @@
             "mode": "fixed"
           },
           "decimals": 2,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 100
+              },
+              {
+                "color": "red",
+                "value": 1000
               }
             ]
           },
@@ -86,7 +84,7 @@
       "id": 11,
       "maxDataPoints": 100,
       "options": {
-        "colorMode": "none",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
@@ -110,12 +108,12 @@
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "rate(kafka_message_count_total[5m])",
+          "expr": "sum(rate(kafka_message_count_total[5m]))",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Messages/sec",
+      "title": "Total Messages/sec",
       "type": "stat"
     },
     {
@@ -123,7 +121,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
-      "description": "Bytes per second being consumed from Kafka topics",
+      "description": "Total bytes consumed per second from all topics",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -131,22 +129,20 @@
             "mode": "fixed"
           },
           "decimals": 2,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "red",
+                "value": 10000
               }
             ]
           },
@@ -163,7 +159,7 @@
       "id": 12,
       "maxDataPoints": 100,
       "options": {
-        "colorMode": "none",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
@@ -187,12 +183,12 @@
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "rate(kafka_consumer_bytes_consumed_total[5m])",
+          "expr": "sum(rate(kafka_consumer_bytes_consumed_total[5m]))",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Consumer Bytes/sec",
+      "title": "Total Consumer Bytes/sec",
       "type": "stat"
     },
     {
@@ -277,7 +273,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
-      "description": "Number of active controller connections",
+      "description": "Number of active controllers in the cluster",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -285,22 +281,16 @@
             "mode": "fixed"
           },
           "decimals": 0,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "red"
+              },
+              {
+                "color": "green",
+                "value": 1
               }
             ]
           },
@@ -317,7 +307,7 @@
       "id": 14,
       "maxDataPoints": 100,
       "options": {
-        "colorMode": "none",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
@@ -359,7 +349,7 @@
       },
       "id": 16,
       "panels": [],
-      "title": "Network I/O Metrics",
+      "title": "Topic-Level Performance",
       "type": "row"
     },
     {
@@ -367,7 +357,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
-      "description": "Network bytes in/out over time",
+      "description": "Bytes consumed per second by topic and consumer",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -429,7 +419,7 @@
         "x": 0,
         "y": 9
       },
-      "id": 17,
+      "id": 20,
       "options": {
         "legend": {
           "calcs": [],
@@ -449,24 +439,222 @@
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "rate(kafka_network_io_bytes_total{direction=\"in\"}[5m])",
-          "legendFormat": "Bytes In",
+          "expr": "rate(kafka_consumer_bytes_consumed_total[5m])",
+          "legendFormat": "{{topic}} - {{client_id}}",
           "range": true,
           "refId": "A"
+        }
+      ],
+      "title": "Topic Bytes Consumed/sec",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Records consumed per second by topic and consumer",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "reqps"
         },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "rate(kafka_network_io_bytes_total{direction=\"out\"}[5m])",
-          "legendFormat": "Bytes Out",
+          "expr": "rate(kafka_consumer_records_consumed_total[5m])",
+          "legendFormat": "{{topic}} - {{client_id}}",
           "range": true,
-          "refId": "B"
+          "refId": "A"
         }
       ],
-      "title": "Network I/O Throughput",
+      "title": "Topic Records Consumed/sec",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 22,
+      "panels": [],
+      "title": "Consumer Performance & Lag",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Consumer lag by topic and partition",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 100
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "kafka_consumer_records_lag",
+          "legendFormat": "{{topic}}-p{{partition}} ({{client_id}})",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Consumer Lag by Partition",
       "type": "timeseries"
     },
     {
@@ -532,11 +720,11 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 9
+        "w": 8,
+        "x": 8,
+        "y": 18
       },
-      "id": 18,
+      "id": 24,
       "options": {
         "legend": {
           "calcs": [],
@@ -556,26 +744,201 @@
             "uid": "webstore-metrics"
           },
           "editorMode": "code",
-          "expr": "kafka_consumer_records_lag",
-          "legendFormat": "Lag - {{topic}} ({{client_id}})",
+          "expr": "kafka_consumer_fetch_latency_avg",
+          "legendFormat": "Avg Fetch Latency - {{client_id}}",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "kafka_consumer_fetch_latency_max",
+          "legendFormat": "Max Fetch Latency - {{client_id}}",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Consumer Lag",
+      "title": "Consumer Fetch Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "description": "Network I/O throughput and request metrics",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 18
+      },
+      "id": 25,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "rate(kafka_network_io_bytes_total{direction=\"in\"}[5m])",
+          "legendFormat": "Bytes In",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "rate(kafka_network_io_bytes_total{direction=\"out\"}[5m])",
+          "legendFormat": "Bytes Out",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Network I/O Throughput",
       "type": "timeseries"
     }
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "webstore-metrics"
+        },
+        "definition": "label_values(kafka_consumer_bytes_consumed_total, topic)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Topic",
+        "multi": true,
+        "name": "topic",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kafka_consumer_bytes_consumed_total, topic)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "webstore-metrics"
+        },
+        "definition": "label_values(kafka_consumer_bytes_consumed_total, client_id)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Consumer",
+        "multi": true,
+        "name": "consumer",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kafka_consumer_bytes_consumed_total, client_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Kafka",
+  "title": "Kafka Comprehensive Monitoring",
   "uid": "kafkaDashboard",
-  "version": 1
+  "version": 2
 }
