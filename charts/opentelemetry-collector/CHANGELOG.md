@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.0 / 2025-08-08
+- [Feat] Update Collector to v0.131.1
+
 ### v0.118.29 / 2025-08-07
 - [Fix] Fix resource attributes of the Collector's logs in the `filelog` receiver.
 
