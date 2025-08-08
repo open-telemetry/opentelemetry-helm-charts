@@ -18,11 +18,11 @@ default:
   #  - name: OTEL_K8S_NODE_NAME
   #    value: "someConstantValue"
   image:
-    repository: ghcr.io/open-telemetry/demo
+    repository: thouqueerahmedml/otel-demo
     # Overrides the image tag whose default is the chart appVersion.
     # The service's name will be applied to the end of this value.
-    tag: ""
-    pullPolicy: IfNotPresent
+    tag: latest
+    pullPolicy: Always
     pullSecrets: []
   # Default # of replicas for all components
   replicas: 1
@@ -166,7 +166,7 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: DB_CONNECTION_STRING
-        value: "Host=postgresql;Username=otelu;Password=otelp;Database=otel"
+        value: "Host=postgresql;Username=otelu;Password=otelp;Database=otel;Pooling=false;"
       - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
         value: "false"
     resources:
