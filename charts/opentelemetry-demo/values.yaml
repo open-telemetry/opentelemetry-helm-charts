@@ -839,7 +839,7 @@ components:
             "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;",
           ]
 
-apps-and-k8s-whole-otel-collector:
+apps-otel-collector:
   enabled: true
   image:
     repository: "otel/opentelemetry-collector-contrib"
@@ -848,37 +848,18 @@ apps-and-k8s-whole-otel-collector:
   presets:
     kubernetesAttributes:
       enabled: true
-    clusterMetrics:
-      enabled: true
-    kubernetesEvents:
-      enabled: true
   resources:
     limits:
-      memory: 512Mi
+      memory: 256Mi
   service:
     type: ClusterIP
   ports:
     metrics:
       enabled: true
   podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8888"
     opentelemetry_community_demo: "true"
   config:
     receivers:
-      k8s_cluster:
-        allocatable_types_to_report:
-          - cpu
-          - memory
-          - ephemeral-storage
-          - storage
-          - pods
-        node_conditions_to_report:
-          - Ready
-          - MemoryPressure
-          - DiskPressure
-          - NetworkUnavailable
-          - PIDPressure
       otlp:
         protocols:
           http:
@@ -997,23 +978,112 @@ apps-and-k8s-whole-otel-collector:
             - batch
           exporters:
             - otlphttp/loki
-      telemetry:
-        metrics:
-          level: detailed
-          readers:
-            - periodic:
-                interval: 10000
-                timeout: 5000
-                exporter:
-                  otlp:
-                    protocol: grpc
-                    endpoint: otel-collector:4318
 
-k8s-host-otel-collector:
+k8s-cluster-otel-collector:
   enabled: true
   image:
-    repository: "otel/opentelemetry-collector-contrib"
-  fullnameOverride: k8s-otel-collector
+    repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+  command:
+    name: "otelcol-k8s"
+  fullnameOverride: k8s-cluster-otel-collector
+  mode: deployment
+  presets:
+    kubernetesAttributes:
+      enabled: true
+    clusterMetrics:
+      enabled: true
+    kubernetesEvents:
+      enabled: true
+  resources:
+    limits:
+      memory: 256Mi
+  service:
+    type: ClusterIP
+  ports:
+    metrics:
+      enabled: true
+  podAnnotations:
+    opentelemetry_community_demo: "true"
+  config:
+    receivers:
+      k8s_cluster:
+        allocatable_types_to_report:
+          - cpu
+          - memory
+          - ephemeral-storage
+          - storage
+          - pods
+        node_conditions_to_report:
+          - Ready
+          - MemoryPressure
+          - DiskPressure
+          - NetworkUnavailable
+          - PIDPressure
+      otlp:
+        protocols:
+          http:
+            # Since this collector needs to receive data from the web, enable cors for all origins
+            # `allowed_origins` can be refined for your deployment domain
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+
+    exporters:
+      debug:
+        verbosity: detailed
+        sampling_initial: 5
+        sampling_thereafter: 200
+      ## Create an exporter to Jaeger using the standard `otlp` export format
+      otlp:
+        endpoint: jaeger-collector:4317
+        tls:
+          insecure: true
+      # Create an exporter to Prometheus (metrics)
+      otlphttp/prometheus:
+        endpoint: http://prometheus:9090/api/v1/otlp
+        tls:
+          insecure: true
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+        tls:
+          insecure: true
+
+    connectors:
+      spanmetrics: {}
+
+    service:
+      pipelines:
+        traces:
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlp
+            - spanmetrics
+        metrics:
+          receivers:
+            - otlp
+            - spanmetrics
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp/prometheus
+        logs:
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp/loki
+
+k8s-nodes-otel-collector:
+  enabled: true
+  image:
+    repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+  command:
+    name: "otelcol-k8s"
+  fullnameOverride: k8s-nodes-otel-collector
   mode: daemonset
   presets:
     kubernetesAttributes:

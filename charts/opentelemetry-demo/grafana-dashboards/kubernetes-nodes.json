@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Kubernetes node-level infrastructure monitoring dashboard displaying CPU, memory, filesystem, and network metrics. Provides resource utilization overview and performance trends for cluster nodes with node-specific filtering capabilities.",
+  "description": "Enhanced Kubernetes node monitoring dashboard for SRE teams with health conditions, percentage-based resource metrics, and capacity planning insights for proactive infrastructure management.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -32,8 +32,8 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Node Overview",
-      "description": "Current node resource utilization overview showing CPU, memory, filesystem usage percentages and total CPU capacity.",
+      "title": "Node Health Overview",
+      "description": "Monitor node health conditions, readiness status, and resource overview for proactive node management and issue detection.",
       "type": "row"
     },
     {
@@ -43,81 +43,79 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
             {
               "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "Not Ready"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "Ready"
                 }
               },
-              "type": "special"
+              "type": "value"
             }
           ],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "rgba(50, 172, 45, 0.97)",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 65
-              },
-              {
-                "color": "rgba(245, 54, 54, 0.9)",
-                "value": 90
+                "color": "green",
+                "value": 1
               }
             ]
           },
-          "unit": "percent"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 0,
         "y": 1
       },
       "id": 2,
-      "maxDataPoints": 100,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
+        "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
         },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) / sum (machine_cpu_cores{kubernetes_io_hostname=~\"^$Node$\"}) * 100",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "refId": "A",
-          "step": 10
+          "editorMode": "code",
+          "expr": "k8s_node_condition_ready",
+          "legendFormat": "Node Ready",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Node CPU Usage %",
-      "description": "This stat panel displays node CPU usage as a percentage. The panel calculates the ratio of container CPU usage seconds total rate for root containers to total machine CPU cores across selected nodes. The value represents current CPU utilization averaged over one minute.",
+      "title": "Node Ready Status",
+      "description": "Node readiness condition. 1 = Ready, 0 = Not Ready. All nodes should be ready for healthy cluster operation.",
       "type": "stat"
     },
     {
@@ -127,81 +125,79 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
             {
               "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "No Pressure"
+                },
+                "1": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Pressure"
                 }
               },
-              "type": "special"
+              "type": "value"
             }
           ],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "rgba(50, 172, 45, 0.97)",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 65
-              },
-              {
-                "color": "rgba(245, 54, 54, 0.9)",
-                "value": 90
+                "color": "red",
+                "value": 1
               }
             ]
           },
-          "unit": "percent"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 6,
         "y": 1
       },
       "id": 3,
-      "maxDataPoints": 100,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
+        "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
         },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "sum (container_memory_working_set_bytes{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) / sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"}) * 100",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "refId": "A",
-          "step": 10
+          "editorMode": "code",
+          "expr": "k8s_node_condition_disk_pressure",
+          "legendFormat": "Disk Pressure",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Node Memory Usage %",
-      "description": "This stat panel displays node memory usage as a percentage. The panel calculates the ratio of container memory working set bytes for root containers to total machine memory bytes across selected nodes. The value represents current memory utilization.",
+      "title": "Disk Pressure",
+      "description": "Node disk pressure condition. 1 indicates disk space issues that may affect pod scheduling.",
       "type": "stat"
     },
     {
@@ -211,33 +207,107 @@
       },
       "fieldConfig": {
         "defaults": {
-          "decimals": 2,
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
             {
               "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "No Pressure"
+                },
+                "1": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Pressure"
                 }
               },
-              "type": "special"
+              "type": "value"
             }
           ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 5
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "k8s_node_condition_memory_pressure",
+          "legendFormat": "Memory Pressure",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Pressure",
+      "description": "Node memory pressure condition. 1 indicates memory constraints that may affect pod scheduling.",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "webstore-metrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
           "max": 100,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "rgba(50, 172, 45, 0.97)",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 65
+                "color": "yellow",
+                "value": 70
               },
               {
-                "color": "rgba(245, 54, 54, 0.9)",
+                "color": "red",
                 "value": 90
               }
             ]
@@ -247,128 +317,63 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 6,
+        "h": 8,
+        "w": 12,
         "x": 12,
         "y": 1
       },
-      "id": 4,
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "webstore-metrics"
-          },
-          "expr": "sum (container_fs_usage_bytes{device=~\"^/dev/[sv]d[a-z][1-9]$\",id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) / sum (container_fs_limit_bytes{device=~\"^/dev/[sv]d[a-z][1-9]$\",id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) * 100",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "metric": "",
-          "refId": "A",
-          "step": 10
-        }
-      ],
-      "title": "Node Filesystem Usage %",
-      "description": "This stat panel displays node filesystem usage as a percentage. The panel calculates the ratio of container filesystem usage bytes to container filesystem limit bytes for devices matching the pattern /dev/[sv]d[a-z][1-9] and root containers across selected nodes. The value represents current filesystem utilization.",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "webstore-metrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 2,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 18,
-        "y": 1
-      },
       "id": 5,
-      "maxDataPoints": 100,
       "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "sum (machine_cpu_cores{kubernetes_io_hostname=~\"^$Node$\"})",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "refId": "A",
-          "step": 10
+          "editorMode": "code",
+          "expr": "k8s_node_cpu_usage * 100",
+          "legendFormat": "CPU Usage %",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "k8s_node_memory_usage_bytes / k8s_node_allocatable_memory_bytes * 100",
+          "legendFormat": "Memory Usage %",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "webstore-metrics"
+          },
+          "editorMode": "code",
+          "expr": "k8s_node_filesystem_usage_bytes / k8s_node_filesystem_capacity_bytes * 100",
+          "legendFormat": "Filesystem Usage %",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Total CPU Cores",
-      "description": "This stat panel displays the total number of CPU cores available across selected nodes. The panel shows the sum of machine CPU cores for all selected nodes. The value represents the total CPU capacity available in the cluster.",
-      "type": "stat"
+      "title": "Node Resource Overview",
+      "description": "Current node resource utilization percentages. Monitor for high usage that may impact performance or capacity.",
+      "type": "gauge"
     },
     {
       "collapsed": false,
@@ -376,12 +381,12 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "id": 6,
       "panels": [],
-      "title": "Node CPU Usage Over Time",
-      "description": "Node resource utilization trends over time showing CPU and memory usage patterns per node.",
+      "title": "Node Resource Utilization",
+      "description": "Detailed node resource utilization trends with percentage-based metrics for capacity planning and performance monitoring.",
       "type": "row"
     },
     {
@@ -401,24 +406,23 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "viz": false
+              "vis": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -428,6 +432,8 @@
             }
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -436,8 +442,12 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 70
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 90
               }
             ]
           },
@@ -446,45 +456,39 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 12,
+        "h": 8,
+        "w": 8,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "id": 7,
       "options": {
         "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname) / sum (machine_cpu_cores{kubernetes_io_hostname=~\"^$Node$\"}) by (kubernetes_io_hostname) * 100",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "legendFormat": "{{ kubernetes_io_hostname }}",
-          "refId": "A",
-          "step": 10
+          "editorMode": "code",
+          "expr": "k8s_node_cpu_usage * 100",
+          "legendFormat": "Node CPU Usage %",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Node CPU Usage % (1m avg)",
-      "description": "This time series panel depicts CPU usage percentage per node over time. The panel calculates the ratio of container CPU usage seconds total rate for root containers to machine CPU cores grouped by node hostname. Each line represents one node and shows CPU utilization averaged over one minute intervals.",
+      "title": "Node CPU Usage Percentage",
+      "description": "Node CPU usage as percentage. Sustained high CPU usage may indicate need for additional capacity or workload optimization.",
       "type": "timeseries"
     },
     {
@@ -504,24 +508,23 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "viz": false
+              "vis": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -531,6 +534,8 @@
             }
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -539,8 +544,12 @@
                 "value": null
               },
               {
-                "color": "red",
+                "color": "yellow",
                 "value": 80
+              },
+              {
+                "color": "red",
+                "value": 95
               }
             ]
           },
@@ -549,60 +558,40 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 7
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 10
       },
       "id": 8,
       "options": {
         "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "sum (container_memory_working_set_bytes{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) by (kubernetes_io_hostname) / sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"}) by (kubernetes_io_hostname) * 100",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "legendFormat": "{{ kubernetes_io_hostname }}",
-          "refId": "A",
-          "step": 10
+          "editorMode": "code",
+          "expr": "k8s_node_memory_usage_bytes / k8s_node_allocatable_memory_bytes * 100",
+          "legendFormat": "Node Memory Usage %",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Node Memory Usage %",
-      "description": "This time series panel depicts memory usage percentage per node over time. The panel calculates the ratio of container memory working set bytes for root containers to machine memory bytes grouped by node hostname. Each line represents one node and shows memory utilization over time.",
+      "title": "Node Memory Usage Percentage",
+      "description": "Node memory usage as percentage of allocatable memory. High memory usage may trigger memory pressure conditions.",
       "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
-      "id": 9,
-      "panels": [],
-      "title": "Node Network I/O",
-      "description": "Network traffic monitoring showing inbound and outbound data rates per node.",
-      "type": "row"
     },
     {
       "datasource": {
@@ -621,24 +610,23 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "viz": false
+              "vis": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -666,94 +654,67 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 14
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 10
       },
-      "id": 10,
+      "id": 9,
       "options": {
         "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "sum (rate (container_network_receive_bytes_total{kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname)",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "legendFormat": "Received - {{ kubernetes_io_hostname }}",
-          "metric": "network",
-          "refId": "A",
-          "step": 10
+          "editorMode": "code",
+          "expr": "rate(k8s_node_network_io_bytes_total{direction=\"receive\"}[5m])",
+          "legendFormat": "Network Receive",
+          "range": true,
+          "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "webstore-metrics"
           },
-          "expr": "- sum (rate (container_network_transmit_bytes_total{kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname)",
-          "interval": "10s",
-          "intervalFactor": 1,
-          "legendFormat": "Sent - {{ kubernetes_io_hostname }}",
-          "metric": "network",
-          "refId": "B",
-          "step": 10
+          "editorMode": "code",
+          "expr": "rate(k8s_node_network_io_bytes_total{direction=\"transmit\"}[5m])",
+          "legendFormat": "Network Transmit",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Node Network I/O (1m avg)",
-      "description": "This time series panel depicts network traffic rates per node measured in bytes per second. The panel displays two data series: container network receive bytes total rate showing incoming traffic and container network transmit bytes total rate showing outgoing traffic. Data is aggregated by node hostname and averaged over one minute intervals.",
+      "title": "Node Network I/O",
+      "description": "Node network receive and transmit rates. Monitor for network saturation or unusual traffic patterns.",
       "type": "timeseries"
     }
   ],
-  "refresh": "10s",
-  "schemaVersion": 40,
-  "tags": [
-    "kubernetes",
-    "nodes"
-  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["kubernetes", "nodes", "sre", "infrastructure"],
   "templating": {
-    "list": [
-      {
-        "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": "webstore-metrics",
-        "includeAll": true,
-        "name": "Node",
-        "options": [],
-        "query": "label_values(kubernetes_io_hostname)",
-        "refresh": 1,
-        "type": "query"
-      }
-    ]
+    "list": []
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "",
   "title": "Kubernetes Nodes Dashboard",
-  "uid": "kubernetes-nodes",
+  "uid": "enhanced-k8s-nodes",
   "version": 1,
   "weekStart": ""
 }
