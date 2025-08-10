@@ -12,7 +12,7 @@ default:
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version={{ .Chart.AppVersion }}'
+      value: "service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version={{ .Chart.AppVersion }}"
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -175,10 +175,20 @@ components:
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;",
+          ]
       - name: wait-for-postgres
         image: postgres:15
-        command: ["sh", "-c", "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;",
+          ]
       - name: wait-for-kafka-topic-orders
         image: confluentinc/cp-kafka:latest
         command:
@@ -193,7 +203,12 @@ components:
             echo "Topic 'orders' is available!"
       - name: wait-for-postgresql
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 postgresql 5432; do echo waiting for postgresql; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until nc -z -v -w30 postgresql 5432; do echo waiting for postgresql; sleep 2; done;",
+          ]
 
   ad:
     enabled: true
@@ -241,7 +256,12 @@ components:
     initContainers:
       - name: wait-for-valkey-cart
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 valkey-cart 6379; do echo waiting for valkey-cart; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until nc -z -v -w30 valkey-cart 6379; do echo waiting for valkey-cart; sleep 2; done;",
+          ]
 
   checkout:
     enabled: true
@@ -278,7 +298,12 @@ components:
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;",
+          ]
 
   currency:
     enabled: true
@@ -333,7 +358,12 @@ components:
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;",
+          ]
       - name: wait-for-kafka-topic-orders
         image: confluentinc/cp-kafka:latest
         command:
@@ -368,7 +398,12 @@ components:
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;",
+          ]
 
   frontend:
     enabled: true
@@ -406,12 +441,12 @@ components:
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
+        value: http://localhost:8080/otlp-http/v1/traces # This expects users to use `kubectl port-forward ...`
     resources:
       limits:
         memory: 250Mi
     securityContext:
-      runAsUser: 1001  # nextjs
+      runAsUser: 1001 # nextjs
       runAsGroup: 1001
       runAsNonRoot: true
 
@@ -462,7 +497,7 @@ components:
       limits:
         memory: 65Mi
     securityContext:
-      runAsUser: 101  # envoy
+      runAsUser: 101 # envoy
       runAsGroup: 101
       runAsNonRoot: true
 
@@ -537,7 +572,7 @@ components:
       limits:
         memory: 120Mi
     securityContext:
-      runAsUser: 1000  # node
+      runAsUser: 1000 # node
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -583,7 +618,7 @@ components:
       limits:
         memory: 40Mi
     securityContext:
-      runAsUser: 33  # www-data
+      runAsUser: 33 # www-data
       runAsGroup: 33
       runAsNonRoot: true
 
@@ -686,7 +721,12 @@ components:
     initContainers:
       - name: init-config
         image: busybox
-        command: ["sh", "-c", "cp /config-ro/demo.flagd.json /config-rw/demo.flagd.json && cat /config-rw/demo.flagd.json"]
+        command:
+          [
+            "sh",
+            "-c",
+            "cp /config-ro/demo.flagd.json /config-rw/demo.flagd.json && cat /config-rw/demo.flagd.json",
+          ]
         volumeMounts:
           - mountPath: /config-ro
             name: config-ro
@@ -721,7 +761,7 @@ components:
       limits:
         memory: 1Gi
     securityContext:
-      runAsUser: 1000  # appuser
+      runAsUser: 1000 # appuser
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -740,7 +780,7 @@ components:
       limits:
         memory: 20Mi
     securityContext:
-      runAsUser: 999  # valkey
+      runAsUser: 999 # valkey
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -792,7 +832,12 @@ components:
     initContainers:
       - name: wait-for-postgres
         image: postgres:15
-        command: ["sh", "-c", "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;"]
+        command:
+          [
+            "sh",
+            "-c",
+            "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;",
+          ]
 
 opentelemetry-collector:
   enabled: true
@@ -802,8 +847,6 @@ opentelemetry-collector:
   mode: deployment
   presets:
     kubernetesAttributes:
-      enabled: true
-    clusterMetrics:
       enabled: true
   resources:
     limits:
@@ -834,7 +877,7 @@ opentelemetry-collector:
         endpoint: "valkey-cart:6379"
         collection_interval: 10s
       nginx:
-        endpoint: "http://frontend-proxy:8080/status"
+        endpoint: "http://image-provider:8081/status"
         collection_interval: 10s
       postgresql:
         endpoint: "postgresql:5432"
@@ -864,6 +907,10 @@ opentelemetry-collector:
           insecure: true
 
     exporters:
+      debug:
+        verbosity: detailed
+        sampling_initial: 5
+        sampling_thereafter: 200
       ## Create an exporter to Jaeger using the standard `otlp` export format
       otlp:
         endpoint: jaeger-collector:4317
@@ -893,9 +940,9 @@ opentelemetry-collector:
               - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
       resource:
         attributes:
-        - key: service.instance.id
-          from_attribute: k8s.pod.uid
-          action: insert
+          - key: service.instance.id
+            from_attribute: k8s.pod.uid
+            action: insert
 
     connectors:
       spanmetrics: {}
@@ -903,15 +950,35 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, resource, transform, batch]
-          exporters: [otlp, debug, spanmetrics]
+          processors:
+            - memory_limiter
+            - resource
+            - transform
+            - batch
+          exporters:
+            - otlp
+            - spanmetrics
         metrics:
-          receivers: [httpcheck/frontend-proxy, redis, nginx, postgresql, otlp, spanmetrics]
-          processors: [memory_limiter, resource, batch]
-          exporters: [otlphttp/prometheus, debug]
+          receivers:
+            - httpcheck/frontend-proxy
+            - redis
+            - nginx
+            - postgresql
+            - otlp
+            - spanmetrics
+          processors:
+            - memory_limiter
+            - resource
+            - batch
+          exporters:
+            - otlphttp/prometheus
         logs:
-          processors: [memory_limiter, resource, batch]
-          exporters: [otlphttp/loki, debug]
+          processors:
+            - memory_limiter
+            - resource
+            - batch
+          exporters:
+            - otlphttp/loki
       telemetry:
         metrics:
           level: detailed
@@ -964,7 +1031,7 @@ prometheus:
     enabled: false
   configmapReload:
     prometheus:
-      enabled: false
+      enabled: true
   kube-state-metrics:
     enabled: false
   prometheus-node-exporter:
@@ -1253,7 +1320,7 @@ grafana:
                     instant: true
                     interval: ""
                     intervalMs: 15000
-                    legendFormat: '{{`{{consumergroup}} - {{topic}}-p{{partition}}`}}'
+                    legendFormat: "{{`{{consumergroup}} - {{topic}}-p{{partition}}`}}"
                     maxDataPoints: 43200
                     range: false
                     refId: A
