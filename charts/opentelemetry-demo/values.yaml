@@ -839,7 +839,7 @@ components:
             "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;",
           ]
 
-apps-and-k8s-cluster-otel-collector:
+apps-and-k8s-whole-otel-collector:
   enabled: true
   image:
     repository: "otel/opentelemetry-collector-contrib"
@@ -849,6 +849,8 @@ apps-and-k8s-cluster-otel-collector:
     kubernetesAttributes:
       enabled: true
     clusterMetrics:
+      enabled: true
+    kubernetesEvents:
       enabled: true
   resources:
     limits:
@@ -1007,6 +1009,80 @@ apps-and-k8s-cluster-otel-collector:
                     protocol: grpc
                     endpoint: otel-collector:4318
 
+k8s-host-otel-collector:
+  enabled: true
+  image:
+    repository: "otel/opentelemetry-collector-contrib"
+  fullnameOverride: k8s-otel-collector
+  mode: daemonset
+  presets:
+    kubernetesAttributes:
+      enabled: true
+    kubeletMetrics:
+      enabled: true
+    hostMetrics:
+      enabled: true
+  resources:
+    limits:
+      memory: 256Mi
+  config:
+    receivers:
+      otlp:
+        protocols:
+          http:
+            # Since this collector needs to receive data from the web, enable cors for all origins
+            # `allowed_origins` can be refined for your deployment domain
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+
+    exporters:
+      debug:
+        verbosity: detailed
+        sampling_initial: 5
+        sampling_thereafter: 200
+      ## Create an exporter to Jaeger using the standard `otlp` export format
+      otlp:
+        endpoint: jaeger-collector:4317
+        tls:
+          insecure: true
+      # Create an exporter to Prometheus (metrics)
+      otlphttp/prometheus:
+        endpoint: http://prometheus:9090/api/v1/otlp
+        tls:
+          insecure: true
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+        tls:
+          insecure: true
+
+    connectors:
+      spanmetrics: {}
+
+    service:
+      pipelines:
+        traces:
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlp
+        metrics:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp/prometheus
+        logs:
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp/loki
+
 jaeger:
   enabled: true
   fullnameOverride: jaeger
@@ -1061,37 +1137,6 @@ prometheus:
       - "enable-feature=exemplar-storage"
       - "web.enable-otlp-receiver"
       - "web.enable-lifecycle"
-    global:
-      scrape_interval: 5s
-      scrape_timeout: 3s
-      evaluation_interval: 30s
-    tsdb:
-      out_of_order_time_window: 30m
-    otlp:
-      keep_identifying_resource_attributes: true
-      # Recommended attributes to be promoted to labels.
-      promote_resource_attributes:
-        - service.instance.id
-        - service.name
-        - service.namespace
-        - cloud.availability_zone
-        - cloud.region
-        - container.name
-        - deployment.environment.name
-        - k8s.cluster.name
-        - k8s.container.name
-        - k8s.cronjob.name
-        - k8s.daemonset.name
-        - k8s.deployment.name
-        - k8s.job.name
-        - k8s.namespace.name
-        - k8s.pod.name
-        - k8s.replicaset.name
-        - k8s.statefulset.name
-        - postgresql.database.name
-        - postgresql.schema.name
-        - postgresql.table.name
-        - postgresql.index.name
     persistentVolume:
       enabled: false
     service:
@@ -1101,6 +1146,173 @@ prometheus:
         memory: 2Gi
       requests:
         memory: 2Gi
+    configPath: /etc/config/minimal-prometheus.yml
+  serverFiles:
+    minimal-prometheus.yml:
+      global:
+        evaluation_interval: 30s
+        scrape_interval: 5s
+        scrape_timeout: 3s
+      storage:
+        tsdb:
+          out_of_order_time_window: 30m
+      otlp:
+        keep_identifying_resource_attributes: true
+        promote_resource_attributes:
+          - service.instance.id
+          - service.name
+          - service.namespace
+          - cloud.availability_zone
+          - cloud.region
+          - container.name
+          - deployment.environment.name
+          - k8s.cluster.name
+          - k8s.container.name
+          - k8s.cronjob.name
+          - k8s.daemonset.name
+          - k8s.deployment.name
+          - k8s.job.name
+          - k8s.namespace.name
+          - k8s.pod.name
+          - k8s.replicaset.name
+          - k8s.statefulset.name
+          - postgresql.database.name
+          - postgresql.schema.name
+          - postgresql.table.name
+          - postgresql.index.name
+      rule_files:
+        - /etc/config/recording_rules.yml
+        - /etc/config/alerting_rules.yml
+        - /etc/config/rules
+        - /etc/config/alerts
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets:
+                - localhost:9090
+        - honor_labels: true
+          job_name: prometheus-pushgateway
+          kubernetes_sd_configs:
+            - role: service
+          relabel_configs:
+            - action: keep
+              regex: pushgateway
+              source_labels:
+                - __meta_kubernetes_service_annotation_prometheus_io_probe
+        - honor_labels: true
+          job_name: kubernetes-pods
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - action: keep
+              regex: true
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+            - action: drop
+              regex: true
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_scrape_slow
+            - action: replace
+              regex: (https?)
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_scheme
+              target_label: __scheme__
+            - action: replace
+              regex: (.+)
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_path
+              target_label: __metrics_path__
+            - action: replace
+              regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+              replacement: "[$2]:$1"
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_port
+                - __meta_kubernetes_pod_ip
+              target_label: __address__
+            - action: replace
+              regex: (\d+);((([0-9]+?)(\.|$)){4})
+              replacement: $2:$1
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_port
+                - __meta_kubernetes_pod_ip
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$1
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - action: replace
+              source_labels:
+                - __meta_kubernetes_namespace
+              target_label: namespace
+            - action: replace
+              source_labels:
+                - __meta_kubernetes_pod_name
+              target_label: pod
+            - action: drop
+              regex: Pending|Succeeded|Failed|Completed
+              source_labels:
+                - __meta_kubernetes_pod_phase
+            - action: replace
+              source_labels:
+                - __meta_kubernetes_pod_node_name
+              target_label: node
+        - honor_labels: true
+          job_name: kubernetes-pods-slow
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - action: keep
+              regex: true
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_scrape_slow
+            - action: replace
+              regex: (https?)
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_scheme
+              target_label: __scheme__
+            - action: replace
+              regex: (.+)
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_path
+              target_label: __metrics_path__
+            - action: replace
+              regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+              replacement: "[$2]:$1"
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_port
+                - __meta_kubernetes_pod_ip
+              target_label: __address__
+            - action: replace
+              regex: (\d+);((([0-9]+?)(\.|$)){4})
+              replacement: $2:$1
+              source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_port
+                - __meta_kubernetes_pod_ip
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$1
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - action: replace
+              source_labels:
+                - __meta_kubernetes_namespace
+              target_label: namespace
+            - action: replace
+              source_labels:
+                - __meta_kubernetes_pod_name
+              target_label: pod
+            - action: drop
+              regex: Pending|Succeeded|Failed|Completed
+              source_labels:
+                - __meta_kubernetes_pod_phase
+            - action: replace
+              source_labels:
+                - __meta_kubernetes_pod_node_name
+              target_label: node
+          scrape_interval: 5m
+          scrape_timeout: 30s
 
 opensearch:
   enabled: false
