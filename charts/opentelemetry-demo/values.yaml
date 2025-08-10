@@ -176,6 +176,9 @@ components:
       - name: wait-for-kafka
         image: busybox:latest
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
+      - name: wait-for-postgres
+        image: postgres:15
+        command: ["sh", "-c", "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;"]
       - name: wait-for-kafka-topic-orders
         image: confluentinc/cp-kafka:latest
         command:
@@ -739,6 +742,35 @@ components:
       requests:
         memory: 512Mi
 
+  db-connection-exhauster:
+    enabled: true
+    useDefault:
+      env: false
+    env:
+      - name: DB_HOST
+        value: "postgresql"
+      - name: DB_NAME
+        value: "otel"
+      - name: DB_USER
+        value: "otelu"
+      - name: DB_PASSWORD
+        value: "otelp"
+      - name: DB_PORT
+        value: "5432"
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
+    resources:
+      limits:
+        memory: 100Mi
+      requests:
+        memory: 50Mi
+    initContainers:
+      - name: wait-for-postgres
+        image: postgres:15
+        command: ["sh", "-c", "until pg_isready -h postgresql -p 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done;"]
+
 opentelemetry-collector:
   enabled: true
   image:
@@ -800,6 +832,9 @@ opentelemetry-collector:
             enabled: true
           postgresql.deadlocks:
             enabled: true
+        databases:
+          - otel
+          - postgres
         tls:
           insecure: true
 
@@ -1048,6 +1083,8 @@ postgresql:
     database: otel
     postgresPassword: postgres
   primary:
+    persistence:
+      enabled: false
     initdb:
       scripts:
         init.sql: |
