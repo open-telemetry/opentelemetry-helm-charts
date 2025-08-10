@@ -43,6 +43,48 @@ spec:
         runAsUser: 472
       enableServiceLinks: true
       containers:
+        - name: grafana-sc-alerts
+          image: "quay.io/kiwigrid/k8s-sidecar:1.30.3"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: METHOD
+              value: WATCH
+            - name: LABEL
+              value: "grafana_alert"
+            - name: LOG_LEVEL
+              value: DEBUG
+            - name: FOLDER
+              value: "/etc/grafana/provisioning/alerting"
+            - name: RESOURCE
+              value: "both"
+            - name: REQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: grafana
+                  key: admin-user
+            - name: REQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana
+                  key: admin-password
+            - name: REQ_URL
+              value: http://localhost:3000/api/admin/provisioning/alerting/reload
+            - name: REQ_METHOD
+              value: POST
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: sc-alerts-volume
+              mountPath: "/etc/grafana/provisioning/alerting"
         - name: grafana
           image: "docker.io/grafana/grafana:12.1.0"
           imagePullPolicy: IfNotPresent
@@ -67,6 +109,8 @@ spec:
             - name: config
               mountPath: "/etc/grafana/provisioning/dashboards/dashboardproviders.yaml"
               subPath: "dashboardproviders.yaml"
+            - name: sc-alerts-volume
+              mountPath: "/etc/grafana/provisioning/alerting"
           ports:
             - name: grafana
               containerPort: 3000
@@ -130,4 +174,6 @@ spec:
           configMap:
             name: grafana-dashboards
         - name: storage
+          emptyDir: {}
+        - name: sc-alerts-volume
           emptyDir: {}
