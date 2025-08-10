@@ -315,7 +315,7 @@ components:
         memory: 256Mi
 
   fraud-detection:
-    enabled: true
+    enabled: false
     useDefault:
       env: true
     env:
@@ -346,6 +346,29 @@ components:
               sleep 5
             done
             echo "Topic 'orders' is available!"
+
+  kafka-exporter:
+    enabled: true
+    imageOverride:
+      repository: "danielqsj/kafka-exporter"
+      tag: "latest"
+    command:
+      - "/bin/kafka_exporter"
+      - "--kafka.server=kafka:9092"
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9308"
+    service:
+      port: 9308
+    useDefault:
+      env: false
+    resources:
+      limits:
+        memory: 300Mi
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:latest
+        command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
 
   frontend:
     enabled: true
@@ -680,7 +703,7 @@ components:
       repository: ghcr.io/open-telemetry/demo
       tag: "2.0.2-kafka"
     useDefault:
-      env: true
+      env: false
     replicas: 1
     ports:
       - name: plaintext
@@ -690,10 +713,10 @@ components:
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx800M -Xms800M"
+      - name: KAFKA_OPTS
+        value: ""
     resources:
       limits:
         memory: 1Gi
@@ -979,6 +1002,10 @@ prometheus:
           - k8s.pod.name
           - k8s.replicaset.name
           - k8s.statefulset.name
+          - postgresql.database.name
+          - postgresql.schema.name
+          - postgresql.table.name
+          - postgresql.index.name
     persistentVolume:
       enabled: false
     service:
