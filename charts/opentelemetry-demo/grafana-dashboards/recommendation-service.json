@@ -1312,7 +1312,7 @@
                 {
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "sum by(pod) (\r\n  label_replace(\r\n    rate(container_cpu_usage_seconds_total{pod=~\"recommendation.*\"}[5m]),\r\n    \"pod\", \"recommendation-$1\", \"pod\", \"recommendation-.*-(.*)\"\r\n  )\r\n)\r\n",
+                    "expr": "sum by(pod) (label_replace(rate(container_cpu_time_seconds_total{k8s_pod_name=~\"recommendation-.*-(.*)\"}[5m]), \"pod\", \"recommendation-$1\", \"pod\", \"recommendation-.*-(.*)\"))",
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
                     "legendFormat": "__auto",
@@ -1410,7 +1410,7 @@
             "targets": [
                 {
                     "editorMode": "code",
-                    "expr": "sum by(pod) (\r\n  label_replace(\r\n    container_memory_usage_bytes{pod=~\"recommendation-.*\"},\r\n    \"pod\", \"recommendation-$1\", \"pod\", \"recommendation-.*-(.*)\"\r\n  )\r\n)\r\n",
+                    "expr": "sum by(pod) (\r\n  label_replace(\r\n    container_memory_usage_bytes{k8s_pod_name=~\"recommendation-.*\"},\r\n    \"pod\", \"recommendation-$1\", \"pod\", \"recommendation-.*-(.*)\"\r\n  )\r\n)\r\n",
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
