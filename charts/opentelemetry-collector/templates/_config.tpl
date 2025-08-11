@@ -1938,6 +1938,10 @@ exporters:
       - "k8s.daemonset.name"
       - "k8s.cronjob.name"
       - "service.name"
+    {{- if .Values.presets.coralogixExporter.rateLimiter.enabled }}
+    rate_limiter:
+      enabled: true
+    {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}

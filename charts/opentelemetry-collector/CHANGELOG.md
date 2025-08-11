@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.1 / 2025-08-08
+- [Feat] Add rate limiter option to Coralogix exporter preset.
+
 ### v0.119.0 / 2025-08-08
 - [Feat] Update Collector to v0.131.1
 
