@@ -2,6 +2,9 @@
 
 ## OpenTelemetry eBPF Instrumentation
 
+### v0.1.4 / 2025-08-11
+- [Fix] add toleration, affinity and nodeSelector to k8s cache deployment
+
 ### v0.1.3 / 2025-08-04
 - [Fix] Fix redis db cache enable to enabled
 
