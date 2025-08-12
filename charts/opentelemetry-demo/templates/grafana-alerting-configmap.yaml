@@ -1,0 +1,13 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+#  name: {{ include "otel-demo.name" . }}-grafana-alerting
+  name: grafana-alerting
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+    grafana_alert: "1"
+data:
+  {{ (.Files.Glob "grafana/provisioning/alerting/*.yaml").AsConfig | nindent 2 }}
+{{- end }}
