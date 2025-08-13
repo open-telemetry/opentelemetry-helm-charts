@@ -85,6 +85,10 @@ data:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
+      batch:
+        send_batch_max_size: 2048
+        send_batch_size: 1024
+        timeout: 1s
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -162,6 +166,7 @@ data:
           - debug
           processors:
           - memory_limiter
+          - batch
           receivers:
           - otlp
         metrics:
@@ -170,6 +175,7 @@ data:
           processors:
           - memory_limiter
           - transform/prometheus
+          - batch
           receivers:
           - spanmetrics/0
           - spanmetrics/1
@@ -181,6 +187,7 @@ data:
           - routing
           processors:
           - memory_limiter
+          - batch
           receivers:
           - otlp
         traces/0:
