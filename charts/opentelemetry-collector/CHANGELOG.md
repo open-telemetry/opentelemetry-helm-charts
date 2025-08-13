@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.3 / 2025-08-13
+- [Feat] Add Kubernetes service resolver to load balancing preset and required RBAC.
+
 ### v0.119.2 / 2025-08-11
 - [Fix] Remove rate limiter option from Coralogix exporter preset.
 

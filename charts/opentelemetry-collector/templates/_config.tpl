@@ -1870,6 +1870,21 @@ exporters:
         tls:
           insecure: true
     resolver:
+      {{- if .Values.presets.loadBalancing.k8s.enabled }}
+      k8s:
+        {{- if .Values.presets.loadBalancing.k8s.service }}
+        service: {{ .Values.presets.loadBalancing.k8s.service | quote }}
+        {{- end }}
+        {{- if .Values.presets.loadBalancing.k8s.ports }}
+        ports:
+          {{- range .Values.presets.loadBalancing.k8s.ports }}
+          - {{ . }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.presets.loadBalancing.k8s.timeout }}
+        timeout: {{ .Values.presets.loadBalancing.k8s.timeout | quote }}
+        {{- end }}
+      {{- else }}
       dns:
         hostname: "{{ .Values.presets.loadBalancing.hostname }}"
         {{- if .Values.presets.loadBalancing.dnsResolverInterval }}
@@ -1878,6 +1893,7 @@ exporters:
         {{- if .Values.presets.loadBalancing.dnsResolverTimeout }}
         timeout: "{{ .Values.presets.loadBalancing.dnsResolverTimeout }}"
         {{- end }}
+      {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyCoralogixExporterConfig" -}}

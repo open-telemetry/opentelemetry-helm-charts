@@ -838,6 +838,31 @@
             "dnsResolverTimeout": {
               "description": "Specifies the timeout for DNS resolver (default 1s).",
               "type": "string"
+            },
+            "k8s": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should use Kubernetes service resolver for loadbalancing exporter.",
+                  "type": "boolean"
+                },
+                "service": {
+                  "description": "Kubernetes service to resolve, e.g. lb-svc.lb-ns. If no namespace is specified, an attempt will be made to infer the namespace for this collector, and if this fails it will fall back to the default namespace.",
+                  "type": "string"
+                },
+                "ports": {
+                  "description": "Ports to be used for exporting the traces to the addresses resolved from service.",
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "timeout": {
+                  "description": "Resolver timeout in go-Duration format, e.g. 5s, 1d, 30m. If not specified, 1s will be used.",
+                  "type": "string"
+                }
+              }
             }
           }
         },

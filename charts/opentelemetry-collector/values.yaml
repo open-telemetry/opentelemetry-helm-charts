@@ -341,6 +341,19 @@ presets:
     routingKey: "traceID"
     # DNS hostname that will resolve to all IP addresses of the target.
     hostname: ""
+    # Use Kubernetes service resolver instead of DNS when enabled.
+    k8s:
+      enabled: false
+      # service Kubernetes service to resolve, e.g. lb-svc.lb-ns. If no namespace is specified,
+      # an attempt will be made to infer the namespace for this collector, and if this fails it
+      # will fall back to the default namespace.
+      service: ""
+      # ports to be used for exporting the traces to the addresses resolved from service. If
+      # ports is not specified, the default port 4317 is used. When multiple ports are specified,
+      # two backends are added to the load balancer as if they were at different pods.
+      ports: []
+      # timeout resolver timeout in go-Duration format, e.g. 5s, 1d, 30m. If not specified, 1s will be used.
+      timeout: ""
 
   # Configures the collector to export data to Coralogix.
   coralogixExporter:

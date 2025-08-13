@@ -3,8 +3,14 @@ mode: deployment
 presets:
   loadBalancing:
     enabled: true
-    routingKey: "traceID"
-    hostname: "coralogix-opentelemetry-gateway"
+    routingKey: "service"
+    k8s:
+      enabled: true
+      service: lb-svc.kube-public
+      ports:
+        - 15317
+        - 16317
+      timeout: 5s
   headSampling:
     enabled: true
 
