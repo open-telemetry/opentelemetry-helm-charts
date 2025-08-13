@@ -1,0 +1,20 @@
+name: Validate OpenTelemetry Collector Configurations
+
+on:
+  pull_request:
+    paths:
+      - 'charts/opentelemetry-collector/**'
+  workflow_dispatch:
+
+jobs:
+  validate-configs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate OpenTelemetry Collector configurations
+        run: make validate-examples
+        working-directory: .

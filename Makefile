@@ -120,3 +120,7 @@ check-operator-crds:
 		rm -rf ${TMP_DIRECTORY}; \
 		exit 1; \
 	fi; \
+
+.PHONY: validate-examples
+validate-examples:
+	cd charts/opentelemetry-collector && ./validate-configs.sh
