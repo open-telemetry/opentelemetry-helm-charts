@@ -13,10 +13,6 @@ targetAllocator:
         app: example-app
       matchexpressions: []
     serviceMonitorSelector: {}
-  image:
-    repository: "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator"
-    pullPolicy: IfNotPresent
-    tag: "0.77.0"
 
 priorityClass:
   create: true
@@ -25,3 +21,8 @@ priorityClass:
 
 podMonitor:
   enabled: true
+config:
+  receivers:
+    prometheus:
+      target_allocator:
+        collector_id: "id"

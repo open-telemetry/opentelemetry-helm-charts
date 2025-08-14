@@ -32,6 +32,17 @@
 {{- end }}
 {{- end }}
 
+{{- if .Values.presets.loadBalancing.enabled }}
+{{- $hasPresetBatch := (default false .Values.presets.batch.enabled) }}
+{{- $configProcessors := (get (default (dict) .Values.config) "processors" | default (dict)) }}
+{{- $extraProcessors := (get (default (dict) .Values.extraConfig) "processors" | default (dict)) }}
+{{- $hasConfigBatch := hasKey $configProcessors "batch" }}
+{{- $hasExtraConfigBatch := hasKey $extraProcessors "batch" }}
+{{- if not (or $hasPresetBatch $hasConfigBatch $hasExtraConfigBatch) }}
+{{- fail "[ERROR] loadBalancing preset requires the 'batch' processor to be configured. Enable 'presets.batch' or add 'config.processors.batch' or 'extraConfig.processors.batch'." }}
+{{- end }}
+{{- end }}
+
 {{- if not .Values.configMap.create }}
 [WARNING] "configMap" wil not be created and "config" will not take effect.
 {{ end }}

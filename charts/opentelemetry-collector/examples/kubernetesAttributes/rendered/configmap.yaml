@@ -20,6 +20,10 @@ data:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
+      batch:
+        send_batch_max_size: 2048
+        send_batch_size: 1024
+        timeout: 1s
       k8sattributes:
         extract:
           metadata:
@@ -147,6 +151,7 @@ data:
           - memory_limiter
           - k8sattributes
           - transform/k8s_attributes
+          - batch
           receivers:
           - otlp
         metrics:
@@ -157,6 +162,7 @@ data:
           - k8sattributes
           - transform/k8s_attributes
           - transform/prometheus
+          - batch
           receivers:
           - prometheus
           - otlp
@@ -167,6 +173,7 @@ data:
           - memory_limiter
           - k8sattributes
           - transform/k8s_attributes
+          - batch
           receivers:
           - otlp
       telemetry:
