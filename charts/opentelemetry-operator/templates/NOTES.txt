@@ -1,4 +1,4 @@
-{{- if not .Values.manager.collectorImage.repository }}
+{{- if and (not .Values.manager.collectorImage.repository) .Values.manager.ignoreMissingCollectorCRDs }}
 {{ fail "[ERROR] 'manager.collectorImage.repository' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md for instructions." }}
 {{ end }}
 {{- if and .Values.manager.featureGates .Values.manager.featureGatesMap }}
