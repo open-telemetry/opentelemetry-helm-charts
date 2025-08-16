@@ -19,12 +19,11 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
-    "id": 16,
+    "id": 12,
     "links": [],
     "panels": [
         {
             "collapsed": false,
-            "description": "High-level metrics providing an overview of the Recommendation Service health and performance",
             "gridPos": {
                 "h": 1,
                 "w": 24,
@@ -41,6 +40,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Current request rate (requests per second) for the recommendation service. Shows the volume of incoming requests over time. Healthy services typically show consistent patterns with expected peaks during business hours.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -130,7 +130,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "Current request rate (requests per second) for the recommendation service. Shows the volume of incoming requests over time. Healthy services typically show consistent patterns with expected peaks during business hours.",
             "title": "RPS",
             "type": "timeseries"
         },
@@ -139,6 +138,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Percentage of requests resulting in errors. Healthy services should maintain error rates below 5%. Values above 10% indicate service degradation requiring immediate attention.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -202,7 +202,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "Percentage of requests resulting in errors. Healthy services should maintain error rates below 5%. Values above 10% indicate service degradation requiring immediate attention.",
             "title": "Error Rate",
             "type": "gauge"
         },
@@ -211,6 +210,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "95th percentile response time in milliseconds. This represents the latency experienced by the slowest 5% of requests. Target: < 500ms (green), Warning: 500-1000ms (yellow), Critical: > 1000ms (red).",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -274,7 +274,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "95th percentile response time in milliseconds. This represents the latency experienced by the slowest 5% of requests. Target: < 500ms (green), Warning: 500-1000ms (yellow), Critical: > 1000ms (red).",
             "title": "Latency",
             "type": "stat"
         },
@@ -283,6 +282,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Distribution of HTTP status codes returned by the recommendation service. Helps identify the proportion of successful (2xx) vs failed (4xx/5xx) requests and understand error patterns.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -339,13 +339,11 @@
                     "refId": "A"
                 }
             ],
-            "description": "Distribution of HTTP status codes returned by the recommendation service. Helps identify the proportion of successful (2xx) vs failed (4xx/5xx) requests and understand error patterns.",
             "title": "Status Code Breakdown",
             "type": "piechart"
         },
         {
             "collapsed": false,
-            "description": "Detailed metrics broken down by individual API endpoints to identify performance bottlenecks and usage patterns",
             "gridPos": {
                 "h": 1,
                 "w": 24,
@@ -362,6 +360,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Request rate per second for each API endpoint. Helps identify which endpoints receive the most traffic and may need optimization or scaling considerations.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -451,7 +450,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "Request rate per second for each API endpoint. Helps identify which endpoints receive the most traffic and may need optimization or scaling considerations.",
             "title": "RPS by API Endpoint",
             "type": "timeseries"
         },
@@ -460,6 +458,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Error rate percentage for each API endpoint. Identifies which specific endpoints are experiencing issues or failures.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -549,7 +548,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "Error rate percentage for each API endpoint. Identifies which specific endpoints are experiencing issues or failures.",
             "title": "Error Rate by API Endpoint",
             "type": "timeseries"
         },
@@ -558,6 +556,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "50th and 95th percentile response times for each API endpoint. Shows both typical and worst-case performance per endpoint.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -656,7 +655,6 @@
                     "refId": "B"
                 }
             ],
-            "description": "50th and 95th percentile response times for each API endpoint. Shows both typical and worst-case performance per endpoint.",
             "title": "Latency by API Endpoint (p50/p95)",
             "type": "timeseries"
         },
@@ -665,6 +663,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Tabular summary of key metrics (RPS, Error Rate, p95 Latency) for each API endpoint, sorted by request volume. Use this for quick identification of problematic endpoints.",
             "fieldConfig": {
                 "defaults": {
                     "custom": {
@@ -786,7 +785,6 @@
                     "refId": "C"
                 }
             ],
-            "description": "Tabular summary of key metrics (RPS, Error Rate, p95 Latency) for each API endpoint, sorted by request volume. Use this for quick identification of problematic endpoints.",
             "title": "API Endpoint Summary Table",
             "transformations": [
                 {
@@ -813,7 +811,6 @@
         },
         {
             "collapsed": false,
-            "description": "Observability data including application logs and distributed traces for debugging and performance analysis",
             "gridPos": {
                 "h": 1,
                 "w": 24,
@@ -830,6 +827,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Top 7 operations with the highest average response time. Useful for identifying the slowest parts of the recommendation service that may need optimization.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -906,7 +904,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "Top 7 operations with the highest average response time. Useful for identifying the slowest parts of the recommendation service that may need optimization.",
             "title": "Top 7 Slowest Operations (Mean Latency)",
             "type": "bargauge"
         },
@@ -915,6 +912,104 @@
                 "type": "loki",
                 "uid": "webstore-logs"
             },
+            "description": "Log volume breakdown by severity level showing distribution of INFO, WARN, ERROR, and other log levels. Helps identify error patterns and application health trends through log analysis.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "left",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 90
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 35
+            },
+            "id": 27,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "webstore-logs"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by (severity_text) (count_over_time({service_name=\"recommendation\"}[$__range]))",
+                    "queryType": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Log Records by Severity",
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "includeByName": {},
+                        "indexByName": {},
+                        "renameByName": {
+                            "severity_text": "Severity",
+                            "Value": "Count"
+                        }
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "webstore-logs"
+            },
+            "description": "Recent log entries from the recommendation service, including severity levels, trace/span IDs for correlation, and pod information. Use trace IDs to correlate with distributed traces.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1009,8 +1104,8 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 24,
-                "x": 0,
+                "w": 12,
+                "x": 12,
                 "y": 35
             },
             "id": 25,
@@ -1044,7 +1139,6 @@
                     "refId": "A"
                 }
             ],
-            "description": "Recent log entries from the recommendation service, including severity levels, trace/span IDs for correlation, and pod information. Use trace IDs to correlate with distributed traces.",
             "title": "Recommendation Service Logs (100 recent entries)",
             "transformations": [
                 {
@@ -1084,6 +1178,7 @@
                 "type": "jaeger",
                 "uid": "webstore-traces"
             },
+            "description": "Distributed traces with the longest execution times, helping identify performance bottlenecks in request processing across service boundaries.",
             "fieldConfig": {
                 "defaults": {
                     "custom": {
@@ -1142,7 +1237,6 @@
                     "tags": "error=true"
                 }
             ],
-            "description": "Distributed traces with the longest execution times, helping identify performance bottlenecks in request processing across service boundaries.",
             "title": "Top Slow Traces",
             "type": "table"
         },
@@ -1151,6 +1245,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Breakdown of service operations by request volume, showing the relative usage of different recommendation service functions and dependencies.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1207,13 +1302,83 @@
                     "refId": "A"
                 }
             ],
-            "description": "Breakdown of service operations by request volume, showing the relative usage of different recommendation service functions and dependencies.",
             "title": "Service Dependencies",
             "type": "piechart"
         },
         {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Total number of container restarts for the recommendation service. Restarts indicate pod crashes, OOM kills, or health check failures. Zero restarts (green) is ideal, occasional restarts (yellow) may be acceptable, but frequent restarts (red, >5) require investigation for underlying issues such as memory leaks, configuration problems, or resource constraints.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 43
+            },
+            "id": 26,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "sum(k8s_container_restarts{k8s_pod_name=~\"recommendation.*\"})",
+                    "legendFormat": "Total Restarts",
+                    "refId": "A"
+                }
+            ],
+            "title": "Container Restarts",
+            "type": "stat"
+        },
+        {
             "collapsed": false,
-            "description": "Infrastructure resource utilization metrics including CPU and memory usage for capacity planning and performance optimization",
             "gridPos": {
                 "h": 1,
                 "w": 24,
@@ -1230,6 +1395,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "CPU usage percentage relative to CPU limits per pod instance of the recommendation service. Shows actual CPU consumption as a percentage of the maximum allowed CPU (limit) for each individual pod. Values above 80% indicate high CPU utilization that may require attention.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1312,17 +1478,16 @@
                 {
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "sum by(pod) (\r\n  label_replace(\r\n    rate(container_cpu_usage_seconds_total{pod=~\"recommendation.*\"}[5m]),\r\n    \"pod\", \"recommendation-$1\", \"pod\", \"recommendation-.*-(.*)\"\r\n  )\r\n)\r\n",
+                    "expr": "(container_cpu_usage{k8s_pod_name=~\"recommendation.*\"} / k8s_container_cpu_limit{k8s_pod_name=~\"recommendation.*\"}) * 100",
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
-                    "legendFormat": "__auto",
+                    "legendFormat": "CPU Usage % - {{k8s_pod_name}}",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
                 }
             ],
-            "description": "CPU utilization per pod instance of the recommendation service. High CPU usage (>80%) may indicate processing bottlenecks or need for horizontal scaling.",
-            "title": "CPU Usage",
+            "title": "CPU Usage (%) w.r.t Limit",
             "transparent": true,
             "type": "timeseries"
         },
@@ -1331,6 +1496,238 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
+            "description": "Average CPU requests and limits across all recommendation service pods. Requests show the guaranteed CPU allocation (what Kubernetes reserves), while limits show the maximum CPU allowed (what pods can burst to). This aggregated view helps understand overall resource allocation patterns.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "__systemRef": "hideSeriesFrom",
+                        "matcher": {
+                            "id": "byNames",
+                            "options": {
+                                "mode": "exclude",
+                                "names": [
+                                    "CPU Requests (avg)"
+                                ],
+                                "prefix": "All except:",
+                                "readOnly": true
+                            }
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.hideFrom",
+                                "value": {
+                                    "legend": false,
+                                    "tooltip": false,
+                                    "viz": true
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 52
+            },
+            "id": 27,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "avg(k8s_container_cpu_request{k8s_pod_name=~\"recommendation.*\"})",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "CPU Requests (avg)",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                },
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "avg(k8s_container_cpu_limit{k8s_pod_name=~\"recommendation.*\"})",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "CPU Limits (avg)",
+                    "range": true,
+                    "refId": "B",
+                    "useBackend": false
+                }
+            ],
+            "title": "CPU Limits and Requests (Average/Pod)",
+            "transparent": true,
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Memory usage percentage relative to memory limits per pod instance of the recommendation service. Shows actual memory consumption as a percentage of the maximum allowed memory (limit) for each individual pod. Values above 80% indicate high memory utilization that may lead to OOM kills.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 60
+            },
+            "id": 24,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "editorMode": "code",
+                    "expr": "(container_memory_usage_bytes{k8s_pod_name=~\"recommendation.*\"} / k8s_container_memory_limit_bytes{k8s_pod_name=~\"recommendation.*\"}) * 100",
+                    "legendFormat": "Memory Usage % - {{k8s_pod_name}}",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Memory Usage (%) w.r.t Limit",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Average memory requests and limits across all recommendation service pods. Requests show the guaranteed memory allocation (what Kubernetes reserves), while limits show the maximum memory allowed (what pods can use before being OOM killed). This aggregated view helps understand overall memory allocation patterns.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1390,9 +1787,9 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 52
+                "y": 60
             },
-            "id": 24,
+            "id": 28,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -1410,14 +1807,20 @@
             "targets": [
                 {
                     "editorMode": "code",
-                    "expr": "sum by(pod) (\r\n  label_replace(\r\n    container_memory_usage_bytes{pod=~\"recommendation-.*\"},\r\n    \"pod\", \"recommendation-$1\", \"pod\", \"recommendation-.*-(.*)\"\r\n  )\r\n)\r\n",
-                    "legendFormat": "__auto",
+                    "expr": "avg(k8s_container_memory_request_bytes{k8s_pod_name=~\"recommendation.*\"})",
+                    "legendFormat": "Memory Requests (avg)",
                     "range": true,
                     "refId": "A"
+                },
+                {
+                    "editorMode": "code",
+                    "expr": "avg(k8s_container_memory_limit_bytes{k8s_pod_name=~\"recommendation.*\"})",
+                    "legendFormat": "Memory Limits (avg)",
+                    "range": true,
+                    "refId": "B"
                 }
             ],
-            "description": "Memory consumption per pod instance. Monitor for memory leaks or insufficient memory allocation that could impact performance. Sudden spikes may indicate memory leaks.",
-            "title": "Memory Usage",
+            "title": "Memory Limits and Requests (Average/Pod)",
             "type": "timeseries"
         }
     ],
@@ -1439,6 +1842,6 @@
     "timezone": "",
     "title": "Recommendation Service Dashboard",
     "uid": "recommendation-service",
-    "version": 15,
+    "version": 1,
     "weekStart": ""
 }
