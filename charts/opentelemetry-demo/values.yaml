@@ -482,7 +482,7 @@ components:
       - name: JAEGER_HOST
         value: jaeger-query
       - name: JAEGER_PORT
-        value: "16686"
+        value: "80"
       - name: LOCUST_WEB_HOST
         value: load-generator
       - name: LOCUST_WEB_PORT
@@ -1157,36 +1157,53 @@ k8s-nodes-otel-collector:
 jaeger:
   enabled: true
   fullnameOverride: jaeger
-  provisionDataStore:
-    cassandra: false
   allInOne:
-    enabled: true
-    args:
-      - "--memory.max-traces=2500"
-      - "--query.base-path=/jaeger/ui"
-      - "--prometheus.server-url=http://prometheus:9090"
-      - "--prometheus.query.normalize-calls=true"
-      - "--prometheus.query.normalize-duration=true"
-    extraEnv:
-      - name: METRICS_STORAGE_TYPE
-        value: prometheus
-      - name: COLLECTOR_OTLP_GRPC_HOST_PORT
-        value: 0.0.0.0:4317
-      - name: COLLECTOR_OTLP_HTTP_HOST_PORT
-        value: 0.0.0.0:4318
-    resources:
-      limits:
-        memory: 2Gi
-      requests:
-        memory: 2Gi
+    enabled: false
+  provisionDataStore:
+    elasticsearch: true
+    cassandra: false
   storage:
-    type: memory
+    type: elasticsearch
   agent:
     enabled: false
   collector:
-    enabled: false
+    enabled: true
+    service:
+      otlp:
+        grpc:
+          name: otlp-grpc
+          port: 4317
+        http:
+          name: otlp-http
+          port: 4318
+    resources:
+      limits:
+        memory: 1Gi
+      requests:
+        memory: 512Mi
   query:
-    enabled: false
+    enabled: true
+    basePath: /jaeger/ui
+    extraEnv:
+      - name: METRICS_STORAGE_TYPE
+        value: prometheus
+      - name: PROMETHEUS_SERVER_URL
+        value: http://prometheus:9090
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        memory: 256Mi
+  elasticsearch:
+    master:
+      masterOnly: false
+      replicaCount: 1
+    data:
+      replicaCount: 0
+    coordinating:
+      replicaCount: 0
+    ingest:
+      replicaCount: 0
 
 prometheus:
   enabled: true
@@ -1563,7 +1580,7 @@ grafana:
         - name: Jaeger
           uid: webstore-traces
           type: jaeger
-          url: http://jaeger-query:16686/jaeger/ui
+          url: http://jaeger-query:80/jaeger/ui
           editable: true
           isDefault: false
         - name: Loki
