@@ -739,6 +739,49 @@ components:
         configMap:
           name: flagd-config
 
+  cloud-sre-ops-ai:
+    enabled: true
+    useDefault:
+      env: false
+    imageOverride:
+      tag: "latest-cloud-sre-ops-ai"
+    service:
+      type: LoadBalancer
+      port: 8501
+    env:
+      # Azure OpenAI LLM Configuration (Required)
+      - name: AZURE_OPENAI_ENDPOINT
+        value: "https://iyer-r-7311-resource.cognitiveservices.azure.com/"
+      - name: AZURE_OPENAI_DEPLOYMENT_NAME
+        value: "gpt-4.1-test"
+      - name: AZURE_OPENAI_API_VERSION
+        value: "2024-12-01-preview"
+      # Azure OpenAI Embedding Configuration (Required)
+      - name: AZURE_OPENAI_EMBEDDING_ENDPOINT
+        value: "https://iyer-r-7311-resource.cognitiveservices.azure.com/"
+      - name: AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME
+        value: "text-embedding-3-large"
+      - name: AZURE_OPENAI_EMBEDDING_API_VERSION
+        value: "2024-02-01"
+      # Common Azure OpenAI API Key
+      - name: AZURE_OPENAI_API_KEY
+        value: "test"
+      # MCP Server Configuration
+      - name: GRAFANA_MCP_URL
+        value: "http://grafana-mcp-server:8000/sse"
+      - name: JAEGER_MCP_URL
+        value: "http://jaeger-mcp-server:8000/sse"
+      # Grafana Configuration
+      - name: GRAFANA_URL
+        value: "http:///grafana:80"
+      - name: GRAFANA_API_KEY
+        value: "test"
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        memory: 256Mi
+
   kafka:
     enabled: true
     imageOverride:
@@ -791,16 +834,14 @@ components:
     useDefault:
       env: false
     service:
-      type: NodePort
       port: 8000
-      nodePort: 30002
     env:
       - name: JAEGER_URL
-        value: "jaeger-query"
+        value: "http://jaeger-query"
       - name: JAEGER_PROTOCOL
-        value: "GRPC"
+        value: "HTTP"
       - name: JAEGER_PORT
-        value: "16685"
+        value: "80"
     resources:
       limits:
         memory: 512Mi
@@ -1184,12 +1225,13 @@ jaeger:
         memory: 512Mi
   query:
     enabled: true
-    basePath: /jaeger/ui
     extraEnv:
       - name: METRICS_STORAGE_TYPE
         value: prometheus
       - name: PROMETHEUS_SERVER_URL
         value: http://prometheus:9090
+    service:
+      type: LoadBalancer
     resources:
       limits:
         memory: 512Mi
@@ -1575,13 +1617,13 @@ grafana:
             exemplarTraceIdDestinations:
               - datasourceUid: webstore-traces
                 name: trace_id
-              - url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
+              - url: http://jaeger-query:80/api/traces/$${__value.raw}
                 name: trace_id
                 urlDisplayLabel: View in Jaeger UI
         - name: Jaeger
           uid: webstore-traces
           type: jaeger
-          url: http://jaeger-query:80/jaeger/ui
+          url: http://jaeger-query:80
           editable: true
           isDefault: false
         - name: Loki
@@ -1742,8 +1784,8 @@ grafana:
               # notification_settings:
               #   receiver: Alert_Webhook
 
-grafana-mcp:
-  fullnameOverride: grafana-mcp
+grafana-mcp-server:
+  fullnameOverride: grafana-mcp-server
   disabledCategories:
     - admin
     - incident
@@ -1766,6 +1808,4 @@ grafana-mcp:
     requests:
       memory: 512Mi
   service:
-    type: NodePort
     port: 8000
-    nodePort: "30001"
