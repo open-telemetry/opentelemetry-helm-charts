@@ -1,0 +1,123 @@
+---
+# Source: opentelemetry-kube-stack/templates/collector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: example-daemon
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.9.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"    
+    otel-collector-type: daemonset-example    
+spec:
+  managementState: managed
+  mode: daemonset
+  config:
+    exporters:
+      debug: {}
+      otlp:
+        endpoint: ingest.example.com:443
+        headers:
+          access-token: ${ACCESS_TOKEN}
+    processors:
+      batch:
+        send_batch_max_size: 1500
+        send_batch_size: 1000
+        timeout: 1s
+      resourcedetection/env:
+        detectors:
+        - env
+        override: false
+        timeout: 2s
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus:
+        config:
+          scrape_configs: []
+    service:
+      pipelines:
+        logs:
+          exporters:
+          - debug
+          processors:
+          - resourcedetection/env
+          - batch
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - debug
+          - otlp
+          processors:
+          - resourcedetection/env
+          - batch
+          receivers:
+          - prometheus
+        traces:
+          exporters:
+          - debug
+          processors:
+          - resourcedetection/env
+          - batch
+          receivers:
+          - otlp
+  imagePullPolicy: IfNotPresent
+  upgradeStrategy: automatic
+  terminationGracePeriodSeconds: 30
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 250Mi
+  securityContext:
+    {}
+  targetAllocator:
+    allocationStrategy: per-node
+    enabled: true
+    image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
+    prometheusCR:
+      enabled: true
+      podMonitorSelector: {}
+      scrapeInterval: 30s
+      serviceMonitorSelector: {}
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name=demo"
+  
+  - name: ACCESS_TOKEN
+    valueFrom:
+      secretKeyRef:
+        key: access_token
+        name: otel-collector-secret

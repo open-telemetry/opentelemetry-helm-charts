@@ -1,0 +1,30 @@
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kube-controller-manager/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: example-kube-controller-manager
+  namespace: default
+  labels:
+    app: opentelemetry-kube-stack-kube-controller-manager
+    helm.sh/chart: opentelemetry-kube-stack-0.9.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+spec:
+  jobLabel: jobLabel
+  
+  selector:
+    matchLabels:
+      app: opentelemetry-kube-stack-kube-controller-manager
+      release: "example"
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+  endpoints:
+  - port: http-metrics
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    scheme: https
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true

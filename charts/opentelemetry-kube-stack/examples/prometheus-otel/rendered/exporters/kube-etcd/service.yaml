@@ -1,0 +1,24 @@
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kube-etcd/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-kube-etcd
+  labels:
+    app: opentelemetry-kube-stack-kube-etcd
+    jobLabel: kube-etcd
+    helm.sh/chart: opentelemetry-kube-stack-0.9.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: http-metrics
+      port: 2381
+      protocol: TCP
+      targetPort: 2381
+  selector:
+    component: etcd
+  type: ClusterIP
