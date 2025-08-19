@@ -25,7 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 2,
+  "id": 7,
   "links": [],
   "panels": [
     {
@@ -129,7 +129,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 12,
         "x": 0,
         "y": 4
       },
@@ -228,8 +228,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 8,
+        "w": 12,
+        "x": 12,
         "y": 4
       },
       "id": 10,
@@ -270,7 +270,7 @@
         "type": "prometheus",
         "uid": "webstore-metrics"
       },
-      "description": "Average response time (50th percentile) by span name showing operation latency trends. Helps identify slow operations and performance degradation patterns across different service endpoints.",
+      "description": "95P response time (95th percentile) by span name showing operation latency trends. Helps identify slow operations and performance degradation patterns across different service endpoints.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -325,13 +325,38 @@
           },
           "unit": "dtdurationms"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "GET /api/recommendations"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 4
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 12
       },
       "id": 2,
       "interval": "2m",
@@ -357,13 +382,13 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "histogram_quantile(0.50, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le, span_name))",
+          "expr": "histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"${service}\"}[$__rate_interval])) by (le, span_name))",
           "legendFormat": "{{span_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Average Duration by Span Name",
+      "title": "95P Duration by Span Name",
       "type": "timeseries"
     },
     {
@@ -372,7 +397,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 19
       },
       "id": 19,
       "panels": [],
@@ -431,7 +456,7 @@
         "h": 8,
         "w": 4,
         "x": 0,
-        "y": 13
+        "y": 20
       },
       "id": 20,
       "options": {
@@ -468,8 +493,8 @@
             "includeByName": {},
             "indexByName": {},
             "renameByName": {
-              "severity_text": "Severity",
-              "Value": "Count"
+              "Value": "Count",
+              "severity_text": "Severity"
             }
           }
         }
@@ -577,7 +602,7 @@
         "h": 8,
         "w": 20,
         "x": 4,
-        "y": 13
+        "y": 20
       },
       "id": 17,
       "options": {
@@ -623,22 +648,22 @@
             },
             "includeByName": {},
             "indexByName": {
-              "Time": 0,
-              "severity_text": 1,
               "Line": 2,
-              "span_id": 3,
-              "trace_id": 4,
-              "service_name": 5,
+              "Time": 0,
+              "detected_level": 7,
               "k8s_pod_name": 6,
-              "detected_level": 7
+              "service_name": 5,
+              "severity_text": 1,
+              "span_id": 3,
+              "trace_id": 4
             },
             "renameByName": {
+              "detected_level": "Level",
+              "k8s_pod_name": "Pod Name",
+              "service_name": "Service",
               "severity_text": "Severity",
               "span_id": "Span ID",
-              "trace_id": "Trace ID",
-              "service_name": "Service",
-              "k8s_pod_name": "Pod Name",
-              "detected_level": "Level"
+              "trace_id": "Trace ID"
             }
           }
         }
@@ -651,7 +676,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 28
       },
       "id": 18,
       "panels": [],
@@ -723,7 +748,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 29
       },
       "id": 6,
       "options": {
@@ -845,7 +870,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 29
       },
       "id": 8,
       "options": {
@@ -951,7 +976,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 30
+        "y": 37
       },
       "id": 4,
       "options": {
@@ -1049,7 +1074,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 30
+        "y": 37
       },
       "id": 16,
       "interval": "2m",
@@ -1090,7 +1115,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 45
       },
       "id": 23,
       "panels": [],
@@ -1110,7 +1135,7 @@
         "h": 18,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 46
       },
       "id": 22,
       "options": {
@@ -1177,6 +1202,6 @@
   "timezone": "",
   "title": "Demo Dashboard",
   "uid": "W2gX2zHVk",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }

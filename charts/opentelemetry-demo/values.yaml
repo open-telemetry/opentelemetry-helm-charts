@@ -1718,15 +1718,13 @@ grafana:
                 __dashboardUid__: kafkaDashboard
                 __panelId__: "23"
               isPaused: false
-              # notification_settings:
-              #   receiver: Alert_Webhook
         - orgId: 1
-          name: recommendation-service
+          name: frontend
           folder: Demo-Alerts
           interval: 1m
           rules:
             - uid: aeud5pyhdy22of
-              title: HighRecommendationLatency
+              title: API-High-Latency
               condition: C
               data:
                 - refId: A
@@ -1739,7 +1737,7 @@ grafana:
                     datasource:
                       type: prometheus
                       uid: webstore-metrics
-                    expr: histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name="recommendation"}[5m])) by (le))
+                    expr: histogram_quantile(0.95, sum by(le, span_name) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name="frontend", span_kind="SPAN_KIND_SERVER", span_name!~"GET|POST"}[5m])))
                     instant: true
                     interval: ""
                     intervalMs: 5000
@@ -1772,17 +1770,11 @@ grafana:
                     maxDataPoints: 43200
                     refId: C
                     type: threshold
-              dashboardUid: recommendation-service
-              panelId: 4
               noDataState: NoData
               execErrState: Error
               for: 30s
-              annotations:
-                __dashboardUid__: recommendation-service
-                __panelId__: "4"
+              annotations: {}
               isPaused: false
-              # notification_settings:
-              #   receiver: Alert_Webhook
 
 grafana-mcp-server:
   fullnameOverride: grafana-mcp-server
