@@ -19,9 +19,107 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
-    "id": 12,
+    "id": 2,
     "links": [],
     "panels": [
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Cache hit ratio of the in-memory cache that recomemndation service uses",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 30,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "app_cache_hits_counter_total / (app_cache_misses_counter_total + app_cache_hits_counter_total)",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "Cache Hit Ratio",
+            "type": "timeseries"
+        },
         {
             "collapsed": false,
             "gridPos": {
@@ -996,8 +1094,8 @@
                         "includeByName": {},
                         "indexByName": {},
                         "renameByName": {
-                            "severity_text": "Severity",
-                            "Value": "Count"
+                            "Value": "Count",
+                            "severity_text": "Severity"
                         }
                     }
                 }
@@ -1488,7 +1586,7 @@
                 }
             ],
             "title": "CPU Usage (%) w.r.t Limit",
-            "transparent": true,
+            "transparent": false,
             "type": "timeseries"
         },
         {
@@ -1583,7 +1681,7 @@
                 "x": 12,
                 "y": 52
             },
-            "id": 27,
+            "id": 29,
             "options": {
                 "legend": {
                     "calcs": [
@@ -1625,7 +1723,7 @@
                 }
             ],
             "title": "CPU Limits and Requests (Average/Pod)",
-            "transparent": true,
+            "transparent": false,
             "type": "timeseries"
         },
         {
