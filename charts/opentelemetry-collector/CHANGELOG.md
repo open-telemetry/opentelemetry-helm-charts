@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.4 / 2025-08-20
+- [Fix] Ensure hostEntityEvents preset references k8sattributes processor only when configured.
+
 ### v0.119.3 / 2025-08-13
 - [Feat] Add Kubernetes service resolver to load balancing preset and required RBAC.
 

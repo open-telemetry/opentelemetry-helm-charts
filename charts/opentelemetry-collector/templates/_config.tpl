@@ -1783,6 +1783,10 @@ service:
 {{- fail "hostEntityEvents preset requires hostMetrics preset to be enabled" }}
 {{- end }}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.hostEntityEventsConfig" .Values | fromYaml) .config }}
+{{- if not (hasKey $config.processors "k8sattributes") }}
+{{- $rcPipeline := index $config.service.pipelines "logs/resource_catalog" }}
+{{- $_ := set $rcPipeline "processors" (without $rcPipeline.processors "k8sattributes" | uniq) }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
