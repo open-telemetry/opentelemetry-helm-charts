@@ -15,7 +15,7 @@
             }
         ]
     },
-    "description": "Comprehensive monitoring dashboard for the Recommendation Service providing RED metrics (Rate, Errors, Duration), API endpoint analysis, resource utilization, logs, and traces for complete observability. This dashboard exemplifies best practices for service monitoring with detailed descriptions, actionable thresholds, and comprehensive coverage.",
+    "description": "Comprehensive monitoring dashboard for the Recommendation Service providing RED metrics (Rate, Errors, Duration), API endpoint analysis, resource utilization, logs, and traces for complete observability.",
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
@@ -40,7 +40,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Current request rate (requests per second) for the recommendation service. Shows the volume of incoming requests over time. Healthy services typically show consistent patterns with expected peaks during business hours.",
+            "description": "Current request rate (requests per second) for the recommendation service. Shows the volume of incoming requests over time.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -153,7 +153,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Percentage of requests resulting in errors. Healthy services should maintain error rates below 5%. Values above 10% indicate service degradation requiring immediate attention.",
+            "description": "Percentage of requests resulting in errors for the recommendation service.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -225,7 +225,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "95th percentile response time in milliseconds. This represents the latency experienced by the slowest 5% of requests. Target: < 500ms (green), Warning: 500-1000ms (yellow), Critical: > 1000ms (red).",
+            "description": "95th percentile response time in milliseconds. This represents the latency experienced by the slowest 5% of requests.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -398,7 +398,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Total number of container restarts for the recommendation service. Restarts indicate pod crashes, OOM kills, or health check failures. Zero restarts (green) is ideal, occasional restarts (yellow) may be acceptable, but frequent restarts (red, >5) require investigation for underlying issues such as memory leaks, configuration problems, or resource constraints.",
+            "description": "Total number of container restarts for the recommendation service. Restarts indicate pod crashes, OOM kills, or health check failures.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -483,7 +483,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Request rate per second for each API endpoint. Helps identify which endpoints receive the most traffic and may need optimization or scaling considerations.",
+            "description": "Request rate per second for each API endpoint showing traffic distribution across different endpoints.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -785,7 +785,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Tabular summary of key metrics (RPS, API Error %, p95 Latency) for each API endpoint, sorted by request volume. Use this for quick identification of problematic endpoints.",
+            "description": "Tabular summary of key metrics (RPS, API Error %, p95 Latency) for each API endpoint, sorted by request volume.",
             "fieldConfig": {
                 "defaults": {
                     "custom": {
@@ -948,7 +948,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Top 7 operations with the highest average response time. Useful for identifying the slowest parts of the recommendation service that may need optimization.",
+            "description": "Top 7 operations with the highest average response time showing the slowest operations in the recommendation service.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1440,7 +1440,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "CPU usage percentage relative to CPU limits per pod instance of the recommendation service. Shows actual CPU consumption as a percentage of the maximum allowed CPU (limit) for each individual pod. Values above 80% indicate high CPU utilization that may require attention.",
+            "description": "Average CPU usage percentage relative to CPU limits across all recommendation service pods. Shows actual CPU consumption as a percentage of the maximum allowed CPU (limit) averaged across all pods.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1522,10 +1522,10 @@
                 {
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "(container_cpu_usage{k8s_pod_name=~\"recommendation.*\"} / k8s_container_cpu_limit{k8s_pod_name=~\"recommendation.*\"}) * 100",
+                    "expr": "avg((container_cpu_usage{k8s_pod_name=~\"recommendation.*\"} / k8s_container_cpu_limit{k8s_pod_name=~\"recommendation.*\"}) * 100)",
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
-                    "legendFormat": "CPU Usage % - {{k8s_pod_name}}",
+                    "legendFormat": "CPU Usage % (Average)",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -1539,7 +1539,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Average CPU requests and limits across all recommendation service pods. Requests show the guaranteed CPU allocation (what Kubernetes reserves), while limits show the maximum CPU allowed (what pods can burst to). This aggregated view helps understand overall resource allocation patterns.",
+            "description": "Average CPU requests and limits across all recommendation service pods in millicores. Requests show the guaranteed CPU allocation (what Kubernetes reserves), while limits show the maximum CPU allowed (what pods can burst to). This aggregated view helps understand overall resource allocation patterns.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1590,7 +1590,8 @@
                                 "value": 80
                             }
                         ]
-                    }
+                    },
+                    "unit": "short"
                 },
                 "overrides": [
                     {
@@ -1646,10 +1647,10 @@
                 {
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "avg(k8s_container_cpu_request{k8s_pod_name=~\"recommendation.*\"})",
+                    "expr": "avg(k8s_container_cpu_request{k8s_pod_name=~\"recommendation.*\"}) * 1000",
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
-                    "legendFormat": "CPU Requests (avg)",
+                    "legendFormat": "CPU Requests (avg) - millicores",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -1657,16 +1658,16 @@
                 {
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "avg(k8s_container_cpu_limit{k8s_pod_name=~\"recommendation.*\"})",
+                    "expr": "avg(k8s_container_cpu_limit{k8s_pod_name=~\"recommendation.*\"}) * 1000",
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
-                    "legendFormat": "CPU Limits (avg)",
+                    "legendFormat": "CPU Limits (avg) - millicores",
                     "range": true,
                     "refId": "B",
                     "useBackend": false
                 }
             ],
-            "title": "CPU Limits and Requests (Average/Pod)",
+            "title": "CPU Limits and Requests (Average/Pod) - Millicores",
             "type": "timeseries"
         },
         {
@@ -1674,7 +1675,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Memory usage percentage relative to memory limits per pod instance of the recommendation service. Shows actual memory consumption as a percentage of the maximum allowed memory (limit) for each individual pod. Values above 80% indicate high memory utilization that may lead to OOM kills.",
+            "description": "Average memory usage percentage relative to memory limits across all recommendation service pods. Shows actual memory consumption as a percentage of the maximum allowed memory (limit) averaged across all pods.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1753,8 +1754,8 @@
             "targets": [
                 {
                     "editorMode": "code",
-                    "expr": "(container_memory_usage_bytes{k8s_pod_name=~\"recommendation.*\"} / k8s_container_memory_limit_bytes{k8s_pod_name=~\"recommendation.*\"}) * 100",
-                    "legendFormat": "Memory Usage % - {{k8s_pod_name}}",
+                    "expr": "avg((container_memory_usage_bytes{k8s_pod_name=~\"recommendation.*\"} / k8s_container_memory_limit_bytes{k8s_pod_name=~\"recommendation.*\"}) * 100)",
+                    "legendFormat": "Memory Usage % (Average)",
                     "range": true,
                     "refId": "A"
                 }
@@ -1767,7 +1768,7 @@
                 "type": "prometheus",
                 "uid": "webstore-metrics"
             },
-            "description": "Average memory requests and limits across all recommendation service pods. Requests show the guaranteed memory allocation (what Kubernetes reserves), while limits show the maximum memory allowed (what pods can use before being OOM killed). This aggregated view helps understand overall memory allocation patterns.",
+            "description": "Average memory requests and limits across all recommendation service pods in MiB. Requests show the guaranteed memory allocation (what Kubernetes reserves), while limits show the maximum memory allowed (what pods can use before being OOM killed). This aggregated view helps understand overall memory allocation patterns.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -1818,7 +1819,8 @@
                                 "value": 80
                             }
                         ]
-                    }
+                    },
+                    "unit": "short"
                 },
                 "overrides": []
             },
@@ -1846,20 +1848,20 @@
             "targets": [
                 {
                     "editorMode": "code",
-                    "expr": "avg(k8s_container_memory_request_bytes{k8s_pod_name=~\"recommendation.*\"})",
-                    "legendFormat": "Memory Requests (avg)",
+                    "expr": "avg(k8s_container_memory_request_bytes{k8s_pod_name=~\"recommendation.*\"}) / 1024 / 1024",
+                    "legendFormat": "Memory Requests (avg) - MiB",
                     "range": true,
                     "refId": "A"
                 },
                 {
                     "editorMode": "code",
-                    "expr": "avg(k8s_container_memory_limit_bytes{k8s_pod_name=~\"recommendation.*\"})",
-                    "legendFormat": "Memory Limits (avg)",
+                    "expr": "avg(k8s_container_memory_limit_bytes{k8s_pod_name=~\"recommendation.*\"}) / 1024 / 1024",
+                    "legendFormat": "Memory Limits (avg) - MiB",
                     "range": true,
                     "refId": "B"
                 }
             ],
-            "title": "Memory Limits and Requests (Average/Pod)",
+            "title": "Memory Limits and Requests (Average/Pod) - MiB",
             "type": "timeseries"
         }
     ],
