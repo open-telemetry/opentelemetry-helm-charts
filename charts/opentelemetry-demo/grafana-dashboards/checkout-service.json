@@ -1,0 +1,1565 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "description": "Comprehensive monitoring dashboard for the Checkout Service providing RED metrics (Rate, Errors, Duration), API endpoint analysis, resource utilization, logs, and traces for complete observability. This dashboard exemplifies best practices for service monitoring with detailed descriptions, actionable thresholds, and comprehensive coverage.",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": 16,
+    "links": [],
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "panels": [],
+            "title": "🔹 Overview",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Current request rate (requests per second) for the checkout service. Shows the volume of incoming requests over time. Healthy services typically show consistent patterns with expected peaks during business hours.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "reqps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 1
+            },
+            "id": 2,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                },
+                "wideLayout": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "sum(rate(traces_span_metrics_calls_total{service_name=\"checkout\"}[5m]))",
+                    "legendFormat": "RPS",
+                    "refId": "A"
+                }
+            ],
+            "title": "RPS",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Percentage of requests resulting in errors. Healthy services should maintain error rates below 5%. Values above 10% indicate service degradation requiring immediate attention.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "max": 100,
+                    "min": 0,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 10
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 6,
+                "y": 1
+            },
+            "id": 3,
+            "options": {
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "(sum(rate(traces_span_metrics_calls_total{service_name=\"frontend\", status_code=\"STATUS_CODE_ERROR\", span_name=\"executing api route (pages) /api/checkout\"}[5m])) / sum(rate(traces_span_metrics_calls_total{service_name=\"frontend\", span_name=\"executing api route (pages) /api/checkout\"}[5m]))) * 100",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "API Error %",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "API Error Percentage",
+            "type": "gauge"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "95th percentile response time in milliseconds. This represents the latency experienced by the slowest 5% of requests. Target: < 500ms (green), Warning: 500-1000ms (yellow), Critical: > 1000ms (red).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 500
+                            },
+                            {
+                                "color": "red",
+                                "value": 1000
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 1
+            },
+            "id": 4,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"checkout\"}[5m])) by (le))",
+                    "legendFormat": "p95 Latency",
+                    "refId": "A"
+                }
+            ],
+            "title": "Response Time (p95)",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Total number of container restarts for the checkout service. Restarts indicate pod crashes, OOM kills, or health check failures. Zero restarts (green) is ideal, occasional restarts (yellow) may be acceptable, but frequent restarts (red, >5) require investigation for underlying issues such as memory leaks, configuration problems, or resource constraints.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 1
+            },
+            "id": 26,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "sum(increase(k8s_container_restarts{k8s_pod_name=~\"checkout.*\"}[$__range]))",
+                    "legendFormat": "Total Restarts",
+                    "refId": "A"
+                }
+            ],
+            "title": "Container Restarts",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "id": 17,
+            "panels": [],
+            "title": "API Endpoint Breakdown",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Request rate per second for each API endpoint. Helps identify which endpoints receive the most traffic and may need optimization or scaling considerations.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "reqps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 10
+            },
+            "id": 18,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "sum by (span_name) (rate(traces_span_metrics_calls_total{service_name=\"checkout\"}[5m]))",
+                    "legendFormat": "{{span_name}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "RPS by API Endpoint",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 10
+            },
+            "id": 29,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "editorMode": "code",
+                    "expr": "(sum by(span_name) (rate(traces_span_metrics_calls_total{service_name=\"frontend\", status_code=\"STATUS_CODE_ERROR\", span_name=~\"executing api route \\\\(pages\\\\) /api/checkout|POST /api/checkout|.*CheckoutService.*\"}[5m])) / sum by(span_name) (rate(traces_span_metrics_calls_total{service_name=\"frontend\", span_name=~\"executing api route \\\\(pages\\\\) /api/checkout|POST /api/checkout|.*CheckoutService.*\"}[5m]))) * 100",
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "API Error Percentage by Endpoint",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "50th and 95th percentile response times for each API endpoint. Shows both typical and worst-case performance per endpoint.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 18
+            },
+            "id": 20,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "histogram_quantile(0.95, sum by (span_name, le) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"checkout\"}[5m])))",
+                    "legendFormat": "{{span_name}} p95",
+                    "refId": "A"
+                }
+            ],
+            "title": "Latency by API Endpoint (p50/p95)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Tabular summary of key metrics (RPS, API Error %, p95 Latency) for each API endpoint, sorted by request volume. Use this for quick identification of problematic endpoints.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "RPS"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "reqps"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "API Error %"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "percent"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "p95 Latency"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "ms"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 18
+            },
+            "id": 21,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                    {
+                        "desc": true,
+                        "displayName": "RPS"
+                    }
+                ]
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "sum by (span_name) (rate(traces_span_metrics_calls_total{service_name=\"checkout\"}[5m]))",
+                    "format": "table",
+                    "legendFormat": "{{span_name}}",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "(sum by (span_name) (rate(traces_span_metrics_calls_total{service_name=\"checkout\", status_code=\"STATUS_CODE_ERROR\"}[5m])) / sum by (span_name) (rate(traces_span_metrics_calls_total{service_name=\"checkout\"}[5m]))) * 100",
+                    "format": "table",
+                    "legendFormat": "{{span_name}}",
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "histogram_quantile(0.95, sum by (span_name, le) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"checkout\"}[5m])))",
+                    "format": "table",
+                    "legendFormat": "{{span_name}}",
+                    "refId": "C"
+                }
+            ],
+            "title": "API Endpoint Summary Table",
+            "transformations": [
+                {
+                    "id": "merge",
+                    "options": {}
+                },
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Time": true
+                        },
+                        "indexByName": {},
+                        "renameByName": {
+                            "Value #A": "RPS",
+                            "Value #B": "API Error %",
+                            "Value #C": "p95 Latency",
+                            "span_name": "API Endpoint"
+                        }
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 26
+            },
+            "id": 9,
+            "panels": [],
+            "title": "Logs & Traces",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Top 7 operations with the highest average response time. Useful for identifying the slowest parts of the checkout service that may need optimization.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 100
+                            },
+                            {
+                                "color": "red",
+                                "value": 500
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 27
+            },
+            "id": 16,
+            "options": {
+                "displayMode": "list",
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 75,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {},
+                "valueMode": "color"
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "topk(7,sum by (span_name,service_name)(increase(traces_span_metrics_duration_milliseconds_sum{service_name=~\"checkout\", span_name=~\".*\"}[5m15s]) / increase(traces_span_metrics_duration_milliseconds_count{service_name=~\"checkout\", span_name=~\".*\"}[5m15s])))",
+                    "instant": true,
+                    "interval": "",
+                    "legendFormat": "{{span_name}} [{{service_name}}]",
+                    "range": false,
+                    "refId": "A"
+                }
+            ],
+            "title": "Top 7 Slowest Operations (Mean Latency)",
+            "type": "bargauge"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "webstore-logs"
+            },
+            "description": "Total checkout attempts in the selected time range. Shows overall checkout volume and business activity.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "left",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 90
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 35
+            },
+            "id": 27,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "webstore-logs"
+                    },
+                    "direction": "backward",
+                    "editorMode": "code",
+                    "expr": "sum by (severity_text) (count_over_time({service_name=\"checkout\"}[$__range]))",
+                    "queryType": "range",
+                    "refId": "A"
+                }
+            ],
+            "title": "Log Records by Severity",
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "includeByName": {},
+                        "indexByName": {},
+                        "renameByName": {
+                            "Value": "Count",
+                            "severity_text": "Severity"
+                        }
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "webstore-logs"
+            },
+            "description": "Recent log entries from the checkout service, including severity levels, trace/span IDs for correlation, and pod information. Use trace IDs to correlate with distributed traces.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto",
+                            "wrapText": false
+                        },
+                        "filterable": true,
+                        "inspect": true
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Time"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 180
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Line"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 386
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "severity_text"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 127
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "span_id"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 150
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "trace_id"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 200
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 35
+            },
+            "id": 25,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                    {
+                        "desc": true,
+                        "displayName": "Time"
+                    }
+                ]
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "webstore-logs"
+                    },
+                    "expr": "{service_name=\"checkout\"}",
+                    "maxLines": 100,
+                    "refId": "A"
+                }
+            ],
+            "title": "Checkout Service Logs (100 recent entries)",
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "id": true,
+                            "labels": true
+                        },
+                        "includeByName": {},
+                        "indexByName": {
+                            "Line": 2,
+                            "Time": 0,
+                            "detected_level": 7,
+                            "k8s_pod_name": 6,
+                            "service_name": 5,
+                            "severity_text": 1,
+                            "span_id": 3,
+                            "trace_id": 4
+                        },
+                        "renameByName": {
+                            "Line": "Line",
+                            "detected_level": "Level",
+                            "k8s_pod_name": "Pod Name",
+                            "service_name": "Service",
+                            "severity_text": "Severity",
+                            "span_id": "Span ID",
+                            "trace_id": "Trace ID"
+                        }
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "jaeger",
+                "uid": "webstore-traces"
+            },
+            "description": "Distributed traces with the longest execution times, helping identify performance bottlenecks in request processing across service boundaries.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 43
+            },
+            "id": 11,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "jaeger",
+                        "uid": "webstore-traces"
+                    },
+                    "queryType": "search",
+                    "refId": "A",
+                    "service": "frontend",
+                    "tags": "error=true"
+                }
+            ],
+            "title": "Top Slow Traces",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Breakdown of service operations by request volume, showing the relative usage of different checkout service functions and dependencies.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false,
+                            "viz": false
+                        }
+                    },
+                    "mappings": []
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 16,
+                "x": 8,
+                "y": 43
+            },
+            "id": 12,
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "pieType": "pie",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "expr": "sum by (span_name) (rate(traces_span_metrics_calls_total{service_name=\"checkout\"}[5m]))",
+                    "legendFormat": "{{span_name}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Service Dependencies",
+            "type": "piechart"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 51
+            },
+            "id": 13,
+            "panels": [],
+            "title": "🔹 Resources",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "CPU utilization per pod instance. Monitor for sustained high CPU usage that could indicate performance bottlenecks or the need for scaling. Consistent usage above 80% may require investigation.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "max": 1,
+                    "min": 0,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "percentunit"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 52
+            },
+            "id": 14,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "builder",
+                    "expr": "rate(container_cpu_time_seconds_total{k8s_container_name=\"checkout\"}[5m])",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{k8s_pod_name}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "CPU Usage",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "webstore-metrics"
+            },
+            "description": "Memory consumption per pod instance. Monitor for memory leaks or insufficient memory allocation that could impact performance. Sudden spikes may indicate memory leaks.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "bytes"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 52
+            },
+            "id": 15,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.5.2",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "webstore-metrics"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "builder",
+                    "expr": "k8s_container_memory_request_bytes{k8s_container_name=\"checkout\"}",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{k8s_pod_name}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "Memory Usage",
+            "type": "timeseries"
+        }
+    ],
+    "preload": false,
+    "refresh": "30s",
+    "schemaVersion": 40,
+    "tags": [
+        "checkout",
+        "monitoring"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Checkout Service Dashboard",
+    "uid": "checkout-service",
+    "version": 26,
+    "weekStart": ""
+}
