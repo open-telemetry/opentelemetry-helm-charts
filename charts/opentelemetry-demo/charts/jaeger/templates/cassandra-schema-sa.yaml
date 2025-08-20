@@ -1,0 +1,10 @@
+{{- if and (eq .Values.storage.type "cassandra") .Values.schema.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "jaeger.cassandraSchema.serviceAccountName" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cassandra-schema
+automountServiceAccountToken: {{ .Values.schema.serviceAccount.automountServiceAccountToken }}
+{{- end -}}

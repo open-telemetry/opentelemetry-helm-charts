@@ -1,0 +1,35 @@
+{{- if .Values.hotrod.enabled -}}
+  {{- if .Values.hotrod.ingress.enabled -}}
+  {{- $ingressSupportsIngressClassName := eq (include "common.ingress.supportsIngressClassname" .) "true" }}
+  {{- $serviceName := include "jaeger.fullname" . -}}
+  {{- $servicePort := .Values.hotrod.service.port -}}
+apiVersion: {{ include "common.capabilities.ingress.apiVersion" $ }}
+kind: Ingress
+metadata:
+  name: {{ include "jaeger.fullname" . }}-hotrod
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hotrod
+  {{- if .Values.hotrod.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.hotrod.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if and $ingressSupportsIngressClassName .Values.hotrod.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.hotrod.ingress.ingressClassName }}
+  {{- end }}
+  rules:
+    {{- range $host := .Values.hotrod.ingress.hosts }}
+    - host: {{ $host | quote}}
+      http:
+        paths:
+          - path: /
+            pathType: {{ default "ImplementationSpecific" $.Values.hotrod.ingress.pathType }}
+            backend: {{- include "common.ingress.backend" (dict "serviceName" (printf "%s-hotrod" $serviceName) "servicePort" $servicePort "context" $) | nindent 14 }}
+  {{- end -}}
+  {{- if .Values.hotrod.ingress.tls }}
+  tls:
+  {{- toYaml .Values.hotrod.ingress.tls | nindent 4 }}
+  {{- end -}}
+  {{- end -}}
+  {{- end -}}

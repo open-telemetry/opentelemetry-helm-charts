@@ -1,0 +1,41 @@
+{{- if .Values.query.ingress.enabled -}}
+{{- $ingressSupportsIngressClassName := eq (include "common.ingress.supportsIngressClassname" .) "true" }}
+  {{- $servicePort := .Values.query.service.port -}}
+  {{- $basePath := .Values.query.basePath -}}
+apiVersion: {{ include "common.capabilities.ingress.apiVersion" $ }}
+kind: Ingress
+metadata:
+  name: {{ template "jaeger.query.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    {{- if .Values.query.ingress.labels }}
+    {{- toYaml .Values.query.ingress.labels | nindent 4 }}
+    {{- end }}
+    app.kubernetes.io/component: query
+  {{- if .Values.query.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.query.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if and $ingressSupportsIngressClassName .Values.query.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.query.ingress.ingressClassName }}
+  {{- end }}
+  rules:
+    {{- range $host := .Values.query.ingress.hosts }}
+    - host: {{ $host | quote }}
+      http:
+        paths:
+          - path: {{ $basePath }}
+            pathType: {{ default "ImplementationSpecific" $.Values.query.ingress.pathType }}
+            backend: {{- include "common.ingress.backend" (dict "serviceName" (include "jaeger.query.name" $) "servicePort" $servicePort "context" $) | nindent 14 }}
+          {{- end -}}
+          {{- if .Values.query.ingress.health.exposed }}
+          - path: /health
+            pathType: {{ default "ImplementationSpecific" $.Values.query.ingress.pathType }}
+            backend: {{- include "common.ingress.backend" (dict "serviceName" (include "jaeger.query.name" $) "servicePort" 16687 "context" $) | nindent 14 }}
+  {{- end -}}
+  {{- if .Values.query.ingress.tls }}
+  tls:
+  {{- toYaml .Values.query.ingress.tls | nindent 4 }}
+  {{- end -}}
+  {{- end -}}

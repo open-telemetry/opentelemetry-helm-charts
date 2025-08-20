@@ -1,0 +1,15 @@
+{{- if and .Values.esRollover.enabled .Values.esRollover.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "jaeger.esRollover.serviceAccountName" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: es-index-rollover
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    # Must be created before the rollover init hook
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+automountServiceAccountToken: {{ .Values.esRollover.serviceAccount.automountServiceAccountToken }}
+{{- end -}}

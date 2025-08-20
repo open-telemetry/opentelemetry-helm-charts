@@ -1,0 +1,64 @@
+{{ if (and (not .Values.userconfig) .Values.provisionDataStore.elasticsearch) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-config
+  namespace: {{ include "jaeger.namespace" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+data:
+  user-config.yaml: |
+    service:
+      extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [jaeger_storage_exporter]
+
+    extensions:
+      healthcheckv2:
+        use_v2: true
+        http:
+            endpoint: 0.0.0.0:13133
+
+      jaeger_query:
+        storage:
+          traces: primary_store
+          traces_archive: archive_store
+
+
+      jaeger_storage:
+        backends:
+          primary_store:
+            elasticsearch:
+              index_prefix: {{- .Values.config.extensions.jaeger_storage.backends.primary_store.elasticsearch.index_prefix | quote | indent 2 }}
+              server_urls: ["{{ include "elasticsearch.client.url" . }}"]
+              username: {{- .Values.config.extensions.jaeger_storage.backends.primary_store.elasticsearch.username | quote | indent 2 }}
+              {{- if .Values.config.extensions.jaeger_storage.backends.primary_store.elasticsearch.password }}
+              password: {{- .Values.config.extensions.jaeger_storage.backends.primary_store.elasticsearch.password | quote | indent 2 }}
+              {{- end }}
+          archive_store:
+            elasticsearch:
+              index_prefix: {{- .Values.config.extensions.jaeger_storage.backends.archive_store.elasticsearch.index_prefix | quote | indent 2 }}
+              server_urls: ["{{ include "elasticsearch.client.url" . }}"]
+              username: {{- .Values.config.extensions.jaeger_storage.backends.archive_store.elasticsearch.username | quote | indent 2 }}
+              {{- if .Values.config.extensions.jaeger_storage.backends.archive_store.elasticsearch.password }}
+              password: {{- .Values.config.extensions.jaeger_storage.backends.archive_store.elasticsearch.password | quote | indent 2 }}
+              {{- end }}
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint:{{ .Values.config.receivers.otlp.protocols.grpc.endpoint | indent 1 }}
+          http: 
+            endpoint:{{ .Values.config.receivers.otlp.protocols.http.endpoint | indent 1 }}
+
+    processors:
+      batch:
+
+    exporters:
+      jaeger_storage_exporter:
+        trace_storage: primary_store
+{{- end }}

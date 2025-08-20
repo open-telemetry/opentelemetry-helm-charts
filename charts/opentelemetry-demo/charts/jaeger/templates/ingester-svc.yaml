@@ -1,0 +1,23 @@
+{{- if .Values.ingester.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jaeger.ingester.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingester
+{{- if .Values.ingester.service.annotations }}
+  annotations:
+    {{- toYaml .Values.ingester.service.annotations | nindent 4 }}
+{{- end }}
+spec:
+  ports:
+  - name: admin
+    port: 14270
+    targetPort: admin
+  selector:
+    {{- include "jaeger.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ingester
+  type: {{ .Values.ingester.service.type }}
+{{- template "loadBalancerSourceRanges" .Values.ingester }}
+{{- end -}}

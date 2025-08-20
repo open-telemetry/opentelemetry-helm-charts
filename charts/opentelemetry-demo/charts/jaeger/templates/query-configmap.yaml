@@ -1,0 +1,12 @@
+{{- if .Values.query.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jaeger.fullname" . }}-ui-configuration
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: query
+data:
+  query-ui-config.json: |-
+{{ tpl .Values.query.config . | indent 4 }}
+{{- end }}

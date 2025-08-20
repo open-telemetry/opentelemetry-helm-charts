@@ -1,0 +1,35 @@
+{{- if .Values.query.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jaeger.query.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: query
+{{- if .Values.query.service.annotations }}
+  annotations:
+    {{- toYaml .Values.query.service.annotations | nindent 4 }}
+{{- end }}
+spec:
+  ports:
+  - name: query
+    port: {{ .Values.query.service.port }}
+    protocol: TCP
+    targetPort: {{ default (ternary "oauth-proxy" "query" .Values.query.oAuthSidecar.enabled) .Values.query.service.targetPort }}
+{{- if and (eq .Values.query.service.type "NodePort") (.Values.query.service.nodePort) }}
+    nodePort: {{ .Values.query.service.nodePort }}
+{{- end }}
+  - name: grpc
+    port: 16685
+    protocol: TCP
+    targetPort: grpc
+  - name: {{ .Values.query.service.healthCheck.name }}
+    port: 13133
+    protocol: TCP
+    targetPort: {{ .Values.query.service.healthCheck.targetPort }}
+  selector:
+    {{- include "jaeger.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: query
+  type: {{ .Values.query.service.type }}
+{{- template "loadBalancerSourceRanges" .Values.query }}
+{{- end -}}

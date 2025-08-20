@@ -1,0 +1,44 @@
+{{- if and (.Values.collector.enabled) (.Values.collector.serviceMonitor.enabled)}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "jaeger.collector.name" . }}
+  {{- if .Values.collector.serviceMonitor.namespace }}
+  namespace: {{ .Values.collector.serviceMonitor.namespace }}
+  {{- end }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: collector
+    {{- if .Values.collector.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.collector.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.collector.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml .Values.collector.serviceMonitor.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  endpoints:
+    - port: healthcheck
+      path: /metrics
+      {{- if .Values.collector.serviceMonitor.interval }}
+      interval: {{ .Values.collector.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.collector.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.collector.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.collector.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml .Values.collector.serviceMonitor.relabelings | nindent 8 }}
+      {{- end }}
+      {{- if .Values.collector.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml .Values.collector.serviceMonitor.metricRelabelings | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: collector
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

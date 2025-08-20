@@ -1,0 +1,185 @@
+{{- if .Values.allInOne.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "jaeger.fullname" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: all-in-one
+    prometheus.io/port: "14269"
+    prometheus.io/scrape: "true"
+spec:
+  {{- if hasKey .Values.allInOne "replicas" }}
+  replicas: {{ .Values.allInOne.replicas }}
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "jaeger.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: all-in-one
+  template:
+    metadata:
+      labels:
+        {{- include "jaeger.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: all-in-one
+{{- if .Values.allInOne.podLabels }}
+        {{- toYaml .Values.allInOne.podLabels | nindent 8 }}
+{{- end }}
+      annotations:
+        prometheus.io/port: "14269"
+        prometheus.io/scrape: "true"
+    spec:
+      {{- include "allInOne.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - env:
+          {{- if .Values.allInOne.extraEnv }}
+            {{- toYaml .Values.allInOne.extraEnv | nindent 12 }}
+          {{- end }}
+            - name: SPAN_STORAGE_TYPE
+              value: {{ .Values.storage.type }}
+            {{- include "storage.env" . | nindent 12 }}
+            - name: COLLECTOR_ZIPKIN_HOST_PORT
+              value: :9411
+            - name: JAEGER_DISABLED
+              value: "false"
+            - name: COLLECTOR_OTLP_ENABLED
+              value: "true"
+            {{- if .Values.allInOne.samplingConfig }}
+            - name: SAMPLING_STRATEGIES_FILE
+              value: /etc/conf/strategies.json
+            {{- end }}
+            {{- if .Values.uiconfig }}
+            - name: QUERY_UI_CONFIG
+              value: /etc/jaeger/ui-config/ui-config.json
+            {{- end }}
+        {{- with .Values.allInOne.envFrom }}
+          envFrom: {{- toYaml . | nindent 12 }}
+        {{- end }}
+          securityContext:
+            {{- toYaml .Values.allInOne.securityContext | nindent 12 }}
+          image: {{ include "allInOne.image" . }}
+          imagePullPolicy: {{ .Values.allInOne.image.pullPolicy }}
+          name: jaeger
+          args:
+            {{- if .Values.userconfig }}
+            - "--config"
+            - "/etc/jaeger/user-config.yaml"
+            {{- end }}
+            {{- range $arg := .Values.allInOne.args }}
+            - "{{ tpl $arg $ }}"
+            {{- end }}
+          ports:
+            - containerPort: 5775
+              protocol: UDP
+            - containerPort: 6831
+              protocol: UDP
+            - containerPort: 6832
+              protocol: UDP
+            - containerPort: 5778
+              protocol: TCP
+            - containerPort: 16686
+              protocol: TCP
+            - containerPort: 16685
+              protocol: TCP
+            - containerPort: 9411
+              protocol: TCP
+            - containerPort: 4317
+              protocol: TCP
+            - containerPort: 4318
+              protocol: TCP
+            - containerPort: 13133
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /status
+              port: 13133
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /status
+              port: 13133
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+      {{- with .Values.allInOne.resources }}
+          resources:
+        {{- toYaml . | nindent 12 }}
+      {{- end }}
+          volumeMounts:
+        {{- if .Values.userconfig }}  
+            - name: user-config
+              mountPath: /etc/jaeger
+        {{- end }}
+        {{- if .Values.uiconfig }}  
+            - name: ui-config
+              mountPath: /etc/jaeger/ui-config
+        {{- end }}
+        {{- if not .Values.storage.badger.ephemeral }}
+            - name: badger-data
+              mountPath: {{ .Values.storage.badger.persistence.mountPath }}
+        {{- end }}
+        {{- if .Values.allInOne.samplingConfig}}
+            - name: strategies
+              mountPath: /etc/conf/
+        {{- end }}
+        {{- range .Values.allInOne.extraSecretMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+              readOnly: {{ .readOnly }}
+        {{- end }}
+      securityContext:
+        {{- toYaml .Values.allInOne.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ template "jaeger.fullname" . }}
+      volumes:
+      {{- if .Values.userconfig }}
+        - name: user-config
+          configMap:
+            name: user-config
+      {{- end }}
+      {{- if .Values.uiconfig }}
+        - name: ui-config
+          configMap:
+            name: ui-config
+      {{- end }}
+    {{- if not .Values.storage.badger.ephemeral }}
+        - name: badger-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.storage.badger.persistence.useExistingPvcName | required "Using badger persistence it is required to set an existing PVC"  }}
+    {{- end }}
+    {{- if .Values.allInOne.samplingConfig}}
+        - name: strategies
+          configMap:
+            name: {{ include "jaeger.fullname" . }}-sampling-strategies
+    {{- end }}
+    {{- range .Values.allInOne.extraSecretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+    {{- end }}
+    {{- with .Values.allInOne.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.allInOne.topologySpreadConstraints }}
+      topologySpreadConstraints:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.allInOne.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.allInOne.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end -}}

@@ -1,0 +1,144 @@
+{{- if .Values.ingester.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jaeger.fullname" . }}-ingester
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingester
+{{- if .Values.ingester.annotations }}
+  annotations:
+    {{- toYaml .Values.ingester.annotations | nindent 4 }}
+{{- end }}
+spec:
+{{- if not .Values.ingester.autoscaling.enabled }}
+  replicas: {{ .Values.ingester.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "jaeger.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ingester
+  template:
+    metadata:
+      annotations:
+{{- if .Values.ingester.podAnnotations }}
+        {{- toYaml .Values.ingester.podAnnotations | nindent 8 }}
+{{- end }}
+      labels:
+        {{- include "jaeger.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ingester
+{{- if .Values.ingester.podLabels }}
+        {{- toYaml .Values.ingester.podLabels | nindent 8 }}
+{{- end }}
+    spec:
+      serviceAccountName: {{ include "jaeger.ingester.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.ingester.podSecurityContext | nindent 8 }}
+      {{- include "ingester.imagePullSecrets" . | nindent 6 }}
+      {{- with .Values.ingester.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ingester.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ingester.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ingester.initContainers }}
+      initContainers:
+      {{- toYaml .Values.ingester.initContainers | nindent 8 }}
+      {{- end}}
+      containers:
+      - name: {{ include "jaeger.fullname" . }}-ingester
+        securityContext:
+          {{- toYaml .Values.ingester.securityContext | nindent 10 }}
+        image: {{ include "ingester.image" . }}
+        imagePullPolicy: {{ .Values.ingester.image.pullPolicy }}
+        args:
+          {{ include "extra.cmdArgs" ( dict "cmdlineParams" .Values.ingester.cmdlineParams ) | nindent 10  }}
+          {{- include "storage.cmdArgs" . | nindent 10 }}
+        env:
+        {{- if .Values.ingester.extraEnv }}
+          {{- toYaml .Values.ingester.extraEnv | nindent 10 }}
+        {{- end }}
+          - name: SPAN_STORAGE_TYPE
+            value: {{ .Values.storage.type }}
+          {{- include "storage.env" . | nindent 10 }}
+          {{ if .Values.storage.kafka.brokers }}
+          - name: KAFKA_CONSUMER_BROKERS
+            value: {{ tpl (include "helm-toolkit.utils.joinListWithComma" .Values.storage.kafka.brokers) . }}
+          {{- end }}
+          {{ if .Values.storage.kafka.topic }}
+          - name: KAFKA_CONSUMER_TOPIC
+            value: {{ .Values.storage.kafka.topic }}
+          {{- end }}
+          {{ if .Values.storage.kafka.authentication }}
+          - name: KAFKA_CONSUMER_AUTHENTICATION
+            value: {{ .Values.storage.kafka.authentication }}
+          {{- end }}
+      {{- with .Values.ingester.envFrom }}
+        envFrom: {{- toYaml . | nindent 10 }}
+      {{- end }}
+        ports:
+        - containerPort: 14270
+          name: admin
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: admin
+        livenessProbe:
+          httpGet:
+            path: /
+            port: admin
+        resources:
+          {{- toYaml .Values.ingester.resources | nindent 10 }}
+        volumeMounts:
+        {{- range .Values.ingester.extraConfigmapMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            subPath: {{ .subPath }}
+            readOnly: {{ .readOnly }}
+        {{- end }}
+        {{- range .Values.ingester.extraSecretMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            subPath: {{ .subPath }}
+            readOnly: {{ .readOnly }}
+        {{- end }}
+        {{- if .Values.storage.cassandra.tls.enabled }}
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/cassandra-tls/ca-cert.pem"
+            subPath: "ca-cert.pem"
+            readOnly: true
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/cassandra-tls/client-cert.pem"
+            subPath: "client-cert.pem"
+            readOnly: true
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/cassandra-tls/client-key.pem"
+            subPath: "client-key.pem"
+            readOnly: true
+        {{- end }}
+      dnsPolicy: {{ .Values.ingester.dnsPolicy }}
+      restartPolicy: Always
+      volumes:
+      {{- range .Values.ingester.extraConfigmapMounts }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+      {{- end }}
+      {{- range .Values.ingester.extraSecretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+      {{- end }}
+      {{- if .Values.storage.cassandra.tls.enabled }}
+        - name: {{ .Values.storage.cassandra.tls.secretName }}
+          secret:
+            secretName: {{ .Values.storage.cassandra.tls.secretName }}
+      {{- end }}
+{{- end -}}

@@ -1,0 +1,48 @@
+{{- if .Values.allInOne.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jaeger.collector.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service-collector
+spec:
+  clusterIP: {{ .Values.allInOne.service.headless | ternary "None" "null" }}
+  ports:
+    - name: http-zipkin
+      port: 9411
+      targetPort: 0
+      {{- if semverCompare ">=1.20" .Capabilities.KubeVersion.Version }}
+      appProtocol: http
+      {{- end }}
+    - name: grpc-http
+      port: 14250
+      targetPort: 0
+      {{- if semverCompare ">=1.20" .Capabilities.KubeVersion.Version }}
+      appProtocol: grpc
+      {{- end }}
+    - name: c-tchan-trft
+      port: 14267
+      targetPort: 0
+    - name: http-c-binary-trft
+      port: 14268
+      targetPort: 0
+      {{- if semverCompare ">=1.20" .Capabilities.KubeVersion.Version }}
+      appProtocol: http
+      {{- end }}
+    - name: {{ .Values.allInOne.service.collector.otlp.grpc.name }}
+      port: 4317
+      targetPort: 0
+      {{- if semverCompare ">=1.20" .Capabilities.KubeVersion.Version }}
+      appProtocol: grpc
+      {{- end }}
+    - name: {{ .Values.allInOne.service.collector.otlp.http.name }}
+      port: 4318
+      targetPort: 0
+      {{- if semverCompare ">=1.20" .Capabilities.KubeVersion.Version }}
+      appProtocol: http
+      {{- end }}
+  selector:
+    {{- include "jaeger.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: all-in-one
+{{- end -}}

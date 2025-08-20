@@ -1,0 +1,44 @@
+{{- if and (.Values.ingester.enabled) (.Values.ingester.serviceMonitor.enabled)}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "jaeger.ingester.name" . }}
+  {{- if .Values.ingester.serviceMonitor.namespace }}
+  namespace: {{ .Values.ingester.serviceMonitor.namespace }}
+  {{- end }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingester
+    {{- if .Values.ingester.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.ingester.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ingester.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml .Values.ingester.serviceMonitor.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  endpoints:
+    - port: admin
+      path: /metrics
+      {{- if .Values.ingester.serviceMonitor.interval }}
+      interval: {{ .Values.ingester.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.ingester.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.ingester.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.ingester.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml .Values.ingester.serviceMonitor.relabelings | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ingester.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml .Values.ingester.serviceMonitor.metricRelabelings | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

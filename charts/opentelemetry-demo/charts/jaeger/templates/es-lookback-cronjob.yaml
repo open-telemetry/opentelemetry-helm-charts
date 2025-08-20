@@ -1,0 +1,110 @@
+{{- if .Values.esLookback.enabled -}}
+apiVersion: {{ include "common.capabilities.cronjob.apiVersion" $ }}
+kind: CronJob
+metadata:
+  name: {{ include "jaeger.fullname" . }}-es-lookback
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: es-lookback
+{{- if .Values.esLookback.annotations }}
+  annotations:
+    {{- toYaml .Values.esLookback.annotations | nindent 4 }}
+{{- end }}
+spec:
+  concurrencyPolicy: {{ .Values.esLookback.concurrencyPolicy }}
+  schedule: {{ .Values.esLookback.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.esLookback.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.esLookback.failedJobsHistoryLimit }}
+  suspend: false
+  jobTemplate:
+    spec:
+      {{- if .Values.esLookback.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.esLookback.activeDeadlineSeconds }}
+      {{- end }}
+      {{- if .Values.esLookback.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ .Values.esLookback.ttlSecondsAfterFinished }}
+      {{- end }}
+      template:
+        metadata:
+          {{- if .Values.esLookback.podAnnotations }}
+          annotations:
+            {{- toYaml .Values.esLookback.podAnnotations | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "jaeger.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: es-lookback
+            {{- if .Values.esLookback.podLabels }}
+            {{- toYaml .Values.esLookback.podLabels | nindent 12 }}
+            {{- end }}
+        spec:
+          serviceAccountName: {{ template "jaeger.esLookback.serviceAccountName" . }}
+          {{- include "esLookback.imagePullSecrets" . | nindent 10 }}  
+          securityContext:
+            {{- toYaml .Values.esLookback.podSecurityContext | nindent 12 }}
+          restartPolicy: OnFailure
+          {{- with .Values.esLookback.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.esLookback.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.esLookback.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          containers:
+          - name: {{ include "jaeger.fullname" . }}-es-lookback
+            securityContext:
+              {{- toYaml .Values.esLookback.securityContext | nindent 14 }}
+            image: {{ include "esLookback.image" . }}
+            imagePullPolicy: {{ .Values.esLookback.image.pullPolicy }}
+            args:
+              - lookback
+              - {{ include "elasticsearch.client.url" . }}
+              {{ include "extra.cmdArgs" ( dict "cmdlineParams" .Values.esLookback.cmdlineParams ) | nindent 14  }}
+            env:
+              {{ include "elasticsearch.env" . | nindent 14 }}
+              {{- if .Values.esLookback.extraEnv }}
+                {{- toYaml .Values.esLookback.extraEnv | nindent 14 }}
+              {{- end }}
+            resources:
+              {{- toYaml .Values.esLookback.resources | nindent 14 }}
+            volumeMounts:
+            {{- range .Values.esLookback.extraConfigmapMounts }}
+              - name: {{ .name }}
+                mountPath: {{ .mountPath }}
+                subPath: {{ .subPath }}
+                readOnly: {{ .readOnly }}
+            {{- end }}
+            {{- range .Values.esLookback.extraSecretMounts }}
+              - name: {{ .name }}
+                mountPath: {{ .mountPath }}
+                subPath: {{ .subPath }}
+                readOnly: {{ .readOnly }}
+            {{- end }}
+            {{- if .Values.storage.elasticsearch.tls.enabled }}
+              - name: {{ .Values.storage.elasticsearch.tls.secretName }}
+                mountPath: {{ .Values.storage.elasticsearch.tls.mountPath }}
+                subPath: {{ .Values.storage.elasticsearch.tls.subPath }}
+                readOnly: true
+            {{- end }}
+          volumes:
+          {{- range .Values.esLookback.extraConfigmapMounts }}
+            - name: {{ .name }}
+              configMap:
+                name: {{ .configMap }}
+          {{- end }}
+          {{- range .Values.esLookback.extraSecretMounts }}
+            - name: {{ .name }}
+              secret:
+                secretName: {{ .secretName }}
+        {{- end }}
+        {{- if .Values.storage.elasticsearch.tls.enabled }}
+            - name: {{ .Values.storage.elasticsearch.tls.secretName }}
+              secret:
+                secretName: {{ .Values.storage.elasticsearch.tls.secretName }}
+        {{- end }}
+{{- end -}}

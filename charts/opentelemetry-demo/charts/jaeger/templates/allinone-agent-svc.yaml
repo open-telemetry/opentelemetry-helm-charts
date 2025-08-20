@@ -1,0 +1,30 @@
+{{- if .Values.allInOne.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jaeger.agent.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service-agent
+spec:
+  clusterIP: None
+  ports:
+    - name: zk-compact-trft
+      port: 5775
+      protocol: UDP
+      targetPort: 0
+    - name: config-rest
+      port: 5778
+      targetPort: 0
+    - name: jg-compact-trft
+      port: 6831
+      protocol: UDP
+      targetPort: 0
+    - name: jg-binary-trft
+      port: 6832
+      protocol: UDP
+      targetPort: 0
+  selector:
+    {{- include "jaeger.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: all-in-one
+{{- end -}}

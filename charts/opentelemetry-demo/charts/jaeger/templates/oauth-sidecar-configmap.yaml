@@ -1,0 +1,12 @@
+{{- if and .Values.query.oAuthSidecar.enabled .Values.query.oAuthSidecar.config}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jaeger.fullname" . }}-oauth-configuration
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: query
+data:
+  oauth2-proxy.cfg: |-
+{{ tpl .Values.query.oAuthSidecar.config . | indent 4 }}
+{{- end }}

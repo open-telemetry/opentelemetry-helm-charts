@@ -1,0 +1,43 @@
+{{- if and .Values.collector.enabled .Values.collector.autoscaling.enabled }}
+apiVersion: {{ include "common.capabilities.hpa.apiVersion" ( dict "context" $ ) }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ template "jaeger.collector.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: collector
+spec:
+  scaleTargetRef:
+    apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+    kind: Deployment
+    name: {{ template "jaeger.collector.name" . }}
+  minReplicas: {{ .Values.collector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.collector.autoscaling.maxReplicas }}
+  metrics:
+  {{- if .Values.collector.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        {{- if eq "autoscaling/v2" (include "common.capabilities.hpa.apiVersion" ( dict "context" $ )) }}
+        target:
+          averageUtilization: {{ .Values.collector.autoscaling.targetMemoryUtilizationPercentage }}
+          type: Utilization
+        {{- else }}            
+        targetAverageUtilization: {{ .Values.collector.autoscaling.targetMemoryUtilizationPercentage }}
+        {{- end }} 
+  {{- end }}
+    - type: Resource
+      resource:
+        name: cpu
+        {{- if eq "autoscaling/v2" (include "common.capabilities.hpa.apiVersion" ( dict "context" $ )) }}        
+        target:
+          averageUtilization: {{ .Values.collector.autoscaling.targetCPUUtilizationPercentage | default 80 }}
+          type: Utilization
+        {{- else }}    
+        targetAverageUtilization: {{ .Values.collector.autoscaling.targetCPUUtilizationPercentage | default 80 }}
+        {{- end }}
+  {{- with .Values.collector.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}        
+{{- end }}

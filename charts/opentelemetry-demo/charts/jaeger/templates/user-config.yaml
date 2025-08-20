@@ -1,0 +1,27 @@
+# Generates a config map from a file provided by user via `--set-file userconfig=`
+{{ if .Values.userconfig }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-config
+  namespace: {{ include "jaeger.namespace" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+data:
+  user-config.yaml: |
+    {{- .Values.userconfig | nindent 4 }}
+{{- end }}
+---
+# Generates a config map from a file provided by user via `--set-file uiconfig=`
+{{- if .Values.uiconfig }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ui-config
+  namespace: {{ include "jaeger.namespace" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+data:
+  ui-config.json: |
+    {{- .Values.uiconfig | nindent 4 }}
+{{- end }}

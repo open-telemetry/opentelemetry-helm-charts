@@ -1,0 +1,143 @@
+{{- if .Values.agent.enabled -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "jaeger.agent.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+{{- if .Values.agent.annotations }}
+  annotations:
+    {{- toYaml .Values.agent.annotations | nindent 4 }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "jaeger.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: agent
+  {{- with .Values.agent.daemonset.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+{{- if .Values.agent.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.agent.podAnnotations | nindent 8 }}
+{{- end }}
+      labels:
+        {{- include "jaeger.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: agent
+{{- if .Values.agent.podLabels }}
+        {{- toYaml .Values.agent.podLabels | nindent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.agent.podSecurityContext | nindent 8 }}
+      {{- if .Values.agent.useHostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      dnsPolicy: {{ .Values.agent.dnsPolicy }}
+      {{- with .Values.agent.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      serviceAccountName: {{ template "jaeger.agent.serviceAccountName" . }}
+      {{- include "agent.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.agent.initContainers }}
+      initContainers:
+        {{- toYaml .Values.agent.initContainers | nindent 8 }}
+      {{- end}}
+      containers:
+      - name: {{ template "jaeger.agent.name" . }}
+        securityContext:
+          {{- toYaml .Values.agent.securityContext | nindent 10 }}
+        image: {{ include "agent.image" . }}
+        imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
+        args:
+          {{ include "extra.cmdArgs" ( dict "cmdlineParams" .Values.agent.cmdlineParams ) | nindent 10  }}
+        env:
+        {{- if .Values.agent.extraEnv }}
+          {{- toYaml .Values.agent.extraEnv | nindent 10 }}
+        {{- end }}
+        {{- if not (hasKey .Values.agent.cmdlineParams "reporter.grpc.host-port") }}
+          - name: REPORTER_GRPC_HOST_PORT
+            value: {{ include "jaeger.collector.name" . }}:{{ .Values.collector.service.grpc.port }}
+        {{- end }}
+      {{- with .Values.agent.envFrom }}
+        envFrom: {{- toYaml . | nindent 10 }}
+      {{- end }}
+        ports:
+        - name: zipkin-compact
+          containerPort: {{ .Values.agent.service.zipkinThriftPort }}
+          protocol: UDP
+          {{- if .Values.agent.daemonset.useHostPort }}
+          hostPort: {{ .Values.agent.service.zipkinThriftPort }}
+          {{- end }}
+        - name: jaeger-compact
+          containerPort: {{ .Values.agent.service.compactPort }}
+          protocol: UDP
+          {{- if .Values.agent.daemonset.useHostPort }}
+          hostPort: {{ .Values.agent.service.compactPort }}
+          {{- end }}
+        - name: jaeger-binary
+          containerPort: {{ .Values.agent.service.binaryPort }}
+          protocol: UDP
+          {{- if .Values.agent.daemonset.useHostPort }}
+          hostPort: {{ .Values.agent.service.binaryPort }}
+          {{- end }}
+        - name: http
+          containerPort: {{ .Values.agent.service.samplingPort }}
+          protocol: TCP
+          {{- if .Values.agent.daemonset.useHostPort }}
+          hostPort: {{ .Values.agent.service.samplingPort }}
+          {{- end }}
+        - name: admin
+          containerPort: 14271
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: admin
+        readinessProbe:
+          httpGet:
+            path: /
+            port: admin
+        resources:
+          {{- toYaml .Values.agent.resources | nindent 10 }}
+        volumeMounts:
+        {{- range .Values.agent.extraConfigmapMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            subPath: {{ .subPath }}
+            readOnly: {{ .readOnly }}
+        {{- end }}
+        {{- range .Values.agent.extraSecretMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            subPath: {{ .subPath }}
+            readOnly: {{ .readOnly }}
+        {{- end }}
+      volumes:
+      {{- range .Values.agent.extraConfigmapMounts }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+      {{- end }}
+      {{- range .Values.agent.extraSecretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+      {{- end }}
+    {{- with .Values.agent.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.agent.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.agent.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end -}}

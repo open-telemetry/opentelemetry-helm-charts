@@ -1,0 +1,99 @@
+{{- if .Values.esRollover.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "jaeger.fullname" . }}-es-rollover-init
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: es-rollover-init
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.esRollover.initHook.annotations }}
+      {{- toYaml .Values.esRollover.initHook.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.esRollover.initHook.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ .Values.esRollover.initHook.activeDeadlineSeconds }}
+  {{- end }}
+  {{- with .Values.esRollover.initHook.ttlSecondsAfterFinished }}
+  ttlSecondsAfterFinished: {{ . }}
+  {{- end }}
+
+  template:
+    metadata:
+      {{- with .Values.esRollover.initHook.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jaeger.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: es-rollover-init
+        {{- if .Values.esRollover.initHook.podLabels }}
+          {{- toYaml .Values.esRollover.initHook.podLabels | nindent 10 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ template "jaeger.esRollover.serviceAccountName" . }}
+      {{- include "esRollover.imagePullSecrets" . | nindent 6 }}
+      securityContext: {{- toYaml .Values.esRollover.podSecurityContext | nindent 8 }}
+      restartPolicy: OnFailure
+      {{- with .Values.esRollover.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.esRollover.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.esRollover.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: {{ include "jaeger.fullname" . }}-es-rollover-init
+          securityContext: {{- toYaml .Values.esRollover.securityContext | nindent 12 }}
+          image: {{ include "esRollover.image" . }}
+          imagePullPolicy: {{ .Values.esRollover.image.pullPolicy }}
+          args:
+            - init
+            - {{ include "elasticsearch.client.url" . }}
+            {{ include "extra.cmdArgs" ( dict "cmdlineParams" .Values.esRollover.cmdlineParams ) | nindent 12  }}
+          env:
+            {{ include "elasticsearch.env" . | nindent 12 }}
+            {{- with .Values.esRollover.initHook.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources: {{- toYaml .Values.esRollover.resources | nindent 12 }}
+          volumeMounts:
+          {{- range .Values.esRollover.extraConfigmapMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+              readOnly: {{ .readOnly }}
+          {{- end }}
+          {{- range .Values.esRollover.extraSecretMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+              readOnly: {{ .readOnly }}
+          {{- end }}
+          {{- if .Values.storage.elasticsearch.tls.enabled }}
+            - name: {{ .Values.storage.elasticsearch.tls.secretName }}
+              mountPath: {{ .Values.storage.elasticsearch.tls.mountPath }}
+              subPath: {{ .Values.storage.elasticsearch.tls.subPath }}
+              readOnly: true
+          {{- end }}
+      volumes:
+      {{- range .Values.esRollover.extraConfigmapMounts }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+      {{- end }}
+      {{- range .Values.esRollover.extraSecretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+      {{- end }}
+      {{- if .Values.storage.elasticsearch.tls.enabled }}
+        - name: {{ .Values.storage.elasticsearch.tls.secretName }}
+          secret:
+            secretName: {{ .Values.storage.elasticsearch.tls.secretName }}
+      {{- end }}
+{{- end -}}

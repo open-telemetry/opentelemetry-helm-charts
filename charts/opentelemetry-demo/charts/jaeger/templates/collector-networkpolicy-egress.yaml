@@ -1,0 +1,5 @@
+{{- if and .Values.networkPolicy.enabled .Values.collector.networkPolicy.enabled .Values.collector.networkPolicy.egressRules }}
+{{- $extraVals := dict "Name" (include "jaeger.collector.name" .) "Component" "collector" "ComponentValues" .Values.collector -}}
+{{- $npVals := merge $extraVals . -}}
+{{ include "jaeger.egress.networkPolicy" $npVals }}
+{{- end }}

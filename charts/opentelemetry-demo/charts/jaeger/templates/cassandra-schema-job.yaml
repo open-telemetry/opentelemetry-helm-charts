@@ -1,0 +1,105 @@
+{{- if .Values.collector.enabled -}}
+{{- if eq .Values.storage.type "cassandra" -}}
+{{- if .Values.storage.cassandra.schemaJobEnabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "jaeger.fullname" . }}-cassandra-schema
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cassandra-schema
+{{- if .Values.schema.annotations }}
+  annotations:
+    {{- toYaml .Values.schema.annotations | nindent 4 }}
+{{- end }}
+spec:
+  activeDeadlineSeconds: {{ .Values.schema.activeDeadlineSeconds }}
+  template:
+    metadata:
+      name: {{ include "jaeger.fullname" . }}-cassandra-schema
+{{- if .Values.schema.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.schema.podAnnotations | nindent 8 }}
+{{- end }}
+{{- if .Values.schema.podLabels }}
+      labels:
+        {{- toYaml .Values.schema.podLabels | nindent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.schema.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ template "jaeger.cassandraSchema.serviceAccountName" . }}
+      {{- include "schema.imagePullSecrets" . | nindent 6 }}
+      containers:
+      - name: {{ include "jaeger.fullname" . }}-cassandra-schema
+        image: {{ include "schema.image" . }}
+        imagePullPolicy: {{ .Values.schema.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.schema.securityContext | nindent 10 }}
+        env:
+        {{- if .Values.schema.extraEnv }}
+          {{- toYaml .Values.schema.extraEnv | nindent 10 }}
+        {{- end }}
+          {{ range $key, $value := .Values.schema.env }}
+          - name: {{ $key | quote }}
+            value: {{ $value | quote }}
+          {{ end }}
+          {{- include "cassandra.env" . | nindent 10 }}
+          - name: CQLSH_HOST
+            value: {{ template "cassandra.host" . }}
+          {{ if .Values.storage.cassandra.tls.enabled }}
+          - name: CQLSH_SSL
+            value: "--ssl"
+          {{- end }}
+          - name: DATACENTER
+            value: {{ .Values.cassandra.config.dc_name | quote }}
+        {{- if .Values.storage.cassandra.keyspace }}
+          - name: KEYSPACE
+            value: {{ .Values.storage.cassandra.keyspace }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.schema.resources | nindent 10 }}
+        volumeMounts:
+        {{- range .Values.schema.extraConfigmapMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            subPath: {{ .subPath }}
+            readOnly: {{ .readOnly }}
+        {{- end }}
+        {{- if .Values.storage.cassandra.tls.enabled }}
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/root/.cassandra/ca-cert.pem"
+            subPath: "ca-cert.pem"
+            readOnly: true
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/root/.cassandra/client-cert.pem"
+            subPath: "client-cert.pem"
+            readOnly: true
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/root/.cassandra/client-key.pem"
+            subPath: "client-key.pem"
+            readOnly: true
+          - name: {{ .Values.storage.cassandra.tls.secretName }}
+            mountPath: "/root/.cassandra/cqlshrc"
+            subPath: "cqlshrc"
+            readOnly: true
+        {{- end }}
+      restartPolicy: OnFailure
+      volumes:
+      {{- range .Values.schema.extraConfigmapMounts }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+      {{- end }}
+      {{- if .Values.storage.cassandra.tls.enabled }}
+        - name: {{ .Values.storage.cassandra.tls.secretName }}
+          secret:
+            secretName: {{ .Values.storage.cassandra.tls.secretName }}
+      {{- end }}
+    {{- with .Values.schema.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end -}}
+{{- end -}}
+{{- end -}}

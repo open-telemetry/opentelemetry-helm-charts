@@ -1,0 +1,14 @@
+{{- if and .Values.spark.enabled .Values.spark.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "jaeger.spark.serviceAccountName" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: spark
+  {{- with .Values.spark.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+automountServiceAccountToken: {{ .Values.spark.serviceAccount.automountServiceAccountToken }}
+{{- end -}}

@@ -1,0 +1,24 @@
+{{- if .Values.hotrod.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jaeger.fullname" . }}-hotrod
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hotrod
+{{- if .Values.hotrod.service.annotations }}
+  annotations:
+    {{- toYaml .Values.hotrod.service.annotations | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.hotrod.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.hotrod.service.port }}
+      protocol: TCP
+      targetPort: http
+  selector:
+    {{- include "jaeger.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: hotrod
+{{- template "loadBalancerSourceRanges" .Values.hotrod }}
+{{- end -}}

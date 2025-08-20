@@ -646,7 +646,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 100Mi
+        memory: 20Mi
         cpu: 100m
 
   shipping:
@@ -835,6 +835,7 @@ components:
       env: false
     service:
       port: 8000
+      type: LoadBalancer
     env:
       - name: JAEGER_URL
         value: "http://jaeger-query"
@@ -1962,13 +1963,14 @@ grafana:
               for: 30s
               annotations: {}
               isPaused: false
+        # TODO: Explore below alert further as it is not as expected. We should ideally catch all APIs for better demo purpose
         - orgId: 1
           name: frontend
           folder: Demo-Alerts
           interval: 1m
           rules:
             - uid: eevju1vmswa9sb
-              title: API_High_Failure
+              title: API-Failures
               condition: C
               data:
                 - refId: A
@@ -2042,3 +2044,4 @@ grafana-mcp-server:
       memory: 512Mi
   service:
     port: 8000
+    type: LoadBalancer

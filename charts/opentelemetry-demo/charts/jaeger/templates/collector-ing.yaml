@@ -1,0 +1,38 @@
+{{- if .Values.collector.ingress.enabled -}}
+{{- $ingressSupportsIngressClassName := eq (include "common.ingress.supportsIngressClassname" .) "true" }}
+{{- $defaultServicePort := .Values.collector.service.http.port -}}
+{{- $basePath := .Values.collector.basePath -}}
+apiVersion: {{ include "common.capabilities.ingress.apiVersion" $ }}
+kind: Ingress
+metadata:
+  name: {{ template "jaeger.collector.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    {{- if .Values.collector.ingress.labels }}
+    {{- toYaml .Values.collector.ingress.labels | nindent 4 }}
+    {{- end }}
+    app.kubernetes.io/component: collector
+  {{- if .Values.collector.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.collector.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if and $ingressSupportsIngressClassName .Values.collector.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.collector.ingress.ingressClassName }}
+  {{- end }}
+  rules:
+    {{- range .Values.collector.ingress.hosts }}
+    - host: {{ include "jaeger.collector.ingressHost" . | quote }}
+      http:
+        paths:
+          - path: {{ $basePath }}
+            pathType: {{ default "ImplementationSpecific" $.Values.collector.ingress.pathType }}
+            {{- $servicePortString := (include "jaeger.collector.ingressServicePort" (dict "defaultServicePort" $defaultServicePort "context" .)) }}
+            {{- $servicePort := default $servicePortString ($servicePortString | float64) }}
+            backend: {{- include "common.ingress.backend" (dict "serviceName" (include "jaeger.collector.name" $) "servicePort" $servicePort "context" $) | nindent 14 }}
+  {{- end -}}
+  {{- if .Values.collector.ingress.tls }}
+  tls:
+  {{- toYaml .Values.collector.ingress.tls | nindent 4 }}
+  {{- end -}}
+  {{- end -}}

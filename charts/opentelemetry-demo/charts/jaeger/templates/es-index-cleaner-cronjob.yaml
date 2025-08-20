@@ -1,0 +1,109 @@
+{{- if .Values.esIndexCleaner.enabled -}}
+apiVersion: {{ include "common.capabilities.cronjob.apiVersion" $ }}
+kind: CronJob
+metadata:
+  name: {{ include "jaeger.fullname" . }}-es-index-cleaner
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: es-index-cleaner
+{{- if .Values.esIndexCleaner.annotations }}
+  annotations:
+    {{- toYaml .Values.esIndexCleaner.annotations | nindent 4 }}
+{{- end }}
+spec:
+  concurrencyPolicy: {{ .Values.esIndexCleaner.concurrencyPolicy }}
+  schedule: {{ .Values.esIndexCleaner.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.esIndexCleaner.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.esIndexCleaner.failedJobsHistoryLimit }}
+  suspend: false
+  jobTemplate:
+    spec:
+      {{- if .Values.esIndexCleaner.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.esIndexCleaner.activeDeadlineSeconds }}
+      {{- end }}
+      {{- if .Values.esIndexCleaner.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ .Values.esIndexCleaner.ttlSecondsAfterFinished }}
+      {{- end }}
+      template:
+        metadata:
+          {{- if .Values.esIndexCleaner.podAnnotations }}
+          annotations:
+            {{- toYaml .Values.esIndexCleaner.podAnnotations | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "jaeger.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: es-index-cleaner
+            {{- if .Values.esIndexCleaner.podLabels }}
+            {{- toYaml .Values.esIndexCleaner.podLabels | nindent 12 }}
+            {{- end }}
+        spec:
+          serviceAccountName: {{ template "jaeger.esIndexCleaner.serviceAccountName" . }}
+          {{- include "esIndexCleaner.imagePullSecrets" . | nindent 10 }}
+          securityContext:
+            {{- toYaml .Values.esIndexCleaner.podSecurityContext | nindent 12 }}
+          containers:
+          - name: {{ include "jaeger.fullname" . }}-es-index-cleaner
+            securityContext:
+              {{- toYaml .Values.esIndexCleaner.securityContext | nindent 14 }}
+            image: {{ include "esIndexCleaner.image" . }}
+            imagePullPolicy: {{ .Values.esIndexCleaner.image.pullPolicy }}
+            args:
+              - {{ .Values.esIndexCleaner.numberOfDays | quote }}
+              - {{ include "elasticsearch.client.url" . }}
+              {{ include "extra.cmdArgs" ( dict "cmdlineParams" .Values.esIndexCleaner.cmdlineParams ) | nindent 14  }}
+            env:
+            {{- if .Values.esIndexCleaner.extraEnv }}
+              {{- toYaml .Values.esIndexCleaner.extraEnv | nindent 14 }}
+            {{- end }}
+              {{ include "elasticsearch.env" . | nindent 14 }}
+            resources:
+              {{- toYaml .Values.esIndexCleaner.resources | nindent 14 }}
+            volumeMounts:
+            {{- range .Values.esIndexCleaner.extraConfigmapMounts }}
+              - name: {{ .name }}
+                mountPath: {{ .mountPath }}
+                subPath: {{ .subPath }}
+                readOnly: {{ .readOnly }}
+            {{- end }}
+            {{- range .Values.esIndexCleaner.extraSecretMounts }}
+              - name: {{ .name }}
+                mountPath: {{ .mountPath }}
+                subPath: {{ .subPath }}
+                readOnly: {{ .readOnly }}
+            {{- end }}
+            {{- if .Values.storage.elasticsearch.tls.enabled }}
+              - name: {{ .Values.storage.elasticsearch.tls.secretName }}
+                mountPath: {{ .Values.storage.elasticsearch.tls.mountPath }}
+                subPath: {{ .Values.storage.elasticsearch.tls.subPath }}
+                readOnly: true
+            {{- end }}
+          restartPolicy: OnFailure
+        {{- with .Values.esIndexCleaner.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- with .Values.esIndexCleaner.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.esIndexCleaner.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+          volumes:
+          {{- range .Values.esIndexCleaner.extraConfigmapMounts }}
+            - name: {{ .name }}
+              configMap:
+                name: {{ .configMap }}
+          {{- end }}
+          {{- range .Values.esIndexCleaner.extraSecretMounts }}
+            - name: {{ .name }}
+              secret:
+                secretName: {{ .secretName }}
+        {{- end }}
+        {{- if .Values.storage.elasticsearch.tls.enabled }}
+            - name: {{ .Values.storage.elasticsearch.tls.secretName }}
+              secret:
+                secretName: {{ .Values.storage.elasticsearch.tls.secretName }}
+        {{- end }}
+{{- end -}}

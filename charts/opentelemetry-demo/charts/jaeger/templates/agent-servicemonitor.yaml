@@ -1,0 +1,44 @@
+{{- if and (.Values.agent.enabled) (.Values.agent.serviceMonitor.enabled)}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "jaeger.agent.name" . }}
+  {{- if .Values.agent.serviceMonitor.namespace }}
+  namespace: {{ .Values.agent.serviceMonitor.namespace }}
+  {{- end }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+    {{- if .Values.agent.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.agent.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.agent.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml .Values.agent.serviceMonitor.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  endpoints:
+    - port: admin
+      path: /metrics
+      {{- if .Values.agent.serviceMonitor.interval }}
+      interval: {{ .Values.agent.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.agent.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.agent.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.agent.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml .Values.agent.serviceMonitor.relabelings | nindent 8 }}
+      {{- end }}
+      {{- if .Values.agent.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml .Values.agent.serviceMonitor.metricRelabelings | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: agent
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

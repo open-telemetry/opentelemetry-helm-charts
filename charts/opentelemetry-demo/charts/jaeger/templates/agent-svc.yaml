@@ -1,0 +1,40 @@
+{{- if .Values.agent.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jaeger.agent.name" . }}
+  labels:
+    {{- include "jaeger.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+{{- if .Values.agent.service.annotations }}
+  annotations:
+    {{- toYaml .Values.agent.service.annotations | nindent 4 }}
+{{- end }}
+spec:
+  ports:
+  - name: zipkin-compact
+    port: {{ .Values.agent.service.zipkinThriftPort }}
+    protocol: UDP
+    targetPort: zipkin-compact
+  - name: jaeger-compact
+    port: {{ .Values.agent.service.compactPort }}
+    protocol: UDP
+    targetPort: jaeger-compact
+  - name: jaeger-binary
+    port: {{ .Values.agent.service.binaryPort }}
+    protocol: UDP
+    targetPort: jaeger-binary
+  - name: http
+    port: {{ .Values.agent.service.samplingPort }}
+    protocol: TCP
+    targetPort: http
+  - name: admin
+    port: 14271
+    protocol: TCP
+    targetPort: admin
+  type: {{ .Values.agent.service.type }}
+  selector:
+    {{- include "jaeger.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+{{- template "loadBalancerSourceRanges" .Values.agent }}
+{{- end -}}
