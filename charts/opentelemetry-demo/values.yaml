@@ -1266,7 +1266,7 @@ prometheus:
   prometheus-pushgateway:
     enabled: false
   server:
-    retention: 1h
+    retention: 2h
     fullnameOverride: prometheus
     extraFlags:
       - "enable-feature=exemplar-storage"
@@ -1902,6 +1902,8 @@ grafana:
               noDataState: NoData
               execErrState: Error
               for: 30s
+              labels:
+                severity: critical
               annotations:
                 __dashboardUid__: kafkaDashboard
                 __panelId__: "23"
@@ -1961,6 +1963,8 @@ grafana:
               noDataState: NoData
               execErrState: Error
               for: 30s
+              labels:
+                severity: critical
               annotations: {}
               isPaused: false
         # TODO: Explore below alert further as it is not as expected. We should ideally catch all APIs for better demo purpose
