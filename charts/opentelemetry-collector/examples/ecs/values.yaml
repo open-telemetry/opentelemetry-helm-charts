@@ -1,0 +1,97 @@
+global:
+  clusterName: "ecs"
+  collectionInterval: "30s"
+  logLevel: "info"
+
+mode: daemonset
+hostNetwork: true
+distribution: ecs
+presets:
+  ecsAttributesContainerLogs:
+    enabled: true
+  ecsLogsCollection:
+    enabled: true
+    forceFlushPeriod: "0"
+  awsecscontainermetricsdReceiver:
+    enabled: true
+  metadata:
+    enabled: true
+    clusterName: "{{.Values.global.clusterName}}"
+    integrationName: "coralogix-integration-ecs"
+  fleetManagement:
+    enabled: true
+    agentType: "agent"
+    clusterName: "{{.Values.global.clusterName}}"
+
+  hostMetrics:
+    enabled: true
+    process:
+      enabled: true
+    collectionInterval: 30s
+
+  spanMetrics:
+    enabled: true
+    collectionInterval: "30s"
+    metricsExpiration: 5m
+
+  spanMetricsMulti:
+    enabled: false
+
+  hostEntityEvents:
+    enabled: true
+
+  collectorMetrics:
+    enabled: true
+    scrapeInterval: "30s"
+
+  jaegerReceiver:
+    enabled: true
+  zipkinReceiver:
+    enabled: true
+  otlpReceiver:
+    enabled: true
+  statsdReceiver:
+    enabled: true
+
+  zpages:
+    enabled: true
+  pprof:
+    enabled: true
+
+  batch:
+    enabled: true
+
+  coralogixExporter:
+    enabled: true
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+
+  resourceDetection:
+    enabled: true
+
+  semconv:
+    enabled: true
+
+config:
+  service:
+    telemetry:
+      resource:
+        service.name: "opentelemetry-collector"
+        cx.agent.type: "agent"
+      logs:
+        level: info
+    extensions:
+      - health_check
+    pipelines:
+      metrics:
+        exporters: []
+        processors:
+          - memory_limiter
+      traces:
+        exporters: []
+        processors:
+          - memory_limiter
+      logs:
+        exporters: []
+        processors:
+          - memory_limiter
+

@@ -43,11 +43,17 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- if .Values.presets.ecsLogsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyEcsLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- if .Values.presets.logsCollection.reduceLogAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- end }}
+{{- if .Values.presets.ecsAttributesContainerLogs.enabled }}
+{{- $config = (include "opentelemetry-collector.applyEcsAttributesContainerLogsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.mysql.metrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -118,6 +124,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.awsecscontainermetricsdReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyAwsecsContainerMetricsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.profilesCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -126,6 +135,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.otlpReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyOtlpReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.awsecscontainermetricsdReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyAwsecsContainerMetricsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.statsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -154,6 +166,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- if .Values.presets.ecsLogsCollection.enabled }}
+{{- $config = (include "opentelemetry-collector.applyEcsLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- if .Values.presets.logsCollection.reduceLogAttributes.enabled }}
@@ -394,7 +409,11 @@ connectors:
 receivers:
   hostmetrics:
     {{- if not .Values.isWindows }}
+    {{- if eq .Values.distribution "ecs" }}
+    root_path: /
+    {{- else }}
     root_path: /hostfs
+    {{- end }}
     {{- end }}
     {{- if .Values.presets.hostMetrics.collectionInterval }}
     collection_interval: "{{ .Values.presets.hostMetrics.collectionInterval }}"
@@ -1937,7 +1956,7 @@ exporters:
     domain: "{{ .Values.presets.coralogixExporter.domain | default .Values.global.domain }}"
     logs:
       headers:
-        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else }}helm-otel-integration{{ end }}/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     metrics:
       headers:
         X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
@@ -1950,14 +1969,25 @@ exporters:
     application_name: "{{ .Values.presets.coralogixExporter.defaultApplicationName | default .Values.global.defaultApplicationName }}"
     subsystem_name: "{{ .Values.presets.coralogixExporter.defaultSubsystemName | default .Values.global.defaultSubsystemName }}"
     application_name_attributes:
+      {{- if eq .Values.distribution "ecs" }}
+      - "aws.ecs.cluster"
+      - "aws.ecs.task.definition.family"
+      {{- else }}
       - "k8s.namespace.name"
       - "service.namespace"
+      {{- end }}
     subsystem_name_attributes:
+      {{- if eq .Values.distribution "ecs" }}
+      - "aws.ecs.container.name"
+      - "aws.ecs.docker.name"
+      - "docker.name"
+      {{- else }}
       - "k8s.deployment.name"
       - "k8s.statefulset.name"
       - "k8s.daemonset.name"
       - "k8s.cronjob.name"
       - "service.name"
+      {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
@@ -2027,6 +2057,22 @@ processors:
       - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
       - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$", "$$1") where attributes["k8s.replicaset.name"] != nil
       - delete_key(attributes, "k8s.replicaset.name")
+{{- end }}
+
+{{- define "opentelemetry-collector.applyEcsAttributesContainerLogsConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.ecsAttributesContainerLogsConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (not (has "ecsattributes/container-logs" $config.service.pipelines.logs.processors)) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "ecsattributes/container-logs" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.ecsAttributesContainerLogsConfig" -}}
+processors:
+  ecsattributes/container-logs:
+    container_id:
+      sources:
+        - "log.file.path"
 {{- end }}
 
 {{- define "opentelemetry-collector.applyResourceDetectionConfig" -}}
@@ -2361,6 +2407,19 @@ receivers:
     endpoint: {{ include "opentelemetry-collector.envEndpoint" (dict "env" "MY_POD_IP" "port" "8125" "context" $) | quote }}
 {{- end }}
 
+{{- define "opentelemetry-collector.applyAwsecsContainerMetricsdReceiverConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.awsecsContainerMetricsdReceiverConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.metrics) (not (has "awsecscontainermetricsd" $config.service.pipelines.metrics.receivers)) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "awsecscontainermetricsd" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.awsecsContainerMetricsdReceiverConfig" -}}
+receivers:
+  awsecscontainermetricsd: {}
+{{- end }}
+
 {{- define "opentelemetry-collector.applyBatchProcessorConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.batchProcessorConfig" .Values | fromYaml) .config }}
 {{- if and ($config.service.pipelines.logs) (not (has "batch" $config.service.pipelines.logs.processors)) }}
@@ -2462,4 +2521,47 @@ processors:
 
 {{- define "opentelemetry-collector.chartMetadataAttributes" -}}
 helm.chart.{{ .Chart.Name }}.version: "{{ .Chart.Version }}"
+{{- end }}
+
+{{- define "opentelemetry-collector.applyEcsLogsCollectionConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.ecsLogsCollectionConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.ecsLogsCollectionConfig" -}}
+receivers:
+  filelog:
+    include: [ /hostfs/var/lib/docker/containers/*/*.log ]
+    include_file_name: false
+    include_file_path: true
+    start_at: end
+    force_flush_period: {{ $.Values.presets.ecsLogsCollection.forceFlushPeriod }}
+    operators:
+      - type: router
+        id: docker_log_json_parser
+        routes:
+          - output: json_parser
+            expr: 'body matches "^\\{\\\"log\\\".*\\\}"'
+        default: move_log_file_path
+      - type: json_parser
+        parse_from: body
+        parse_to: body
+        output: recombine
+        timestamp:
+          parse_from: body.time
+          layout: '%Y-%m-%dT%H:%M:%S.%fZ'
+      - type: recombine
+        id: recombine
+        output: move_log_file_path
+        combine_field: body.log
+        source_identifier: attributes["log.file.path"]
+        is_last_entry: body.log endsWith "\n"
+        force_flush_period: 10s
+        on_error: send
+        combine_with: ""
+      - type: move
+        id: move_log_file_path
+        from: attributes["log.file.path"]
+        to: resource["log.file.path"]
 {{- end }}

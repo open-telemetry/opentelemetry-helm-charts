@@ -138,6 +138,16 @@ extraConfig: {}
 # .Values.config and use the other fields supplied in the
 # values.yaml to configure k8s as necessary.
 presets:
+  # Adds ECS container logs attributes enrichment processor that extracts container_id from log.file.path
+  ecsAttributesContainerLogs:
+    enabled: false
+  # Configures the collector to collect ECS container logs from the host.
+  # Adds a filelog receiver pointed at /hostfs/var/lib/docker/containers and
+  # relies on the hostfs mount. Best used with mode = daemonset.
+  ecsLogsCollection:
+    enabled: false
+    # Time since last read of data from file, after which currently buffered log should be send to pipeline. A value of 0 will disable forced flushing.
+    forceFlushPeriod: "0"
   # Configures the collector to collect logs.
   # Adds the filelog receiver to the logs pipeline
   # and adds the necessary volumes and volume mounts.
@@ -651,6 +661,10 @@ presets:
   # Configures the collector to receive StatsD metrics.
   # Adds the statsd receiver to the metrics pipeline.
   statsdReceiver:
+    enabled: false
+
+  # Adds AWS ECS Container Metrics Daemon receiver and wires it to metrics pipeline
+  awsecscontainermetricsdReceiver:
     enabled: false
 
   # Configures the collector to expose zPages for debugging.

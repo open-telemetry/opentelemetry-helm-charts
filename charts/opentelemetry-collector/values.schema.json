@@ -397,6 +397,30 @@
             }
           }
         },
+        "ecsLogsCollection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Specifies whether the collector should collect ECS container logs from hostfs.",
+              "type": "boolean"
+            },
+            "forceFlushPeriod": {
+              "description": "Time since last read of data from file, after which currently buffered log should be send to pipeline. A value of 0 will disable forced flushing.",
+              "type": "string"
+            }
+          }
+        },
+        "ecsAttributesContainerLogs": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Enable ECS container logs attribute enrichment processor.",
+              "type": "boolean"
+            }
+          }
+        },
         "mysql": {
           "type": "object",
           "additionalProperties": false,
@@ -907,6 +931,7 @@
               "description": "Default subsystem name used by the exporter.",
               "type": "string"
             }
+            
           }
         },
         "transactions": {
@@ -1158,6 +1183,16 @@
           "properties": {
             "enabled": {
               "description": "Specifies whether the collector should receive StatsD data.",
+              "type": "boolean"
+            }
+          }
+        },
+        "awsecscontainermetricsdReceiver": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Enable AWS ECS Container Metrics Daemon receiver and add to metrics pipeline.",
               "type": "boolean"
             }
           }

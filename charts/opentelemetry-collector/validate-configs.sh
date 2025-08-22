@@ -134,6 +134,11 @@ should_ignore_errors() {
         "profiling signal support is at alpha level"
         "gated under the.*profilesSupport.*feature gate"
         "processors.*unknown type.*routing.*for id.*routing" # https://coralogix.atlassian.net/browse/ES-725
+        # Custom Coralogix distribution components not present in upstream otelcol-contrib
+        "processors.*unknown type.*ecsattributes.*for id.*ecsattributes/container-logs"
+        "unknown type.*ecsattributes"
+        "receivers.*unknown type.*awsecscontainermetricsd.*for id.*awsecscontainermetricsd"
+        "unknown type.*awsecscontainermetricsd"
     )
     
     # Check if the entire error output should be ignored first (for multiline patterns)
