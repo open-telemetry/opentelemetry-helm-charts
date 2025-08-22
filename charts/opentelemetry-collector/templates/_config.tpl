@@ -95,6 +95,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyAnnotationDiscoveryConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -119,6 +122,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
 {{- if .Values.presets.logsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled }}
+{{- $config = (include "opentelemetry-collector.applyAnnotationDiscoveryConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -258,6 +264,43 @@ receivers:
       - type: container
         id: container-parser
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyAnnotationDiscoveryConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.annotationDiscoveryConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service "extensions" (append $config.service.extensions "k8s_observer" | uniq) }}
+{{- if .Values.Values.presets.annotationDiscovery.logs.enabled }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "receiver_creator/logs" | uniq)  }}
+{{- end }}
+{{- if .Values.Values.presets.annotationDiscovery.metrics.enabled }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "receiver_creator/metrics" | uniq) }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.annotationDiscoveryConfig" -}}
+extensions:
+  k8s_observer:
+    auth_type: serviceAccount
+    node: ${env:K8S_NODE_NAME}
+
+receivers:
+  {{- if .Values.presets.annotationDiscovery.logs.enabled }}
+  receiver_creator/logs:
+    watch_observers:
+      - k8s_observer
+    discovery:
+      enabled: true
+      default_annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
+ {{- end }}
+  {{- if .Values.presets.annotationDiscovery.metrics.enabled }}
+  receiver_creator/metrics:
+    watch_observers:
+      - k8s_observer
+    discovery:
+      enabled: true
+  {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
