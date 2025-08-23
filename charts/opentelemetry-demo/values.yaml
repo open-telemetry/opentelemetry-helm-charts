@@ -443,8 +443,10 @@ components:
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:8080/otlp-http/v1/traces # This expects users to use `kubectl port-forward ...`
     resources:
+      requests:
+        memory: 512Mi
       limits:
-        memory: 250Mi
+        memory: 512Mi
     securityContext:
       runAsUser: 1001 # nextjs
       runAsGroup: 1001
@@ -599,8 +601,10 @@ components:
         mountPath: /usr/src/app/products
         existingConfigMap: product-catalog-products
     resources:
+      requests:
+        memory: 256Mi
       limits:
-        memory: 20Mi
+        memory: 256Mi
 
   quote:
     enabled: true
