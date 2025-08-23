@@ -497,8 +497,10 @@ components:
       - name: OTEL_COLLECTOR_PORT_HTTP
         value: "4318"
     resources:
+      requests:
+        memory: 128Mi
       limits:
-        memory: 65Mi
+        memory: 128Mi
     securityContext:
       runAsUser: 101 # envoy
       runAsGroup: 101
@@ -572,8 +574,10 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
+      requests:
+        memory: 256Mi
       limits:
-        memory: 120Mi
+        memory: 256Mi
     securityContext:
       runAsUser: 1000 # node
       runAsGroup: 1000
@@ -1255,6 +1259,8 @@ jaeger:
         memory: 256Mi
   elasticsearch:
     master:
+      resourcesPreset: large
+      heapSize: 1536m
       masterOnly: false
       replicaCount: 1
     data:
