@@ -835,10 +835,19 @@ components:
     enabled: true
     useDefault:
       env: false
+    imageOverride:
+      repository: thouqueerahmedml/otel-demo
+      tag: "latest-jaeger-mcp"
     service:
       port: 8000
       type: LoadBalancer
     env:
+      # Needed for in-house built Jaeger MCP
+      - name: JAEGER_API_URL
+        value: "http://jaeger-query"
+      - name: FASTMCP_EXPERIMENTAL_ENABLE_NEW_OPENAPI_PARSER
+        value: "true"
+      # Needed for public Jaeger MCP. Just retaining it in case we need to use original Jaeger MCP
       - name: JAEGER_URL
         value: "http://jaeger-query"
       - name: JAEGER_PROTOCOL
