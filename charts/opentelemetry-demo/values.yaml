@@ -757,35 +757,42 @@ components:
       type: LoadBalancer
       port: 8501
     env:
-      # Azure OpenAI LLM Configuration (Required)
+      # AWS Bedrock LLM Configuration (Required)
       - name: LLM_MODE
-        value: AZURE_OPENAI
+        value: AWS_BEDROCK
+      - name: AWS_REGION
+        value: us-west-2
+      - name: BEDROCK_MODEL_ID
+        value: us.anthropic.claude-sonnet-4-20250514-v1:0
+      - name: AWS_BEARER_TOKEN_BEDROCK
+        value: test
+      # Azure OpenAI LLM Configuration (Required)
       - name: AZURE_OPENAI_ENDPOINT
-        value: "https://iyer-r-7311-resource.cognitiveservices.azure.com/"
+        value: https://iyer-r-7311-resource.cognitiveservices.azure.com/
       - name: AZURE_OPENAI_DEPLOYMENT_NAME
-        value: "gpt-4.1-test"
+        value: gpt-4.1-test
       - name: AZURE_OPENAI_API_VERSION
-        value: "2024-12-01-preview"
+        value: 2024-12-01-preview
       # Azure OpenAI Embedding Configuration (Required)
       - name: AZURE_OPENAI_EMBEDDING_ENDPOINT
-        value: "https://iyer-r-7311-resource.cognitiveservices.azure.com/"
+        value: https://iyer-r-7311-resource.cognitiveservices.azure.com/
       - name: AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME
-        value: "text-embedding-3-large"
+        value: text-embedding-3-large
       - name: AZURE_OPENAI_EMBEDDING_API_VERSION
-        value: "2024-02-01"
+        value: 2024-02-01
       # Common Azure OpenAI API Key
       - name: AZURE_OPENAI_API_KEY
-        value: "test"
+        value: test
       # MCP Server Configuration
       - name: GRAFANA_MCP_URL
-        value: "http://grafana-mcp-server:8000/sse"
+        value: http://grafana-mcp-server:8000/sse
       - name: JAEGER_MCP_URL
-        value: "http://jaeger-mcp-server:8000/sse"
+        value: http://jaeger-mcp-server:8000/sse
       # Grafana Configuration
       - name: GRAFANA_URL
-        value: "http://grafana:80"
+        value: http://grafana:80
       - name: GRAFANA_API_KEY
-        value: "test"
+        value: test
     resources:
       limits:
         memory: 512Mi
