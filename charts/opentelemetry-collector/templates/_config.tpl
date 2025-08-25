@@ -1354,7 +1354,7 @@ processors:
       - context: span
         statements:
         {{- range $index, $pattern := .Values.presets.spanMetrics.spanNameReplacePattern }}
-        - replace_pattern(name, "{{ $pattern.regex }}", "{{ $pattern.replacement }}")
+        - replace_pattern(span.name, "{{ $pattern.regex }}", "{{ $pattern.replacement }}")
         {{- end}}
 {{- end }}
 {{- if .Values.presets.spanMetrics.dbMetrics.enabled }}
@@ -2323,20 +2323,20 @@ processors:
     metric_statements:
       - context: metric
         statements:
-          - replace_pattern(name, "_total$", "") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_process_cpu_seconds_seconds$", "otelcol_process_cpu_seconds") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_process_memory_rss_bytes$", "otelcol_process_memory_rss_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_process_runtime_heap_alloc_bytes_bytes$", "otelcol_process_runtime_heap_alloc_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_process_runtime_total_alloc_bytes_bytes$", "otelcol_process_runtime_total_alloc_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_process_runtime_total_sys_memory_bytes_bytes$", "otelcol_process_runtime_total_sys_memory_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_fileconsumer_open_files$", "otelcol_fileconsumer_open_files_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_fileconsumer_reading_files$", "otelcol_fileconsumer_reading_files_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_otelsvc_k8s_ip_lookup_miss$", "otelcol_otelsvc_k8s_ip_lookup_miss_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_added$", "otelcol_otelsvc_k8s_pod_added_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_table_size_ratio$", "otelcol_otelsvc_k8s_pod_table_size_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_updated$", "otelcol_otelsvc_k8s_pod_updated_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_otelsvc_k8s_pod_deleted$", "otelcol_otelsvc_k8s_pod_deleted_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
-          - replace_pattern(name, "^otelcol_processor_filter_spans\\.filtered$", "otelcol_processor_filter_spans.filtered_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "_total$", "") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_process_cpu_seconds_seconds$", "otelcol_process_cpu_seconds") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_process_memory_rss_bytes$", "otelcol_process_memory_rss_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_process_runtime_heap_alloc_bytes_bytes$", "otelcol_process_runtime_heap_alloc_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_process_runtime_total_alloc_bytes_bytes$", "otelcol_process_runtime_total_alloc_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_process_runtime_total_sys_memory_bytes_bytes$", "otelcol_process_runtime_total_sys_memory_bytes") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_fileconsumer_open_files$", "otelcol_fileconsumer_open_files_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_fileconsumer_reading_files$", "otelcol_fileconsumer_reading_files_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_otelsvc_k8s_ip_lookup_miss$", "otelcol_otelsvc_k8s_ip_lookup_miss_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_otelsvc_k8s_pod_added$", "otelcol_otelsvc_k8s_pod_added_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_otelsvc_k8s_pod_table_size_ratio$", "otelcol_otelsvc_k8s_pod_table_size_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_otelsvc_k8s_pod_updated$", "otelcol_otelsvc_k8s_pod_updated_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_otelsvc_k8s_pod_deleted$", "otelcol_otelsvc_k8s_pod_deleted_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
+          - replace_pattern(metric.name, "^otelcol_processor_filter_spans\\.filtered$", "otelcol_processor_filter_spans.filtered_ratio") where resource.attributes["service.name"] == "opentelemetry-collector"
       - context: resource
         statements:
           - set(attributes["k8s.pod.ip"], attributes["net.host.name"]) where attributes["service.name"] == "opentelemetry-collector"

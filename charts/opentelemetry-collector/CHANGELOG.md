@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.6 / 2025-08-25
+- [Fix] Update OTTL paths to use explicit context prefixes for metrics and spans.
+
 ### v0.119.5 / 2025-08-22
 - [Feat] Coralogix exporter ECS mode: ECS-specific application/subsystem attributes; logs header set to `ecs-ec2-integration/<version>`.
 - [Chore] ECS example: set `presets.metadata.integrationName` to `coralogix-integration-ecs-ec2` and enable ECS mode in Coralogix exporter.
