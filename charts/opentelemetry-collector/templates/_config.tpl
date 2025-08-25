@@ -2542,7 +2542,7 @@ receivers:
         id: docker_log_json_parser
         routes:
           - output: json_parser
-            expr: 'body matches "^\\{\\\"log\\\".*\\\}"'
+            expr: 'body matches "^\\{\"log\".*\\}"'
         default: move_log_file_path
       - type: json_parser
         parse_from: body

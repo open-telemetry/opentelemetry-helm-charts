@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.7 / 2025-08-25
+- [Fix] Correct JSON detection regex in logs collection router to match Docker JSON lines with top-level "log" field.
+
 ### v0.119.6 / 2025-08-25
 - [Fix] Update OTTL paths to use explicit context prefixes for metrics and spans.
 
