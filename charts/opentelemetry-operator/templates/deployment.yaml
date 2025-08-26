@@ -1,4 +1,9 @@
+{{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag (not .Values.manager.autoInstrumentation.go.enabled) }}
+{{- fail "[ERROR] manager.autoInstrumentation.go.enabled must be true when providing manager.autoInstrumentationImage.go.repository and manager.autoInstrumentationImage.go.tag" }}
+{{- end }}
+
 {{- $explicitMount := not .Values.automountServiceAccountToken }}
+{{- $enableGoInstrumentation := or (and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag) .Values.manager.autoInstrumentation.go.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -71,6 +76,9 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
             - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
             {{- end }}
+            {{- if $enableGoInstrumentation }}
+            - --enable-go-instrumentation
+            {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
             - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
             {{- end }}
@@ -84,6 +92,9 @@ spec:
             - --feature-gates={{ include "opentelemetry-operator.featureGatesMap" . }}
             {{- else if ne .Values.manager.featureGates "" }}
             - --feature-gates={{ .Values.manager.featureGates }}
+            {{- end }}
+            {{- if .Values.manager.leaderElection.enabled }}
+            - --enable-leader-election
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
             {{- .Values.manager.extraArgs | toYaml | nindent 12 }}
