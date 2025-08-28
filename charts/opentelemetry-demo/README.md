@@ -149,9 +149,7 @@ component.
 | `ingress.additionalIngresses`          | Array of additional ingress rules to add. This is handy if you need to differently annotated ingress rules | `[]`                                                          |
 | `ingress.additionalIngresses[].name`   | Each additional ingress rule needs to have a unique name                                                   | `nil`                                                         |
 | `command`                              | Command & arguments to pass to the container being spun up for this service                                | `[]`                                                          |
-| `additionalVolumeMounts[].name`             | Name of the Volume that will be mounted                                                       | `nil`                                                         |
-| `additionalVolumeMounts[].mountPath`        | Path where the Volume data will be mounted                                                              | `nil`                                                         |
-| `additionalVolumeMounts[].subPath`          | SubPath within the mountPath. Used to mount a single file into the path.                                   | `nil`                                                         |
+| `additionalVolumeMounts`             | Array of Volumes that will be mounted                                                       | `[]`                                                         |
 | `mountedConfigMaps[].name`             | Name of the Volume that will be used for the ConfigMap mount                                               | `nil`                                                         |
 | `mountedConfigMaps[].mountPath`        | Path where the ConfigMap data will be mounted                                                              | `nil`                                                         |
 | `mountedConfigMaps[].subPath`          | SubPath within the mountPath. Used to mount a single file into the path.                                   | `nil`                                                         |
