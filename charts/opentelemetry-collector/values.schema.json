@@ -408,6 +408,29 @@
             "forceFlushPeriod": {
               "description": "Time since last read of data from file, after which currently buffered log should be send to pipeline. A value of 0 will disable forced flushing.",
               "type": "string"
+            },
+            "multiline": {
+              "description": "Optional multiline configuration block for ECS filelog receiver.",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "lineStartPattern": {
+                  "description": "Regex that matches the beginning of a new log entry.",
+                  "type": "string"
+                },
+                "lineEndPattern": {
+                  "description": "Regex that matches the end of a log entry.",
+                  "type": "string"
+                },
+                "omitPattern": {
+                  "description": "Whether to omit the matching start/end pattern from each entry.",
+                  "type": "boolean"
+                }
+              },
+              "oneOf": [
+                { "required": ["lineStartPattern"] },
+                { "required": ["lineEndPattern"] }
+              ]
             }
           }
         },

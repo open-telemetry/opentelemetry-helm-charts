@@ -12,6 +12,11 @@ presets:
   ecsLogsCollection:
     enabled: true
     forceFlushPeriod: "0"
+    # Configure multiline parsing so that Java stack traces are combined into single log entries
+    multiline:
+      # New entry starts when the line does NOT begin with whitespace (stack trace lines begin with whitespace)
+      lineStartPattern: "^[^\\s].*"
+      omitPattern: true
   awsecscontainermetricsdReceiver:
     enabled: true
   metadata:

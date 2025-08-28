@@ -2537,6 +2537,18 @@ receivers:
     include_file_path: true
     start_at: end
     force_flush_period: {{ $.Values.presets.ecsLogsCollection.forceFlushPeriod }}
+    {{- with $.Values.presets.ecsLogsCollection.multiline }}
+    multiline:
+      {{- if .lineStartPattern }}
+      line_start_pattern: {{ .lineStartPattern | quote }}
+      {{- end }}
+      {{- if .lineEndPattern }}
+      line_end_pattern: {{ .lineEndPattern | quote }}
+      {{- end }}
+      {{- if hasKey . "omitPattern" }}
+      omit_pattern: {{ .omitPattern }}
+      {{- end }}
+    {{- end }}
     operators:
       - type: router
         id: docker_log_json_parser

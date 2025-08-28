@@ -148,6 +148,19 @@ presets:
     enabled: false
     # Time since last read of data from file, after which currently buffered log should be send to pipeline. A value of 0 will disable forced flushing.
     forceFlushPeriod: "0"
+    # Optional multiline configuration for ECS filelog receiver. When set, instructs the
+    # file_input operator to split log entries on a pattern other than newlines.
+    # Exactly one of lineStartPattern or lineEndPattern must be provided.
+    # The omitPattern setting can be used to omit the start/end pattern from each entry.
+    # multiline:
+    # multiline:
+    #   # Matches the beginning of a new log entry.
+    #   # Example for Java stack traces: a new entry starts with a non-space at the beginning of the line
+    #   lineStartPattern: ^[^\s].*
+    #   # Alternatively, match the end of an entry
+    #   # lineEndPattern: "\\n$"
+    #   # Omit the matching pattern from the final entry (true/false)
+    #   omitPattern: true
   # Configures the collector to collect logs.
   # Adds the filelog receiver to the logs pipeline
   # and adds the necessary volumes and volume mounts.

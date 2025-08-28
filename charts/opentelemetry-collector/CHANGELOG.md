@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.8 / 2025-08-28
+- [Feat] ECS logs: optional `multiline` block for filelog receiver with `lineStartPattern`/`lineEndPattern` and `omitPattern`.
+- [Chore] ECS example: enable Java stack trace multiline parsing.
+
 ### v0.119.7 / 2025-08-25
 - [Fix] Correct JSON detection regex in logs collection router to match Docker JSON lines with top-level "log" field.
 
