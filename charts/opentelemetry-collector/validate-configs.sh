@@ -133,7 +133,6 @@ should_ignore_errors() {
         "private_key.*not specified, please fix the configuration"
         "profiling signal support is at alpha level"
         "gated under the.*profilesSupport.*feature gate"
-        "processors.*unknown type.*routing.*for id.*routing" # https://coralogix.atlassian.net/browse/ES-725
         # Custom Coralogix distribution components not present in upstream otelcol-contrib
         "processors.*unknown type.*ecsattributes.*for id.*ecsattributes/container-logs"
         "unknown type.*ecsattributes"
