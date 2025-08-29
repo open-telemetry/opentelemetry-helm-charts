@@ -71,6 +71,9 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
             - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
             {{- end }}
+            {{- if .Values.manager.autoInstrumentation.go.enabled }}
+            - --enable-go-instrumentation
+            {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
             - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
             {{- end }}
