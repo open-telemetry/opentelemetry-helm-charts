@@ -87,6 +87,7 @@ targetAllocator:
 # to use collector image built for windows.
 isWindows: false
 # When using GKE Autopilot set this to "gke/autopilot"
+# When using EKS Fargate set this to "eks/fargate"
 distribution: ""
 
 # Specify which namespace should be used to deploy the resources into
@@ -601,6 +602,20 @@ presets:
   k8sResourceAttributes:
     enabled: false
     agentType: ""
+
+  # Configures the collector for EKS Fargate deployment.
+  # Adds receiver creator for kubelet stats collection and configures
+  # resource detection for EKS-specific metadata.
+  eksFargate:
+    monitoringCollector: false
+    kubeletStats:
+      collectionInterval: "30s"
+    # Init container configuration for node labeling
+    initContainer:
+      enabled: false
+      image:
+        repository: "public.ecr.aws/aws-cli/aws-cli"
+        tag: "2.28.17"
 
   # Configures the collector to collect MySQL metrics .
   mysql:

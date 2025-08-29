@@ -133,13 +133,14 @@ should_ignore_errors() {
         "private_key.*not specified, please fix the configuration"
         "profiling signal support is at alpha level"
         "gated under the.*profilesSupport.*feature gate"
+        "Could not load cluster config"
         # Custom Coralogix distribution components not present in upstream otelcol-contrib
         "processors.*unknown type.*ecsattributes.*for id.*ecsattributes/container-logs"
         "unknown type.*ecsattributes"
         "receivers.*unknown type.*awsecscontainermetricsd.*for id.*awsecscontainermetricsd"
         "unknown type.*awsecscontainermetricsd"
     )
-    
+
     # Check if the entire error output should be ignored first (for multiline patterns)
     for pattern in "${ignore_patterns[@]}"; do
         if [[ "$error_output" =~ $pattern ]]; then

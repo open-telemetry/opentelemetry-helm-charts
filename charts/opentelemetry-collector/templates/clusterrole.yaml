@@ -1,4 +1,4 @@
-{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.mysql.metrics.enabled) (.Values.presets.kubernetesResources.enabled) (.Values.presets.profilesCollection.enabled) (.Values.presets.loadBalancing.k8s.enabled) -}}
+{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.mysql.metrics.enabled) (.Values.presets.kubernetesResources.enabled) (.Values.presets.profilesCollection.enabled) (.Values.presets.loadBalancing.k8s.enabled) (eq .Values.distribution "eks/fargate") -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -114,5 +114,26 @@ rules:
   - apiGroups: [""]
     resources: ["endpoints"]
     verbs: ["list", "watch", "get"]
+  {{- end }}
+  {{- if eq .Values.distribution "eks/fargate" }}
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - nodes/metrics
+      - nodes/stats
+      - services
+      - endpoints
+      - pods
+      - pods/proxy
+      - configmaps
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources:
+      - nodes
+    verbs: ["patch"]
+  - nonResourceURLs:
+    - "/metrics/cadvisor"
+    verbs: ["get", "list", "watch"]
   {{- end }}
 {{- end }}

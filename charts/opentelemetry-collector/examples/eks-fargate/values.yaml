@@ -1,0 +1,88 @@
+# Example configuration for OpenTelemetry Collector on EKS Fargate
+# This configuration demonstrates how to deploy the collector to collect
+# kubelet stats metrics from Fargate nodes and send them to Coralogix.
+
+# Global configuration
+global:
+  clusterName: "my-eks-fargate-cluster"
+  domain: "eu2.coralogix.com"
+
+mode: statefulset
+replicaCount: 1
+networkMode: "ipv4"
+
+# Set distribution to eks/fargate to automatically apply Fargate-specific configurations
+distribution: "eks/fargate"
+
+presets:
+
+  coralogixExporter:
+    enabled: true
+    pipeline: all
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+    defaultApplicationName: "otel-fargate-integration"
+    defaultSubsystemName: "eks-fargate"
+    domain: "eu2.coralogix.com"
+
+  batch:
+    enabled: true
+    timeout: "60s"
+
+  eksFargate:
+    monitoringCollector: false
+    # Enable init container for node labeling
+    kubeletStats:
+      collectionInterval: "30s"
+    initContainer:
+      enabled: true
+      image:
+        repository: "public.ecr.aws/aws-cli/aws-cli"
+        tag: "2.28.17"
+
+  kubernetesAttributes:
+    enabled: true
+
+  metadata:
+    enabled: true
+    clusterName: "{{.Values.global.clusterName}}"
+
+  otlpReceiver:
+    enabled: true
+    maxRecvMsgSizeMiB: 20
+
+  resourceDetection:
+    enabled: true
+    dbusMachineId:
+      enabled: false
+
+extraEnvs:
+  - name: CORALOGIX_PRIVATE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: coralogix-keys
+        key: PRIVATE_KEY
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+
+
+ports:
+  metrics:
+    enabled: true
+
+# Resource requests and limits - matching expected Fargate requirements
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+  requests:
+    cpu: 1
+    memory: 2Gi
+
+# Pod security context for Fargate
+podSecurityContext:
+  fsGroup: 65534
+
+# Node selector is automatically set to fargate when distribution is "eks/fargate"
+# nodeSelector will be: eks.amazonaws.com/compute-type: fargate

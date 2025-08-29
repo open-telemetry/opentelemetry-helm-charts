@@ -6,6 +6,20 @@ imagePullSecrets:
 serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}
 securityContext:
   {{- toYaml .Values.podSecurityContext | nindent 2 }}
+{{- if and (eq .Values.distribution "eks/fargate") .Values.presets.eksFargate.initContainer.enabled }}
+initContainers:
+  - name: node-labeler
+    image: "{{ .Values.presets.eksFargate.initContainer.image.repository }}:{{ .Values.presets.eksFargate.initContainer.image.tag }}"
+    command: ["/bin/sh", "-c", "/script/label_node.sh"]
+    env:
+      - name: K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+    volumeMounts:
+      - name: script-volume
+        mountPath: /script
+{{- end }}
 containers:
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}
     command:
@@ -39,7 +53,7 @@ containers:
           fieldRef:
             fieldPath: metadata.name
       {{- end }}
-      {{- if or .Values.presets.k8sResourceAttributes.enabled (and .Values.presets.kubernetesAttributes.enabled (or (eq .Values.mode "daemonset") .Values.presets.kubernetesAttributes.nodeFilter.enabled)) }}
+      {{- if or .Values.presets.k8sResourceAttributes.enabled (and .Values.presets.kubernetesAttributes.enabled (or (eq .Values.mode "daemonset") .Values.presets.kubernetesAttributes.nodeFilter.enabled)) (eq .Values.distribution "eks/fargate") }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:
@@ -240,7 +254,7 @@ containers:
       {{- end }}
       {{- end }}
       {{- if .Values.presets.resourceDetection.enabled }}
-      {{- if not .Values.isWindows }}
+      {{- if and (not .Values.isWindows) (not (eq .Values.distribution "eks/fargate")) }}
       {{- $machineIdMountExists := false }}
       {{- $dbusMachineIdMountExists := false }}
       {{- if .Values.extraVolumeMounts }}
@@ -351,7 +365,7 @@ volumes:
   {{- end }}
   {{- end }}
   {{- if .Values.presets.resourceDetection.enabled }}
-  {{- if not .Values.isWindows }}
+  {{- if and (not .Values.isWindows) (not (eq .Values.distribution "eks/fargate")) }}
   {{- $machineIdVolumeExists := false }}
   {{- $dbusMachineIdVolumeExists := false }}
   {{- if .Values.extraVolumes }}
@@ -376,11 +390,22 @@ volumes:
   {{- end }}
   {{- end }}
   {{- end }}
+  {{- if and (eq .Values.distribution "eks/fargate") .Values.presets.eksFargate.initContainer.enabled }}
+  - name: script-volume
+    configMap:
+      name: {{ include "opentelemetry-collector.fullname" . }}-script
+      items:
+        - key: label-node-script
+          path: label_node.sh
+          mode: 0555
+  {{- end }}
   {{- if .Values.extraVolumes }}
   {{- toYaml .Values.extraVolumes | nindent 2 }}
   {{- end }}
 nodeSelector:
-{{- if .Values.nodeSelector }}
+{{- if eq .Values.distribution "eks/fargate" }}
+  eks.amazonaws.com/compute-type: fargate
+{{- else if .Values.nodeSelector }}
 {{ toYaml .Values.nodeSelector | nindent 2 }}
 {{- else }}
   kubernetes.io/os: {{ .Values.isWindows | ternary "windows" "linux" }}

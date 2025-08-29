@@ -151,6 +151,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.headSampling.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHeadSamplingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if eq .Values.distribution "eks/fargate" }}
+{{- $config = (include "opentelemetry-collector.applyEksFargateConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.batch.enabled }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -166,6 +169,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- $values := deepCopy .Values }}
 {{- $data := dict "Values" $values | mustMergeOverwrite (deepCopy .) }}
 {{- $config := include "opentelemetry-collector.baseConfig" $data | fromYaml }}
+{{- if eq .Values.distribution "eks/fargate" }}
+{{- $config = (include "opentelemetry-collector.applyEksFargateConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.ecsLogsCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyEcsLogsCollectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -1986,6 +1992,11 @@ exporters:
       - "k8s.statefulset.name"
       - "k8s.daemonset.name"
       - "k8s.cronjob.name"
+      {{- if eq .Values.distribution "eks/fargate" }}
+      - "k8s.job.name"
+      - "k8s.container.name"
+      - "k8s.node.name"
+      {{- end }}
       - "service.name"
       {{- end }}
 {{- end }}
@@ -2123,9 +2134,11 @@ processors:
         host.id:
           enabled: true
   resourcedetection/region:
-    detectors: ["gcp", "ec2", "azure"]
+    detectors: ["gcp", "ec2", "azure", "eks"]
     timeout: 2s
     override: true
+    eks:
+      node_from_env_var: K8S_NODE_NAME
 {{- end }}
 
 {{/* Build the list of port for service */}}
@@ -2522,6 +2535,82 @@ processors:
 {{- define "opentelemetry-collector.chartMetadataAttributes" -}}
 helm.chart.{{ .Chart.Name }}.version: "{{ .Chart.Version }}"
 {{- end }}
+
+{{/*
+Apply EKS Fargate configuration
+*/}}
+{{- define "opentelemetry-collector.applyEksFargateConfig" -}}
+{{- $config := .config }}
+{{- $eksFargateConfig := include "opentelemetry-collector.eksFargateConfig" .Values | fromYaml }}
+{{- $config = mergeOverwrite $config $eksFargateConfig }}
+
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.eksFargateConfig" -}}
+extensions:
+  k8s_observer:
+    auth_type: serviceAccount
+    observe_pods: true
+    observe_nodes: true
+
+receivers:
+  receiver_creator:
+    watch_observers: [k8s_observer]
+    receivers:
+      kubeletstats:
+        config:
+          auth_type: serviceAccount
+          collection_interval: {{ .Values.presets.eksFargate.kubeletStats.collectionInterval }}
+          endpoint: "`endpoint`:`kubelet_endpoint_port`"
+          insecure_skip_verify: true
+          extra_metadata_labels:
+          - container.id
+          metric_groups:
+          - container
+          - pod
+          - node
+        {{- if .Values.presets.eksFargate.monitoringCollector }}
+        rule: type == "k8s.node" && labels["OTEL-collector-node"] == "true"
+        {{- else }}
+        rule: type == "k8s.node" && name contains "fargate" && name != "${env:K8S_NODE_NAME}"
+        {{- end }}
+
+service:
+  pipelines:
+    {{- if not .Values.presets.eksFargate.monitoringCollector }}
+    metrics/kubeletstats:
+      receivers: [receiver_creator]
+      processors:
+        - memory_limiter
+        - resource/metadata
+        {{- if .Values.presets.resourceDetection.enabled }}
+        - resourcedetection/region
+        - resourcedetection/env
+        {{- end }}
+        {{- if .Values.presets.kubernetesAttributes.enabled }}
+        - k8sattributes
+        - transform/k8s_attributes
+        {{- end }}
+      exporters: [coralogix]
+    {{- end }}
+    metrics/colmon:
+      receivers: [receiver_creator]
+      processors:
+        - memory_limiter
+        - resource/metadata
+        {{- if .Values.presets.resourceDetection.enabled }}
+        - resourcedetection/region
+        - resourcedetection/env
+        {{- end }}
+        {{- if .Values.presets.kubernetesAttributes.enabled }}
+        - k8sattributes
+        - transform/k8s_attributes
+        {{- end }}
+      exporters: [coralogix]
+  extensions: [health_check, k8s_observer]
+{{- end }}
+
 
 {{- define "opentelemetry-collector.applyEcsLogsCollectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.ecsLogsCollectionConfig" .Values | fromYaml) .config }}

@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.9 / 2025-08-28
+- [Feat] Add support for EKS Fargate.
+- [Feat] Added `eks` as detector to `resourcedetection/region` config.
+
 ### v0.119.8 / 2025-08-28
 - [Feat] ECS logs: optional `multiline` block for filelog receiver with `lineStartPattern`/`lineEndPattern` and `omitPattern`.
 - [Chore] ECS example: enable Java stack trace multiline parsing.

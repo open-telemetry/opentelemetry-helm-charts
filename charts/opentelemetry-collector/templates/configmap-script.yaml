@@ -1,0 +1,24 @@
+{{- if and (eq .Values.distribution "eks/fargate") .Values.presets.eksFargate.initContainer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}-script
+  namespace: {{ include "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+    component: script
+data:
+  label-node-script: |
+    #!/bin/bash
+    set +x
+    # Download kubectl
+    # If the latest stable version is not compatible with your cluster, adjust accordingly.
+    curl -LOs "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+    # Give execute permissions to kubectl
+    chmod +x kubectl
+
+    # Remove any prior label from other nodes. Label only the current node as the single OTEL-collector-node.
+    ./kubectl label nodes --all OTEL-collector-node-
+    ./kubectl label nodes $K8S_NODE_NAME OTEL-collector-node=true
+{{- end }}

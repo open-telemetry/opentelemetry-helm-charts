@@ -1,0 +1,102 @@
+# Example configuration for OpenTelemetry Collector on EKS Fargate
+# This configuration demonstrates how to deploy the collector to collect
+# kubelet stats metrics from Fargate nodes and send them to Coralogix.
+
+# Global configuration
+global:
+  clusterName: "my-eks-fargate-cluster"
+  domain: "eu2.coralogix.com"
+
+mode: deployment
+replicaCount: 1
+
+# Set distribution to eks/fargate to automatically apply Fargate-specific configurations
+distribution: "eks/fargate"
+
+config:
+  exporters:
+    debug: {}
+  extensions:
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+    memory_ballast: {}
+  receivers: {}
+  processors:
+    memory_limiter: null
+  service:
+    telemetry:
+      logs:
+        encoding: json
+    extensions:
+      - health_check
+    pipelines: null
+
+presets:
+  coralogixExporter:
+    enabled: true
+    pipeline: all
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+    defaultApplicationName: "otel-fargate-integration"
+    defaultSubsystemName: "eks-fargate"
+    domain: "eu2.coralogix.com"
+
+  batch:
+    enabled: true
+    timeout: "60s"
+
+  eksFargate:
+    monitoringCollector: true
+    # Enable init container for node labeling
+    kubeletStats:
+      collectionInterval: "30s"
+
+  kubernetesAttributes:
+    enabled: false
+
+  metadata:
+    enabled: true
+    clusterName: "{{.Values.global.clusterName}}"
+
+  otlpReceiver:
+    enabled: true
+    maxRecvMsgSizeMiB: 20
+
+  resourceDetection:
+    enabled: true
+    dbusMachineId:
+      enabled: false
+
+extraEnvs:
+  - name: CORALOGIX_PRIVATE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: coralogix-keys
+        key: PRIVATE_KEY
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+
+# Resource requests and limits - matching expected Fargate requirements
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+  requests:
+    cpu: 1
+    memory: 2Gi
+
+# Pod security context for Fargate
+podSecurityContext:
+  fsGroup: 65534
+
+ports:
+  metrics:
+    enabled: true
+
+# Node selector is automatically set to fargate when distribution is "eks/fargate"
+# nodeSelector will be: eks.amazonaws.com/compute-type: fargate
+
+# Labels for monitoring collector
+nameOverride: "cx-otel-collector-monitor"
+fullnameOverride: "cx-otel-collector-monitor"
