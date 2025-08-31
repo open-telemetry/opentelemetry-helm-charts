@@ -853,17 +853,40 @@ processors:
 processors:
   transform/profiles:
     profile_statements:
+    # prioritized by
+    # https://opentelemetry.io/docs/specs/semconv/non-normative/k8s-attributes/#how-servicename-should-be-calculated
+      - set(resource.attributes["service.name"], resource.attributes["service.name"])
+        where resource.attributes["service.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.label.instance"])
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.instance"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.label.name"])
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.name"] != nil
+
       - set(resource.attributes["service.name"], resource.attributes["k8s.deployment.name"])
-        where resource.attributes["k8s.deployment.name"] != nil
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.deployment.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.replicaset.name"])
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.replicaset.name"] != nil
 
       - set(resource.attributes["service.name"], resource.attributes["k8s.statefulset.name"])
-        where resource.attributes["k8s.statefulset.name"] != nil
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.statefulset.name"] != nil
 
       - set(resource.attributes["service.name"], resource.attributes["k8s.daemonset.name"])
-        where resource.attributes["k8s.daemonset.name"] != nil
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.daemonset.name"] != nil
 
       - set(resource.attributes["service.name"], resource.attributes["k8s.cronjob.name"])
-        where resource.attributes["k8s.cronjob.name"] != nil
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.cronjob.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.job.name"])
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.job.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.pod.name"])
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.name"] != nil
+
+      - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"])
+        where resource.attributes["service.name"] == nil and resource.attributes["k8s.container.name"] != nil
 
   k8sattributes/profiles:
     extract:
@@ -878,6 +901,14 @@ processors:
         - k8s.pod.name
         - k8s.node.name
         - container.id
+      labels:
+        - tag_name: k8s.label.name
+          key: app.kubernetes.io/name
+          from: pod
+        - tag_name: k8s.label.instance
+          key: app.kubernetes.io/instance
+          from: pod
+        otel_annotations: true
 
     passthrough: false
     pod_association:

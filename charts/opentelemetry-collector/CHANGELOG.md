@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.10 / 2025-09-01
+- [Feat] Profiling: improve service name detection by otel conventions.
+
 ### v0.119.9 / 2025-08-28
 - [Feat] Add support for EKS Fargate.
 - [Feat] Added `eks` as detector to `resourcedetection/region` config.
