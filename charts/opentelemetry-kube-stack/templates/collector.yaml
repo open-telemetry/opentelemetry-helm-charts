@@ -105,7 +105,7 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   {{- if eq $collector.mode "daemonset" }}
-  {{- with $collector.daemonSetUpdateStrategy }}
+  {{- with (or $collector.daemonSetUpdateStrategy $collector.updateStrategy) }}
   daemonSetUpdateStrategy:
   {{- toYaml . | nindent 4}}
   {{- end }}
