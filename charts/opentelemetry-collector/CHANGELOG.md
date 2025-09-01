@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.11 / 2025-09-01
+- [Fix] Fix quoting issue with EKS Fargate `collectionInterval`.
+- [Fix] Fix `otel_annotations` field intendation for `k8sattributes/profiles`.
+
 ### v0.119.10 / 2025-09-01
 - [Feat] Profiling: improve service name detection by otel conventions.
 

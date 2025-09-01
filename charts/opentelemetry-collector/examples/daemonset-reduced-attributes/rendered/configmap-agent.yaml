@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.119.9
+    helm.sh/chart: opentelemetry-collector-0.119.11
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.131.1"
@@ -126,6 +126,13 @@ data:
             name: k8s.job.name
       k8sattributes/profiles:
         extract:
+          labels:
+          - from: pod
+            key: app.kubernetes.io/name
+            tag_name: k8s.label.name
+          - from: pod
+            key: app.kubernetes.io/instance
+            tag_name: k8s.label.instance
           metadata:
           - k8s.namespace.name
           - k8s.replicaset.name
@@ -137,6 +144,7 @@ data:
           - k8s.pod.name
           - k8s.node.name
           - container.id
+          otel_annotations: true
         passthrough: false
         pod_association:
         - sources:
@@ -224,14 +232,38 @@ data:
           - delete_key(attributes, "k8s.replicaset.name")
       transform/profiles:
         profile_statements:
+        - set(resource.attributes["service.name"], resource.attributes["service.name"])
+          where resource.attributes["service.name"] != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.label.instance"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.instance"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.label.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.name"]
+          != nil
         - set(resource.attributes["service.name"], resource.attributes["k8s.deployment.name"])
-          where resource.attributes["k8s.deployment.name"] != nil
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.deployment.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.replicaset.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.replicaset.name"]
+          != nil
         - set(resource.attributes["service.name"], resource.attributes["k8s.statefulset.name"])
-          where resource.attributes["k8s.statefulset.name"] != nil
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.statefulset.name"]
+          != nil
         - set(resource.attributes["service.name"], resource.attributes["k8s.daemonset.name"])
-          where resource.attributes["k8s.daemonset.name"] != nil
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.daemonset.name"]
+          != nil
         - set(resource.attributes["service.name"], resource.attributes["k8s.cronjob.name"])
-          where resource.attributes["k8s.cronjob.name"] != nil
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.cronjob.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.job.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.job.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.pod.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.container.name"]
+          != nil
       transform/reduce:
         error_mode: silent
         log_statements:

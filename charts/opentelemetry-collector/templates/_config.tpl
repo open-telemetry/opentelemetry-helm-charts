@@ -908,7 +908,7 @@ processors:
         - tag_name: k8s.label.instance
           key: app.kubernetes.io/instance
           from: pod
-        otel_annotations: true
+      otel_annotations: true
 
     passthrough: false
     pod_association:
@@ -2592,7 +2592,7 @@ receivers:
       kubeletstats:
         config:
           auth_type: serviceAccount
-          collection_interval: {{ .Values.presets.eksFargate.kubeletStats.collectionInterval }}
+          collection_interval: "{{ .Values.presets.eksFargate.kubeletStats.collectionInterval }}"
           endpoint: "`endpoint`:`kubelet_endpoint_port`"
           insecure_skip_verify: true
           extra_metadata_labels:
