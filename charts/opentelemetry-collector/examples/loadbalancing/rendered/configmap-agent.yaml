@@ -1,12 +1,12 @@
 ---
-# Source: opentelemetry-collector/templates/configmap.yaml
+# Source: opentelemetry-collector/templates/configmap-agent.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-opentelemetry-collector
+  name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.119.11
+    helm.sh/chart: opentelemetry-collector-0.119.12
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.131.1"
@@ -35,6 +35,32 @@ data:
         send_batch_max_size: 2048
         send_batch_size: 1024
         timeout: 1s
+      k8sattributes/profiles:
+        extract:
+          labels:
+          - from: pod
+            key: app.kubernetes.io/name
+            tag_name: k8s.label.name
+          - from: pod
+            key: app.kubernetes.io/instance
+            tag_name: k8s.label.instance
+          metadata:
+          - k8s.namespace.name
+          - k8s.replicaset.name
+          - k8s.statefulset.name
+          - k8s.daemonset.name
+          - k8s.deployment.name
+          - k8s.cronjob.name
+          - k8s.job.name
+          - k8s.pod.name
+          - k8s.node.name
+          - container.id
+          otel_annotations: true
+        passthrough: false
+        pod_association:
+        - sources:
+          - from: resource_attribute
+            name: container.id
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -42,6 +68,40 @@ data:
       probabilistic_sampler:
         mode: proportional
         sampling_percentage: 10
+      transform/profiles:
+        profile_statements:
+        - set(resource.attributes["service.name"], resource.attributes["service.name"])
+          where resource.attributes["service.name"] != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.label.instance"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.instance"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.label.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.deployment.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.deployment.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.replicaset.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.replicaset.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.statefulset.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.statefulset.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.daemonset.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.daemonset.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.cronjob.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.cronjob.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.job.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.job.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.pod.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.name"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.container.name"]
+          != nil
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -123,12 +183,22 @@ data:
         metrics:
           exporters:
           - debug
+          - loadbalancing
           processors:
           - memory_limiter
           - transform/prometheus
           - batch
           receivers:
           - prometheus
+          - otlp
+        profiles:
+          exporters:
+          - loadbalancing
+          processors:
+          - memory_limiter
+          - k8sattributes/profiles
+          - transform/profiles
+          receivers:
           - otlp
         traces:
           exporters:

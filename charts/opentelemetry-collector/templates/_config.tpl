@@ -82,9 +82,6 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.spanMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- if .Values.presets.loadBalancing.enabled }}
-{{- $config = (include "opentelemetry-collector.applyLoadBalancingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
-{{- end }}
 {{- if .Values.targetAllocator.enabled }}
 {{- $config = (include "opentelemetry-collector.applyTargetAllocatorConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -129,6 +126,10 @@ Build config file for daemonset OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.profilesCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- /* Apply load balancing after profiles so profiles pipeline exists when wiring exporters */ -}}
+{{- if .Values.presets.loadBalancing.enabled }}
+{{- $config = (include "opentelemetry-collector.applyLoadBalancingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.coralogixExporter.enabled }}
 {{- $config = (include "opentelemetry-collector.applyCoralogixExporterConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -1915,8 +1916,26 @@ service:
 
 {{- define "opentelemetry-collector.applyLoadBalancingConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.loadBalancingConfig" .Values | fromYaml) .config }}
-{{- if and ($config.service.pipelines.traces) (not (has "loadbalancing" $config.service.pipelines.traces.exporters)) }}
+{{- $pipelines := list "traces" }}
+{{- if .Values.Values.presets.loadBalancing.pipelines }}
+  {{- $pipelines = .Values.Values.presets.loadBalancing.pipelines }}
+{{- end }}
+{{- $includeLogs := has "logs" $pipelines }}
+{{- $includeMetrics := has "metrics" $pipelines }}
+{{- $includeTraces := has "traces" $pipelines }}
+{{- $includeProfiles := has "profiles" $pipelines }}
+
+{{- if and $includeLogs ($config.service.pipelines.logs) (not (has "loadbalancing" $config.service.pipelines.logs.exporters)) }}
+{{- $_ := set $config.service.pipelines.logs "exporters" (append $config.service.pipelines.logs.exporters "loadbalancing" | uniq)  }}
+{{- end }}
+{{- if and $includeMetrics ($config.service.pipelines.metrics) (not (has "loadbalancing" $config.service.pipelines.metrics.exporters)) }}
+{{- $_ := set $config.service.pipelines.metrics "exporters" (append $config.service.pipelines.metrics.exporters "loadbalancing" | uniq)  }}
+{{- end }}
+{{- if and $includeTraces ($config.service.pipelines.traces) (not (has "loadbalancing" $config.service.pipelines.traces.exporters)) }}
 {{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "loadbalancing" | uniq)  }}
+{{- end }}
+{{- if and $includeProfiles ($config.service.pipelines.profiles) (not (has "loadbalancing" $config.service.pipelines.profiles.exporters)) }}
+{{- $_ := set $config.service.pipelines.profiles "exporters" (append $config.service.pipelines.profiles.exporters "loadbalancing" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
