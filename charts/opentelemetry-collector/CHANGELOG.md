@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.13 / 2025-09-03
+- [Feature] Profiling: add `serviceLabels` and `serviceAnnotations` options to `profilesCollection` preset, to allow for custom service name detection.
+
 ### v0.119.12 / 2025-09-02
 - [Feat] loadBalancing preset: add `pipelines` option to select pipelines (logs, metrics, traces, profiles). Default is ["traces"].
 

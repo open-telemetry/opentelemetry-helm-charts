@@ -856,9 +856,16 @@ processors:
     profile_statements:
     # prioritized by
     # https://opentelemetry.io/docs/specs/semconv/non-normative/k8s-attributes/#how-servicename-should-be-calculated
-      - set(resource.attributes["service.name"], resource.attributes["service.name"])
-        where resource.attributes["service.name"] != nil
+     {{- range $index, $serviceAnnotation := .Values.presets.profilesCollection.serviceAnnotations }}
+      - set(resource.attributes["service.name"], resource.attributes[{{ $serviceAnnotation.tag_name | quote }}])
+        where resource.attributes["service.name"] == nil and resource.attributes[{{ $serviceAnnotation.tag_name | quote }}] != nil
 
+    {{- end }}
+    {{- range $index, $serviceLabel := .Values.presets.profilesCollection.serviceLabels }}
+      - set(resource.attributes["service.name"], resource.attributes[{{ $serviceLabel.tag_name  | quote }}])
+        where resource.attributes["service.name"] == nil and resource.attributes[{{ $serviceLabel.tag_name | quote }}] != nil
+
+    {{- end }}
       - set(resource.attributes["service.name"], resource.attributes["k8s.label.instance"])
         where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.instance"] != nil
 
@@ -909,6 +916,20 @@ processors:
         - tag_name: k8s.label.instance
           key: app.kubernetes.io/instance
           from: pod
+      {{- range $index, $serviceLabel := .Values.presets.profilesCollection.serviceLabels }}
+        - tag_name: {{ $serviceLabel.tag_name | quote }}
+          key: {{ $serviceLabel.key | quote }}
+          from: {{ $serviceLabel.from | default "pod" | quote }}
+      {{- end }}
+
+      {{- if .Values.presets.profilesCollection.serviceAnnotations }}
+      annotations:
+          {{- range $index, $serviceAnnotation := .Values.presets.profilesCollection.serviceAnnotations }}
+        - tag_name: {{ $serviceAnnotation.tag_name | quote }}
+          key: {{ $serviceAnnotation.key | quote }}
+          from:  {{ $serviceAnnotation.key | default "pod" | quote }}
+          {{- end }}
+      {{- end }}
       otel_annotations: true
 
     passthrough: false

@@ -49,6 +49,10 @@ data:
     processors:
       k8sattributes/profiles:
         extract:
+          annotations:
+          - from: annotation_key
+            key: annotation_key
+            tag_name: k8s.annotations.annotation_key
           labels:
           - from: pod
             key: app.kubernetes.io/name
@@ -56,6 +60,9 @@ data:
           - from: pod
             key: app.kubernetes.io/instance
             tag_name: k8s.label.instance
+          - from: pod
+            key: label_key
+            tag_name: k8s.labels.label_key
           metadata:
           - k8s.namespace.name
           - k8s.replicaset.name
@@ -87,6 +94,12 @@ data:
           value: coralogix-integration-helm
       transform/profiles:
         profile_statements:
+        - set(resource.attributes["service.name"], resource.attributes["k8s.annotations.annotation_key"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.annotations.annotation_key"]
+          != nil
+        - set(resource.attributes["service.name"], resource.attributes["k8s.labels.label_key"])
+          where resource.attributes["service.name"] == nil and resource.attributes["k8s.labels.label_key"]
+          != nil
         - set(resource.attributes["service.name"], resource.attributes["k8s.label.instance"])
           where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.instance"]
           != nil

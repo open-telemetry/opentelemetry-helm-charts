@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 7cb2d8fd74da70a1ff1552e02acd4c6f0d633f46b48974d0255526dd585ede2e
+        checksum/config: 25912f330e4ab4c0daae3cb8bad3be42e9d8640f3e477671ebdd303f3b41156d
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -40,6 +40,8 @@ spec:
           command:
             - /otelcol-contrib
             - --config=/conf/relay.yaml
+            - "--feature-gates=+service.profilesSupport"
+            - --feature-gates=+service.profilesSupport
           securityContext:
             {}
           image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.131.1"
@@ -59,10 +61,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-            - name: MY_POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
+            - name: GOMEMLIMIT
+              value: "152MiB"
           livenessProbe:
             httpGet:
               path: /
@@ -71,10 +71,13 @@ spec:
             httpGet:
               path: /
               port: 13133
+          resources:
+            limits:
+              cpu: 100m
+              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-      priorityClassName: "example-opentelemetry-collector"
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:

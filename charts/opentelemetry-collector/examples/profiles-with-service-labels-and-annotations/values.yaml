@@ -1,0 +1,28 @@
+mode: daemonset
+presets:
+  profilesCollection:
+    enabled: true
+    serviceAnnotations:
+      - tag_name: "k8s.annotations.annotation_key"
+        key: "annotation_key"
+        from: "pod"
+    serviceLabels:
+      - tag_name: "k8s.labels.label_key"
+        key: "label_key"
+        from: "pod"
+  metadata:
+    enabled: true
+    clusterName: "production"
+    integrationName: "coralogix-integration-helm"
+  coralogixExporter:
+    enabled: true
+    pipeline: all
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+
+command:
+  extraArgs: ["--feature-gates=+service.profilesSupport"]
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
