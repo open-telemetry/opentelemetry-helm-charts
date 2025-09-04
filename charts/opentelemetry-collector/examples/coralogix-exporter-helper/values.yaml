@@ -1,0 +1,27 @@
+mode: daemonset
+
+global:
+  domain: coralogix.com
+  defaultApplicationName: otel
+  defaultSubsystemName: integration
+  version: "1.0"
+
+presets:
+  coralogixExporter:
+    enabled: true
+    pipelines: ["all"]
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+    # Demonstrate exporter helper settings
+    retryOnFailure:
+      enabled: true
+      initialInterval: 2s
+      maxInterval: 20s
+      maxElapsedTime: 120s
+      multiplier: 2.0
+    sendingQueue:
+      enabled: true
+      numConsumers: 5
+      waitForResult: false
+      blockOnOverflow: true
+      sizer: requests
+      queueSize: 500

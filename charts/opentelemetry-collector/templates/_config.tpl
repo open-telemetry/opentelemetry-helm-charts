@@ -2070,6 +2070,45 @@ exporters:
       {{- end }}
       - "service.name"
       {{- end }}
+    {{- with .Values.presets.coralogixExporter.retryOnFailure }}
+    retry_on_failure:
+      {{- if hasKey . "enabled" }}
+      enabled: {{ .enabled }}
+      {{- end }}
+      {{- if .initialInterval }}
+      initial_interval: "{{ .initialInterval }}"
+      {{- end }}
+      {{- if .maxInterval }}
+      max_interval: "{{ .maxInterval }}"
+      {{- end }}
+      {{- if hasKey . "maxElapsedTime" }}
+      max_elapsed_time: "{{ .maxElapsedTime }}"
+      {{- end }}
+      {{- if hasKey . "multiplier" }}
+      multiplier: {{ .multiplier }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.presets.coralogixExporter.sendingQueue }}
+    sending_queue:
+      {{- if hasKey . "enabled" }}
+      enabled: {{ .enabled }}
+      {{- end }}
+      {{- if hasKey . "numConsumers" }}
+      num_consumers: {{ .numConsumers }}
+      {{- end }}
+      {{- if hasKey . "waitForResult" }}
+      wait_for_result: {{ .waitForResult }}
+      {{- end }}
+      {{- if hasKey . "blockOnOverflow" }}
+      block_on_overflow: {{ .blockOnOverflow }}
+      {{- end }}
+      {{- if .sizer }}
+      sizer: {{ .sizer | quote }}
+      {{- end }}
+      {{- if hasKey . "queueSize" }}
+      queue_size: {{ .queueSize }}
+      {{- end }}
+    {{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}

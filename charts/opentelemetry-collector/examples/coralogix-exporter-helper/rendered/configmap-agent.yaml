@@ -15,6 +15,46 @@ metadata:
 data:
   relay: |
     exporters:
+      coralogix:
+        application_name: otel
+        application_name_attributes:
+        - k8s.namespace.name
+        - service.namespace
+        domain: coralogix.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        metrics:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        private_key: ${env:CORALOGIX_PRIVATE_KEY}
+        profiles:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+        retry_on_failure:
+          enabled: true
+          initial_interval: 2s
+          max_elapsed_time: 120s
+          max_interval: 20s
+          multiplier: 2
+        sending_queue:
+          block_on_overflow: true
+          enabled: true
+          num_consumers: 5
+          queue_size: 500
+          sizer: requests
+          wait_for_result: false
+        subsystem_name: integration
+        subsystem_name_attributes:
+        - k8s.deployment.name
+        - k8s.statefulset.name
+        - k8s.daemonset.name
+        - k8s.cronjob.name
+        - service.name
+        timeout: 30s
+        traces:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
       debug: {}
     extensions:
       health_check:
@@ -90,10 +130,6 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
-        target_allocator:
-          collector_id: id
-          endpoint: http://example-opentelemetry-collector-targetallocator
-          interval: 30s
     service:
       extensions:
       - health_check
@@ -101,6 +137,7 @@ data:
         logs:
           exporters:
           - debug
+          - coralogix
           processors:
           - memory_limiter
           receivers:
@@ -108,6 +145,7 @@ data:
         metrics:
           exporters:
           - debug
+          - coralogix
           processors:
           - memory_limiter
           - transform/prometheus
@@ -117,6 +155,7 @@ data:
         traces:
           exporters:
           - debug
+          - coralogix
           processors:
           - memory_limiter
           receivers:
