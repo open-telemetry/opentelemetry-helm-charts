@@ -172,7 +172,9 @@
         "leaderElection",
         "verticalPodAutoscaler",
         "rolling",
-        "securityContext"
+        "securityContext",
+        "ignoreMissingCollectorCRDs",
+        "autoInstrumentation"
       ],
       "additionalProperties": false,
       "properties": {
@@ -571,8 +573,7 @@
         "featureGates": {
           "type": "string",
           "default": "",
-          "title": "The featureGates to enable",
-          "examples": ""
+          "title": "The featureGates to enable"
         },
         "featureGatesMap": {
           "type": "object",
@@ -1192,6 +1193,32 @@
           "examples": [
             {}
           ]
+        },
+        "ignoreMissingCollectorCRDs": {
+          "type": "boolean",
+          "default": false,
+          "title": "Raise errors if the collector CRDs are not found",
+          "examples": [
+            false
+          ]
+        },
+        "autoInstrumentation": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "go": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable Go auto-instrumentation"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
         }
       },
       "examples": [
