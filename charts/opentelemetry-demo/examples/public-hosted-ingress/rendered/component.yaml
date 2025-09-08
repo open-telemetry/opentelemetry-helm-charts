@@ -312,6 +312,31 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: postgresql
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.37.8
+    
+    opentelemetry.io/name: postgresql
+    
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: "2.0.2"
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      name: postgresql
+      targetPort: 5432
+  selector:
+    
+    opentelemetry.io/name: postgresql
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: v1
+kind: Service
+metadata:
   name: product-catalog
   labels:
     helm.sh/chart: opentelemetry-demo-0.37.8
@@ -483,6 +508,10 @@ spec:
               value: kafka:9092
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4318
+            - name: DB_CONNECTION_STRING
+              value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
+            - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
+              value: "false"
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.0.2
           resources:
@@ -1524,6 +1553,75 @@ spec:
             runAsUser: 1000
           volumeMounts:
       volumes:
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.37.8
+    
+    opentelemetry.io/name: postgresql
+    
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: "2.0.2"
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      
+      opentelemetry.io/name: postgresql
+  template:
+    metadata:
+      labels:
+        
+        opentelemetry.io/name: postgresql
+        
+        app.kubernetes.io/component: postgresql
+        app.kubernetes.io/name: postgresql
+    spec:
+      serviceAccountName: example
+      containers:
+        - name: postgresql
+          image: 'postgres:17.5'
+          imagePullPolicy: IfNotPresent
+          ports:
+            
+            - containerPort: 5432
+              name: postgresql
+          env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
+            - name: OTEL_COLLECTOR_NAME
+              value: otel-collector
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: POSTGRES_USER
+              value: root
+            - name: POSTGRES_PASSWORD
+              value: otel
+            - name: POSTGRES_DB
+              value: otel
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.0.2
+          resources:
+            limits:
+              memory: 500Mi
+          volumeMounts:
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d/
+      volumes:
+        - name: init
+          configMap:
+            name: postgresql-init
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
