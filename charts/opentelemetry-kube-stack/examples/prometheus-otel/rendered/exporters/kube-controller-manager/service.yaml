@@ -1,0 +1,24 @@
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kube-controller-manager/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-kube-controller-manager
+  labels:
+    app: opentelemetry-kube-stack-kube-controller-manager
+    jobLabel: kube-controller-manager
+    helm.sh/chart: opentelemetry-kube-stack-0.9.1
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: http-metrics
+      port: 10257
+      protocol: TCP
+      targetPort: 10257
+  selector:
+    component: kube-controller-manager
+  type: ClusterIP

@@ -1,0 +1,27 @@
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kube-dns/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-kube-dns
+  labels:
+    app: opentelemetry-kube-stack-kube-dns
+    jobLabel: kube-dns
+    helm.sh/chart: opentelemetry-kube-stack-0.9.1
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: http-metrics-dnsmasq
+      port: 10054
+      protocol: TCP
+      targetPort: 10054
+    - name: http-metrics-skydns
+      port: 10055
+      protocol: TCP
+      targetPort: 10055
+  selector:
+    k8s-app: kube-dns
