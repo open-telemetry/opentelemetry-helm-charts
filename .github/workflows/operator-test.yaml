@@ -63,7 +63,8 @@ jobs:
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
             --set "manager.podLabels.control-plane=controller-manager" \
-            --set-json 'manager.extraEnvs=[{"name":"NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]'
+            --set "manager.extraEnvs[0].name=NAMESPACE" \
+            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace"
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
@@ -119,7 +120,9 @@ jobs:
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
             --set "manager.podLabels.control-plane=controller-manager" \
-            --set "admissionWebhooks.certManager.enabled=false"
+            --set "admissionWebhooks.certManager.enabled=false" \
+            --set "manager.extraEnvs[0].name=NAMESPACE" \
+            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace"
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
