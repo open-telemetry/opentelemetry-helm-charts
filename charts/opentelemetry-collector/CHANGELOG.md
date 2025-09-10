@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.16 / 2025-09-10
+- [CHORE] Bump Collector to 0.135.0
+
 ### v0.119.15 / 2025-09-05
 - [CHORE] Bump Collector to 0.134.1
 
