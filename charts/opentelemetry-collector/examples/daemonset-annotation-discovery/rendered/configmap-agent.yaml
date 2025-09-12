@@ -17,13 +17,12 @@ data:
   relay: |
     exporters:
       debug: {}
-      otlp:
-        endpoint: example-opentelemetry-collector:4317
-        tls:
-          insecure: true
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
+      k8s_observer:
+        auth_type: serviceAccount
+        node: ${env:K8S_NODE_NAME}
     processors:
       batch: {}
       memory_limiter:
@@ -53,24 +52,36 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      receiver_creator/logs:
+        discovery:
+          default_annotations:
+            io.opentelemetry.discovery.logs/enabled: "true"
+          enabled: true
+        watch_observers:
+        - k8s_observer
+      receiver_creator/metrics:
+        discovery:
+          enabled: true
+        watch_observers:
+        - k8s_observer
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
       extensions:
       - health_check
+      - k8s_observer
       pipelines:
         logs:
           exporters:
-          - otlp
           - debug
           processors:
           - memory_limiter
           - batch
           receivers:
           - otlp
+          - receiver_creator/logs
         metrics:
           exporters:
-          - otlp
           - debug
           processors:
           - memory_limiter
@@ -78,9 +89,9 @@ data:
           receivers:
           - otlp
           - prometheus
+          - receiver_creator/metrics
         traces:
           exporters:
-          - otlp
           - debug
           processors:
           - memory_limiter
