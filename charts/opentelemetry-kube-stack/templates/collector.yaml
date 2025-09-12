@@ -108,9 +108,17 @@ spec:
   updateStrategy:
   {{- toYaml . | nindent 4}}
   {{- end }}
+  {{- if eq $collector.mode "daemonset" }}
+  {{- with $collector.daemonSetUpdateStrategy }}
+  daemonSetUpdateStrategy:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- end }}
+  {{- if eq $collector.mode "deployment" }}
   {{- with $collector.deploymentUpdateStrategy }}
   deploymentUpdateStrategy:
   {{- toYaml . | nindent 4}}
+  {{- end }}
   {{- end }}
   {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumeMounts) }}
   volumeMounts:
