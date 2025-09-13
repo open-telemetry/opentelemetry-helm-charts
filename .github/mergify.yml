@@ -1,0 +1,214 @@
+queue_rules:
+  # Per-chart × semver queues
+  - name: opentelemetry-collector-patch
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-collector
+      - label=semvertype:patch
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-collector-minor
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-collector
+      - label=semvertype:minor
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-collector-major
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-collector
+      - label=semvertype:major
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+
+  - name: opentelemetry-operator-patch
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-operator
+      - label=semvertype:patch
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-operator-minor
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-operator
+      - label=semvertype:minor
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-operator-major
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-operator
+      - label=semvertype:major
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+
+  - name: opentelemetry-demo-patch
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-demo
+      - label=semvertype:patch
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-demo-minor
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-demo
+      - label=semvertype:minor
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-demo-major
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-demo
+      - label=semvertype:major
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+
+  - name: opentelemetry-ebpf-patch
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-ebpf
+      - label=semvertype:patch
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-ebpf-minor
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-ebpf
+      - label=semvertype:minor
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-ebpf-major
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-ebpf
+      - label=semvertype:major
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+
+  - name: opentelemetry-kube-stack-patch
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-kube-stack
+      - label=semvertype:patch
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-kube-stack-minor
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-kube-stack
+      - label=semvertype:minor
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-kube-stack-major
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-kube-stack
+      - label=semvertype:major
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+
+  - name: opentelemetry-target-allocator-patch
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-target-allocator
+      - label=semvertype:patch
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-target-allocator-minor
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-target-allocator
+      - label=semvertype:minor
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+  - name: opentelemetry-target-allocator-major
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-target-allocator
+      - label=semvertype:major
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+
+pull_request_rules:
+  - name: Route to opentelemetry-collector queue
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-collector
+      - label~=^semvertype:(patch|minor|major)$
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+    actions:
+      queue:
+        name: opentelemetry-collector-{{ label|replace('semvertype:', '') | lower }}
+        method: squash
+        update_method: merge
+
+  - name: Route to opentelemetry-operator queue
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-operator
+      - label~=^semvertype:(patch|minor|major)$
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+    actions:
+      queue:
+        name: opentelemetry-operator-{{ label|replace('semvertype:', '') | lower }}
+        method: squash
+        update_method: merge
+
+  - name: Route to opentelemetry-demo queue
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-demo
+      - label~=^semvertype:(patch|minor|major)$
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+    actions:
+      queue:
+        name: opentelemetry-demo-{{ label|replace('semvertype:', '') | lower }}
+        method: squash
+        update_method: merge
+
+  - name: Route to opentelemetry-ebpf queue
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-ebpf
+      - label~=^semvertype:(patch|minor|major)$
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+    actions:
+      queue:
+        name: opentelemetry-ebpf-{{ label|replace('semvertype:', '') | lower }}
+        method: squash
+        update_method: merge
+
+  - name: Route to opentelemetry-kube-stack queue
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-kube-stack
+      - label~=^semvertype:(patch|minor|major)$
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+    actions:
+      queue:
+        name: opentelemetry-kube-stack-{{ label|replace('semvertype:', '') | lower }}
+        method: squash
+        update_method: merge
+
+  - name: Route to opentelemetry-target-allocator queue
+    conditions:
+      - base=main
+      - label=chart:opentelemetry-target-allocator
+      - label~=^semvertype:(patch|minor|major)$
+      - status-success=PR SemVer label check
+      - status-success=PR generation check
+    actions:
+      queue:
+        name: opentelemetry-target-allocator-{{ label|replace('semvertype:', '') | lower }}
+        method: squash
+        update_method: merge
+
+

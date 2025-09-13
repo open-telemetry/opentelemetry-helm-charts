@@ -1,0 +1,45 @@
+name: PR SemVer label check
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for required SemVer label
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const required = new Set(["semvertype:patch","semvertype:minor","semvertype:major"]);
+            const labels = context.payload.pull_request.labels.map(l => l.name);
+            const has = labels.some(l => required.has(l));
+            core.setOutput('has', String(has));
+            if (!has) {
+              core.setFailed('Missing SemVer label (semvertype:patch/minor/major).');
+            }
+      - name: Guidance comment if missing
+        if: steps.check.outputs.has == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              ':warning: This PR is missing a semver label.',
+              '',
+              '- Add exactly one of: `semvertype:patch`, `semvertype:minor`, or `semvertype:major`.',
+              '- Do not commit rendered example outputs; CI will handle this when queued to merge.',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });
+
+
