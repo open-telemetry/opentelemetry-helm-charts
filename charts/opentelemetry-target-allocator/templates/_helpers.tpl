@@ -92,3 +92,10 @@ Create the target allocator docker image name.
 {{- define "helper.dockerImageName" -}}
 {{- printf "%s:%s" .Values.targetAllocator.image.repository (.Values.targetAllocator.image.tag | default .Chart.AppVersion) -}}
 {{- end -}}
+
+{{/*
+Create ConfigMap checksum annotation
+*/}}
+{{- define "helper.configTemplateChecksumAnnotation" -}}
+checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+{{- end -}}
