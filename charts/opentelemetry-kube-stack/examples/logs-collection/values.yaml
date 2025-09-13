@@ -1,0 +1,50 @@
+clusterName: demo
+collectors:
+  daemon:
+    enabled: false
+  logs:
+    enabled: true
+    labels:
+      otel-collector-type: daemonset-logs
+    mode: daemonset
+    config:
+      exporters:
+        otlphttp/loki:
+          endpoint: http://loki.monitoring.svc:3100/otlp
+          tls:
+            insecure: true
+      processors:
+        transform:
+          error_mode: ignore
+          log_statements:
+            - context: log
+              statements:
+                - replace_pattern(log.body, "(?i)((access_|id_|refresh_)?token\\\\?\"?\\s*:\\s*\\\\?\"?)[a-zA-Z0-9_.-]+\\.[a-zA-Z0-9_.-]+\\.[a-zA-Z0-9_.-]+", "$${1}**REDACTED_TOKEN**")
+                - replace_pattern(log.body, "(?i)(bearer\\s+)[a-zA-Z0-9_.-]+\\.[a-zA-Z0-9_.-]+\\.[a-zA-Z0-9_.-]+", "$${1}**REDACTED_BEARER**")
+                - replace_pattern(log.body, "(?i)(password[\\s=:]+)[^\\s]+", "$${1}**REDACTED_PASSWORD**") where not IsMatch(log.body, "(?i)password[\\s=:]+(?:null|none)\\b")
+      service:
+        pipelines:
+          logs:
+            exporters: [otlphttp/loki]
+            processors: [transform]
+    presets:
+      logsCollection:
+        enabled: true
+        includeCollectorLogs: false
+        collectorContainerNames:
+          - otc-container
+          - init-nginx
+          - additional-container
+        storeCheckpoints: true
+      kubernetesAttributes:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 250Mi
+    scrape_configs_file: ""
