@@ -95,10 +95,15 @@ Create the name of the service account to use
 
 
 {{/*
-Create the name of the clusterRole to use
+Create the name of the clusterRole to use.
+If clusterRole.existingName is provided, use that instead of the generated name.
 */}}
 {{- define "opentelemetry-collector.clusterRoleName" -}}
+{{- if .Values.clusterRole.existingName }}
+{{- .Values.clusterRole.existingName }}
+{{- else }}
 {{- default (include "opentelemetry-collector.fullname" .) .Values.clusterRole.name }}
+{{- end }}
 {{- end }}
 
 {{/*
