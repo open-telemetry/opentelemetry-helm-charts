@@ -13,6 +13,9 @@ nameOverride: ""
 # fullnameOverride completely replaces the generated name.
 fullnameOverride: ""
 
+# Number of replicas for the target allocator deployment
+replicaCount: 1
+
 targetAllocator:
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
@@ -55,3 +58,21 @@ targetAllocator:
     # requests:
     #   cpu: 100m
     #   memory: 64Mi
+
+  # liveness probe configuration
+  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    httpGet:
+      path: /livez
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  # readiness probe configuration
+  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  readinessProbe:
+    httpGet:
+      path: /readyz
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 10
