@@ -1,0 +1,35 @@
+{{- if .Values.targetAllocator.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "helper.fullname" . }}-ta
+  namespace: {{ template "helper.namespace" . }}
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+    {{- range $key, $value := .Values.targetAllocator.serviceMonitor.extraLabels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.targetAllocator.serviceMonitor.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.targetAllocator.serviceMonitor.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "helper.selectorLabels" . | nindent 6 }}
+  endpoints:
+  {{- toYaml .Values.targetAllocator.serviceMonitor.metricsEndpoints | nindent 4 }}
+      {{- with .Values.targetAllocator.serviceMonitor.relabelings }}
+      relabelings:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.targetAllocator.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ template "helper.namespace" . }}
+{{- end }}
