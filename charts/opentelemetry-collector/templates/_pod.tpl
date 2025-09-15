@@ -176,6 +176,9 @@ initContainers:
 {{- if .Values.priorityClassName }}
 priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
+{{- if .Values.runtimeClassName }}
+runtimeClassName: {{ .Values.runtimeClassName | quote }}
+{{- end }}
 volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
