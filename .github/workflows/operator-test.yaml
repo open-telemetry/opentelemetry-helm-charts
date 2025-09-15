@@ -59,11 +59,13 @@ jobs:
 
       - name: Install opentelemetry-operator chart
         run: |
-          helm install --namespace=opentelemetry-operator-system --create-namespace my-opentelemetry-operator ./charts/opentelemetry-operator \
+          helm install --namespace=opentelemetry-operator-system --create-namespace opentelemetry-operator-controller-manager ./charts/opentelemetry-operator \
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
-            --set "manager.podLabels.control-plane=controller-manager"
-          kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
+            --set "manager.podLabels.control-plane=controller-manager" \
+            --set "manager.extraEnvs[0].name=NAMESPACE" \
+            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace"
+          kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
@@ -114,12 +116,14 @@ jobs:
 
       - name: Install opentelemetry-operator chart
         run: |
-          helm install --namespace=opentelemetry-operator-system --create-namespace my-opentelemetry-operator ./charts/opentelemetry-operator \
+          helm install --namespace=opentelemetry-operator-system --create-namespace opentelemetry-operator-controller-manager ./charts/opentelemetry-operator \
             --set 'manager.extraArgs[0]="--enable-go-instrumentation"' \
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
             --set "manager.podLabels.control-plane=controller-manager" \
-            --set "admissionWebhooks.certManager.enabled=false"
-          kubectl wait --timeout=5m --for=condition=available deployment my-opentelemetry-operator -n opentelemetry-operator-system
+            --set "admissionWebhooks.certManager.enabled=false" \
+            --set "manager.extraEnvs[0].name=NAMESPACE" \
+            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace"
+          kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
         working-directory: ./opentelemetry-operator
