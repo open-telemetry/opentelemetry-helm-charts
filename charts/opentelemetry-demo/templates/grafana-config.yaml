@@ -1,0 +1,38 @@
+{{- if .Values.grafana.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alerting
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+    grafana_alert: "1"
+data:
+  {{ (.Files.Glob "grafana/provisioning/alerting/*.yaml").AsConfig | nindent 2 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  {{ (.Files.Glob "grafana/provisioning/dashboards/*.json").AsConfig | nindent 2 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+    grafana_datasource: "1"
+data:
+  {{ (.Files.Glob "grafana/provisioning/datasources/*.yaml").AsConfig | nindent 2 }}
+
+{{- end }}
