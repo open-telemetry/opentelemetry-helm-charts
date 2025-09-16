@@ -25,8 +25,8 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: df5a3c3903a32fe82692d1f9a83f2ebc2015d80885328e8d2cd1bca5c47c8e1b
-        
+        checksum/config: aa352c01a334ae1e335b1d3f2ae31bac34b9eba11c160c085bc0b495bff1cf3b
+        io.opentelemetry.discovery.logs/enabled: "false"
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
@@ -91,6 +91,12 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - name: varlogpods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -98,4 +104,10 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
       hostNetwork: false
