@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.17 2025-09-16
+- [Feat] add spanmetrics.dbMetrics compact option.
+
 ### v0.119.16 / 2025-09-10
 - [CHORE] Bump Collector to 0.135.0
 

@@ -1289,6 +1289,11 @@ cx.integrationID: "{{ .Values.presets.fleetManagement.integrationID }}"
 {{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "forward/compact" | uniq)  }}
 {{- end }}
 {{- end }}
+{{- if .Values.Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled}}
+{{- if and ($config.service.pipelines.traces) (not (has "forward/db_compact" $config.service.pipelines.traces.exporters)) }}
+{{- $_ := set $config.service.pipelines.traces "exporters" (append $config.service.pipelines.traces.exporters "forward/db_compact" | uniq)  }}
+{{- end }}
+{{- end }}
 {{- if .Values.Values.presets.spanMetrics.transformStatements}}
 {{- if and ($config.service.pipelines.traces) (not (has "transform/spanmetrics" $config.service.pipelines.traces.processors)) }}
 {{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "transform/spanmetrics" | uniq)  }}
@@ -1305,7 +1310,6 @@ cx.integrationID: "{{ .Values.presets.fleetManagement.integrationID }}"
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "spanmetrics/db" | uniq)  }}
 {{- end }}
 {{- end }}
-
 {{- $config | toYaml }}
 {{- end }}
 
@@ -1404,7 +1408,34 @@ connectors:
 {{- end }}
     namespace: compact
 {{- end }}
-{{- if or (.Values.presets.spanMetrics.spanNameReplacePattern) (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.transformStatements) (.Values.presets.spanMetrics.compactMetrics.enabled) }}
+{{- if .Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled }}
+  forward/db_compact: {}
+  spanmetrics/db_compact:
+    aggregation_cardinality_limit: {{ .Values.presets.spanMetrics.aggregationCardinalityLimit }}
+    dimensions:
+      - name: db.namespace
+      - name: db.system
+    exclude_dimensions:
+    - span.name
+    - span.kind
+{{- if .Values.presets.spanMetrics.histogramBuckets }}
+    histogram:
+      explicit:
+        buckets: {{ .Values.presets.spanMetrics.histogramBuckets | toYaml | nindent 12 }}
+{{- end }}
+{{- if .Values.presets.spanMetrics.metricsExpiration }}
+    metrics_expiration: "{{ .Values.presets.spanMetrics.metricsExpiration }}"
+{{- else }}
+    metrics_expiration: 0
+{{- end }}
+{{- if .Values.presets.spanMetrics.collectionInterval }}
+    metrics_flush_interval: "{{ .Values.presets.spanMetrics.collectionInterval }}"
+{{- else }}
+    metrics_flush_interval: 15s
+{{- end }}
+    namespace: db_compact
+{{- end }}
+{{- if or (.Values.presets.spanMetrics.spanNameReplacePattern) (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.transformStatements) (.Values.presets.spanMetrics.compactMetrics.enabled) (.Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled) }}
 processors:
 {{- end}}
 {{- if .Values.presets.spanMetrics.spanNameReplacePattern }}
@@ -1421,6 +1452,12 @@ processors:
     traces:
       span:
         - 'attributes["db.system"] == nil'
+{{- end }}
+{{- if .Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled }}
+  filter/db_compact_spanmetrics:
+    traces:
+      span:
+        - 'kind != SPAN_KIND_CLIENT or attributes["db.namespace"] == nil or attributes["db.system"] == nil'
 {{- end }}
 {{- if .Values.presets.spanMetrics.transformStatements }}
   transform/spanmetrics:
@@ -1449,6 +1486,16 @@ processors:
         statements:
           - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
 {{- end }}
+{{- if .Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled }}
+  transform/db_compact:
+    trace_statements:
+      - context: resource
+        statements:
+          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
+      - context: span
+        statements:
+          - keep_keys(attributes, ["db.namespace", "db.system"])
+{{- end }}
 {{- if and (.Values.presets.spanMetrics.compactMetrics.enabled) (.Values.presets.spanMetrics.compactMetrics.dropHistogram) }}
   transform/compact_histogram:
     metric_statements:
@@ -1463,7 +1510,21 @@ processors:
       metric:
         - 'name == "compact.duration"'
 {{- end }}
-{{- if or (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.compactMetrics.enabled) }}
+{{- if and (.Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled) (.Values.presets.spanMetrics.dbMetrics.compactMetrics.dropHistogram) }}
+  transform/db_compact_histogram:
+    metric_statements:
+      - context: metric
+        statements:
+          - extract_sum_metric(false, ".sum") where name == "db_compact.duration"
+          - extract_count_metric(false, ".count") where name == "db_compact.duration"
+          - set(unit, "") where name == "db_compact.duration.sum"
+          - set(unit, "") where name == "db_compact.duration.count"
+  filter/drop_db_compact_histogram:
+    metrics:
+      metric:
+        - 'name == "db_compact.duration"'
+{{- end }}
+{{- if or (.Values.presets.spanMetrics.dbMetrics.enabled) (.Values.presets.spanMetrics.compactMetrics.enabled) (.Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled) }}
 service:
   pipelines:
 {{- if .Values.presets.spanMetrics.dbMetrics.enabled }}
@@ -1496,6 +1557,29 @@ service:
       {{- if .Values.presets.spanMetrics.compactMetrics.dropHistogram }}
       - transform/compact_histogram
       - filter/drop_histogram
+      {{- end }}
+      - batch
+      exporters:
+      - coralogix
+{{- end }}
+{{- if .Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled }}
+    traces/db_compact:
+      exporters:
+      - spanmetrics/db_compact
+      processors:
+      - filter/db_compact_spanmetrics
+      - transform/db_compact
+      - batch
+      receivers:
+      - forward/db_compact
+    metrics/db_compact:
+      receivers:
+      - spanmetrics/db_compact
+      processors:
+      - memory_limiter
+      {{- if .Values.presets.spanMetrics.dbMetrics.compactMetrics.dropHistogram }}
+      - transform/db_compact_histogram
+      - filter/drop_db_compact_histogram
       {{- end }}
       - batch
       exporters:

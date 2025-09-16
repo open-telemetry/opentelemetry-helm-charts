@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.119.16
+    helm.sh/chart: opentelemetry-collector-0.119.17
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.135.0"
@@ -17,6 +17,7 @@ data:
     connectors:
       forward/compact: {}
       forward/db: {}
+      forward/db_compact: {}
       forward/sampled: {}
       spanmetrics:
         aggregation_cardinality_limit: 100
@@ -79,6 +80,23 @@ data:
         metrics_expiration: 5m
         metrics_flush_interval: 30s
         namespace: db
+      spanmetrics/db_compact:
+        aggregation_cardinality_limit: 100
+        dimensions:
+        - name: db.namespace
+        - name: db.system
+        exclude_dimensions:
+        - span.name
+        - span.kind
+        histogram:
+          explicit:
+            buckets:
+            - 1ms
+            - 1s
+            - 10s
+        metrics_expiration: 5m
+        metrics_flush_interval: 30s
+        namespace: db_compact
     exporters:
       coralogix:
         application_name: otel
@@ -96,10 +114,19 @@ data:
         send_batch_max_size: 2048
         send_batch_size: 1024
         timeout: 1s
+      filter/db_compact_spanmetrics:
+        traces:
+          span:
+          - kind != SPAN_KIND_CLIENT or attributes["db.namespace"] == nil or attributes["db.system"]
+            == nil
       filter/db_spanmetrics:
         traces:
           span:
           - attributes["db.system"] == nil
+      filter/drop_db_compact_histogram:
+        metrics:
+          metric:
+          - name == "db_compact.duration"
       filter/drop_histogram:
         metrics:
           metric:
@@ -213,6 +240,22 @@ data:
             where attributes["db.collection.name"] == nil
           - set(attributes["db.collection_name"], attributes["aws_dynamodb.table_names"])
             where attributes["db.collection.name"] == nil
+      transform/db_compact:
+        trace_statements:
+        - context: resource
+          statements:
+          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
+        - context: span
+          statements:
+          - keep_keys(attributes, ["db.namespace", "db.system"])
+      transform/db_compact_histogram:
+        metric_statements:
+        - context: metric
+          statements:
+          - extract_sum_metric(false, ".sum") where name == "db_compact.duration"
+          - extract_count_metric(false, ".count") where name == "db_compact.duration"
+          - set(unit, "") where name == "db_compact.duration.sum"
+          - set(unit, "") where name == "db_compact.duration.count"
       transform/k8s_attributes:
         log_statements:
         - context: resource
@@ -708,12 +751,23 @@ data:
           - batch
           receivers:
           - spanmetrics/compact
+        metrics/db_compact:
+          exporters:
+          - coralogix
+          processors:
+          - memory_limiter
+          - transform/db_compact_histogram
+          - filter/drop_db_compact_histogram
+          - batch
+          receivers:
+          - spanmetrics/db_compact
         traces:
           exporters:
           - debug
           - spanmetrics
           - forward/db
           - forward/compact
+          - forward/db_compact
           - forward/sampled
           processors:
           - memory_limiter
@@ -747,6 +801,15 @@ data:
           - batch
           receivers:
           - forward/db
+        traces/db_compact:
+          exporters:
+          - spanmetrics/db_compact
+          processors:
+          - filter/db_compact_spanmetrics
+          - transform/db_compact
+          - batch
+          receivers:
+          - forward/db_compact
         traces/sampled:
           exporters:
           - coralogix
