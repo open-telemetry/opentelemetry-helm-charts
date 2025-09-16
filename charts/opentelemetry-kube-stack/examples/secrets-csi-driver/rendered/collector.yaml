@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.9.2
+    helm.sh/chart: opentelemetry-kube-stack-0.9.3
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -16,15 +16,6 @@ spec:
   config:
     exporters:
       debug: {}
-    extensions:
-      k8s_leader_elector/k8s_cluster:
-        auth_type: serviceAccount
-        lease_name: k8s.cluster.receiver.opentelemetry.io
-        lease_namespace: default
-      k8s_leader_elector/k8s_objects:
-        auth_type: serviceAccount
-        lease_name: k8s.objects.receiver.opentelemetry.io
-        lease_namespace: default
     processors:
       batch:
         send_batch_max_size: 1500
@@ -166,27 +157,6 @@ spec:
               system.memory.utilization:
                 enabled: true
           network: {}
-      k8s_cluster:
-        allocatable_types_to_report:
-        - cpu
-        - memory
-        - storage
-        auth_type: serviceAccount
-        collection_interval: 10s
-        k8s_leader_elector: k8s_leader_elector/k8s_cluster
-        node_conditions_to_report:
-        - Ready
-        - MemoryPressure
-        - DiskPressure
-        - NetworkUnavailable
-      k8sobjects:
-        k8s_leader_elector: k8s_leader_elector/k8s_objects
-        objects:
-        - exclude_watch_type:
-          - DELETED
-          group: events.k8s.io
-          mode: watch
-          name: events
       kubeletstats:
         auth_type: serviceAccount
         collection_interval: 15s
@@ -394,9 +364,6 @@ spec:
               ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
               insecure_skip_verify: true
     service:
-      extensions:
-      - k8s_leader_elector/k8s_objects
-      - k8s_leader_elector/k8s_cluster
       pipelines:
         logs:
           exporters:
@@ -408,7 +375,6 @@ spec:
           receivers:
           - otlp
           - filelog
-          - k8sobjects
         metrics:
           exporters:
           - debug
@@ -421,7 +387,6 @@ spec:
           - otlp
           - hostmetrics
           - kubeletstats
-          - k8s_cluster
         traces:
           exporters:
           - debug
