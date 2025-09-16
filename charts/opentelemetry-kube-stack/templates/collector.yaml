@@ -90,7 +90,7 @@ spec:
   {{- end }}
   {{- with $collector.affinity }}
   affinity:
-  {{- toYaml . | nindent 4}}
+  {{- tpl (toYaml .) $merged | nindent 4}}
   {{- end }}
   {{- with $collector.lifecycle }}
   lifecycle:
@@ -141,7 +141,7 @@ spec:
     mountPropagation: HostToContainer
   {{- end }}
   {{- with $collector.volumeMounts }}
-  {{- toYaml . | nindent 2 }}
+  {{- tpl (toYaml .) $merged | nindent 2 }}
   {{- end }}
   {{- end }}
   {{- with $collector.ports }}
@@ -211,7 +211,7 @@ spec:
       path: /
   {{- end }}
   {{- with $collector.volumes }}
-  {{- toYaml . | nindent 2 }}
+  {{- tpl (toYaml .) $merged | nindent 2 }}
   {{- end }}
   {{- end }}
   {{- with $collector.initContainers }}

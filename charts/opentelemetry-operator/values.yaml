@@ -50,7 +50,7 @@ manager:
     imagePullPolicy: IfNotPresent
   collectorImage:
     repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
-    tag: 0.131.1
+    tag: 0.134.1
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -73,11 +73,16 @@ manager:
     apacheHttpd:
       repository: ""
       tag: ""
-    # The Go instrumentation support in the operator is disabled by default.
-    # To enable it, use the operator.autoinstrumentation.go feature gate.
+    # To enable Go instrumentation, manager.autoInstrumentation.go.enabled must be set to true
     go:
       repository: ""
       tag: ""
+
+  # The Go instrumentation support in the operator is disabled by default.
+  autoInstrumentation:
+    go:
+      enabled: false
+
   # If ignoreMissingCollectorCRDs is set to true, the manager will not raise errors
   # if the collector CRDs are not present.
   ignoreMissingCollectorCRDs: false
@@ -115,7 +120,6 @@ manager:
   ## e.g ENV_VAR: env_value
   env:
     ENABLE_WEBHOOKS: "true"
-
 
   # Extra definitions of environment variables.
   extraEnvs: []
