@@ -16,7 +16,7 @@ spec:
   config:
     exporters:
       otlp:
-        endpoint: gateway-collector.{{ .namespace }}.svc:4317
+        endpoint: gateway-collector.default.svc:4317
         sending_queue:
           storage: file_storage/queues
         tls:
@@ -24,8 +24,7 @@ spec:
     extensions:
       file_storage/queues:
         create_directory: true
-        directory: /var/lib/otelcol/{{ include "opentelemetry-kube-stack.collectorFullname"
-          . }}/queues
+        directory: /var/lib/otelcol/agent/queues
       k8s_leader_elector/k8s_objects:
         auth_type: serviceAccount
         lease_name: k8s.objects.receiver.opentelemetry.io
@@ -250,14 +249,13 @@ spec:
     extensions:
       file_storage/queues:
         create_directory: true
-        directory: /var/lib/otelcol/{{ include "opentelemetry-kube-stack.collectorFullname"
-          . }}/queues
+        directory: /var/lib/otelcol/gateway/queues
     processors:
       resource/common:
         attributes:
         - action: insert
           key: k8s.cluster.name
-          value: '{{ .clusterName }}'
+          value: 'demo'
     receivers:
       otlp:
         protocols:
@@ -372,7 +370,7 @@ spec:
   config:
     exporters:
       otlp:
-        endpoint: gateway-collector.{{ .namespace }}.svc:4317
+        endpoint: gateway-collector.default.svc:4317
         sending_queue:
           storage: file_storage/queues
         tls:
@@ -380,8 +378,7 @@ spec:
     extensions:
       file_storage/queues:
         create_directory: true
-        directory: /var/lib/otelcol/{{ include "opentelemetry-kube-stack.collectorFullname"
-          . }}/queues
+        directory: /var/lib/otelcol/ingress/queues
       oidc:
         audience: 12345678-1234-5678-1234-567812345678
         issuer_url: https://login.microsoftonline.com/87654321-8765-4321-8765-432187654321/v2.0
