@@ -207,9 +207,11 @@ components:
   cart:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: CART_PORT
         value: "8080"
@@ -221,8 +223,6 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 160Mi
@@ -234,7 +234,7 @@ components:
   checkout:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
@@ -258,8 +258,8 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 20Mi
@@ -271,16 +271,16 @@ components:
   currency:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
       - name: CURRENCY_PORT
         value: "8080"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: VERSION
         value: "{{ .Chart.AppVersion }}"
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 20Mi
@@ -326,7 +326,7 @@ components:
   frontend:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
@@ -354,12 +354,12 @@ components:
         value: "8013"
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 250Mi
@@ -439,7 +439,7 @@ components:
   load-generator:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8089
     env:
@@ -465,8 +465,8 @@ components:
         value: flagd
       - name: FLAGD_OFREP_PORT
         value: "8016"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 1500Mi
@@ -474,7 +474,7 @@ components:
   payment:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
@@ -484,8 +484,8 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 120Mi
@@ -497,7 +497,7 @@ components:
   product-catalog:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
@@ -509,12 +509,12 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
     mountedConfigMaps:
       - name: product-catalog-products
         mountPath: /usr/src/app/products
         existingConfigMap: product-catalog-products
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 20Mi
@@ -543,7 +543,7 @@ components:
   recommendation:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
@@ -559,8 +559,8 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -568,7 +568,7 @@ components:
   shipping:
     enabled: true
     useDefault:
-      env: true
+      env: false
     service:
       port: 8080
     env:
@@ -576,8 +576,8 @@ components:
         value: "8080"
       - name: QUOTE_ADDR
         value: http://quote:8080
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
       limits:
         memory: 20Mi
@@ -691,106 +691,18 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-opentelemetry-collector:
+opentelemetry-operator:
+  # https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/
   enabled: true
-  image:
-    repository: "otel/opentelemetry-collector-contrib"
-  fullnameOverride: otel-collector
-  mode: deployment
-  presets:
-    kubernetesAttributes:
+  admissionWebhooks:
+    certManager:
+      enabled: false
+    autoGenerateCert:
       enabled: true
-  resources:
-    limits:
-      memory: 200Mi
-  service:
-    type: ClusterIP
-  ports:
-    metrics:
-      enabled: true
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    opentelemetry_community_demo: "true"
-  config:
-    receivers:
-      otlp:
-        protocols:
-          http:
-            # Since this collector needs to receive data from the web, enable cors for all origins
-            # `allowed_origins` can be refined for your deployment domain
-            cors:
-              allowed_origins:
-                - "http://*"
-                - "https://*"
-      httpcheck/frontend-proxy:
-        targets:
-          - endpoint: http://frontend-proxy:8080
-      redis:
-        endpoint: "valkey-cart:6379"
-        collection_interval: 10s
-
-    exporters:
-      ## Create an exporter to Jaeger using the standard `otlp` export format
-      otlp:
-        endpoint: jaeger-collector:4317
-        tls:
-          insecure: true
-      # Create an exporter to Prometheus (metrics)
-      otlphttp/prometheus:
-        endpoint: http://prometheus:9090/api/v1/otlp
-        tls:
-          insecure: true
-      opensearch:
-        logs_index: otel
-        http:
-          endpoint: http://opensearch:9200
-          tls:
-            insecure: true
-
-    processors:
-      # This processor is used to help limit high cardinality on next.js span names
-      # When this PR is merged (and released) we can remove this transform processor
-      # https://github.com/vercel/next.js/pull/64852
-      transform:
-        error_mode: ignore
-        trace_statements:
-          - context: span
-            statements:
-              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
-              - replace_pattern(name, "\\?.*", "")
-              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
-      resource:
-        attributes:
-        - key: service.instance.id
-          from_attribute: k8s.pod.uid
-          action: insert
-
-    connectors:
-      spanmetrics: {}
-
-    service:
-      pipelines:
-        traces:
-          processors: [memory_limiter, resource, transform, batch]
-          exporters: [otlp, debug, spanmetrics]
-        metrics:
-          receivers: [httpcheck/frontend-proxy, redis, otlp, spanmetrics]
-          processors: [memory_limiter, resource, batch]
-          exporters: [otlphttp/prometheus, debug]
-        logs:
-          processors: [memory_limiter, resource, batch]
-          exporters: [opensearch, debug]
-      telemetry:
-        metrics:
-          level: detailed
-          readers:
-            - periodic:
-                interval: 10000
-                timeout: 5000
-                exporter:
-                  otlp:
-                    protocol: grpc
-                    endpoint: otel-collector:4318
+  manager:
+    collectorImage:
+      repository: otel/opentelemetry-collector-contrib
+      tag: 0.134.1
 
 jaeger:
   enabled: true
