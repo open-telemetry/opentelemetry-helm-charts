@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "obi.fullname" . }}
+  namespace: {{ include "obi.namespace" .}}
+  labels:
+    {{- include "obi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: workload
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "obi.selectorLabels" . | nindent 6 }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | trim | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "obi.labels" . | nindent 8 }}
+        app.kubernetes.io/component: workload
+    spec:
+     {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "obi.serviceAccountName" . }}
+     {{- end }}
+      {{- if eq .Values.preset "application" }}
+      hostPID: true
+      {{- end }}
+      {{- if or (eq .Values.preset "network") .Values.config.data.network }}
+      hostNetwork: true
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      initContainers:
+        {{- if .Values.initContainers }}
+        {{- toYaml .Values.initContainers | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: ebpf-instrument
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}{{ include "obi.imageId" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+          {{- if .Values.privileged }}
+          {{- with .Values.securityContext }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- else }}
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+            capabilities:
+              add:
+                - BPF
+                - SYS_PTRACE
+                - NET_RAW
+                - CHECKPOINT_RESTORE
+                - DAC_READ_SEARCH
+                - PERFMON
+              {{- with .Values.extraCapabilities }}
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              drop:
+                - ALL
+          {{- end }}
+          ports:
+          {{- if or (.Values.service.targetPort) (.Values.config.data.prometheus_export) }}
+          - name: {{ .Values.service.portName }}
+            containerPort: {{ .Values.service.targetPort | default .Values.config.data.prometheus_export.port }}
+            protocol: TCP
+          {{- end }}
+          {{- if (and (or (.Values.service.internalMetrics.targetPort) ((and .Values.config.data.internal_metrics .Values.config.data.internal_metrics.prometheus))) (not (eq .Values.config.data.prometheus_export.port .Values.config.data.internal_metrics.prometheus.port))) }}
+          - name: {{ .Values.service.internalMetrics.portName }}
+            containerPort: {{ .Values.service.internalMetrics.targetPort | default .Values.config.data.internal_metrics.prometheus.port }}
+            protocol: TCP
+          {{- end }}
+          {{- if .Values.config.data.profile_port }}
+          - name: profile
+            containerPort: {{ .Values.config.data.profile_port }}
+            protocol: TCP
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: OTEL_EBPF_CONFIG_PATH
+              value: "/etc/ebpf-instrument/config/ebpf-instrument-config.yml"
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+          {{- if .Values.k8sCache.replicas }}
+            - name: OTEL_EBPF_KUBE_META_CACHE_ADDRESS
+              value: {{ .Values.k8sCache.service.name }}:{{ .Values.k8sCache.service.port }}
+          {{- end }}
+          {{- range $key, $value := .Values.envValueFrom }}
+            - name: {{ $key | quote }}
+              valueFrom:
+          {{- tpl (toYaml $value) $ | nindent 16 }}
+          {{- end }}
+          {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
+          {{- end }}
+          volumeMounts:
+            - mountPath: /etc/ebpf-instrument/config
+              name: ebpf-instrument-config
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: ebpf-instrument-config
+          configMap:
+            name: {{ default (include "obi.fullname" .) .Values.config.name }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

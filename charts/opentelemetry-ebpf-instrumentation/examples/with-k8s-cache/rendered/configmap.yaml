@@ -1,0 +1,38 @@
+---
+# Source: opentelemetry-ebpf-instrumentation/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-ebpf-instrumentation
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-instrumentation-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: obi
+    app.kubernetes.io/component: config
+data:
+  ebpf-instrument-config.yml: |
+    attributes:
+      kubernetes:
+        enable: true
+    discovery:
+      exclude_services:
+      - exe_path: .*ebpf-instrument.*|.*otelcol.*
+      services:
+      - k8s_namespace: .
+    filter:
+      network:
+        k8s_dst_owner_name:
+          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+        k8s_src_owner_name:
+          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+    otel_metrics_export:
+      endpoint: http://${HOST_IP}:4318
+    otel_traces_export:
+      endpoint: http://${HOST_IP}:4317
+    prometheus_export:
+      path: /metrics
+      port: 9090
