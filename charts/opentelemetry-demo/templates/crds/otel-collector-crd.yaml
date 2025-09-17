@@ -1,0 +1,112 @@
+https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/opentelemetrycollectors.md
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-demo-otelcol
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+spec:
+  mode: deployment
+  replicas: 1
+  serviceAccount: {{ include "otel-demo.name" . }}-collector
+  image: "{{ .Values.opentelemetryCollector.image.repository }}:{{ .Values.opentelemetryCollector.image.tag | default .Chart.AppVersion }}"
+  resources:
+    limits:
+      memory: {{ .Values.opentelemetryCollector.resources.limits.memory | default "200Mi" }}
+      cpu: {{ .Values.opentelemetryCollector.resources.limits.cpu | default "200m" }}
+    requests:
+      memory: {{ .Values.opentelemetryCollector.resources.requests.memory | default "100Mi" }}
+      cpu: {{ .Values.opentelemetryCollector.resources.requests.cpu | default "100m" }}
+  service:
+    type: {{ .Values.opentelemetryCollector.service.type | default "ClusterIP" }}
+    ports:
+      otlp-grpc: 4317
+      otlp-http: 4318
+      {{- if .Values.opentelemetryCollector.ports.metrics.enabled }}
+      metrics: 8888
+      {{- end }}
+  podAnnotations:
+    {{- with .Values.opentelemetryCollector.podAnnotations }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            # Since this collector needs to receive data from the web, enable cors for all origins
+            # `allowed_origins` can be refined for your deployment domain
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+      httpcheck/frontend-proxy:
+        targets:
+          - endpoint: http://frontend-proxy:8080
+      redis:
+        endpoint: "valkey-cart:6379"
+        collection_interval: 10s
+
+    exporters:
+      ## Create an exporter to Jaeger using the standard `otlp` export format
+      otlp:
+        endpoint: jaeger-collector:4317
+        tls:
+          insecure: true
+      # Create an exporter to Prometheus (metrics)
+      otlphttp/prometheus:
+        endpoint: http://prometheus:9090/api/v1/otlp
+        tls:
+          insecure: true
+      opensearch:
+        logs_index: otel
+        http:
+          endpoint: http://opensearch:9200
+          tls:
+            insecure: true
+
+    processors:
+      # This processor is used to help limit high cardinality on next.js span names
+      # When this PR is merged (and released) we can remove this transform processor
+      # https://github.com/vercel/next.js/pull/64852
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+              - replace_pattern(name, "\\?.*", "")
+              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+      resource:
+        attributes:
+        - key: service.instance.id
+          from_attribute: k8s.pod.uid
+          action: insert
+
+    connectors:
+      spanmetrics: {}
+
+    service:
+      pipelines:
+        traces:
+          processors: [memory_limiter, resource, transform, batch]
+          exporters: [otlp, debug, spanmetrics]
+        metrics:
+          receivers: [httpcheck/frontend-proxy, redis, otlp, spanmetrics]
+          processors: [memory_limiter, resource, batch]
+          exporters: [otlphttp/prometheus, debug]
+        logs:
+          processors: [memory_limiter, resource, batch]
+          exporters: [opensearch, debug]
+      telemetry:
+        metrics:
+          level: detailed
+          readers:
+            - periodic:
+                interval: 10000
+                timeout: 5000
+                exporter:
+                  otlp:
+                    protocol: grpc
+                    endpoint: otel-collector:4318

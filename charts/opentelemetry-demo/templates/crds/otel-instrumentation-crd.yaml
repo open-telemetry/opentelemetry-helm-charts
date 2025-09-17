@@ -1,0 +1,29 @@
+# https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/instrumentations.md
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: otel-demo-instrumentation
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+spec:
+  exporter:
+    endpoint: http://{{ include "otel-demo.name" . }}-otelcol:4317
+  sampler:
+    type: "parentbased_always_on"
+  resourceAttributes:
+    service.namespace: {{ .Release.Namespace }}
+    service.version: {{ .Chart.AppVersion }}
+    deployment.environment.name: demo
+  env:
+    - name: OTEL_COLLECTOR_HOST
+      value: "{{ include "otel-demo.name" . }}-otelcol"
+    - name: OTEL_COLLECTOR_PORT_GRPC
+      value: "4317"
+    - name: OTEL_COLLECTOR_PORT_HTTP
+      value: "4318"
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: grpc
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: cumulative
+
