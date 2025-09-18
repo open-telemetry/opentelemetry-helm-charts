@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.119.18 2025-09-18
+- [Fix] filter k8s node on k8sattributes/profiles processor
+
 ### v0.119.17 2025-09-16
 - [Feat] add spanmetrics.dbMetrics compact option.
 
