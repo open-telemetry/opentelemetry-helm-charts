@@ -47,6 +47,18 @@ spec:
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: foo
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
           
       volumes:
         - name: config-volume
