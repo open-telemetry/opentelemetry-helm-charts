@@ -61,6 +61,10 @@ spec:
           {{- end }}
           env:
             {{- include "otel-demo.pod.env" . | nindent 12 }}
+            {{- if .globalValues.ipv6_enabled }}
+            - name: LOCALHOST_IP
+              value: "[::]"
+            {{- end }}
           resources:
             {{- .resources | toYaml | nindent 12 }}
           {{- if or .defaultValues.securityContext .securityContext }}
