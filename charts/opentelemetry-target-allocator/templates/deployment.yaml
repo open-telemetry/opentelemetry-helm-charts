@@ -12,8 +12,16 @@ spec:
       {{- include "helper.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        {{- include "helper.configTemplateChecksumAnnotation" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podAnnotations }}
+          {{- toYaml .Values.targetAllocator.podAnnotations | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "helper.commonLabels" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podLabels }}
+        {{- toYaml .Values.targetAllocator.podLabels | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "helper.targetAllocatorServiceAccountName" . }}
       automountServiceAccountToken: false
