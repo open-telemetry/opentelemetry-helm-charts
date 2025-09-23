@@ -1,0 +1,477 @@
+---
+# Source: opentelemetry-kube-stack/templates/collector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: agent
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.10.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"        
+spec:
+  managementState: managed
+  mode: daemonset
+  config:
+    exporters:
+      otlp:
+        endpoint: gateway-collector.default.svc:4317
+        sending_queue:
+          storage: file_storage/queues
+        tls:
+          insecure: true
+    extensions:
+      file_storage/queues:
+        create_directory: true
+        directory: /var/lib/otelcol/agent/queues
+      k8s_leader_elector/k8s_objects:
+        auth_type: serviceAccount
+        lease_name: k8s.objects.receiver.opentelemetry.io
+        lease_namespace: default
+    processors:
+      k8sattributes:
+        extract:
+          labels:
+          - from: pod
+            key: app.kubernetes.io/name
+            tag_name: service.name
+          - from: pod
+            key: k8s-app
+            tag_name: service.name
+          - from: pod
+            key: app.kubernetes.io/instance
+            tag_name: k8s.app.instance
+          - from: pod
+            key: app.kubernetes.io/version
+            tag_name: service.version
+          - from: pod
+            key: app.kubernetes.io/component
+            tag_name: k8s.app.component
+          metadata:
+          - k8s.namespace.name
+          - k8s.pod.name
+          - k8s.pod.uid
+          - k8s.node.name
+          - k8s.pod.start_time
+          - k8s.deployment.name
+          - k8s.replicaset.name
+          - k8s.replicaset.uid
+          - k8s.daemonset.name
+          - k8s.daemonset.uid
+          - k8s.job.name
+          - k8s.job.uid
+          - k8s.container.name
+          - k8s.cronjob.name
+          - k8s.statefulset.name
+          - k8s.statefulset.uid
+          - container.image.tag
+          - container.image.name
+          - k8s.cluster.uid
+        filter:
+          node_from_env_var: OTEL_K8S_NODE_NAME
+        passthrough: false
+        pod_association:
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.uid
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.name
+          - from: resource_attribute
+            name: k8s.namespace.name
+          - from: resource_attribute
+            name: k8s.node.name
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.ip
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.name
+          - from: resource_attribute
+            name: k8s.namespace.name
+        - sources:
+          - from: connection
+    receivers:
+      filelog:
+        exclude: /var/log/pods/default_agent*_*/opentelemetry-kube-stack/*.log
+        include:
+        - /var/log/pods/*/*/*.log
+        include_file_name: false
+        include_file_path: true
+        operators:
+        - id: container-parser
+          max_log_size: 102400
+          type: container
+        retry_on_failure:
+          enabled: true
+        start_at: end
+      k8sobjects:
+        k8s_leader_elector: k8s_leader_elector/k8s_objects
+        objects:
+        - exclude_watch_type:
+          - DELETED
+          group: events.k8s.io
+          mode: watch
+          name: events
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:OTEL_K8S_POD_IP}:4317
+    service:
+      extensions:
+      - file_storage/queues
+      - k8s_leader_elector/k8s_objects
+      pipelines:
+        logs:
+          exporters:
+          - otlp
+          processors:
+          - k8sattributes
+          receivers:
+          - otlp
+          - filelog
+          - k8sobjects
+        metrics:
+          exporters:
+          - otlp
+          processors:
+          - k8sattributes
+          receivers:
+          - otlp
+        traces:
+          exporters:
+          - otlp
+          processors:
+          - k8sattributes
+          receivers:
+          - otlp
+  imagePullPolicy: IfNotPresent
+  upgradeStrategy: automatic
+  terminationGracePeriodSeconds: 30
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 250Mi
+  securityContext:
+    runAsGroup: 0
+    runAsUser: 0
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: opentelemetry-collector
+              app.kubernetes.io/instance: 'default.agent'
+          topologyKey: kubernetes.io/hostname
+        weight: 100
+  volumeMounts:
+  - name: varlogpods
+    mountPath: /var/log/pods
+    readOnly: true
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  - mountPath: /var/lib/otelcol/agent
+    name: varlibotelcol
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name=demo"
+  
+  tolerations:
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
+    - effect: PreferNoSchedule
+      operator: Exists
+  volumes:
+  - name: varlogpods
+    hostPath:
+      path: /var/log/pods
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  - hostPath:
+      path: /var/lib/otelcol/agent
+      type: DirectoryOrCreate
+    name: varlibotelcol
+---
+# Source: opentelemetry-kube-stack/templates/collector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: gateway
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.10.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"        
+spec:
+  managementState: managed
+  mode: deployment
+  config:
+    exporters:
+      otlp:
+        endpoint: ingest.example.com:4318
+        sending_queue:
+          storage: file_storage/queues
+        tls:
+          insecure: true
+    extensions:
+      file_storage/queues:
+        create_directory: true
+        directory: /var/lib/otelcol/gateway/queues
+    processors:
+      resource/common:
+        attributes:
+        - action: insert
+          key: k8s.cluster.name
+          value: 'demo'
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:OTEL_K8S_POD_IP}:4317
+    service:
+      extensions:
+      - file_storage/queues
+      pipelines:
+        logs:
+          exporters:
+          - otlp
+          processors:
+          - resource/common
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - otlp
+          processors:
+          - resource/common
+          receivers:
+          - otlp
+        traces:
+          exporters:
+          - otlp
+          processors:
+          - resource/common
+          receivers:
+          - otlp
+  replicas: 
+  imagePullPolicy: IfNotPresent
+  upgradeStrategy: automatic
+  terminationGracePeriodSeconds: 30
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  securityContext:
+    runAsGroup: 0
+    runAsUser: 0
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: opentelemetry-collector
+              app.kubernetes.io/instance: 'default.gateway'
+          topologyKey: kubernetes.io/hostname
+        weight: 100
+  volumeMounts:
+  - mountPath: /var/lib/otelcol/gateway
+    name: varlibotelcol
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name=demo"
+  
+  tolerations:
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
+    - effect: PreferNoSchedule
+      operator: Exists
+  volumes:
+  - hostPath:
+      path: /var/lib/otelcol/gateway
+      type: DirectoryOrCreate
+    name: varlibotelcol
+---
+# Source: opentelemetry-kube-stack/templates/collector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: ingress
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.10.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"        
+spec:
+  managementState: managed
+  mode: deployment
+  config:
+    exporters:
+      otlp:
+        endpoint: gateway-collector.default.svc:4317
+        sending_queue:
+          storage: file_storage/queues
+        tls:
+          insecure: true
+    extensions:
+      file_storage/queues:
+        create_directory: true
+        directory: /var/lib/otelcol/ingress/queues
+      oidc:
+        audience: 12345678-1234-5678-1234-567812345678
+        issuer_url: https://login.microsoftonline.com/87654321-8765-4321-8765-432187654321/v2.0
+    receivers:
+      otlp:
+        protocols:
+          http:
+            auth:
+              authenticator: oidc
+            endpoint: ${env:OTEL_K8S_POD_IP}:4318
+    service:
+      extensions:
+      - file_storage/queues
+      - oidc
+      pipelines:
+        logs:
+          exporters:
+          - otlp
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - otlp
+          receivers:
+          - otlp
+        traces:
+          exporters:
+          - otlp
+          receivers:
+          - otlp
+  replicas: 
+  imagePullPolicy: IfNotPresent
+  upgradeStrategy: automatic
+  terminationGracePeriodSeconds: 30
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 250Mi
+  securityContext:
+    runAsGroup: 0
+    runAsUser: 0
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: opentelemetry-collector
+              app.kubernetes.io/instance: 'default.ingress'
+          topologyKey: kubernetes.io/hostname
+        weight: 100
+  volumeMounts:
+  - mountPath: /var/lib/otelcol/ingress
+    name: varlibotelcol
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name=demo"
+  
+  tolerations:
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
+    - effect: PreferNoSchedule
+      operator: Exists
+  volumes:
+  - hostPath:
+      path: /var/lib/otelcol/ingress
+      type: DirectoryOrCreate
+    name: varlibotelcol
