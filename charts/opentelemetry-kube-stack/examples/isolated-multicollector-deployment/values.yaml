@@ -1,0 +1,151 @@
+clusterName: demo
+collectors:
+  daemon:
+    enabled: false
+  agent:
+    enabled: true
+    config:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: ${env:OTEL_K8S_POD_IP}:4317
+    fullnameOverride: agent
+    mode: daemonset
+    presets:
+      logsCollection:
+        enabled: true
+        includeCollectorLogs: false
+      kubernetesAttributes:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
+  gateway:
+    enabled: true
+    clusterRoleBinding:
+      enabled: false
+    config:
+      processors:
+        resource/common:
+          attributes:
+            - key: k8s.cluster.name
+              value: "{{ .clusterName }}"
+              action: insert
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: ${env:OTEL_K8S_POD_IP}:4317
+      exporters:
+        otlp:
+          endpoint: ingest.example.com:4318
+      service:
+        pipelines:
+          logs:
+            processors:
+              - resource/common
+          metrics:
+            processors:
+              - resource/common
+          traces:
+            processors:
+              - resource/common
+    fullnameOverride: gateway
+    resources:
+      limits:
+        cpu: "1"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  ingress:
+    enabled: true
+    clusterRoleBinding:
+      enabled: false
+    config:
+      extensions:
+        oidc:
+          audience: 12345678-1234-5678-1234-567812345678
+          issuer_url: >-
+            https://login.microsoftonline.com/87654321-8765-4321-8765-432187654321/v2.0
+      receivers:
+        otlp:
+          protocols:
+            http:
+              auth:
+                authenticator: oidc
+              endpoint: ${env:OTEL_K8S_POD_IP}:4318
+      service:
+        extensions:
+          - file_storage/queues
+          - oidc
+    fullnameOverride: ingress
+defaultCRConfig:
+  enabled: true
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: opentelemetry-collector
+                app.kubernetes.io/instance: "{{ .namespace }}.{{ include \"opentelemetry-kube-stack.collectorFullname\" . }}"
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  config:
+    exporters:
+      otlp:
+        endpoint: gateway-collector.{{ .namespace }}.svc:4317
+        sending_queue:
+          storage: file_storage/queues
+        tls:
+          insecure: true
+    extensions:
+      file_storage/queues:
+        create_directory: true
+        directory: /var/lib/otelcol/{{ include "opentelemetry-kube-stack.collectorFullname" . }}/queues
+    service:
+      extensions:
+        - file_storage/queues
+      pipelines:
+        logs:
+          exporters:
+            - otlp
+          receivers:
+            - otlp
+        metrics:
+          exporters:
+            - otlp
+          receivers:
+            - otlp
+        traces:
+          exporters:
+            - otlp
+          receivers:
+            - otlp
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 250Mi
+  scrape_configs_file: ""
+  securityContext:
+    runAsGroup: 0
+    runAsUser: 0
+  tolerations:
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
+    - effect: PreferNoSchedule
+      operator: Exists
+  volumeMounts:
+    - mountPath: /var/lib/otelcol/{{ include "opentelemetry-kube-stack.collectorFullname" . }}
+      name: varlibotelcol
+  volumes:
+    - hostPath:
+        path: /var/lib/otelcol/{{ include "opentelemetry-kube-stack.collectorFullname" . }}
+        type: DirectoryOrCreate
+      name: varlibotelcol

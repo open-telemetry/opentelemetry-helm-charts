@@ -41,7 +41,7 @@ the config is written as YAML.
 {{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector "namespace" .namespace) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- toYaml $collector.config | nindent 4 }}
+{{- tpl (toYaml $collector.config) . | nindent 4 }}
 {{- end }}
 
 {{/*
