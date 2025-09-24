@@ -3,6 +3,7 @@
 These instructions apply to all development via the Codex web UI.
 
 - Limit modifications to the `charts/opentelemetry-collector` folder when updating the chart.
+- When updating the collector image, bump the chart's minor version (for example, `0.119.x` -> `0.120.0`).
 - Release hygiene (do this once per change set, not per commit):
   1. When you are ready to finalize a change set (typically at PR end), bump the chart version in `Chart.yaml` exactly once.
   2. Update the `CHANGELOG` with a single consolidated entry for that version (do not add one entry per commit).

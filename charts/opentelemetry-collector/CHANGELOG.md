@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.120.0 / 2025-09-24
+- [CHORE] Bump Collector to 0.136.0
+
 ### v0.119.18 2025-09-18
 - [Fix] filter k8s node on k8sattributes/profiles processor
 
