@@ -49,13 +49,13 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
   kubernetesAttributes:
     enabled: false
-    # When enabled the processor will extra all labels for an associated pod and add them as resource attributes.
+    # When enabled the processor will extract all labels for an associated pod and add them as resource attributes.
     # The label's exact name will be the key.
     extractAllPodLabels: false
-    # When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
+    # When enabled the processor will extract all annotations for an associated pod and add them as resource attributes.
     # The annotation's exact name will be the key.
     extractAllPodAnnotations: false
-  # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
+  # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet.
   # Adds the kubeletstats receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
   # Best used with mode = daemonset.
@@ -90,7 +90,7 @@ configMap:
 
 
 # When enabled, the chart will configure the collector to emit its traces, metrics, and logs over http via the OTLP using the Otel Go SDK.
-# If internalTelemetryViaOTLP.metrics.enabled Ithe chart will remove the default prometheus receiver (which was configured to scrape the Collector's metrics)
+# If internalTelemetryViaOTLP.metrics.enabled the chart will remove the default prometheus receiver (which was configured to scrape the Collector's metrics)
 # and the service.telemetry.metrics.address value.
 # Learn more about the Collector telemetry at https://opentelemetry.io/docs/collector/internal-telemetry/.
 #
@@ -129,7 +129,7 @@ config:
     debug: {}
   extensions:
     # The health_check extension is mandatory for this chart.
-    # Without the health_check extension the collector will fail the readiness and liveliness probes.
+    # Without the health_check extension the collector will fail the readiness and liveness probes.
     # The health_check extension can be modified, but should never be removed.
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
@@ -212,7 +212,7 @@ config:
 
 # Helm currently has an issue (https://github.com/helm/helm/pull/12879) when using null to remove
 # default configuration from a subchart. The result is that you cannot remove default configuration
-# from `config`, such as a specific recevier or a specific pipeline, when the chart is used as a
+# from `config`, such as a specific receiver or a specific pipeline, when the chart is used as a
 # subchart.
 #
 # Until the helm bug is fixed, this field is provided as an alternative when using this chart as a subchart.
