@@ -14,11 +14,33 @@ spec:
     metadata:
       annotations:
         {{- include "helper.configTemplateChecksumAnnotation" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podAnnotations }}
+          {{- toYaml .Values.targetAllocator.podAnnotations | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "helper.commonLabels" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podLabels }}
+        {{- toYaml .Values.targetAllocator.podLabels | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "helper.targetAllocatorServiceAccountName" . }}
       automountServiceAccountToken: false
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: targetallocator
           image: {{ template "helper.dockerImageName" . }}
