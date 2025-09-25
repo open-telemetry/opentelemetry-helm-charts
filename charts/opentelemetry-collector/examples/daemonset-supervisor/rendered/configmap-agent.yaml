@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.120.0
+    helm.sh/chart: opentelemetry-collector-0.120.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.136.0"
@@ -15,56 +15,7 @@ metadata:
 data:
   relay: |
     connectors:
-      forward/db: {}
       forward/sampled: {}
-      spanmetrics:
-        aggregation_cardinality_limit: 100000
-        dimensions:
-        - name: http.method
-        - name: cgx.transaction
-        - name: cgx.transaction.root
-        - name: status_code
-        - name: db.namespace
-        - name: db.operation.name
-        - name: db.collection.name
-        - name: db.system
-        - name: http.response.status_code
-        - name: rpc.grpc.status_code
-        - name: service.version
-        histogram:
-          explicit:
-            buckets:
-            - 1ms
-            - 1s
-            - 10s
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: ""
-      spanmetrics/db:
-        aggregation_cardinality_limit: 100000
-        dimensions:
-        - name: db.namespace
-        - name: db.operation.name
-        - name: db.collection.name
-        - name: db.system
-        - name: service.version
-        - name: cgx.transaction
-        - name: cgx.transaction.root
-        histogram:
-          explicit:
-            buckets:
-            - 100us
-            - 1ms
-            - 2ms
-            - 2.5ms
-            - 4ms
-            - 6ms
-            - 10ms
-            - 100ms
-            - 250ms
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: db
     exporters:
       coralogix:
         application_name: otel
@@ -105,10 +56,6 @@ data:
         send_batch_max_size: 2048
         send_batch_size: 1024
         timeout: 1s
-      filter/db_spanmetrics:
-        traces:
-          span:
-          - attributes["db.system"] == nil
       filter/k8s_extra_metrics:
         metrics:
           metric:
@@ -174,37 +121,6 @@ data:
           node_from_env_var: K8S_NODE_NAME
         override: true
         timeout: 2s
-      transform/db:
-        error_mode: silent
-        trace_statements:
-        - context: span
-          statements:
-          - set(attributes["db.namespace"], attributes["db.name"]) where attributes["db.namespace"]
-            == nil
-          - set(attributes["db.namespace"], attributes["server.address"]) where attributes["db.namespace"]
-            == nil
-          - set(attributes["db.namespace"], attributes["network.peer.name"]) where attributes["db.namespace"]
-            == nil
-          - set(attributes["db.namespace"], attributes["net.peer.name"]) where attributes["db.namespace"]
-            == nil
-          - set(attributes["db.namespace"], attributes["db.system"]) where attributes["db.namespace"]
-            == nil
-          - set(attributes["db.operation.name"], attributes["db.operation"]) where attributes["db.operation.name"]
-            == nil
-          - set(attributes["db.collection_name"], attributes["db.sql.table"]) where attributes["db.collection_name"]
-            == nil
-          - set(attributes["db.collection_name"], attributes["db.cassandra.table"]) where
-            attributes["db.collection.name"] == nil
-          - set(attributes["db.collection_name"], attributes["db.mongodb.collection"])
-            where attributes["db.collection.name"] == nil
-          - set(attributes["db.collection_name"], attributes["db.redis.database_index"])
-            where attributes["db.collection.name"] == nil
-          - set(attributes["db.collection_name"], attributes["db.elasticsearch.path_parts.index"])
-            where attributes["db.collection.name"] == nil
-          - set(attributes["db.collection_name"], attributes["db.cosmosdb.container"])
-            where attributes["db.collection.name"] == nil
-          - set(attributes["db.collection_name"], attributes["aws_dynamodb.table_names"])
-            where attributes["db.collection.name"] == nil
       transform/k8s_attributes:
         log_statements:
         - context: resource
@@ -441,18 +357,6 @@ data:
           - delete_key(attributes, "process.runtime.description")
           - delete_key(attributes, "process.runtime.name")
           - delete_key(attributes, "process.runtime.version")
-      transform/span_name:
-        trace_statements:
-        - context: span
-          statements:
-          - replace_pattern(span.name, "^(.*)$", "$$1")
-      transform/spanmetrics:
-        error_mode: silent
-        trace_statements:
-        - context: span
-          statements:
-          - set(attributes["http.response.status_code"], attributes["http.status_code"])
-            where attributes["http.response.status_code"] == nil
       transform/test:
         error_mode: silent
         trace_statements:
@@ -703,38 +607,23 @@ data:
           - batch
           receivers:
           - prometheus/k8s_extra_metrics
-          - spanmetrics
-          - spanmetrics/db
           - prometheus
           - otlp
         traces:
           exporters:
           - debug
-          - spanmetrics
-          - forward/db
           - forward/sampled
           processors:
           - memory_limiter
-          - transform/span_name
           - resourcedetection/region
           - resourcedetection/env
           - k8sattributes
           - transform/k8s_attributes
-          - transform/spanmetrics
           - transform/reduce
           - transform/test
           - batch
           receivers:
           - otlp
-        traces/db:
-          exporters:
-          - spanmetrics/db
-          processors:
-          - filter/db_spanmetrics
-          - transform/db
-          - batch
-          receivers:
-          - forward/db
         traces/sampled:
           exporters:
           - coralogix

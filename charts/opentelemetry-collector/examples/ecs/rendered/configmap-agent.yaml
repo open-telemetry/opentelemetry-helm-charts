@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.120.0
+    helm.sh/chart: opentelemetry-collector-0.120.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.136.0"
@@ -14,62 +14,6 @@ metadata:
     
 data:
   relay: |
-    connectors:
-      forward/db: {}
-      spanmetrics:
-        aggregation_cardinality_limit: 100000
-        dimensions:
-        - name: http.method
-        - name: cgx.transaction
-        - name: cgx.transaction.root
-        - name: status_code
-        - name: db.namespace
-        - name: db.operation.name
-        - name: db.collection.name
-        - name: db.system
-        - name: http.response.status_code
-        - name: rpc.grpc.status_code
-        - name: service.version
-        histogram:
-          explicit:
-            buckets:
-            - 1ms
-            - 4ms
-            - 10ms
-            - 20ms
-            - 50ms
-            - 100ms
-            - 200ms
-            - 500ms
-            - 1s
-            - 2s
-            - 5s
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: ""
-      spanmetrics/db:
-        aggregation_cardinality_limit: 100000
-        dimensions:
-        - name: db.namespace
-        - name: db.operation.name
-        - name: db.collection.name
-        - name: db.system
-        - name: service.version
-        histogram:
-          explicit:
-            buckets:
-            - 100us
-            - 1ms
-            - 2ms
-            - 2.5ms
-            - 4ms
-            - 6ms
-            - 10ms
-            - 100ms
-            - 250ms
-        metrics_expiration: 5m
-        metrics_flush_interval: 30s
-        namespace: db
     exporters:
       coralogix:
         application_name: ""
@@ -116,7 +60,7 @@ data:
           non_identifying_attributes:
             cx.agent.type: agent
             cx.cluster.name: 'ecs'
-            helm.chart.opentelemetry-collector.version: 0.120.0
+            helm.chart.opentelemetry-collector.version: 0.120.1
         server:
           http:
             endpoint: https://ingress./opamp/v1
@@ -136,10 +80,6 @@ data:
         container_id:
           sources:
           - log.file.path
-      filter/db_spanmetrics:
-        traces:
-          span:
-          - attributes["db.system"] == nil
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
@@ -442,16 +382,12 @@ data:
           - batch
           receivers:
           - hostmetrics
-          - spanmetrics
-          - spanmetrics/db
           - prometheus
           - awsecscontainermetricsd
           - otlp
           - statsd
         traces:
           exporters:
-          - spanmetrics
-          - forward/db
           - coralogix
           processors:
           - memory_limiter
@@ -464,14 +400,6 @@ data:
           - jaeger
           - zipkin
           - otlp
-        traces/db:
-          exporters:
-          - spanmetrics/db
-          processors:
-          - filter/db_spanmetrics
-          - batch
-          receivers:
-          - forward/db
       telemetry:
         logs:
           encoding: json

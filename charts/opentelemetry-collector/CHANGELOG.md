@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.120.1 / 2025-09-25
+- [Feat] Enable spanMetrics compact metrics preset by default.
+- [Chore] Remove spanMetrics presets from bundled examples due to lack of automated testing support.
+
 ### v0.120.0 / 2025-09-24
 - [CHORE] Bump Collector to 0.136.0
 
