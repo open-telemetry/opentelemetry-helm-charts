@@ -192,6 +192,13 @@ manager:
   # Enable vertical pod autoscaler support for the manager
   verticalPodAutoscaler:
     enabled: false
+
+    # Recommender responsible for generating recommendation for the object.
+    # List should be empty (then the default recommender will generate the recommendation)
+    # or contain exactly one recommender.
+    # recommenders:
+    # - name: custom-recommender-performance
+
     # List of resources that the vertical pod autoscaler can control. Defaults to cpu, memory and ephemeral-storage.
     controlledResources: []
 
@@ -359,6 +366,11 @@ nodeSelector:
   kubernetes.io/os: linux
 topologySpreadConstraints: []
 hostNetwork: false
+
+# Whether to use user namespace or not
+# Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+# ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+# hostUsers: false
 
 # Allows for pod scheduler prioritisation
 priorityClassName: ""

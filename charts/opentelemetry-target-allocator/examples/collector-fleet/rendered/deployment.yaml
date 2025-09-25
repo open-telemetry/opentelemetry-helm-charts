@@ -6,7 +6,7 @@ metadata:
   namespace: default
   name: example-opentelemetry-target-allocator-ta
   labels:
-    helm.sh/chart: opentelemetry-target-allocator-0.126.5
+    helm.sh/chart: opentelemetry-target-allocator-0.126.9
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-target-allocator
     app.kubernetes.io/version: "0.126.0"
@@ -21,9 +21,9 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 3922e001e8151954654b177014bd20fcdefec338e1db0857c987b39cfc37cc95
+        checksum/config: 45d4cea2a0e9943239c6c5bd73d0a5c10a4524553b41b7e000b3f4f2c7168a98
       labels:
-        helm.sh/chart: opentelemetry-target-allocator-0.126.5
+        helm.sh/chart: opentelemetry-target-allocator-0.126.9
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: opentelemetry-target-allocator
         app.kubernetes.io/version: "0.126.0"
@@ -47,6 +47,18 @@ spec:
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: default
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
           
       volumes:
         - name: config-volume
