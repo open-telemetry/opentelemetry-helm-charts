@@ -663,7 +663,7 @@ components:
             value: localhost
         resources:
           limits:
-            memory: 200Mi
+            memory: 250Mi
         volumeMounts:
           - name: config-rw
             mountPath: /app/data
@@ -698,6 +698,12 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
+      - name: KAFKA_LISTENERS
+        value: PLAINTEXT://:9092,CONTROLLER://:9093
+      - name: KAFKA_CONTROLLER_LISTENER_NAMES
+        value: CONTROLLER
+      - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+        value: 1@kafka:9093
     resources:
       limits:
         memory: 600Mi
