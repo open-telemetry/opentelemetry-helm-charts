@@ -251,7 +251,7 @@ components:
       - name: PRODUCT_CATALOG_ADDR
         value: product-catalog:8080
       - name: SHIPPING_ADDR
-        value: shipping:8080
+        value: http://shipping:8080
       - name: KAFKA_ADDR
         value: kafka:9092
       - name: FLAGD_HOST
@@ -281,6 +281,8 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: VERSION
         value: "{{ .Chart.AppVersion }}"
+      - name: IPV6_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 20Mi
@@ -347,7 +349,7 @@ components:
       - name: RECOMMENDATION_ADDR
         value: recommendation:8080
       - name: SHIPPING_ADDR
-        value: shipping:8080
+        value: http://shipping:8080
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -377,6 +379,8 @@ components:
     env:
       - name: ENVOY_PORT
         value: "8080"
+      - name: ENVOY_ADDR
+        value: "0.0.0.0"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -486,6 +490,8 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: IPV6_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 120Mi
@@ -532,6 +538,8 @@ components:
         value: "true"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: IPV6_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 40Mi
@@ -578,6 +586,8 @@ components:
         value: http://quote:8080
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: IPV6_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 20Mi
