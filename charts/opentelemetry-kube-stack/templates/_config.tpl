@@ -17,7 +17,7 @@ the config is written as YAML.
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- if .collector.presets.logsCollection.enabled }}
-{{- $_ := set $collector "exclude" (printf "/var/log/pods/%s_%s*_*/%s/*.log" .namespace (include "opentelemetry-kube-stack.collectorFullname" .) (.Chart.Name | lower)) }}
+{{- $_ := set $collector "exclude" (list (printf "/var/log/pods/%s_%s*_*/otc-container/*.log" .namespace (include "opentelemetry-kube-stack.collectorFullname" .))) }}
 {{- $config = (include "opentelemetry-kube-stack.collector.applyLogsCollectionConfig" (dict "collector" $collector) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
@@ -41,7 +41,7 @@ the config is written as YAML.
 {{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector "namespace" .namespace) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- toYaml $collector.config | nindent 4 }}
+{{- tpl (toYaml $collector.config) . | nindent 4 }}
 {{- end }}
 
 {{/*
@@ -317,7 +317,8 @@ receivers:
     exclude: []
     {{- else }}
     # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
-    exclude: {{ .exclude }}
+    exclude:
+    {{- toYaml .exclude | nindent 4 }}
     {{- end }}
     start_at: end
     retry_on_failure:

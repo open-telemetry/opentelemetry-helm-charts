@@ -17,8 +17,8 @@ cleanupJob:
   enabled: true
   # Image details for the kubectl
   image:
-    repository: bitnami/kubectl
-    tag: latest
+    repository: rancher/kubectl
+    tag: v1.34.1
     # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
     digest: ""
   # To use the existingServiceAccount
@@ -315,8 +315,16 @@ defaultCRConfig:
   #   metrics:
   #     enableMetrics: true
 
-  # Update strategy for the collector
+  # NOTE: the updateStrategy value is deprecated. Use daemonSetUpdateStrategy instead.
   updateStrategy: {}
+  #   type: RollingUpdate
+
+  # Update strategy for the DaemonSet collector
+  daemonSetUpdateStrategy: {}
+  #   type: RollingUpdate
+
+  # Update strategy for the Deployment collector
+  deploymentUpdateStrategy: {}
   #   type: RollingUpdate
 
   # Volume mounts for the collector

@@ -72,6 +72,9 @@ spec:
             {{- .livenessProbe | toYaml | nindent 12 }}
           {{- end }}
           volumeMounts:
+            {{- if .additionalVolumeMounts }}
+            {{- tpl (toYaml .additionalVolumeMounts) . | nindent 12 }}
+            {{- end }}
           {{- range .mountedConfigMaps }}
             - name: {{ .name | lower }}
               mountPath: {{ .mountPath }}

@@ -6,17 +6,41 @@ metadata:
   labels:
     {{- include "helper.commonLabels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "helper.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        {{- include "helper.configTemplateChecksumAnnotation" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podAnnotations }}
+          {{- toYaml .Values.targetAllocator.podAnnotations | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "helper.commonLabels" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podLabels }}
+        {{- toYaml .Values.targetAllocator.podLabels | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "helper.targetAllocatorServiceAccountName" . }}
       automountServiceAccountToken: false
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: targetallocator
           image: {{ template "helper.dockerImageName" . }}
@@ -32,6 +56,18 @@ spec:
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: {{ .Values.targetAllocator.config.collector_namespace | default .Release.Namespace }}
+          {{- with .Values.targetAllocator.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.targetAllocator.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{ if .Values.targetAllocator.resources }}
+          resources:
+            {{- toYaml .Values.targetAllocator.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config-volume
           configMap:
