@@ -66,7 +66,7 @@ spec:
         description: '{{` The {{ $labels.exporter }} is dropping logs at a rate of {{ humanize $value }} per second `}}'
         runbook_url: 'https://opentelemetry.io/docs/collector/internal-telemetry/#receive-failures'
     - alert: ExporterQueueSize
-      expr: otelcol_exporter_queue_size > 5000
+      expr: otelcol_exporter_queue_size > otelcol_exporter_queue_capacity * 0.8
       for: 1m
       labels:
         severity: warning
@@ -76,7 +76,7 @@ spec:
 {{- $signals := list "spans" "metric_points" "log_records" }}
 {{- range $signal := $signals }}
     - alert: SendQueueFailed{{ $signal }}
-      expr: rate(otelcol_exporter_enqueue_failed_{{ $signal }}[5m]) > 0
+      expr: rate(otelcol_exporter_enqueue_failed_{{ $signal }}_total[5m]) > 0
       for: 1m
       labels:
         severity: warning
