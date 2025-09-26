@@ -77,6 +77,18 @@ presets:
   clusterMetrics:
     enabled: false
 
+  # Configures the collector to collect logs and metrics from pods with specific annotations.
+  # This preset can not be used together with the `logsCollection` preset.
+  # Adds the receiver_creator receiver to the logs and metrics pipelines
+  # and adds the necessary rules to ClusterRole.
+  # Best used with mode = daemonset.
+  # See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/receivercreator/README.md#generate-receiver-configurations-from-provided-hints for details on the receiver.
+  annotationDiscovery:
+    logs:
+      enabled: false
+    metrics:
+      enabled: false
+
 configMap:
   # Specifies whether a configMap should be created (true by default)
   create: true
@@ -87,7 +99,6 @@ configMap:
   # Specifies the relative path to custom ConfigMap template file. This option SHOULD be used when bundling a custom
   # ConfigMap template, as it enables pod restart via a template checksum annotation.
   # existingPath: ""
-
 
 # When enabled, the chart will configure the collector to emit its traces, metrics, and logs over http via the OTLP using the Otel Go SDK.
 # If internalTelemetryViaOTLP.metrics.enabled the chart will remove the default prometheus receiver (which was configured to scrape the Collector's metrics)
