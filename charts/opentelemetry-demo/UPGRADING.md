@@ -5,6 +5,10 @@
 > another. If you need to upgrade the chart, you must first delete the existing
 > release and then install the new version.
 
+## To 0.38
+
+A new postgresql container was introduced to the demo.
+
 ## To 0.36
 
 The Demo 2.0 release removed the `service` suffix from many components names,
