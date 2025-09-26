@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.120.1
+    helm.sh/chart: opentelemetry-collector-0.120.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.136.0"
@@ -14,6 +14,38 @@ metadata:
     
 data:
   relay: |
+    connectors:
+      spanmetrics:
+        aggregation_cardinality_limit: 100000
+        dimensions:
+        - name: http.method
+        - name: cgx.transaction
+        - name: cgx.transaction.root
+        - name: status_code
+        - name: db.namespace
+        - name: db.operation.name
+        - name: db.collection.name
+        - name: db.system
+        - name: http.response.status_code
+        - name: rpc.grpc.status_code
+        - name: service.version
+        histogram:
+          explicit:
+            buckets:
+            - 1ms
+            - 4ms
+            - 10ms
+            - 20ms
+            - 50ms
+            - 100ms
+            - 200ms
+            - 500ms
+            - 1s
+            - 2s
+            - 5s
+        metrics_expiration: 0
+        metrics_flush_interval: 15s
+        namespace: ""
     exporters:
       debug: {}
       otlp:
@@ -89,6 +121,13 @@ data:
             == "opentelemetry-collector"
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
+      transform/spanmetrics:
+        error_mode: silent
+        trace_statements:
+        - context: span
+          statements:
+          - set(attributes["http.response.status_code"], attributes["http.status_code"])
+            where attributes["http.response.status_code"] == nil
     receivers:
       kubeletstats:
         auth_type: serviceAccount
@@ -134,13 +173,16 @@ data:
           - transform/kubeletstatscpu
           receivers:
           - kubeletstats
+          - spanmetrics
           - otlp
         traces:
           exporters:
           - otlp
           - debug
+          - spanmetrics
           processors:
           - memory_limiter
+          - transform/spanmetrics
           receivers:
           - otlp
       telemetry:

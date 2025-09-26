@@ -14,31 +14,85 @@ metadata:
     
 data:
   relay: |
+    connectors:
+      routing:
+        default_pipelines:
+        - traces/default
+        error_mode: ignore
+        table:
+        - pipelines:
+          - traces/0
+          statement: route() where attributes["service.name"] == "one"
+        - pipelines:
+          - traces/1
+          statement: route() where attributes["service.name"] == "one"
+      spanmetrics/0:
+        aggregation_cardinality_limit: 100
+        dimensions:
+        - name: http.method
+        - name: cgx.transaction
+        - name: cgx.transaction.root
+        histogram:
+          explicit:
+            buckets:
+            - 1s
+            - 2s
+        metrics_expiration: 5m
+        metrics_flush_interval: 30s
+        namespace: ""
+      spanmetrics/1:
+        aggregation_cardinality_limit: 100
+        dimensions:
+        - name: http.method
+        - name: cgx.transaction
+        - name: cgx.transaction.root
+        histogram:
+          explicit:
+            buckets:
+            - 5s
+            - 10s
+        metrics_expiration: 5m
+        metrics_flush_interval: 30s
+        namespace: ""
+      spanmetrics/default:
+        aggregation_cardinality_limit: 100
+        dimensions:
+        - name: http.method
+        - name: cgx.transaction
+        - name: cgx.transaction.root
+        - name: http.response.status_code
+        - name: rpc.grpc.status_code
+        histogram:
+          explicit:
+            buckets:
+            - 1ms
+            - 4ms
+            - 10ms
+            - 20ms
+            - 50ms
+            - 100ms
+            - 200ms
+            - 500ms
+            - 1s
+            - 2s
+            - 5s
+        metrics_expiration: 5m
+        metrics_flush_interval: 30s
+        namespace: ""
     exporters:
       debug: {}
-      otlp:
-        endpoint: example-opentelemetry-collector:4317
-        tls:
-          insecure: true
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
+      batch:
+        send_batch_max_size: 2048
+        send_batch_size: 1024
+        timeout: 1s
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      transform/kubeletstatscpu:
-        error_mode: ignore
-        metric_statements:
-        - context: metric
-          statements:
-          - set(unit, "1") where name == "container.cpu.usage"
-          - set(name, "container.cpu.utilization") where name == "container.cpu.usage"
-          - set(unit, "1") where name == "k8s.pod.cpu.usage"
-          - set(name, "k8s.pod.cpu.utilization") where name == "k8s.pod.cpu.usage"
-          - set(unit, "1") where name == "k8s.node.cpu.usage"
-          - set(name, "k8s.node.cpu.utilization") where name == "k8s.node.cpu.usage"
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -90,112 +144,6 @@ data:
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
     receivers:
-      filelog:
-        exclude:
-        - /var/log/pods/default_example-opentelemetry-collector*_*/opentelemetry-collector/*.log
-        force_flush_period: 0
-        include:
-        - /var/log/pods/*/*/*.log
-        include_file_name: false
-        include_file_path: true
-        operators:
-        - id: get-format
-          routes:
-          - expr: body matches "^\\{"
-            output: parser-docker
-          - expr: body matches "^[^ Z]+ "
-            output: parser-crio
-          - expr: body matches "^[^ Z]+Z"
-            output: parser-containerd
-          type: router
-        - id: parser-crio
-          regex: ^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
-          timestamp:
-            layout: 2006-01-02T15:04:05.999999999Z07:00
-            layout_type: gotime
-            parse_from: attributes.time
-          type: regex_parser
-        - combine_field: attributes.log
-          combine_with: ""
-          id: crio-recombine
-          is_last_entry: attributes.logtag == 'F'
-          max_batch_size: 1000
-          max_log_size: 1048576
-          output: handle_empty_log
-          source_identifier: attributes["log.file.path"]
-          type: recombine
-        - id: parser-containerd
-          regex: ^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
-          timestamp:
-            layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-            parse_from: attributes.time
-          type: regex_parser
-        - combine_field: attributes.log
-          combine_with: ""
-          id: containerd-recombine
-          is_last_entry: attributes.logtag == 'F'
-          max_batch_size: 1000
-          max_log_size: 1048576
-          output: handle_empty_log
-          source_identifier: attributes["log.file.path"]
-          type: recombine
-        - id: parser-docker
-          timestamp:
-            layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-            parse_from: attributes.time
-          type: json_parser
-        - combine_field: attributes.log
-          combine_with: ""
-          id: docker-recombine
-          is_last_entry: attributes.log endsWith "\n"
-          max_batch_size: 1000
-          max_log_size: 1048576
-          output: handle_empty_log
-          source_identifier: attributes["log.file.path"]
-          type: recombine
-        - field: attributes.log
-          id: handle_empty_log
-          if: attributes.log == nil
-          type: add
-          value: ""
-        - parse_from: attributes["log.file.path"]
-          regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
-          type: regex_parser
-        - from: attributes.stream
-          to: attributes["log.iostream"]
-          type: move
-        - from: attributes.container_name
-          to: resource["k8s.container.name"]
-          type: move
-        - from: attributes.namespace
-          to: resource["k8s.namespace.name"]
-          type: move
-        - from: attributes.pod_name
-          to: resource["k8s.pod.name"]
-          type: move
-        - from: attributes.restart_count
-          to: resource["k8s.container.restart_count"]
-          type: move
-        - from: attributes.uid
-          to: resource["k8s.pod.uid"]
-          type: move
-        - from: attributes.log
-          id: clean-up-log-record
-          to: body
-          type: move
-        - id: export
-          type: noop
-        retry_on_failure:
-          enabled: true
-        start_at: beginning
-      kubeletstats:
-        auth_type: serviceAccount
-        collect_all_network_interfaces:
-          node: true
-          pod: true
-        collection_interval: 20s
-        endpoint: ${env:K8S_NODE_IP}:10250
-        insecure_skip_verify: true
       otlp:
         protocols:
           grpc:
@@ -217,33 +165,57 @@ data:
       pipelines:
         logs:
           exporters:
-          - otlp
           - debug
           processors:
           - memory_limiter
+          - batch
           receivers:
-          - filelog
           - otlp
         metrics:
           exporters:
-          - otlp
           - debug
           processors:
           - memory_limiter
-          - transform/kubeletstatscpu
           - transform/prometheus
+          - batch
           receivers:
-          - kubeletstats
+          - spanmetrics/0
+          - spanmetrics/1
+          - spanmetrics/default
           - prometheus
           - otlp
         traces:
           exporters:
-          - otlp
-          - debug
+          - routing
           processors:
           - memory_limiter
+          - batch
           receivers:
           - otlp
+        traces/0:
+          exporters:
+          - debug
+          - spanmetrics/0
+          processors:
+          - batch
+          receivers:
+          - routing
+        traces/1:
+          exporters:
+          - debug
+          - spanmetrics/1
+          processors:
+          - batch
+          receivers:
+          - routing
+        traces/default:
+          exporters:
+          - debug
+          - spanmetrics/default
+          processors:
+          - batch
+          receivers:
+          - routing
       telemetry:
         logs:
           encoding: json
