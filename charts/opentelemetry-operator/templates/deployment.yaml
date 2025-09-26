@@ -37,6 +37,9 @@ spec:
     spec:
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       hostNetwork: {{ .Values.hostNetwork }}
+      {{- if and (semverCompare ">=1.30-0" .Capabilities.KubeVersion.Version) (kindIs "bool" .Values.hostUsers) }}
+      hostUsers: {{ .Values.hostUsers }}
+      {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
       {{- end }}
