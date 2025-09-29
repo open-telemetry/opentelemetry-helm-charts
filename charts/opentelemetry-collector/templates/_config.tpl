@@ -2073,6 +2073,16 @@ exporters:
         {{- if .Values.presets.loadBalancing.k8s.timeout }}
         timeout: {{ .Values.presets.loadBalancing.k8s.timeout | quote }}
         {{- end }}
+      {{- else if and (.Values.presets.loadBalancing.awsCloudMap) (.Values.presets.loadBalancing.awsCloudMap.enabled) }}
+      aws_cloud_map:
+        namespace: "{{ .Values.presets.loadBalancing.awsCloudMap.namespace }}"
+        service_name: "{{ .Values.presets.loadBalancing.awsCloudMap.serviceName }}"
+        {{- if .Values.presets.loadBalancing.awsCloudMap.interval }}
+        interval: "{{ .Values.presets.loadBalancing.awsCloudMap.interval }}"
+        {{- end }}
+        {{- if .Values.presets.loadBalancing.awsCloudMap.port }}
+        port: {{ .Values.presets.loadBalancing.awsCloudMap.port }}
+        {{- end }}
       {{- else }}
       dns:
         hostname: "{{ .Values.presets.loadBalancing.hostname }}"

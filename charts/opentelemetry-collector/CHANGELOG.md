@@ -2,10 +2,14 @@
 
 ## OpenTelemetry Collector
 
+### v0.120.4 / 2025-09-29
+- [Feat] Add AWS CloudMap resolver support for loadbalancing exporter in ECS-EC2 deployments.
+
 ### v0.120.3 / 2025-09-29
 - [Feat] Add `resource/metadata` processor to profiles pipeline when `profilesCollection` preset is enabled.
 
 ### v0.120.2 / 2025-09-26
+- [Feat] Add aws_cloud_map resolver support for ecs-ec2.
 - [Fix] Disable the spanMetrics compact preset by default to match pre-v0.120.1 behavior.
 - [Fix] Restore spanMetrics example manifests that were removed in v0.120.1.
 
