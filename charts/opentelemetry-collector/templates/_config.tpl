@@ -949,6 +949,7 @@ service:
       processors:
         - memory_limiter
         - k8sattributes/profiles
+        - resource/metadata
         - transform/profiles
       exporters: []
 {{- end }}

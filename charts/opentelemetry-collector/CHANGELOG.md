@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.120.3 / 2025-09-29
+- [Feat] Add `resource/metadata` processor to profiles pipeline when `profilesCollection` preset is enabled.
+
 ### v0.120.2 / 2025-09-26
 - [Fix] Disable the spanMetrics compact preset by default to match pre-v0.120.1 behavior.
 - [Fix] Restore spanMetrics example manifests that were removed in v0.120.1.
