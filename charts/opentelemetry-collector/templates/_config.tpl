@@ -2343,11 +2343,18 @@ processors:
         host.id:
           enabled: true
   resourcedetection/region:
-    detectors: ["gcp", "ec2", "azure", "eks"]
+    detectors: 
+      {{- if eq .Values.distribution "ecs" }}
+      ["gcp", "ec2", "azure"]
+      {{- else }}
+      ["gcp", "ec2", "azure", "eks"]
+      {{- end }}
     timeout: 2s
     override: true
+    {{- if ne .Values.distribution "ecs" }}
     eks:
       node_from_env_var: K8S_NODE_NAME
+    {{- end }}
 {{- end }}
 
 {{/* Build the list of port for service */}}
@@ -2819,7 +2826,6 @@ service:
       exporters: [coralogix]
   extensions: [health_check, k8s_observer]
 {{- end }}
-
 
 {{- define "opentelemetry-collector.applyEcsLogsCollectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.ecsLogsCollectionConfig" .Values | fromYaml) .config }}
