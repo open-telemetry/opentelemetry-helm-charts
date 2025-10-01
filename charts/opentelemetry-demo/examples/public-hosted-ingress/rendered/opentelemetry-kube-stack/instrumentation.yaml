@@ -1,0 +1,38 @@
+---
+# Source: opentelemetry-demo/charts/opentelemetry-kube-stack/templates/instrumentation.yaml
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: otel-demo-instrumentation
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.9.3
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"    
+spec:
+  exporter:
+    endpoint: http://otel-demo-daemon-collector:4317
+  propagators:
+    - tracecontext
+    - baggage
+    - b3
+    - b3multi
+    - jaeger
+    - xray
+    - ottrace
+  sampler:
+    type: parentbased_always_on
+  env:    
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: cumulative
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: grpc
+    - name: OTEL_K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  resource:
+    addK8sUIDAttributes: true
+    resourceAttributes:
+      deployment.environment.name: demo
+      service.namespace: opentelemetry-demo

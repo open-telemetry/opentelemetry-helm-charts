@@ -1,0 +1,38 @@
+{{- if index .Values "opentelemetry-kube-stack" "enabled" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "otel-demo.name" . }}-wait-operator
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: "{{ .Release.Name }}-daemon-collector"
+      containers:
+      - name: wait-operator
+        image:  alpine/k8s:1.31.13 # the rancher/kubectl image doesn't include bash or sh
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for OpenTelemetry Operator deployment..."
+          kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=opentelemetry-operator -n {{ .Release.Namespace }} --timeout=300s
+
+          echo "Waiting for Instrumentation CRD..."
+          kubectl wait --for=condition=established crd/instrumentations.opentelemetry.io --timeout=300s
+
+          echo "Waiting for OpenTelemetryCollector CRD..."
+          kubectl wait --for=condition=established crd/opentelemetrycollectors.opentelemetry.io --timeout=300s
+
+          echo "Waiting for daemon collector to be ready..."
+          kubectl wait --for=condition=available deployment/otel-demo-daemon-collector -n {{ .Release.Namespace }} --timeout=300s
+
+          echo "All OpenTelemetry components ready!"
+{{- end -}}

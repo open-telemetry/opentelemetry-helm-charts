@@ -1,18 +1,7 @@
 # yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
-  env:
-    - name: OTEL_SERVICE_NAME
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: "metadata.labels['app.kubernetes.io/component']"
-    - name: OTEL_COLLECTOR_NAME
-      value: otel-collector
-    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-      value: cumulative
-    - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version={{ .Chart.AppVersion }}'
+  env: []
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -170,11 +159,15 @@ components:
     enabled: true
     useDefault:
       env: true
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 120Mi
@@ -189,6 +182,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: AD_PORT
         value: "8080"
@@ -197,7 +192,9 @@ components:
       - name: FLAGD_PORT
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
       - name: OTEL_LOGS_EXPORTER
         value: otlp
     resources:
@@ -291,13 +288,19 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: EMAIL_PORT
         value: "8080"
       - name: APP_ENV
         value: production
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
+        value: http://otel-demo-daemon-collector:4318/v1/traces
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 100Mi
@@ -306,6 +309,8 @@ components:
     enabled: true
     useDefault:
       env: true
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -314,7 +319,9 @@ components:
       - name: FLAGD_PORT
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 300Mi
@@ -353,7 +360,7 @@ components:
       - name: FLAGD_PORT
         value: "8013"
       - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
+        value: otel-demo-daemon-collector
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
@@ -374,6 +381,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: ENVOY_PORT
         value: "8080"
@@ -406,7 +415,7 @@ components:
       - name: LOCUST_WEB_PORT
         value: "8089"
       - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
+        value: otel-demo-daemon-collector
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
@@ -425,13 +434,15 @@ components:
       env: true
     service:
       port: 8081
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
       - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
+        value: otel-demo-daemon-collector
     resources:
       limits:
         memory: 50Mi
@@ -525,13 +536,17 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: QUOTE_PORT
         value: "8080"
       - name: OTEL_PHP_AUTOLOAD_ENABLED
         value: "true"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 40Mi
@@ -595,11 +610,13 @@ components:
         value: 8013
       - name: ofrep
         value: 8016
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: FLAGD_METRICS_EXPORTER
         value: otel
       - name: FLAGD_OTEL_COLLECTOR_URI
-        value: $(OTEL_COLLECTOR_NAME):4317
+        value: otel-demo-daemon-collector:4317
     resources:
       limits:
         memory: 75Mi
@@ -626,7 +643,9 @@ components:
           - name: FLAGD_METRICS_EXPORTER
             value: otel
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4318
+            value: http://otel-demo-daemon-collector:4318
+          - name: OTEL_EXPORTER_OTLP_PROTOCOL
+            value: "http/protobuf"
         resources:
           limits:
             memory: 100Mi
@@ -657,11 +676,15 @@ components:
         value: 9092
       - name: controller
         value: 9093
+    podAnnotations:
+      instrumentation.opentelemetry.io/inject-sdk: "true"
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
     resources:
@@ -691,18 +714,134 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-opentelemetry-operator:
-  # https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/
+opentelemetry-kube-stack:
   enabled: true
-  admissionWebhooks:
-    certManager:
-      enabled: false
-    autoGenerateCert:
+  # https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-kube-stack
+  clusterName: otel-demo-stack
+  # Add hook annotations to ensure early installation, before the components above are installed so the otel-operator can inject configs
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  crds:
+    installOtel: true
+    installPrometheus: false # disable to prevent install of Prometheus  components
+  collectors:
+    daemon:
       enabled: true
-  manager:
-    collectorImage:
+      fullnameOverride: otel-demo-daemon
+      # disable scrapping using daemon_scrape_configs.yaml as it assumes the Prometheus Node Exporter and CAdvisor are setup
+      # https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-kube-stack#scrape_configs_file-details
+      scrape_configs_file: ""
+      presets:
+        logsCollection:
+          enabled: false # TODO disable when running on Docker Desktop
+          storeCheckpoints: true # TODO disable when running on Docker Desktop
+        hostMetrics:
+          enabled: false # TODO disable when running on Docker Desktop
+        kubeletMetrics:
+          enabled: true
+        kubernetesAttributes:
+          enabled: true
+        kubernetesEvents:
+          enabled: true
+        clusterMetrics:
+          enabled: true
+      config:
+        extensions:
+          health_check: # For K8s Liveness and Readiness Probes
+            endpoint: 0.0.0.0:13133
+        exporters:
+          otlp/jaeger:
+            endpoint: "http://jaeger-collector:4317"
+            tls:
+              insecure: true
+          otlphttp/prometheus:
+            endpoint: "http://prometheus:9090/api/v1/otlp"
+            tls:
+              insecure: true
+          opensearch:
+            logs_index: otel-logs
+            logs_index_time_format: "yyyy-MM-dd"
+            http:
+              endpoint: "http://opensearch:9200"
+              tls:
+                insecure: true
+        processors:
+          transform/fix_nextjs_span_name:
+            error_mode: ignore
+            trace_statements:
+              - context: span
+                statements:
+                  # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+                  - replace_pattern(name, "\\?.*", "")
+                  - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+        connectors:
+          spanmetrics: {}
+        service:
+          extensions: [health_check]
+          pipelines:
+            traces:
+              processors:
+                - transform/fix_nextjs_span_name
+              exporters:
+                - otlp/jaeger
+                - spanmetrics
+            metrics:
+              receivers:
+                - spanmetrics
+              exporters:
+                - otlphttp/prometheus
+            logs:
+              exporters:
+                - opensearch
+          telemetry:
+            metrics:
+              readers:
+                - pull:
+                    exporter:
+                      prometheus:
+                        host: '0.0.0.0'
+                        port: 8888
+            logs:
+              level: info
+      securityContext: # Run daemon collector as root for metrics & logs scrapping
+        runAsUser: 0
+        runAsGroup: 0
+  defaultCRConfig:
+    enabled: true
+    image:
       repository: otel/opentelemetry-collector-contrib
-      tag: 0.134.1
+      tag: "0.134.1"
+    targetAllocator:
+      # See https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
+      enabled: false
+  instrumentation:
+    enabled: true
+    name: otel-demo-instrumentation
+    env:
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "grpc"
+      - name: OTEL_K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+        value: cumulative
+    exporter:
+      endpoint: http://otel-demo-daemon-collector:4317
+    sampler:
+      type: "parentbased_always_on"
+    resource:
+      resourceAttributes:
+        deployment.environment.name: demo
+        service.namespace: opentelemetry-demo
+  opentelemetry-operator:
+    admissionWebhooks:
+      certManager:
+        enabled: false
+      autoGenerateCert:
+        enabled: true
 
 jaeger:
   enabled: true
@@ -817,17 +956,61 @@ grafana:
   adminPassword: admin
   plugins:
     - grafana-opensearch-datasource
-  sidecar:
-    alerts:
-      enabled: true
-    dashboards:
-      enabled: true
-    datasources:
-      enabled: true
-    resources:
-      limits:
-        cpu: 100m
-        memory: 100Mi
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          uid: webstore-metrics
+          type: prometheus
+          url: http://prometheus:9090
+          editable: true
+          isDefault: true
+          jsonData:
+            exemplarTraceIdDestinations:
+              - datasourceUid: webstore-traces
+                name: trace_id
+
+              - url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
+                name: trace_id
+                urlDisplayLabel: View in Jaeger UI
+
+        - name: Jaeger
+          uid: webstore-traces
+          type: jaeger
+          url: http://jaeger-query:16686/jaeger/ui
+          editable: true
+          isDefault: false
+
+        - name: OpenSearch
+          uid: webstore-logs
+          type: grafana-opensearch-datasource
+          url: http://opensearch:9200/
+          access: proxy
+          editable: true
+          isDefault: false
+          jsonData:
+            database: otel
+            flavor: opensearch
+            logLevelField: severity.text.keyword
+            logMessageField: body
+            pplEnabled: true
+            timeField: observedTimestamp
+            version: 2.18.0
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: grafana-dashboards
   resources:
     limits:
       memory: 150Mi

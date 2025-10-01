@@ -27,7 +27,7 @@ spec:
         app.kubernetes.io/instance: example
         app.kubernetes.io/version: "12.1.0"
       annotations:
-        checksum/config: 3aef97dc43bb7f320b3d3f00d79efff7580bf83005ec5574a0619b42268584cf
+        checksum/config: 99cca986c6d5f6511900d815ee5a70d0c284aeb70af56fb96108c7bf456eff87
         checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
         checksum/secret: bed677784356b2af7fb0d87455db21f077853059b594101a4f6532bfbd962a7f
         kubectl.kubernetes.io/default-container: grafana
@@ -43,126 +43,6 @@ spec:
         runAsUser: 472
       enableServiceLinks: true
       containers:
-        - name: grafana-sc-alerts
-          image: "quay.io/kiwigrid/k8s-sidecar:1.30.3"
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: METHOD
-              value: WATCH
-            - name: LABEL
-              value: "grafana_alert"
-            - name: FOLDER
-              value: "/etc/grafana/provisioning/alerting"
-            - name: RESOURCE
-              value: "both"
-            - name: REQ_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: grafana
-                  key: admin-user
-            - name: REQ_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: grafana
-                  key: admin-password
-            - name: REQ_URL
-              value: http://localhost:3000/api/admin/provisioning/alerting/reload
-            - name: REQ_METHOD
-              value: POST
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - name: sc-alerts-volume
-              mountPath: "/etc/grafana/provisioning/alerting"
-        - name: grafana-sc-dashboard
-          image: "quay.io/kiwigrid/k8s-sidecar:1.30.3"
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: METHOD
-              value: WATCH
-            - name: LABEL
-              value: "grafana_dashboard"
-            - name: FOLDER
-              value: "/tmp/dashboards"
-            - name: RESOURCE
-              value: "both"
-            - name: REQ_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: grafana
-                  key: admin-user
-            - name: REQ_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: grafana
-                  key: admin-password
-            - name: REQ_URL
-              value: http://localhost:3000/api/admin/provisioning/dashboards/reload
-            - name: REQ_METHOD
-              value: POST
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - name: sc-dashboard-volume
-              mountPath: "/tmp/dashboards"
-        - name: grafana-sc-datasources
-          image: "quay.io/kiwigrid/k8s-sidecar:1.30.3"
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: METHOD
-              value: WATCH
-            - name: LABEL
-              value: "grafana_datasource"
-            - name: FOLDER
-              value: "/etc/grafana/provisioning/datasources"
-            - name: RESOURCE
-              value: "both"
-            - name: REQ_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: grafana
-                  key: admin-user
-            - name: REQ_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: grafana
-                  key: admin-password
-            - name: REQ_URL
-              value: http://localhost:3000/api/admin/provisioning/datasources/reload
-            - name: REQ_METHOD
-              value: POST
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - name: sc-datasources-volume
-              mountPath: "/etc/grafana/provisioning/datasources"
         - name: grafana
           image: "docker.io/grafana/grafana:12.1.0"
           imagePullPolicy: IfNotPresent
@@ -179,15 +59,14 @@ spec:
               subPath: grafana.ini
             - name: storage
               mountPath: "/var/lib/grafana"
-            - name: sc-alerts-volume
-              mountPath: "/etc/grafana/provisioning/alerting"
-            - name: sc-dashboard-volume
-              mountPath: "/tmp/dashboards"
-            - name: sc-dashboard-provider
-              mountPath: "/etc/grafana/provisioning/dashboards/sc-dashboardproviders.yaml"
-              subPath: provider.yaml
-            - name: sc-datasources-volume
-              mountPath: "/etc/grafana/provisioning/datasources"
+            - name: dashboards-default
+              mountPath: "/var/lib/grafana/dashboards/default"
+            - name: config
+              mountPath: "/etc/grafana/provisioning/datasources/datasources.yaml"
+              subPath: "datasources.yaml"
+            - name: config
+              mountPath: "/etc/grafana/provisioning/dashboards/dashboardproviders.yaml"
+              subPath: "dashboardproviders.yaml"
           ports:
             - name: grafana
               containerPort: 3000
@@ -247,14 +126,8 @@ spec:
         - name: config
           configMap:
             name: grafana
-        - name: storage
-          emptyDir: {}
-        - name: sc-alerts-volume
-          emptyDir: {}
-        - name: sc-dashboard-volume
-          emptyDir: {}
-        - name: sc-dashboard-provider
+        - name: dashboards-default
           configMap:
-            name: grafana-config-dashboards
-        - name: sc-datasources-volume
+            name: grafana-dashboards
+        - name: storage
           emptyDir: {}
