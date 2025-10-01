@@ -6,7 +6,7 @@ metadata:
   name: agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.10.2
+    helm.sh/chart: opentelemetry-kube-stack-0.10.5
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -34,17 +34,8 @@ spec:
         extract:
           labels:
           - from: pod
-            key: app.kubernetes.io/name
-            tag_name: service.name
-          - from: pod
-            key: k8s-app
-            tag_name: service.name
-          - from: pod
             key: app.kubernetes.io/instance
             tag_name: k8s.app.instance
-          - from: pod
-            key: app.kubernetes.io/version
-            tag_name: service.version
           - from: pod
             key: app.kubernetes.io/component
             tag_name: k8s.app.component
@@ -68,6 +59,11 @@ spec:
           - container.image.tag
           - container.image.name
           - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+          otel_annotations: true
         filter:
           node_from_env_var: OTEL_K8S_NODE_NAME
         passthrough: false
@@ -232,7 +228,7 @@ metadata:
   name: gateway
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.10.2
+    helm.sh/chart: opentelemetry-kube-stack-0.10.5
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -361,7 +357,7 @@ metadata:
   name: ingress
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.10.2
+    helm.sh/chart: opentelemetry-kube-stack-0.10.5
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
