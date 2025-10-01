@@ -8,5 +8,6 @@ Here is a collection of common configurations for the OpenTelemetry demo.  Each 
 - [Custom Environment Variables](custom-environment-variables)
 - [Kubernetes Infrastructure Monitoring](kubernetes-infra-monitoring)
 - [Public Hosted Ingress](public-hosted-ingress)
+- [IPv6 Runtime](ipv6-runtime)
 
 The manifests are rendered using the `helm template` command and the specific example folder's values.yaml.
