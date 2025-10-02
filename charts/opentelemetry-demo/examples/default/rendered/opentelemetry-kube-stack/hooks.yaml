@@ -56,10 +56,9 @@ spec:
       serviceAccountName: delete-resources-sa
       containers:
       - name: delete-resources
-        image: "bitnami/kubectl:latest"
-        command:
-          - /bin/sh
-          - -c
-          - |
-            kubectl delete instrumentations,opampbridges,opentelemetrycollectors \
-              -l helm.sh/chart=opentelemetry-kube-stack-0.9.3
+        image: "rancher/kubectl:v1.34.1"
+        args:
+          - "delete"
+          - "instrumentations,opampbridges,opentelemetrycollectors"
+          - "-l"
+          - "helm.sh/chart=opentelemetry-kube-stack-0.10.5"

@@ -6,7 +6,7 @@ metadata:
   name: otel-demo-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.9.3
+    helm.sh/chart: opentelemetry-kube-stack-0.10.5
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -53,17 +53,8 @@ spec:
         extract:
           labels:
           - from: pod
-            key: app.kubernetes.io/name
-            tag_name: service.name
-          - from: pod
-            key: k8s-app
-            tag_name: service.name
-          - from: pod
             key: app.kubernetes.io/instance
             tag_name: k8s.app.instance
-          - from: pod
-            key: app.kubernetes.io/version
-            tag_name: service.version
           - from: pod
             key: app.kubernetes.io/component
             tag_name: k8s.app.component
@@ -87,6 +78,11 @@ spec:
           - container.image.tag
           - container.image.name
           - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+          otel_annotations: true
         filter:
           node_from_env_var: OTEL_K8S_NODE_NAME
         passthrough: false
@@ -239,9 +235,6 @@ spec:
     runAsUser: 0
   targetAllocator:
     enabled: false
-  volumeMounts:
-  - name: varlibotelcol
-    mountPath: /var/lib/otelcol
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
@@ -268,5 +261,3 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name=otel-demo-stack"
-  
-  volumes:

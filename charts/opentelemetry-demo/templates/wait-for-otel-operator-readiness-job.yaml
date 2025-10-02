@@ -1,38 +1,106 @@
 {{- if index .Values "opentelemetry-kube-stack" "enabled" }}
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "describe"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator-{{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator-{{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator-{{ .Release.Namespace }}
+  apiGroup: rbac.authorization.k8s.io
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-operator
+  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "0"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 900  # 15 minutes timeout
   template:
     spec:
       restartPolicy: Never
-      serviceAccountName: "{{ .Release.Name }}-daemon-collector"
+      serviceAccountName: {{ include "otel-demo.name" . }}-wait-for-otel-operator
       containers:
-      - name: wait-operator
-        image:  alpine/k8s:1.31.13 # the rancher/kubectl image doesn't include bash or sh
+      - name: wait-for-otel-operator
+        image: alpine/k8s:1.31.13 # the rancher/kubectl image doesn't include 'sh'
         command:
-        - /bin/bash
+        - /bin/sh
         - -c
         - |
+          set -e
+          echo "Starting OpenTelemetry Operator readiness check..."
+
           echo "Waiting for OpenTelemetry Operator deployment..."
-          kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=opentelemetry-operator -n {{ .Release.Namespace }} --timeout=300s
+          timeout 600 sh -c 'until kubectl get deployment -l app.kubernetes.io/name=opentelemetry-operator --namespace {{ .Release.Namespace }}; do echo "Waiting for operator deployment..."; sleep 10; done'
+
+          echo "Waiting for OpenTelemetry Operator to be available..."
+          kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=opentelemetry-operator --namespace {{ .Release.Namespace }} --timeout=600s || {
+            echo "Operator deployment failed to become available. Checking status..."
+            kubectl describe deployment -l app.kubernetes.io/name=opentelemetry-operator --namespace {{ .Release.Namespace }}
+            exit 1
+          }
 
           echo "Waiting for Instrumentation CRD..."
+          timeout 300 sh -c 'until kubectl get crd instrumentations.opentelemetry.io; do echo "Waiting for Instrumentation CRD..."; sleep 5; done'
           kubectl wait --for=condition=established crd/instrumentations.opentelemetry.io --timeout=300s
 
-          echo "Waiting for OpenTelemetryCollector CRD..."
-          kubectl wait --for=condition=established crd/opentelemetrycollectors.opentelemetry.io --timeout=300s
-
-          echo "Waiting for daemon collector to be ready..."
-          kubectl wait --for=condition=available deployment/otel-demo-daemon-collector -n {{ .Release.Namespace }} --timeout=300s
-
-          echo "All OpenTelemetry components ready!"
-{{- end -}}
+          echo "All OpenTelemetry operator and Instrumentation CRD are ready!"
+{{- end }}

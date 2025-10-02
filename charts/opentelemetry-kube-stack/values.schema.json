@@ -473,7 +473,7 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "DeploymentStrategy": {
+    "DeploymentUpdateStrategy": {
       "properties": {
         "type": {
           "type": "string"
@@ -1673,8 +1673,11 @@
         "updateStrategy": {
           "$ref": "#/$defs/DaemonSetUpdateStrategy"
         },
+        "daemonSetUpdateStrategy": {
+          "$ref": "#/$defs/DaemonSetUpdateStrategy"
+        },
         "deploymentUpdateStrategy": {
-          "$ref": "#/$defs/DeploymentStrategy"
+          "$ref": "#/$defs/DeploymentUpdateStrategy"
         }
       },
       "additionalProperties": true,
@@ -1768,6 +1771,20 @@
         },
         "scrapeConfigSelector": {
           "$ref": "#/$defs/LabelSelector"
+        },
+        "allowNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of namespaces to allow for scraping"
+        },
+        "denyNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of namespaces to exclude from scraping"
         }
       },
       "additionalProperties": false,

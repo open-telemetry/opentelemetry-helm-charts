@@ -168,6 +168,10 @@ components:
         value: http://otel-demo-daemon-collector:4318
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: "http/protobuf"
+      - name: DB_CONNECTION_STRING
+        value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
+      - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 120Mi
@@ -255,6 +259,8 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+      - name: GOMEMLIMIT
+        value: 16MiB
     podAnnotations:
       instrumentation.opentelemetry.io/inject-sdk: "true"
     resources:
@@ -301,6 +307,10 @@ components:
         value: http://otel-demo-daemon-collector:4318/v1/traces
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: "http/protobuf"
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
     resources:
       limits:
         memory: 100Mi
@@ -322,6 +332,10 @@ components:
         value: http://otel-demo-daemon-collector:4318
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: "http/protobuf"
+      - name: OTEL_INSTRUMENTATION_KAFKA_EXPERIMENTAL_SPAN_ATTRIBUTES
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
+        value: "true"
     resources:
       limits:
         memory: 300Mi
@@ -339,6 +353,8 @@ components:
     env:
       - name: FRONTEND_PORT
         value: "8080"
+      - name: PORT
+        value: $(FRONTEND_PORT)
       - name: FRONTEND_ADDR
         value: :8080
       - name: AD_ADDR
@@ -359,6 +375,8 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+      - name: ENV_PLATFORM
+        value: kubernetes
       - name: OTEL_COLLECTOR_HOST
         value: otel-demo-daemon-collector
       - name: WEB_OTEL_SERVICE_NAME
@@ -386,12 +404,14 @@ components:
     env:
       - name: ENVOY_PORT
         value: "8080"
+      - name: ENVOY_ADMIN_PORT
+        value: "10000"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
       - name: FLAGD_UI_HOST
-        value: flagd
+        value: flagd-ui
       - name: FLAGD_UI_PORT
         value: "4000"
       - name: FRONTEND_HOST
@@ -408,7 +428,7 @@ components:
         value: "8081"
       - name: JAEGER_HOST
         value: jaeger-query
-      - name: JAEGER_PORT
+      - name: JAEGER_UI_PORT
         value: "16686"
       - name: LOCUST_WEB_HOST
         value: load-generator
@@ -474,6 +494,8 @@ components:
         value: python
       - name: FLAGD_HOST
         value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
       - name: FLAGD_OFREP_PORT
         value: "8016"
     podAnnotations:
@@ -520,6 +542,8 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+      - name: GOMEMLIMIT
+        value: 16MiB
     mountedConfigMaps:
       - name: product-catalog-products
         mountPath: /usr/src/app/products
@@ -542,6 +566,8 @@ components:
       - name: QUOTE_PORT
         value: "8080"
       - name: OTEL_PHP_AUTOLOAD_ENABLED
+        value: "true"
+      - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
         value: "true"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://otel-demo-daemon-collector:4318
@@ -617,6 +643,8 @@ components:
         value: otel
       - name: FLAGD_OTEL_COLLECTOR_URI
         value: otel-demo-daemon-collector:4317
+      - name: GOMEMLIMIT
+        value: 60MiB
     resources:
       limits:
         memory: 75Mi
@@ -632,7 +660,7 @@ components:
     mountedEmptyDirs:
       - name: config-rw
         mountPath: /etc/flagd
-    # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
+    # flagd-ui as a sidecar container in the same pod so the flag json file can be shared
     sidecarContainers:
       - name: flagd-ui
         useDefault:
@@ -646,9 +674,15 @@ components:
             value: http://otel-demo-daemon-collector:4318
           - name: OTEL_EXPORTER_OTLP_PROTOCOL
             value: "http/protobuf"
+          - name: FLAGD_UI_PORT
+            value: "4000"
+          - name: SECRET_KEY_BASE
+            value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
+          - name: PHX_HOST
+            value: localhost
         resources:
           limits:
-            memory: 100Mi
+            memory: 250Mi
         volumeMounts:
           - name: config-rw
             mountPath: /app/data
@@ -687,6 +721,12 @@ components:
         value: "http/protobuf"
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
+      - name: KAFKA_LISTENERS
+        value: PLAINTEXT://:9092,CONTROLLER://:9093
+      - name: KAFKA_CONTROLLER_LISTENER_NAMES
+        value: CONTROLLER
+      - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+        value: 1@kafka:9093
     resources:
       limits:
         memory: 600Mi
@@ -695,13 +735,31 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
+  postgresql:
+    enabled: true
+    useDefault:
+      env: true
+    replicas: 1
+    service:
+      port: 5432
+    env:
+      - name: POSTGRES_USER
+        value: root
+      - name: POSTGRES_PASSWORD
+        value: otel
+      - name: POSTGRES_DB
+        value: otel
+    resources:
+      limits:
+        memory: 100Mi
+
   valkey-cart:
     enabled: true
     useDefault:
       env: true
     imageOverride:
       repository: "valkey/valkey"
-      tag: "7.2-alpine"
+      tag: "8.1.3-alpine"
     replicas: 1
     ports:
       - name: valkey-cart
@@ -717,12 +775,8 @@ components:
 opentelemetry-kube-stack:
   enabled: true
   # https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-kube-stack
+  # TODO st the K8s Cluster Name value
   clusterName: otel-demo-stack
-  # Add hook annotations to ensure early installation, before the components above are installed so the otel-operator can inject configs
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation
   crds:
     installOtel: true
     installPrometheus: false # disable to prevent install of Prometheus  components
@@ -736,7 +790,7 @@ opentelemetry-kube-stack:
       presets:
         logsCollection:
           enabled: false # TODO disable when running on Docker Desktop
-          storeCheckpoints: true # TODO disable when running on Docker Desktop
+          storeCheckpoints: false # TODO disable when running on Docker Desktop
         hostMetrics:
           enabled: false # TODO disable when running on Docker Desktop
         kubeletMetrics:
@@ -830,6 +884,9 @@ opentelemetry-kube-stack:
         value: cumulative
     exporter:
       endpoint: http://otel-demo-daemon-collector:4317
+    propagators:
+      - tracecontext
+      - baggage
     sampler:
       type: "parentbased_always_on"
     resource:
@@ -842,6 +899,131 @@ opentelemetry-kube-stack:
         enabled: false
       autoGenerateCert:
         enabled: true
+  resources:
+    limits:
+      memory: 200Mi
+  service:
+    type: ClusterIP
+  ports:
+    metrics:
+      enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    opentelemetry_community_demo: "true"
+  config:
+    receivers:
+      otlp:
+        protocols:
+          http:
+            # Since this collector needs to receive data from the web, enable cors for all origins
+            # `allowed_origins` can be refined for your deployment domain
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+      httpcheck/frontend-proxy:
+        targets:
+          - endpoint: http://frontend-proxy:8080
+      nginx:
+        endpoint: http://image-provider:8081/status
+        collection_interval: 10s
+      postgresql:
+        endpoint: "postgresql:5432"
+        username: "root"
+        password: "otel"
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+        tls:
+          insecure: true
+      redis:
+        endpoint: "valkey-cart:6379"
+        username: "valkey"
+        collection_interval: 10s
+
+    exporters:
+      ## Create an exporter to Jaeger using the standard `otlp` export format
+      otlp:
+        endpoint: jaeger-collector:4317
+        tls:
+          insecure: true
+      # Create an exporter to Prometheus (metrics)
+      otlphttp/prometheus:
+        endpoint: http://prometheus:9090/api/v1/otlp
+        tls:
+          insecure: true
+      opensearch:
+        logs_index: otel-logs
+        logs_index_time_format: "yyyy-MM-dd"
+        http:
+          endpoint: http://opensearch:9200
+          tls:
+            insecure: true
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      resourcedetection:
+        detectors: [env, system]
+      # This processor is used to help limit high cardinality on next.js span names
+      # When this PR is merged (and released) we can remove this transform processor
+      # https://github.com/vercel/next.js/pull/64852
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+              - replace_pattern(name, "\\?.*", "")
+              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+      resource:
+        attributes:
+        - key: service.instance.id
+          from_attribute: k8s.pod.uid
+          action: insert
+
+    connectors:
+      spanmetrics: {}
+
+    service:
+      pipelines:
+        traces:
+          processors: [memory_limiter, resourcedetection, resource, transform, batch]
+          exporters: [otlp, debug, spanmetrics]
+        metrics:
+          receivers: [httpcheck/frontend-proxy, nginx, otlp, postgresql, redis, spanmetrics]
+          processors: [memory_limiter, resourcedetection, resource, batch]
+          exporters: [otlphttp/prometheus, debug]
+        logs:
+          processors: [memory_limiter, resourcedetection, resource, batch]
+          exporters: [opensearch, debug]
+      telemetry:
+        metrics:
+          level: detailed
+          readers:
+            - periodic:
+                interval: 10000
+                timeout: 5000
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: otel-collector:4318
 
 jaeger:
   enabled: true
@@ -1021,7 +1203,7 @@ opensearch:
   clusterName: demo-cluster
   nodeGroup: otel-demo
   singleNode: true
-  opensearchJavaOpts: "-Xms300m -Xmx300m"
+  opensearchJavaOpts: "-Xms400m -Xmx400m"
   persistence:
     enabled: false
   extraEnvs:
