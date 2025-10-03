@@ -1,5 +1,5 @@
 ---
-# Source: opentelemetry-demo/templates/wait-for-otel-operator-readiness-job.yaml
+# Source: opentelemetry-demo/templates/restart-services-after-otel-operator-readiness.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 ---
-# Source: opentelemetry-demo/templates/wait-for-otel-operator-readiness-job.yaml
+# Source: opentelemetry-demo/templates/restart-services-after-otel-operator-readiness.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -30,7 +30,7 @@ rules:
   resources: ["customresourcedefinitions"]
   verbs: ["get", "list", "watch"]
 ---
-# Source: opentelemetry-demo/templates/wait-for-otel-operator-readiness-job.yaml
+# Source: opentelemetry-demo/templates/restart-services-after-otel-operator-readiness.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -51,7 +51,7 @@ roleRef:
   name: example-wait-for-otel-operator-default
   apiGroup: rbac.authorization.k8s.io
 ---
-# Source: opentelemetry-demo/templates/wait-for-otel-operator-readiness-job.yaml
+# Source: opentelemetry-demo/templates/restart-services-after-otel-operator-readiness.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -67,12 +67,12 @@ metadata:
 rules:
 - apiGroups: ["apps"]
   resources: ["deployments"]
-  verbs: ["get", "list", "watch", "describe"]
+  verbs: ["get", "list", "watch", "describe", "patch"] # grant "patch" to restart deployments and let otel-operator inject the configuration
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["get", "list", "watch"]
 ---
-# Source: opentelemetry-demo/templates/wait-for-otel-operator-readiness-job.yaml
+# Source: opentelemetry-demo/templates/restart-services-after-otel-operator-readiness.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -94,7 +94,7 @@ roleRef:
   name: example-wait-for-otel-operator
   apiGroup: rbac.authorization.k8s.io
 ---
-# Source: opentelemetry-demo/templates/wait-for-otel-operator-readiness-job.yaml
+# Source: opentelemetry-demo/templates/restart-services-after-otel-operator-readiness.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -121,7 +121,7 @@ spec:
         - -c
         - |
           set -e
-          echo "Starting OpenTelemetry Operator readiness check..."
+          echo "Starting OpenTelemetry Operator Instrumentationreadiness check..."
 
           echo "Waiting for OpenTelemetry Operator deployment..."
           timeout 600 sh -c 'until kubectl get deployment -l app.kubernetes.io/name=opentelemetry-operator --namespace default; do echo "Waiting for operator deployment..."; sleep 10; done'
@@ -137,4 +137,9 @@ spec:
           timeout 300 sh -c 'until kubectl get crd instrumentations.opentelemetry.io; do echo "Waiting for Instrumentation CRD..."; sleep 5; done'
           kubectl wait --for=condition=established crd/instrumentations.opentelemetry.io --timeout=300s
 
-          echo "All OpenTelemetry operator and Instrumentation CRD are ready!"
+          echo "OpenTelemetry Operator Instrumentation ready!"
+
+          echo "Starting restart instrumented services..."
+          for deployment in $(kubectl get deployments -n otel-demo -o jsonpath='{range .items[?(@.spec.template.metadata.annotations.instrumentation\.opentelemetry\.io/inject-sdk=="true")]}{.metadata.name}{" "}{end}'); do
+            kubectl rollout restart deployment/$deployment -n otel-demo
+          done

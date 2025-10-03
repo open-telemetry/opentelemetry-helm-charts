@@ -204,7 +204,6 @@ components:
     resources:
       limits:
         memory: 300Mi
-
   cart:
     enabled: true
     useDefault:
@@ -805,20 +804,64 @@ opentelemetry-kube-stack:
         extensions:
           health_check: # For K8s Liveness and Readiness Probes
             endpoint: 0.0.0.0:13133
+        receivers:
+          otlp:
+            protocols:
+              http:
+                # Since this collector needs to receive data from the web, enable cors for all origins
+                # `allowed_origins` can be refined for your deployment domain
+                cors:
+                  allowed_origins:
+                    - "http://*"
+                    - "https://*"
+          httpcheck/frontend-proxy:
+            targets:
+              - endpoint: http://frontend-proxy:8080
+          nginx:
+            endpoint: http://image-provider:8081/status
+            collection_interval: 10s
+          postgresql:
+            endpoint: "postgresql:5432"
+            username: "root"
+            password: "otel"
+            metrics:
+              postgresql.blks_hit:
+                enabled: true
+              postgresql.blks_read:
+                enabled: true
+              postgresql.tup_fetched:
+                enabled: true
+              postgresql.tup_returned:
+                enabled: true
+              postgresql.tup_inserted:
+                enabled: true
+              postgresql.tup_updated:
+                enabled: true
+              postgresql.tup_deleted:
+                enabled: true
+              postgresql.deadlocks:
+                enabled: true
+            tls:
+              insecure: true
+          redis:
+            endpoint: "valkey-cart:6379"
+            username: "valkey"
+            collection_interval: 10s
         exporters:
+          debug: {}
           otlp/jaeger:
-            endpoint: "http://jaeger-collector:4317"
+            endpoint: http://jaeger-collector.otel-demo.svc.cluster.local:4317
             tls:
               insecure: true
           otlphttp/prometheus:
-            endpoint: "http://prometheus:9090/api/v1/otlp"
+            endpoint: http://prometheus.otel-demo.svc.cluster.local:9090/api/v1/otlp
             tls:
               insecure: true
           opensearch:
             logs_index: otel-logs
             logs_index_time_format: "yyyy-MM-dd"
             http:
-              endpoint: "http://opensearch:9200"
+              endpoint: http://opensearch.otel-demo.svc.cluster.local:9200
               tls:
                 insecure: true
         processors:
@@ -839,19 +882,28 @@ opentelemetry-kube-stack:
               processors:
                 - transform/fix_nextjs_span_name
               exporters:
-                - otlp/jaeger
+                #- otlp/jaeger
+                - debug
                 - spanmetrics
             metrics:
               receivers:
+                - otlp
+                - httpcheck/frontend-proxy
+                - nginx
+                - postgresql
+                - redis
                 - spanmetrics
               exporters:
-                - otlphttp/prometheus
+                #- otlphttp/prometheus
+                -  debug
             logs:
               exporters:
-                - opensearch
+                #- opensearch
+                - debug
           telemetry:
             metrics:
               readers:
+                # TODO consider exporting to prometheus
                 - pull:
                     exporter:
                       prometheus:
@@ -875,7 +927,7 @@ opentelemetry-kube-stack:
     name: otel-demo-instrumentation
     env:
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: "grpc"
+        value: grpc
       - name: OTEL_K8S_NODE_NAME
         valueFrom:
           fieldRef:
@@ -910,120 +962,6 @@ opentelemetry-kube-stack:
   podAnnotations:
     prometheus.io/scrape: "true"
     opentelemetry_community_demo: "true"
-  config:
-    receivers:
-      otlp:
-        protocols:
-          http:
-            # Since this collector needs to receive data from the web, enable cors for all origins
-            # `allowed_origins` can be refined for your deployment domain
-            cors:
-              allowed_origins:
-                - "http://*"
-                - "https://*"
-      httpcheck/frontend-proxy:
-        targets:
-          - endpoint: http://frontend-proxy:8080
-      nginx:
-        endpoint: http://image-provider:8081/status
-        collection_interval: 10s
-      postgresql:
-        endpoint: "postgresql:5432"
-        username: "root"
-        password: "otel"
-        metrics:
-          postgresql.blks_hit:
-            enabled: true
-          postgresql.blks_read:
-            enabled: true
-          postgresql.tup_fetched:
-            enabled: true
-          postgresql.tup_returned:
-            enabled: true
-          postgresql.tup_inserted:
-            enabled: true
-          postgresql.tup_updated:
-            enabled: true
-          postgresql.tup_deleted:
-            enabled: true
-          postgresql.deadlocks:
-            enabled: true
-        tls:
-          insecure: true
-      redis:
-        endpoint: "valkey-cart:6379"
-        username: "valkey"
-        collection_interval: 10s
-
-    exporters:
-      ## Create an exporter to Jaeger using the standard `otlp` export format
-      otlp:
-        endpoint: jaeger-collector:4317
-        tls:
-          insecure: true
-      # Create an exporter to Prometheus (metrics)
-      otlphttp/prometheus:
-        endpoint: http://prometheus:9090/api/v1/otlp
-        tls:
-          insecure: true
-      opensearch:
-        logs_index: otel-logs
-        logs_index_time_format: "yyyy-MM-dd"
-        http:
-          endpoint: http://opensearch:9200
-          tls:
-            insecure: true
-
-    processors:
-      memory_limiter:
-        check_interval: 5s
-        limit_percentage: 80
-        spike_limit_percentage: 25
-      resourcedetection:
-        detectors: [env, system]
-      # This processor is used to help limit high cardinality on next.js span names
-      # When this PR is merged (and released) we can remove this transform processor
-      # https://github.com/vercel/next.js/pull/64852
-      transform:
-        error_mode: ignore
-        trace_statements:
-          - context: span
-            statements:
-              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
-              - replace_pattern(name, "\\?.*", "")
-              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
-      resource:
-        attributes:
-        - key: service.instance.id
-          from_attribute: k8s.pod.uid
-          action: insert
-
-    connectors:
-      spanmetrics: {}
-
-    service:
-      pipelines:
-        traces:
-          processors: [memory_limiter, resourcedetection, resource, transform, batch]
-          exporters: [otlp, debug, spanmetrics]
-        metrics:
-          receivers: [httpcheck/frontend-proxy, nginx, otlp, postgresql, redis, spanmetrics]
-          processors: [memory_limiter, resourcedetection, resource, batch]
-          exporters: [otlphttp/prometheus, debug]
-        logs:
-          processors: [memory_limiter, resourcedetection, resource, batch]
-          exporters: [opensearch, debug]
-      telemetry:
-        metrics:
-          level: detailed
-          readers:
-            - periodic:
-                interval: 10000
-                timeout: 5000
-                exporter:
-                  otlp:
-                    protocol: http/protobuf
-                    endpoint: otel-collector:4318
 
 jaeger:
   enabled: true

@@ -20,17 +20,17 @@ spec:
       debug: {}
       opensearch:
         http:
-          endpoint: http://opensearch:9200
+          endpoint: http://opensearch.otel-demo.svc.cluster.local:9200
           tls:
             insecure: true
         logs_index: otel-logs
         logs_index_time_format: yyyy-MM-dd
       otlp/jaeger:
-        endpoint: http://jaeger-collector:4317
+        endpoint: http://jaeger-collector.otel-demo.svc.cluster.local:4317
         tls:
           insecure: true
       otlphttp/prometheus:
-        endpoint: http://prometheus:9090/api/v1/otlp
+        endpoint: http://prometheus.otel-demo.svc.cluster.local:9090/api/v1/otlp
         tls:
           insecure: true
     extensions:
@@ -120,6 +120,9 @@ spec:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
+      httpcheck/frontend-proxy:
+        targets:
+        - endpoint: http://frontend-proxy:8080
       k8s_cluster:
         allocatable_types_to_report:
         - cpu
@@ -167,12 +170,46 @@ spec:
             enabled: true
           k8s.pod.uptime:
             enabled: true
+      nginx:
+        collection_interval: 10s
+        endpoint: http://image-provider:8081/status
       otlp:
         protocols:
           grpc:
             endpoint: 0.0.0.0:4317
           http:
+            cors:
+              allowed_origins:
+              - http://*
+              - https://*
             endpoint: 0.0.0.0:4318
+      postgresql:
+        endpoint: postgresql:5432
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+        password: otel
+        tls:
+          insecure: true
+        username: root
+      redis:
+        collection_interval: 10s
+        endpoint: valkey-cart:6379
+        username: valkey
     service:
       extensions:
       - health_check
