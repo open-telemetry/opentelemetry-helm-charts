@@ -218,7 +218,7 @@ spec:
       pipelines:
         logs:
           exporters:
-          - opensearch
+          - debug
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -228,18 +228,23 @@ spec:
           - k8sobjects
         metrics:
           exporters:
-          - otlphttp/prometheus
+          - debug
           processors:
           - k8sattributes
           - resourcedetection/env
           - batch
           receivers:
+          - otlp
+          - httpcheck/frontend-proxy
+          - nginx
+          - postgresql
+          - redis
           - spanmetrics
           - kubeletstats
           - k8s_cluster
         traces:
           exporters:
-          - otlp/jaeger
+          - debug
           - spanmetrics
           processors:
           - k8sattributes
