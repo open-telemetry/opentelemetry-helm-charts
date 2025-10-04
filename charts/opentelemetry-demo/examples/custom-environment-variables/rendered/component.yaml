@@ -5,7 +5,7 @@ kind: Service
 metadata:
   name: ad
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: ad
     
@@ -30,7 +30,7 @@ kind: Service
 metadata:
   name: cart
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: cart
     
@@ -55,7 +55,7 @@ kind: Service
 metadata:
   name: checkout
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: checkout
     
@@ -80,7 +80,7 @@ kind: Service
 metadata:
   name: currency
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: currency
     
@@ -105,7 +105,7 @@ kind: Service
 metadata:
   name: email
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: email
     
@@ -130,7 +130,7 @@ kind: Service
 metadata:
   name: flagd
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: flagd
     
@@ -161,7 +161,7 @@ kind: Service
 metadata:
   name: frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: frontend
     
@@ -186,7 +186,7 @@ kind: Service
 metadata:
   name: frontend-proxy
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: frontend-proxy
     
@@ -211,7 +211,7 @@ kind: Service
 metadata:
   name: image-provider
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: image-provider
     
@@ -236,7 +236,7 @@ kind: Service
 metadata:
   name: kafka
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: kafka
     
@@ -264,7 +264,7 @@ kind: Service
 metadata:
   name: load-generator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: load-generator
     
@@ -289,7 +289,7 @@ kind: Service
 metadata:
   name: payment
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: payment
     
@@ -314,7 +314,7 @@ kind: Service
 metadata:
   name: postgresql
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: postgresql
     
@@ -339,7 +339,7 @@ kind: Service
 metadata:
   name: product-catalog
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: product-catalog
     
@@ -364,7 +364,7 @@ kind: Service
 metadata:
   name: quote
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: quote
     
@@ -389,7 +389,7 @@ kind: Service
 metadata:
   name: recommendation
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: recommendation
     
@@ -414,7 +414,7 @@ kind: Service
 metadata:
   name: shipping
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: shipping
     
@@ -439,7 +439,7 @@ kind: Service
 metadata:
   name: valkey-cart
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: valkey-cart
     
@@ -464,7 +464,7 @@ kind: Deployment
 metadata:
   name: accounting
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: accounting
     
@@ -488,6 +488,8 @@ spec:
         
         app.kubernetes.io/component: accounting
         app.kubernetes.io/name: accounting
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -495,19 +497,12 @@ spec:
           image: 'ghcr.io/open-telemetry/demo:2.1.3-accounting'
           imagePullPolicy: IfNotPresent
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: KAFKA_ADDR
               value: kafka:9092
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: DB_CONNECTION_STRING
               value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
             - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
@@ -515,7 +510,7 @@ spec:
             - name: TEAM_NAME
               value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 120Mi
@@ -535,7 +530,7 @@ kind: Deployment
 metadata:
   name: ad
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: ad
     
@@ -559,6 +554,8 @@ spec:
         
         app.kubernetes.io/component: ad
         app.kubernetes.io/name: ad
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -570,15 +567,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: AD_PORT
               value: "8080"
             - name: FLAGD_HOST
@@ -586,13 +574,15 @@ spec:
             - name: FLAGD_PORT
               value: "8013"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_LOGS_EXPORTER
               value: otlp
             - name: TEAM_NAME
               value: helix
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 300Mi
@@ -605,7 +595,7 @@ kind: Deployment
 metadata:
   name: cart
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: cart
     
@@ -629,6 +619,8 @@ spec:
         
         app.kubernetes.io/component: cart
         app.kubernetes.io/name: cart
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -640,15 +632,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: CART_PORT
               value: "8080"
             - name: ASPNETCORE_URLS
@@ -659,12 +642,8 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: TEAM_NAME
               value: ring
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 160Mi
@@ -685,7 +664,7 @@ kind: Deployment
 metadata:
   name: checkout
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: checkout
     
@@ -709,6 +688,8 @@ spec:
         
         app.kubernetes.io/component: checkout
         app.kubernetes.io/name: checkout
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -720,15 +701,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: CHECKOUT_PORT
               value: "8080"
             - name: CART_ADDR
@@ -749,14 +721,10 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: GOMEMLIMIT
               value: 16MiB
             - name: TEAM_NAME
               value: orion
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 20Mi
@@ -776,7 +744,7 @@ kind: Deployment
 metadata:
   name: currency
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: currency
     
@@ -800,6 +768,8 @@ spec:
         
         app.kubernetes.io/component: currency
         app.kubernetes.io/name: currency
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -811,25 +781,12 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: CURRENCY_PORT
               value: "8080"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: VERSION
               value: '2.1.3'
             - name: TEAM_NAME
               value: orion
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 20Mi
@@ -842,7 +799,7 @@ kind: Deployment
 metadata:
   name: email
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: email
     
@@ -866,6 +823,8 @@ spec:
         
         app.kubernetes.io/component: email
         app.kubernetes.io/name: email
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -877,21 +836,16 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: EMAIL_PORT
               value: "8080"
             - name: APP_ENV
               value: production
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318/v1/traces
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: FLAGD_HOST
               value: flagd
             - name: FLAGD_PORT
@@ -899,7 +853,7 @@ spec:
             - name: TEAM_NAME
               value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 100Mi
@@ -912,7 +866,7 @@ kind: Deployment
 metadata:
   name: flagd
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: flagd
     
@@ -936,6 +890,8 @@ spec:
         
         app.kubernetes.io/component: flagd
         app.kubernetes.io/name: flagd
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -958,23 +914,14 @@ spec:
             - containerPort: 8016
               name: ofrep
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: FLAGD_METRICS_EXPORTER
               value: otel
             - name: FLAGD_OTEL_COLLECTOR_URI
-              value: $(OTEL_COLLECTOR_NAME):4317
+              value: otel-demo-daemon-collector:4317
             - name: GOMEMLIMIT
               value: 60MiB
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 75Mi
@@ -989,19 +936,12 @@ spec:
             - containerPort: 4000
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: FLAGD_METRICS_EXPORTER
               value: otel
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: FLAGD_UI_PORT
               value: "4000"
             - name: SECRET_KEY_BASE
@@ -1009,7 +949,7 @@ spec:
             - name: PHX_HOST
               value: localhost
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 250Mi
@@ -1041,7 +981,7 @@ kind: Deployment
 metadata:
   name: fraud-detection
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: fraud-detection
     
@@ -1065,6 +1005,8 @@ spec:
         
         app.kubernetes.io/component: fraud-detection
         app.kubernetes.io/name: fraud-detection
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1072,15 +1014,6 @@ spec:
           image: 'ghcr.io/open-telemetry/demo:2.1.3-fraud-detection'
           imagePullPolicy: IfNotPresent
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: KAFKA_ADDR
               value: kafka:9092
             - name: FLAGD_HOST
@@ -1088,7 +1021,9 @@ spec:
             - name: FLAGD_PORT
               value: "8013"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_INSTRUMENTATION_KAFKA_EXPERIMENTAL_SPAN_ATTRIBUTES
               value: "true"
             - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
@@ -1096,7 +1031,7 @@ spec:
             - name: TEAM_NAME
               value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 300Mi
@@ -1116,7 +1051,7 @@ kind: Deployment
 metadata:
   name: frontend
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: frontend
     
@@ -1140,6 +1075,8 @@ spec:
         
         app.kubernetes.io/component: frontend
         app.kubernetes.io/name: frontend
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1151,15 +1088,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: FRONTEND_PORT
               value: "8080"
             - name: PORT
@@ -1187,17 +1115,13 @@ spec:
             - name: ENV_PLATFORM
               value: kubernetes
             - name: OTEL_COLLECTOR_HOST
-              value: $(OTEL_COLLECTOR_NAME)
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
+              value: otel-demo-daemon-collector
             - name: WEB_OTEL_SERVICE_NAME
               value: frontend-web
             - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
               value: http://localhost:8080/otlp-http/v1/traces
             - name: TEAM_NAME
               value: ring
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 250Mi
@@ -1214,7 +1138,7 @@ kind: Deployment
 metadata:
   name: frontend-proxy
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: frontend-proxy
     
@@ -1238,6 +1162,8 @@ spec:
         
         app.kubernetes.io/component: frontend-proxy
         app.kubernetes.io/name: frontend-proxy
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1249,15 +1175,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: ENVOY_PORT
               value: "8080"
             - name: ENVOY_ADMIN_PORT
@@ -1291,13 +1208,13 @@ spec:
             - name: LOCUST_WEB_PORT
               value: "8089"
             - name: OTEL_COLLECTOR_HOST
-              value: $(OTEL_COLLECTOR_NAME)
+              value: otel-demo-daemon-collector
             - name: OTEL_COLLECTOR_PORT_GRPC
               value: "4317"
             - name: OTEL_COLLECTOR_PORT_HTTP
               value: "4318"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 65Mi
@@ -1314,7 +1231,7 @@ kind: Deployment
 metadata:
   name: image-provider
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: image-provider
     
@@ -1338,6 +1255,8 @@ spec:
         
         app.kubernetes.io/component: image-provider
         app.kubernetes.io/name: image-provider
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1349,23 +1268,14 @@ spec:
             - containerPort: 8081
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: IMAGE_PROVIDER_PORT
               value: "8081"
             - name: OTEL_COLLECTOR_PORT_GRPC
               value: "4317"
             - name: OTEL_COLLECTOR_HOST
-              value: $(OTEL_COLLECTOR_NAME)
+              value: otel-demo-daemon-collector
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 50Mi
@@ -1378,7 +1288,7 @@ kind: Deployment
 metadata:
   name: kafka
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: kafka
     
@@ -1402,6 +1312,8 @@ spec:
         
         app.kubernetes.io/component: kafka
         app.kubernetes.io/name: kafka
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1415,19 +1327,12 @@ spec:
             - containerPort: 9093
               name: controller
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: KAFKA_ADVERTISED_LISTENERS
               value: PLAINTEXT://kafka:9092
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: KAFKA_HEAP_OPTS
               value: -Xmx400M -Xms400M
             - name: KAFKA_LISTENERS
@@ -1437,7 +1342,7 @@ spec:
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: 1@kafka:9093
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 600Mi
@@ -1454,7 +1359,7 @@ kind: Deployment
 metadata:
   name: load-generator
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: load-generator
     
@@ -1478,6 +1383,8 @@ spec:
         
         app.kubernetes.io/component: load-generator
         app.kubernetes.io/name: load-generator
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1489,15 +1396,6 @@ spec:
             - containerPort: 8089
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: LOCUST_WEB_HOST
               value: 0.0.0.0
             - name: LOCUST_WEB_PORT
@@ -1522,12 +1420,8 @@ spec:
               value: "8013"
             - name: FLAGD_OFREP_PORT
               value: "8016"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: TEAM_NAME
               value: ring
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 1500Mi
@@ -1540,7 +1434,7 @@ kind: Deployment
 metadata:
   name: payment
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: payment
     
@@ -1564,6 +1458,8 @@ spec:
         
         app.kubernetes.io/component: payment
         app.kubernetes.io/name: payment
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1575,27 +1471,14 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: PAYMENT_PORT
               value: "8080"
             - name: FLAGD_HOST
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: TEAM_NAME
               value: orion
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 120Mi
@@ -1612,7 +1495,7 @@ kind: Deployment
 metadata:
   name: postgresql
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: postgresql
     
@@ -1647,15 +1530,6 @@ spec:
             - containerPort: 5432
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: POSTGRES_USER
               value: root
             - name: POSTGRES_PASSWORD
@@ -1663,7 +1537,7 @@ spec:
             - name: POSTGRES_DB
               value: otel
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 100Mi
@@ -1676,7 +1550,7 @@ kind: Deployment
 metadata:
   name: product-catalog
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: product-catalog
     
@@ -1700,6 +1574,8 @@ spec:
         
         app.kubernetes.io/component: product-catalog
         app.kubernetes.io/name: product-catalog
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1711,15 +1587,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: PRODUCT_CATALOG_PORT
               value: "8080"
             - name: PRODUCT_CATALOG_RELOAD_INTERVAL
@@ -1728,14 +1595,10 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: GOMEMLIMIT
               value: 16MiB
             - name: TEAM_NAME
               value: helix
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 20Mi
@@ -1753,7 +1616,7 @@ kind: Deployment
 metadata:
   name: quote
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: quote
     
@@ -1777,6 +1640,8 @@ spec:
         
         app.kubernetes.io/component: quote
         app.kubernetes.io/name: quote
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1788,15 +1653,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: QUOTE_PORT
               value: "8080"
             - name: OTEL_PHP_AUTOLOAD_ENABLED
@@ -1804,11 +1660,13 @@ spec:
             - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
               value: "true"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4318
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: TEAM_NAME
               value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 40Mi
@@ -1825,7 +1683,7 @@ kind: Deployment
 metadata:
   name: recommendation
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: recommendation
     
@@ -1849,6 +1707,8 @@ spec:
         
         app.kubernetes.io/component: recommendation
         app.kubernetes.io/name: recommendation
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1860,15 +1720,6 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: RECOMMENDATION_PORT
               value: "8080"
             - name: PRODUCT_CATALOG_ADDR
@@ -1881,12 +1732,8 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: TEAM_NAME
               value: helix
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 500Mi
@@ -1899,7 +1746,7 @@ kind: Deployment
 metadata:
   name: shipping
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: shipping
     
@@ -1923,6 +1770,8 @@ spec:
         
         app.kubernetes.io/component: shipping
         app.kubernetes.io/name: shipping
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
     spec:
       serviceAccountName: example
       containers:
@@ -1934,25 +1783,12 @@ spec:
             - containerPort: 8080
               name: service
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: SHIPPING_PORT
               value: "8080"
             - name: QUOTE_ADDR
               value: http://quote:8080
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: TEAM_NAME
               value: orion
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 20Mi
@@ -1965,7 +1801,7 @@ kind: Deployment
 metadata:
   name: valkey-cart
   labels:
-    helm.sh/chart: opentelemetry-demo-0.38.1
+    helm.sh/chart: opentelemetry-demo-0.39.0
     
     opentelemetry.io/name: valkey-cart
     
@@ -2000,17 +1836,8 @@ spec:
             - containerPort: 6379
               name: valkey-cart
           env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: OTEL_COLLECTOR_NAME
-              value: otel-collector
-            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-              value: cumulative
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME)
+              value: app.eng.team=$(TEAM_NAME)
           resources:
             limits:
               memory: 20Mi
