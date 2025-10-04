@@ -1076,61 +1076,17 @@ grafana:
   adminPassword: admin
   plugins:
     - grafana-opensearch-datasource
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          uid: webstore-metrics
-          type: prometheus
-          url: http://prometheus:9090
-          editable: true
-          isDefault: true
-          jsonData:
-            exemplarTraceIdDestinations:
-              - datasourceUid: webstore-traces
-                name: trace_id
-
-              - url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
-                name: trace_id
-                urlDisplayLabel: View in Jaeger UI
-
-        - name: Jaeger
-          uid: webstore-traces
-          type: jaeger
-          url: http://jaeger-query:16686/jaeger/ui
-          editable: true
-          isDefault: false
-
-        - name: OpenSearch
-          uid: webstore-logs
-          type: grafana-opensearch-datasource
-          url: http://opensearch:9200/
-          access: proxy
-          editable: true
-          isDefault: false
-          jsonData:
-            database: otel
-            flavor: opensearch
-            logLevelField: severity.text.keyword
-            logMessageField: body
-            pplEnabled: true
-            timeField: observedTimestamp
-            version: 2.18.0
-  dashboardProviders:
-    dashboardproviders.yaml:
-      apiVersion: 1
-      providers:
-        - name: 'default'
-          orgId: 1
-          folder: ''
-          type: file
-          disableDeletion: false
-          editable: true
-          options:
-            path: /var/lib/grafana/dashboards/default
-  dashboardsConfigMaps:
-    default: grafana-dashboards
+  sidecar:
+    alerts:
+      enabled: true
+    dashboards:
+      enabled: true
+    datasources:
+      enabled: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
   resources:
     limits:
       memory: 150Mi
