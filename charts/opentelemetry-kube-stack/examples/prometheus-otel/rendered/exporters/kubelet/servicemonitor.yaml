@@ -1,0 +1,110 @@
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kubelet/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: example-kubelet
+  namespace: default
+  labels:
+    app: opentelemetry-kube-stack-kubelet
+    helm.sh/chart: opentelemetry-kube-stack-0.12.0
+    app.kubernetes.io/version: "0.129.1"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+spec:
+  attachMetadata:
+    node: false
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubelet
+      k8s-app: kubelet
+  endpoints:
+  - port: https-metrics
+    scheme: https
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    honorTimestamps: true
+    metricRelabelings:
+    - action: drop
+      regex: (csi_operations|storage_operation_duration)_seconds_bucket;(0.25|2.5|15|25|120|600)(\.0)?
+      sourceLabels:
+      - __name__
+      - le
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __metrics_path__
+      targetLabel: metrics_path
+  - port: https-metrics
+    scheme: https
+    path: /metrics/cadvisor
+    interval: 10s
+    honorLabels: true
+    honorTimestamps: true
+    trackTimestampsStaleness: true
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    metricRelabelings:
+    - action: drop
+      regex: container_cpu_(cfs_throttled_seconds_total|load_average_10s|system_seconds_total|user_seconds_total)
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: container_fs_(io_current|io_time_seconds_total|io_time_weighted_seconds_total|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: container_memory_(mapped_file|swap)
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: container_(file_descriptors|tasks_state|threads_max)
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: container_memory_failures_total;hierarchy
+      sourceLabels:
+      - __name__
+      - scope
+    - action: drop
+      regex: container_network_.*;(cali|cilium|cni|lxc|nodelocaldns|tunl).*
+      sourceLabels:
+      - __name__
+      - interface
+    - action: drop
+      regex: container_spec.*
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: .+;
+      sourceLabels:
+      - id
+      - pod
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __metrics_path__
+      targetLabel: metrics_path
+  - port: https-metrics
+    scheme: https
+    path: /metrics/probes
+    honorLabels: true
+    honorTimestamps: true
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __metrics_path__
+      targetLabel: metrics_path

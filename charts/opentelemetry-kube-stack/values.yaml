@@ -990,6 +990,15 @@ kubelet:
   namespace: kube-system
 
   serviceMonitor:
+    enabled: true
+    ## Enable scraping /metrics from kubelet's service
+    kubelet: true
+
+    ## Attach metadata to discovered targets. Requires Prometheus v2.45 for endpoints created by the operator.
+    ##
+    attachMetadata:
+      node: false
+
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1002,18 +1011,218 @@ kubelet:
     ##
     honorTimestamps: true
 
+    ## If true, defines whether Prometheus tracks staleness of the metrics that have an explicit timestamp present in scraped data. Has no effect if `honorTimestamps` is false.
+    ## We recommend enabling this if you want the best possible accuracy for container_ metrics scraped from cadvisor.
+    ## For more details see: https://github.com/prometheus-community/helm-charts/pull/5063#issuecomment-2545374849
+    trackTimestampsStaleness: true
+
+    ## SampleLimit defines per-scrape limit on number of scraped samples that will be accepted.
+    ##
+    sampleLimit: 0
+
+    ## TargetLimit defines a limit on the number of scraped targets that will be accepted.
+    ##
+    targetLimit: 0
+
+    ## Per-scrape limit on number of labels that will be accepted for a sample. Only valid in Prometheus versions 2.27.0 and newer.
+    ##
+    labelLimit: 0
+
+    ## Per-scrape limit on length of labels name that will be accepted for a sample. Only valid in Prometheus versions 2.27.0 and newer.
+    ##
+    labelNameLengthLimit: 0
+
+    ## Per-scrape limit on length of labels value that will be accepted for a sample. Only valid in Prometheus versions 2.27.0 and newer.
+    ##
+    labelValueLengthLimit: 0
+
+    ## proxyUrl: URL of a proxy that should be used for scraping.
+    ##
+    proxyUrl: ""
+
     ## Enable scraping the kubelet over https. For requirements to enable this see
     ## https://github.com/prometheus-operator/prometheus-operator/issues/926
     ##
     https: true
 
-    ## Enable scraping /metrics/cadvisor from kubelet's service
+    ## Skip TLS certificate validation when scraping.
+    ## This is enabled by default because kubelet serving certificate deployed by kubeadm is by default self-signed
+    ## ref: https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/#kubelet-serving-certs
     ##
-    cAdvisor: true
+    insecureSkipVerify: true
 
     ## Enable scraping /metrics/probes from kubelet's service
     ##
     probes: true
+
+    ## Enable scraping /metrics/resource from kubelet's service
+    ## This is disabled by default because container metrics are already exposed by cAdvisor
+    ##
+    resource: false
+    # From kubernetes 1.18, /metrics/resource/v1alpha1 renamed to /metrics/resource
+    resourcePath: "/metrics/resource/v1alpha1"
+    ## Configure the scrape interval for resource metrics. This is configured to the default Kubelet cAdvisor
+    ## minimum housekeeping interval in order to avoid missing samples. Note, this value is ignored
+    ## if kubelet.serviceMonitor.interval is not empty.
+    resourceInterval: 10s
+
+    ## Enable scraping /metrics/cadvisor from kubelet's service
+    ##
+    cAdvisor: true
+    ## Configure the scrape interval for cAdvisor. This is configured to the default Kubelet cAdvisor
+    ## minimum housekeeping interval in order to avoid missing samples. Note, this value is ignored
+    ## if kubelet.serviceMonitor.interval is not empty.
+    cAdvisorInterval: 10s
+    ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    cAdvisorMetricRelabelings:
+      # Drop less useful container CPU metrics.
+      - sourceLabels: [__name__]
+        action: drop
+        regex: 'container_cpu_(cfs_throttled_seconds_total|load_average_10s|system_seconds_total|user_seconds_total)'
+      # Drop less useful container / always zero filesystem metrics.
+      - sourceLabels: [__name__]
+        action: drop
+        regex: 'container_fs_(io_current|io_time_seconds_total|io_time_weighted_seconds_total|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)'
+      # Drop less useful / always zero container memory metrics.
+      - sourceLabels: [__name__]
+        action: drop
+        regex: 'container_memory_(mapped_file|swap)'
+      # Drop less useful container process metrics.
+      - sourceLabels: [__name__]
+        action: drop
+        regex: 'container_(file_descriptors|tasks_state|threads_max)'
+      # Drop container_memory_failures_total{scope="hierarchy"} metrics,
+      # we only need the container scope.
+      - sourceLabels: [__name__, scope]
+        action: drop
+        regex: 'container_memory_failures_total;hierarchy'
+      # Drop container_network_... metrics that match various interfaces that
+      # correspond to CNI and similar interfaces. This avoids capturing network
+      # metrics for host network containers.
+      - sourceLabels: [__name__, interface]
+        action: drop
+        regex: 'container_network_.*;(cali|cilium|cni|lxc|nodelocaldns|tunl).*'
+      # Drop container spec metrics that overlap with kube-state-metrics.
+      - sourceLabels: [__name__]
+        action: drop
+        regex: 'container_spec.*'
+      # Drop cgroup metrics with no pod.
+      - sourceLabels: [id, pod]
+        action: drop
+        regex: '.+;'
+    # - sourceLabels: [__name__, image]
+    #   separator: ;
+    #   regex: container_([a-z_]+);
+    #   replacement: $1
+    #   action: drop
+    # - sourceLabels: [__name__]
+    #   separator: ;
+    #   regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|cpu_load_average_10s)
+    #   replacement: $1
+    #   action: drop
+
+    ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    probesMetricRelabelings: []
+    # - sourceLabels: [__name__, image]
+    #   separator: ;
+    #   regex: container_([a-z_]+);
+    #   replacement: $1
+    #   action: drop
+    # - sourceLabels: [__name__]
+    #   separator: ;
+    #   regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|cpu_load_average_10s)
+    #   replacement: $1
+    #   action: drop
+
+    ## RelabelConfigs to apply to samples before scraping
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    ## metrics_path is required to match upstream rules and charts
+    cAdvisorRelabelings:
+      - action: replace
+        sourceLabels: [__metrics_path__]
+        targetLabel: metrics_path
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    ## RelabelConfigs to apply to samples before scraping
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    probesRelabelings:
+      - action: replace
+        sourceLabels: [__metrics_path__]
+        targetLabel: metrics_path
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    ## RelabelConfigs to apply to samples before scraping
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    resourceRelabelings:
+      - action: replace
+        sourceLabels: [__metrics_path__]
+        targetLabel: metrics_path
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    metricRelabelings:
+      # Reduce bucket cardinality of kubelet storage operations.
+      - action: drop
+        sourceLabels: [__name__, le]
+        regex: (csi_operations|storage_operation_duration)_seconds_bucket;(0.25|2.5|15|25|120|600)(\.0)?
+    # - sourceLabels: [__name__, image]
+    #   separator: ;
+    #   regex: container_([a-z_]+);
+    #   replacement: $1
+    #   action: drop
+    # - sourceLabels: [__name__]
+    #   separator: ;
+    #   regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|cpu_load_average_10s)
+    #   replacement: $1
+    #   action: drop
+
+    ## RelabelConfigs to apply to samples before scraping
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
+    ##
+    ## metrics_path is required to match upstream rules and charts
+    relabelings:
+      - action: replace
+        sourceLabels: [__metrics_path__]
+        targetLabel: metrics_path
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    ## Additional labels
+    ##
+    additionalLabels: {}
+    #  foo: bar
+
+    ## defines the labels which are transferred from the associated Kubernetes Service object onto the ingested metrics.
+    ## https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#servicemonitor
+    targetLabels: []
 
 ## Component scraping the kube controller manager
 ##
