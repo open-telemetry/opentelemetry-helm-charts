@@ -1,0 +1,99 @@
+name: Train: bump and regenerate
+
+on:
+  push:
+    branches:
+      - 'mergify/**'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: mergify-train-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "false"
+          helm-version: "v3.14.4"
+
+      - name: Derive PR numbers from mergify branch name
+        id: derive
+        shell: bash
+        run: |
+          # Expected branch like: mergify/<queue>/pr-123 or mergify/<queue>/pr-123-456
+          ref_name="${GITHUB_REF_NAME}"
+          echo "Branch: ${ref_name}"
+          if [[ "${ref_name}" =~ pr-([0-9][0-9\-]*) ]]; then
+            seq="${BASH_REMATCH[1]}"
+            prs="${seq//-/ }"
+            echo "PR numbers: ${prs}"
+            echo "numbers=${prs}" >> $GITHUB_OUTPUT
+          else
+            echo "Could not parse PR numbers from ${ref_name}. Proceeding without labels." >&2
+            echo "numbers=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fallback: derive PR numbers from commits
+        if: steps.derive.outputs.numbers == ''
+        id: derive2
+        shell: bash
+        run: |
+          prs=$(git log --merges --pretty=format:'%s' | sed -nE 's/.*#([0-9]+).*/\1/p' | sort -u | tr '\n' ' ')
+          echo "numbers=${prs}" >> $GITHUB_OUTPUT
+
+      - name: Run bump then regenerate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBERS: ${{ steps.derive.outputs.numbers || steps.derive2.outputs.numbers }}
+          BOT_NAME: github-actions[bot]
+          BOT_EMAIL: github-actions[bot]@users.noreply.github.com
+          BASE_REF: origin/main
+        run: |
+          bash .github/scripts/ci_bump_and_regen.sh
+
+      - name: Push commit
+        run: |
+          git push
+
+      - name: Record train commit SHA
+        id: head
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Comment train render link on PRs
+        if: ${{ steps.derive.outputs.numbers != '' || steps.derive2.outputs.numbers != '' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prs = (`${{ steps.derive.outputs.numbers || steps.derive2.outputs.numbers }}`).trim().split(/\s+/).filter(Boolean);
+            const sha = `${{ steps.head.outputs.sha }}`;
+            const commitUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${sha}`;
+            const body = [
+              `This PR is included in a Mergify train build.`,
+              `\n- Train commit: ${commitUrl}`,
+              `\n- Rendered example outputs were regenerated in this commit.`
+            ].join('\n');
+            for (const pr of prs) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: Number(pr),
+                body,
+              });
+            }
+
+
