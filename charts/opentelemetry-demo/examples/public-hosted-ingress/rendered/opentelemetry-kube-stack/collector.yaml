@@ -20,17 +20,17 @@ spec:
       debug: {}
       opensearch:
         http:
-          endpoint: http://opensearch.otel-demo.svc.cluster.local:9200
+          endpoint: http://opensearch:9200
           tls:
             insecure: true
         logs_index: otel-logs
         logs_index_time_format: yyyy-MM-dd
       otlp/jaeger:
-        endpoint: http://jaeger-collector.otel-demo.svc.cluster.local:4317
+        endpoint: http://jaeger-collector:4317
         tls:
           insecure: true
       otlphttp/prometheus:
-        endpoint: http://prometheus.otel-demo.svc.cluster.local:9090/api/v1/otlp
+        endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
     extensions:
@@ -219,7 +219,6 @@ spec:
         logs:
           exporters:
           - opensearch
-          - debug
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -230,7 +229,6 @@ spec:
         metrics:
           exporters:
           - otlphttp/prometheus
-          - debug
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -247,7 +245,6 @@ spec:
         traces:
           exporters:
           - otlp/jaeger
-          - debug
           - spanmetrics
           processors:
           - k8sattributes

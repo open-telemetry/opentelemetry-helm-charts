@@ -850,18 +850,19 @@ opentelemetry-kube-stack:
         exporters:
           debug: {}
           otlp/jaeger:
-            endpoint: "http://jaeger-collector.otel-demo.svc.cluster.local:4317"
+            endpoint: "http://jaeger-collector:4317"
             tls:
               insecure: true
           otlphttp/prometheus:
-            endpoint: "http://prometheus.otel-demo.svc.cluster.local:9090/api/v1/otlp"
+            endpoint: "http://prometheus:9090/api/v1/otlp"
             tls:
               insecure: true
           opensearch:
             logs_index: otel-logs
             logs_index_time_format: "yyyy-MM-dd"
             http:
-              endpoint: "http://opensearch.otel-demo.svc.cluster.local:9200"
+              endpoint: "http://opensearch:9200"
+#              endpoint: "http://opensearch.otel-demo.svc.cluster.local:9200"
               tls:
                 insecure: true
         processors:
@@ -883,7 +884,6 @@ opentelemetry-kube-stack:
                 - transform/fix_nextjs_span_name
               exporters:
                 - otlp/jaeger
-                - debug
                 - spanmetrics
             metrics:
               receivers:
@@ -895,11 +895,9 @@ opentelemetry-kube-stack:
                 - spanmetrics
               exporters:
                 - otlphttp/prometheus
-                -  debug
             logs:
               exporters:
                 - opensearch
-                - debug
           telemetry:
             metrics:
               readers:
