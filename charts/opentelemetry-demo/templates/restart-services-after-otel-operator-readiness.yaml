@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
@@ -11,7 +11,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
@@ -26,7 +26,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator-{{ .Release.Namespace }}
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready-{{ .Release.Namespace }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 rules:
@@ -37,38 +37,38 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator-{{ .Release.Namespace }}
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready-{{ .Release.Namespace }}
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator-{{ .Release.Namespace }}
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready-{{ .Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+  name: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
   labels:
     {{- include "otel-demo.labels" . | nindent 4 }}
 spec:
@@ -77,9 +77,9 @@ spec:
   template:
     spec:
       restartPolicy: Never
-      serviceAccountName: {{ include "otel-demo.name" . }}-wait-for-otel-operator
+      serviceAccountName: {{ include "otel-demo.name" . }}-restart-services-after-otel-operator-is-ready
       containers:
-      - name: wait-for-otel-operator
+      - name: restart-services-after-otel-operator-is-ready
         image: alpine/k8s:1.31.13 # the rancher/kubectl image doesn't include 'sh'
         command:
         - /bin/sh

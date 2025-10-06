@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
+  # Format: {name: some_name, value: some_value} or {name: some_name, valueFrom: ...}
   env: []
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
@@ -207,7 +208,7 @@ components:
   cart:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     podAnnotations:
@@ -234,7 +235,7 @@ components:
   checkout:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -273,7 +274,7 @@ components:
   currency:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -346,7 +347,7 @@ components:
   frontend:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -376,8 +377,6 @@ components:
         value: "8013"
       - name: ENV_PLATFORM
         value: kubernetes
-      - name: OTEL_COLLECTOR_HOST
-        value: otel-demo-daemon-collector
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
@@ -433,8 +432,7 @@ components:
         value: load-generator
       - name: LOCUST_WEB_PORT
         value: "8089"
-      - name: OTEL_COLLECTOR_HOST
-        value: otel-demo-daemon-collector
+      # workaround https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1888
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
@@ -458,10 +456,9 @@ components:
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
+        # https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1888
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
-      - name: OTEL_COLLECTOR_HOST
-        value: otel-demo-daemon-collector
     resources:
       limits:
         memory: 50Mi
@@ -469,7 +466,7 @@ components:
   load-generator:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8089
     env:
@@ -506,7 +503,7 @@ components:
   payment:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -529,7 +526,7 @@ components:
   product-catalog:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -583,7 +580,7 @@ components:
   recommendation:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -608,7 +605,7 @@ components:
   shipping:
     enabled: true
     useDefault:
-      env: false
+      env: true
     service:
       port: 8080
     env:
@@ -778,7 +775,7 @@ opentelemetry-kube-stack:
   clusterName: otel-demo-stack
   crds:
     installOtel: true
-    installPrometheus: false # disable to prevent install of Prometheus  components
+    installPrometheus: false  # disable to prevent install of Prometheus components
   collectors:
     daemon:
       enabled: true
@@ -788,10 +785,10 @@ opentelemetry-kube-stack:
       scrape_configs_file: ""
       presets:
         logsCollection:
-          enabled: false # TODO disable when running on Docker Desktop
-          storeCheckpoints: false # TODO disable when running on Docker Desktop
+          enabled: false  # TODO disable when running on Docker Desktop
+          storeCheckpoints: false  # TODO disable when running on Docker Desktop
         hostMetrics:
-          enabled: false # TODO disable when running on Docker Desktop
+          enabled: false  # TODO disable when running on Docker Desktop
         kubeletMetrics:
           enabled: true
         kubernetesAttributes:
@@ -802,7 +799,7 @@ opentelemetry-kube-stack:
           enabled: true
       config:
         extensions:
-          health_check: # For K8s Liveness and Readiness Probes
+          health_check:  # For K8s Liveness and Readiness Probes
             endpoint: 0.0.0.0:13133
         receivers:
           otlp:
@@ -862,7 +859,6 @@ opentelemetry-kube-stack:
             logs_index_time_format: "yyyy-MM-dd"
             http:
               endpoint: "http://opensearch:9200"
-#              endpoint: "http://opensearch.otel-demo.svc.cluster.local:9200"
               tls:
                 insecure: true
         processors:
@@ -932,13 +928,15 @@ opentelemetry-kube-stack:
             fieldPath: spec.nodeName
       - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
         value: cumulative
+      - name: OTEL_COLLECTOR_HOST
+        value: otel-demo-daemon-collector
     exporter:
       endpoint: http://otel-demo-daemon-collector:4317
     propagators:
       - tracecontext
       - baggage
     sampler:
-      type: "parentbased_always_on"
+      type: parentbased_always_on
     resource:
       resourceAttributes:
         deployment.environment.name: demo
