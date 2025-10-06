@@ -322,3 +322,16 @@ labelNameLengthLimit: {{ . }}
 labelValueLengthLimit: {{ . }}
 {{- end }}
 {{- end -}}
+
+{{/* To help configure the kubelet servicemonitor for http or https. */}}
+{{- define "opentelemetry-kube-stack.kubelet.scheme" }}
+{{- if .Values.kubelet.serviceMonitor.https }}https{{ else }}http{{ end }}
+{{- end }}
+{{- define "opentelemetry-kube-stack.kubelet.authConfig" }}
+{{- if .Values.kubelet.serviceMonitor.https }}
+tlsConfig:
+  caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  insecureSkipVerify: {{ .Values.kubelet.serviceMonitor.insecureSkipVerify }}
+bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+{{- end }}
+{{- end }}
