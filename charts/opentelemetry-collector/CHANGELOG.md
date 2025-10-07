@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.0 / 2025-10-07
+- [CHORE] Bump Collector to 0.137.0
+
 ### v0.120.5 / 2025-09-30
 - [Fix] Exclude EKS detector from resource detection for ECS distributions to prevent startup failures.
 
