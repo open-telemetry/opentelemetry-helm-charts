@@ -870,8 +870,17 @@ opentelemetry-kube-stack:
                   - replace_pattern(name, "\\?.*", "")
                   - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
           resourcedetection/env:
-            detectors: [k8snode, env]
+            detectors: [env, k8snode]
             timeout: 2s
+            override: false
+          transform/set-hostname:
+            error_mode: ignore
+            trace_statements:
+              - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
+            metric_statements:
+              - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
+            log_statements:
+              - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
         connectors:
           spanmetrics: {}
         service:
@@ -879,7 +888,10 @@ opentelemetry-kube-stack:
           pipelines:
             traces:
               processors:
+                - resourcedetection/env
+                - transform/set-hostname
                 - transform/fix_nextjs_span_name
+                - batch
               exporters:
                 - otlp/jaeger
                 - spanmetrics
@@ -891,9 +903,17 @@ opentelemetry-kube-stack:
                 - postgresql
                 - redis
                 - spanmetrics
+              processors:
+                - resourcedetection/env
+                - transform/set-hostname
+                - batch
               exporters:
                 - otlphttp/prometheus
             logs:
+              processors:
+                - resourcedetection/env
+                - transform/set-hostname
+                - batch
               exporters:
                 - opensearch
           telemetry:

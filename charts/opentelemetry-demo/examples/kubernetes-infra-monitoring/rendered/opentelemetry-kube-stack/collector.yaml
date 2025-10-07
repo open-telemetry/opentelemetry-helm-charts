@@ -109,8 +109,8 @@ spec:
           - from: connection
       resourcedetection/env:
         detectors:
-        - k8snode
         - env
+        - k8snode
         override: false
         timeout: 2s
       transform/fix_nextjs_span_name:
@@ -120,6 +120,17 @@ spec:
           statements:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+      transform/set-hostname:
+        error_mode: ignore
+        log_statements:
+        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
+          when resource.attributes["host.name"] == null
+        metrics_statements:
+        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
+          when resource.attributes["host.name"] == null
+        trace_statements:
+        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
+          when resource.attributes["host.name"] == null
     receivers:
       filelog:
         exclude: []
@@ -291,6 +302,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - transform/set-hostname
           - batch
           receivers:
           - otlp
@@ -302,6 +314,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - transform/set-hostname
           - batch
           receivers:
           - otlp
@@ -319,7 +332,10 @@ spec:
           - spanmetrics
           processors:
           - k8sattributes
+          - resourcedetection/env
+          - transform/set-hostname
           - transform/fix_nextjs_span_name
+          - batch
           receivers:
           - otlp
       telemetry:
