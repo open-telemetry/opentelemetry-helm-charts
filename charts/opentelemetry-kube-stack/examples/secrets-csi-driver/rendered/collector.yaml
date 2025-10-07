@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.11.0
+    helm.sh/chart: opentelemetry-kube-stack-0.11.1
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -91,8 +91,23 @@ spec:
       resourcedetection/env:
         detectors:
         - env
+        - k8snode
         override: false
         timeout: 2s
+      transform/set-hostname:
+        error_mode: ignore
+        log_statements:
+        - context: resource
+          statements:
+          - set(attributes["host.name"], attributes["k8s.node.name"])
+        metrics_statements:
+        - context: resource
+          statements:
+          - set(attributes["host.name"], attributes["k8s.node.name"])
+        trace_statements:
+        - context: resource
+          statements:
+          - set(attributes["host.name"], attributes["k8s.node.name"])
     receivers:
       filelog:
         exclude: []
@@ -400,6 +415,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - transform/set-hostname
           - batch
           receivers:
           - otlp
@@ -411,6 +427,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - transform/set-hostname
           - batch
           receivers:
           - prometheus
@@ -424,6 +441,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - transform/set-hostname
           - batch
           receivers:
           - otlp
