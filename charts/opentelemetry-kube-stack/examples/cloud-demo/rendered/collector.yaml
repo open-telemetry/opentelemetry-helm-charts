@@ -102,17 +102,14 @@ spec:
       transform/set-hostname:
         error_mode: ignore
         log_statements:
-        - context: resource
-          statements:
-          - set(attributes["host.name"], attributes["k8s.node.name"])
-        metrics_statements:
-        - context: resource
-          statements:
-          - set(attributes["host.name"], attributes["k8s.node.name"])
+        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
+          where resource.attributes["host.name"] == nil
+        metric_statements:
+        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
+          where resource.attributes["host.name"] == nil
         trace_statements:
-        - context: resource
-          statements:
-          - set(attributes["host.name"], attributes["k8s.node.name"])
+        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
+          where resource.attributes["host.name"] == nil
     receivers:
       filelog:
         exclude: []

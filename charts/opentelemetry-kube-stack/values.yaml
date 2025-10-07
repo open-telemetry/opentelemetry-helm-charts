@@ -517,17 +517,11 @@ collectors:
         transform/set-hostname:
           error_mode: ignore
           trace_statements:
-            - context: resource
-              statements:
-                - set(attributes["host.name"], attributes["k8s.node.name"])
-          metrics_statements:
-            - context: resource
-              statements:
-                - set(attributes["host.name"], attributes["k8s.node.name"])
+            - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
+          metric_statements:
+            - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
           log_statements:
-            - context: resource
-              statements:
-                - set(attributes["host.name"], attributes["k8s.node.name"])
+            - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
         batch:
           send_batch_size: 1000
           timeout: 1s
