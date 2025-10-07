@@ -6,7 +6,7 @@ metadata:
   name: otel-demo-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.10.5
+    helm.sh/chart: opentelemetry-kube-stack-0.11.0
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -109,6 +109,7 @@ spec:
           - from: connection
       resourcedetection/env:
         detectors:
+        - k8snode
         - env
         override: false
         timeout: 2s
@@ -120,6 +121,74 @@ spec:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
+      filelog:
+        exclude: []
+        include:
+        - /var/log/pods/*/*/*.log
+        include_file_name: false
+        include_file_path: true
+        operators:
+        - id: container-parser
+          max_log_size: 102400
+          type: container
+        retry_on_failure:
+          enabled: true
+        start_at: end
+      hostmetrics:
+        collection_interval: 10s
+        root_path: /hostfs
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          disk: {}
+          filesystem:
+            exclude_fs_types:
+              fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+              match_type: strict
+            exclude_mount_points:
+              match_type: regexp
+              mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+            metrics:
+              system.filesystem.utilization:
+                enabled: true
+          load: {}
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          network: {}
       httpcheck/frontend-proxy:
         targets:
         - endpoint: http://frontend-proxy:8080
@@ -225,6 +294,7 @@ spec:
           - batch
           receivers:
           - otlp
+          - filelog
           - k8sobjects
         metrics:
           exporters:
@@ -240,6 +310,7 @@ spec:
           - postgresql
           - redis
           - spanmetrics
+          - hostmetrics
           - kubeletstats
           - k8s_cluster
         traces:
@@ -277,6 +348,17 @@ spec:
     runAsUser: 0
   targetAllocator:
     enabled: false
+  volumeMounts:
+  - name: varlogpods
+    mountPath: /var/log/pods
+    readOnly: true
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  - name: hostfs
+    mountPath: /hostfs
+    readOnly: true
+    mountPropagation: HostToContainer
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
@@ -303,3 +385,14 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name=otel-demo-stack"
+  
+  volumes:
+  - name: varlogpods
+    hostPath:
+      path: /var/log/pods
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  - name: hostfs
+    hostPath:
+      path: /

@@ -771,8 +771,7 @@ components:
 opentelemetry-kube-stack:
   enabled: true
   # https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-kube-stack
-  # TODO st the K8s Cluster Name value
-  clusterName: otel-demo-stack
+  clusterName: otel-demo-stack  # TODO set the K8s Cluster Name value
   crds:
     installOtel: true
     installPrometheus: false  # disable to prevent install of Prometheus components
@@ -785,10 +784,10 @@ opentelemetry-kube-stack:
       scrape_configs_file: ""
       presets:
         logsCollection:
-          enabled: false  # TODO disable when running on Docker Desktop
+          enabled: true  # TODO disable when running on Docker Desktop
           storeCheckpoints: false  # TODO disable when running on Docker Desktop
         hostMetrics:
-          enabled: false  # TODO disable when running on Docker Desktop
+          enabled: true  # TODO disable when running on Docker Desktop
         kubeletMetrics:
           enabled: true
         kubernetesAttributes:
@@ -870,6 +869,9 @@ opentelemetry-kube-stack:
                   # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
                   - replace_pattern(name, "\\?.*", "")
                   - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+          resourcedetection/env:
+            detectors: [k8snode, env]
+            timeout: 2s
         connectors:
           spanmetrics: {}
         service:
