@@ -1917,7 +1917,7 @@ data:
           },
           "id": 42,
           "panels": [],
-          "title": "Service instances",
+          "title": "Infrastructure",
           "type": "row"
         },
         {
@@ -1971,7 +1971,7 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Host Memory"
+                  "options": "Host Used Memory"
                 },
                 "properties": [
                   {
@@ -1983,7 +1983,7 @@ data:
             ]
           },
           "gridPos": {
-            "h": 4,
+            "h": 3,
             "w": 24,
             "x": 0,
             "y": 27
@@ -1998,11 +1998,11 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum by (service_instance_id_host_name) (\n  label_join(\n    (\n      sum by (service_instance_id, host_name) (\n         rate(system_cpu_time_seconds_total{job=\"\", state!=\"idle\"}[$__rate_interval])\n      )\n      * on(host_name) group_left(service_instance_id)\n      target_info{service_name=\"${service_name}\"}\n    ),\n    \"service_instance_id_host_name\",\n    \" / \",\n    \"service_instance_id\",\n    \"host_name\"\n  )\n)",
+              "expr": "sum by (host_name) (\n  rate(system_cpu_time_seconds_total{service_name=\"\", state!=\"idle\"}[$__rate_interval])\n)\n* on(host_name) \ngroup by (host_name) (\n  target_info{service_name=\"${service_name}\", service_instance_id!=\"\"}\n)",
               "hide": false,
               "legendFormat": "__auto",
               "range": true,
-              "refId": "cpu_time_percentage"
+              "refId": "cpu_time_pct"
             },
             {
               "datasource": {
@@ -2010,7 +2010,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "sum by (service_instance_id_host_name) (\n  label_join(\n    (\n      (\n        sum by (service_instance_id, host_name) (\n          system_memory_usage_bytes{job=\"\", state!=\"free\"}\n        )\n        /\n        sum by (service_instance_id, host_name) (\n          system_memory_usage_bytes{job=\"\"}\n        )\n      )\n      * on(host_name) group_left(service_instance_id) (\n        target_info{service_name=\"${service_name}\"}\n      )\n    ),\n    \"service_instance_id_host_name\",\n    \" / \",\n    \"service_instance_id\",\n    \"host_name\"\n  )\n)",
+              "expr": "  (\n    (\n      sum by (host_name) (\n        system_memory_usage_bytes{service_name=\"\", state=\"used\"}\n      )\n      /\n      sum by (host_name) (\n        system_memory_usage_bytes{service_name=\"\"}\n      )\n    )\n    * on(host_name) (\n      group by (host_name) (\n        target_info{service_name=\"${service_name}\"}\n      )\n    )\n  )\n",
               "hide": false,
               "instant": false,
               "legendFormat": "__auto",
@@ -2018,12 +2018,15 @@ data:
               "refId": "memory_usage_pct"
             }
           ],
-          "title": "Host: service instance / host",
+          "title": "",
           "transformations": [
             {
               "id": "timeSeriesTable",
               "options": {
                 "A": {
+                  "timeField": "Time"
+                },
+                "cpu_time_pct": {
                   "timeField": "Time"
                 },
                 "cpu_time_percentage": {
@@ -2037,7 +2040,7 @@ data:
             {
               "id": "joinByField",
               "options": {
-                "byField": "service_instance_id_host_name",
+                "byField": "host_name",
                 "mode": "outer"
               }
             },
@@ -2048,8 +2051,10 @@ data:
                 "includeByName": {},
                 "indexByName": {},
                 "renameByName": {
+                  "Trend #cpu_time_pct": "Host CPU",
                   "Trend #cpu_time_percentage": "Host CPU",
-                  "Trend #memory_usage_pct": "Host Memory",
+                  "Trend #memory_usage_pct": "Host Used Memory",
+                  "host_name": "Host",
                   "service_instance_id_host_name": "Instance / Host"
                 }
               }
@@ -2096,7 +2101,7 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Sum of CPU usage"
+                  "options": "Pod CPU usage"
                 },
                 "properties": [
                   {
@@ -2108,7 +2113,7 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Sum of pod memory usage"
+                  "options": "Pod Memory Usage"
                 },
                 "properties": [
                   {
@@ -2120,10 +2125,10 @@ data:
             ]
           },
           "gridPos": {
-            "h": 4,
+            "h": 3,
             "w": 24,
             "x": 0,
-            "y": 31
+            "y": 30
           },
           "id": 43,
           "options": {
@@ -2135,7 +2140,7 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum by (k8s_pod_name) (\n    rate(k8s_pod_cpu_time_seconds_total{}[$__rate_interval])\n)\n* on(k8s_pod_name) \nsum by (k8s_pod_name) (\n  target_info{service_name=\"${service_name}\", service_instance_id!=\"\"}\n)\n",
+              "expr": "sum by (k8s_pod_name) (\n    rate(k8s_pod_cpu_time_seconds_total{}[$__rate_interval])\n)\n* on(k8s_pod_name) \ngroup by (k8s_pod_name) (\n  target_info{service_name=\"${service_name}\", service_instance_id!=\"\"}\n)\n",
               "hide": false,
               "legendFormat": "__auto",
               "range": true,
@@ -2147,7 +2152,7 @@ data:
                 "uid": "webstore-metrics"
               },
               "editorMode": "code",
-              "expr": "\nsum by (k8s_pod_name) (\n  k8s_pod_memory_working_set_bytes{}\n)\n* on(k8s_pod_name)\nsum by (k8s_pod_name) (\n  target_info{service_name=\"${service_name}\", service_instance_id!=\"\"}\n)\n",
+              "expr": "\nsum by (k8s_pod_name) (\n  k8s_pod_memory_working_set_bytes{}\n)\n* on(k8s_pod_name)\ngroup by (k8s_pod_name) (\n  target_info{service_name=\"${service_name}\", service_instance_id!=\"\"}\n)\n",
               "hide": false,
               "instant": false,
               "legendFormat": "__auto",
@@ -2155,7 +2160,7 @@ data:
               "refId": "memory_usage_bytes"
             }
           ],
-          "title": "Kubernetes: service instance / pod",
+          "title": "",
           "transformations": [
             {
               "id": "timeSeriesTable",
@@ -2187,11 +2192,11 @@ data:
                 "includeByName": {},
                 "indexByName": {},
                 "renameByName": {
-                  "Trend #cpu_time_pct": "Sum of CPU usage",
+                  "Trend #cpu_time_pct": "Pod CPU usage",
                   "Trend #cpu_time_percentage": "Host CPU",
-                  "Trend #memory_usage_bytes": "Sum of pod memory usage",
+                  "Trend #memory_usage_bytes": "Pod Memory Usage",
                   "Trend #memory_usage_pct": "Host Memory",
-                  "k8s_pod_name": "Pod name",
+                  "k8s_pod_name": "Kubernetes Pod Name",
                   "service_instance_id_host_name": "Instance / Host"
                 }
               }
@@ -2205,7 +2210,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 35
+            "y": 33
           },
           "id": 25,
           "panels": [],
@@ -2292,7 +2297,7 @@ data:
             "h": 15,
             "w": 24,
             "x": 0,
-            "y": 36
+            "y": 34
           },
           "id": 26,
           "options": {
@@ -2367,151 +2372,145 @@ data:
           "type": "table"
         },
         {
-          "collapsed": true,
+          "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 51
+            "y": 49
           },
           "id": 29,
-          "panels": [
+          "panels": [],
+          "title": "Traces",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "jaeger",
+            "uid": "${jaeger_datasource}"
+          },
+          "description": "Traces containing a span emitted by the service",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "footer": {
+                  "reducers": []
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "noValue": "No traces",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Trace Service"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hideFrom.viz",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Span ID"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hideFrom.viz",
+                    "value": false
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "deployment.environment.name"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hideFrom.viz",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "service.name"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hideFrom.viz",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "service.namespace"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hideFrom.viz",
+                    "value": true
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 15,
+            "x": 0,
+            "y": 50
+          },
+          "id": 30,
+          "options": {
+            "cellHeight": "sm",
+            "frameIndex": 0,
+            "showHeader": true
+          },
+          "pluginVersion": "12.2.0",
+          "targets": [
             {
               "datasource": {
                 "type": "jaeger",
                 "uid": "${jaeger_datasource}"
               },
-              "description": "Traces containing a span emitted by the service",
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "inspect": false
-                  },
-                  "mappings": [],
-                  "noValue": "No traces",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  }
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "Trace Service"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "Span ID"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": false
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "deployment.environment.name"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "service.name"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "service.namespace"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  }
-                ]
-              },
-              "gridPos": {
-                "h": 8,
-                "w": 15,
-                "x": 0,
-                "y": 58
-              },
-              "id": 30,
-              "options": {
-                "cellHeight": "sm",
-                "footer": {
-                  "countRows": false,
-                  "fields": "",
-                  "reducer": [
-                    "sum"
-                  ],
-                  "show": false
-                },
-                "frameIndex": 0,
-                "showHeader": true
-              },
-              "pluginVersion": "12.1.0",
-              "targets": [
-                {
-                  "datasource": {
-                    "type": "jaeger",
-                    "uid": "${jaeger_datasource}"
-                  },
-                  "queryType": "search",
-                  "refId": "A",
-                  "service": "$service_name",
-                  "tags": "service.namespace=\"$service_namespace\""
-                }
-              ],
-              "title": "",
-              "type": "table"
+              "queryType": "search",
+              "refId": "A",
+              "service": "$service_name",
+              "tags": "service.namespace=\"$service_namespace\""
             }
           ],
-          "title": "Traces",
-          "type": "row"
+          "title": "",
+          "type": "table"
         }
       ],
       "preload": false,
@@ -2593,8 +2592,8 @@ data:
             "allValue": ".*",
             "allowCustomValue": false,
             "current": {
-              "text": "opentelemetry-demo",
-              "value": "opentelemetry-demo"
+              "text": "otel-demo",
+              "value": "otel-demo"
             },
             "datasource": {
               "type": "prometheus",
@@ -2650,7 +2649,7 @@ data:
       "timezone": "",
       "title": "APM Dashboard (Jaeger, Prometheus, OpenSearch)",
       "uid": "febljk0a32qyoa",
-      "version": 2
+      "version": 1
     }
 ---
 # Source: opentelemetry-demo/templates/grafana-config.yaml
