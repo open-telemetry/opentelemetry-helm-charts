@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.2 / 2025-10-08
+- [Feat] Enable the compact span metrics preset by default.
+
 ### v0.121.1 / 2025-10-08
 - [FIX] Route the logs router default path through a continuation stage so extra filelog operators always run and drop the now-redundant export noop stage.
 
