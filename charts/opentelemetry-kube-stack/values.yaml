@@ -514,14 +514,11 @@ collectors:
           detectors: [env, k8snode]
           timeout: 2s
           override: false
-        transform/set-hostname:
-          error_mode: ignore
-          trace_statements:
-            - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
-          metric_statements:
-            - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
-          log_statements:
-            - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
+        resource/hostname:
+          attributes:
+            - key: host.name
+              from_attribute: k8s.node.name
+              action: insert
         batch:
           send_batch_size: 1000
           timeout: 1s
@@ -536,7 +533,7 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
-              - transform/set-hostname
+              - resource/hostname
               - batch
             exporters:
               - debug
@@ -545,7 +542,7 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
-              - transform/set-hostname
+              - resource/hostname
               - batch
             exporters:
               - debug

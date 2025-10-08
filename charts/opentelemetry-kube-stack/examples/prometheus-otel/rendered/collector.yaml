@@ -26,23 +26,17 @@ spec:
         send_batch_max_size: 1500
         send_batch_size: 1000
         timeout: 1s
+      resource/hostname:
+        attributes:
+        - action: insert
+          from_attribute: k8s.node.name
+          key: host.name
       resourcedetection/env:
         detectors:
         - env
         - k8snode
         override: false
         timeout: 2s
-      transform/set-hostname:
-        error_mode: ignore
-        log_statements:
-        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
-          where resource.attributes["host.name"] == nil
-        metric_statements:
-        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
-          where resource.attributes["host.name"] == nil
-        trace_statements:
-        - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"])
-          where resource.attributes["host.name"] == nil
     receivers:
       otlp:
         protocols:
@@ -70,7 +64,7 @@ spec:
           - otlp
           processors:
           - resourcedetection/env
-          - transform/set-hostname
+          - resource/hostname
           - batch
           receivers:
           - prometheus
@@ -79,7 +73,7 @@ spec:
           - debug
           processors:
           - resourcedetection/env
-          - transform/set-hostname
+          - resource/hostname
           - batch
           receivers:
           - otlp
