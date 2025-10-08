@@ -873,14 +873,11 @@ opentelemetry-kube-stack:
             detectors: [env, k8snode]
             timeout: 2s
             override: false
-          transform/set-hostname:
-            error_mode: ignore
-            trace_statements:
-              - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
-            metric_statements:
-              - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
-            log_statements:
-              - set(resource.attributes["host.name"], resource.attributes["k8s.node.name"]) where resource.attributes["host.name"] == nil
+          resource/hostname:
+            attributes:
+              - key: host.name
+                from_attribute: k8s.node.name
+                action: insert
         connectors:
           spanmetrics: {}
         service:
@@ -889,7 +886,7 @@ opentelemetry-kube-stack:
             traces:
               processors:
                 - resourcedetection/env
-                - transform/set-hostname
+                - resource/hostname
                 - transform/fix_nextjs_span_name
                 - batch
               exporters:
@@ -905,14 +902,14 @@ opentelemetry-kube-stack:
                 - spanmetrics
               processors:
                 - resourcedetection/env
-                - transform/set-hostname
+                - resource/hostname
                 - batch
               exporters:
                 - otlphttp/prometheus
             logs:
               processors:
                 - resourcedetection/env
-                - transform/set-hostname
+                - resource/hostname
                 - batch
               exporters:
                 - opensearch
