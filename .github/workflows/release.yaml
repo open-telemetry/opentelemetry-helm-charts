@@ -43,6 +43,7 @@ jobs:
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
           charts_dir: charts
+          config: .github/cr.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_GENERATE_RELEASE_NOTES: true
@@ -63,3 +64,8 @@ jobs:
             fi
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY}"
           done
+
+      - name: Enhance release notes with OpenTelemetry links
+        run: .github/scripts/enhance-release-notes.sh
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
