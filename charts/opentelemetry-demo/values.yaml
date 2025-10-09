@@ -869,15 +869,6 @@ opentelemetry-kube-stack:
                   # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
                   - replace_pattern(name, "\\?.*", "")
                   - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
-          resourcedetection/env:
-            detectors: [env, k8snode]
-            timeout: 2s
-            override: false
-          resource/hostname:
-            attributes:
-              - key: host.name
-                from_attribute: k8s.node.name
-                action: insert
         connectors:
           spanmetrics: {}
         service:
