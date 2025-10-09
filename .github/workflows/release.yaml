@@ -63,3 +63,8 @@ jobs:
             fi
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY}"
           done
+
+      - name: Enhance release notes with OpenTelemetry links
+        run: .github/scripts/enhance-release-notes.sh
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
