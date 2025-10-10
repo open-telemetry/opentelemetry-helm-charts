@@ -102,7 +102,8 @@ spec:
 {{- end }}
 {{- end }}
       terminationGracePeriodSeconds: 30
-      securityContext: {}
+      securityContext: 
+{{ toYaml .Values.cloudCollector.securityContext | indent 8 }}
       serviceAccountName: {{ include "opentelemetry-collector-cloud-collector.serviceAccountName" . }}
     {{- with .Values.cloudCollector.nodeSelector }}
       nodeSelector:
