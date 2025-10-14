@@ -30,10 +30,6 @@ collectors:
     config:
       receivers: {}
       processors:
-        batch:
-          send_batch_size: 1000
-          timeout: 1s
-          send_batch_max_size: 1500
         resourcedetection/env:
           detectors: [env]
           timeout: 2s
@@ -44,9 +40,9 @@ collectors:
         pipelines:
           metrics:
             receivers: [k8s_cluster]
-            processors: [resourcedetection/env, batch]
+            processors: [resourcedetection/env]
             exporters: [debug]
           logs:
             receivers: [k8sobjects]
-            processors: [resourcedetection/env, batch]
+            processors: [resourcedetection/env]
             exporters: [debug]
