@@ -120,7 +120,7 @@ Generate default OTEL_RESOURCE_ATTRIBUTES value when resourceDetection preset is
 Return pod or node IP environment variable wrapped for IPv6 when required.*/}}
 {{- define "opentelemetry-collector.envHost" -}}
 {{- /* When running in ECS mode, there is no MY_POD_IP env, use 0.0.0.0 in generated config */ -}}
-{{- if and (eq .env "MY_POD_IP") (eq .context.Values.distribution "ecs") -}}
+{{- if and (eq .env "MY_POD_IP") (or (eq .context.Values.distribution "ecs") (eq .context.Values.distribution "standalone")) -}}
 0.0.0.0
 {{- else -}}
   {{- $ip := printf "${env:%s}" .env -}}

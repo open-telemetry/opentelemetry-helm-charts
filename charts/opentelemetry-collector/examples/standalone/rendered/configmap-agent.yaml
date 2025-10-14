@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/configmap.yaml
+# Source: opentelemetry-collector/templates/configmap-agent.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-opentelemetry-collector
+  name: example-opentelemetry-collector-agent
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.121.4
@@ -20,62 +20,10 @@ data:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
-      batch:
-        send_batch_max_size: 2048
-        send_batch_size: 1024
-        timeout: 1s
-      k8sattributes:
-        extract:
-          metadata:
-          - k8s.namespace.name
-          - k8s.replicaset.name
-          - k8s.statefulset.name
-          - k8s.daemonset.name
-          - k8s.cronjob.name
-          - k8s.job.name
-          - k8s.node.name
-          - k8s.pod.name
-          - k8s.pod.uid
-          - k8s.pod.start_time
-        passthrough: false
-        pod_association:
-        - sources:
-          - from: resource_attribute
-            name: k8s.pod.ip
-        - sources:
-          - from: resource_attribute
-            name: k8s.pod.uid
-        - sources:
-          - from: connection
-        - sources:
-          - from: resource_attribute
-            name: k8s.job.name
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      transform/k8s_attributes:
-        log_statements:
-        - context: resource
-          statements:
-          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
-          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
-            "$$1") where attributes["k8s.replicaset.name"] != nil
-          - delete_key(attributes, "k8s.replicaset.name")
-        metric_statements:
-        - context: resource
-          statements:
-          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
-          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
-            "$$1") where attributes["k8s.replicaset.name"] != nil
-          - delete_key(attributes, "k8s.replicaset.name")
-        trace_statements:
-        - context: resource
-          statements:
-          - set(attributes["k8s.deployment.name"], attributes["k8s.replicaset.name"])
-          - replace_pattern(attributes["k8s.deployment.name"], "^(.*)-[0-9a-zA-Z]+$",
-            "$$1") where attributes["k8s.replicaset.name"] != nil
-          - delete_key(attributes, "k8s.replicaset.name")
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -127,13 +75,77 @@ data:
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
     receivers:
+      hostmetrics:
+        collection_interval: 10s
+        root_path: /
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          disk: null
+          filesystem:
+            exclude_fs_types:
+              fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+              match_type: strict
+            exclude_mount_points:
+              match_type: regexp
+              mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /run/containerd/runc/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+          load: null
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          network: null
+          process:
+            metrics:
+              process.cpu.utilization:
+                enabled: true
+              process.memory.utilization:
+                enabled: true
+              process.threads:
+                enabled: true
+            mute_process_exe_error: true
+            mute_process_name_error: true
+            mute_process_user_error: true
       otlp:
         protocols:
           grpc:
-            endpoint: ${env:MY_POD_IP}:4317
+            endpoint: 0.0.0.0:4317
             max_recv_msg_size_mib: 20
           http:
-            endpoint: ${env:MY_POD_IP}:4318
+            endpoint: 0.0.0.0:4318
       prometheus:
         config:
           scrape_configs:
@@ -141,7 +153,7 @@ data:
             scrape_interval: 30s
             static_configs:
             - targets:
-              - ${env:MY_POD_IP}:8888
+              - 0.0.0.0:8888
     service:
       extensions:
       - health_check
@@ -151,9 +163,6 @@ data:
           - debug
           processors:
           - memory_limiter
-          - k8sattributes
-          - transform/k8s_attributes
-          - batch
           receivers:
           - otlp
         metrics:
@@ -161,11 +170,9 @@ data:
           - debug
           processors:
           - memory_limiter
-          - k8sattributes
-          - transform/k8s_attributes
           - transform/prometheus
-          - batch
           receivers:
+          - hostmetrics
           - prometheus
           - otlp
         traces:
@@ -173,9 +180,6 @@ data:
           - debug
           processors:
           - memory_limiter
-          - k8sattributes
-          - transform/k8s_attributes
-          - batch
           receivers:
           - otlp
       telemetry:
@@ -186,5 +190,5 @@ data:
           - pull:
               exporter:
                 prometheus:
-                  host: ${env:MY_POD_IP}
+                  host: 0.0.0.0
                   port: 8888

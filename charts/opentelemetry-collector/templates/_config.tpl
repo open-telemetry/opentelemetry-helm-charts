@@ -416,7 +416,7 @@ connectors:
 receivers:
   hostmetrics:
     {{- if not .Values.isWindows }}
-    {{- if eq .Values.distribution "ecs" }}
+    {{- if or (eq .Values.distribution "ecs") (eq .Values.distribution "standalone") }}
     root_path: /
     {{- else }}
     root_path: /hostfs

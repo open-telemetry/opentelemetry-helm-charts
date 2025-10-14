@@ -289,6 +289,23 @@ presets:
 
 The HTTP endpoint can be configured via `presets.pprof.endpoint`.
 
+### Configuration for standalone distribution
+
+The standalone distribution is intended for Linux hosts where the collector runs without
+an orchestrator-provided pod IP or `/hostfs` mount. Set the `distribution` value to
+`"standalone"` to enable the following behaviours:
+
+- Prometheus receivers bind to `0.0.0.0` instead of a pod IP so that they accept
+  connections on any interface.
+- Host metrics scrape the real root filesystem at `/` rather than the Kubernetes
+  `/hostfs` mount.
+
+Here is an example `values.yaml`:
+
+```yaml
+distribution: "standalone"
+```
+
 ### Configuration for GKE autopilot distribution
 
 GKE Autopilot has limited access to host filesystems and host ports, due to this some features of OpenTelemetry Collector doesn't work.

@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: fd22454d8e75b40f38f11b8160883ec11d0b57419948530f6d1b0ed182df9666
+        checksum/config: 0488936f22d9fc803756f38c771e6accf5ceed79af029f5ae635f88127678e6f
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -40,9 +40,10 @@ spec:
           command:
             - /otelcol-contrib
             - --config=/conf/relay.yaml
-            - "--feature-gates=+service.profilesSupport"
           securityContext:
-            {}
+            runAsUser: 0
+            runAsGroup: 0
+            privileged: true
           image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.137.0"
           imagePullPolicy: IfNotPresent
           ports:
@@ -71,6 +72,10 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - name: hostfs
+              mountPath: /hostfs
+              readOnly: true
+              mountPropagation: HostToContainer
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -78,6 +83,9 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: hostfs
+          hostPath:
+            path: /
       nodeSelector:
         kubernetes.io/os: linux
-      hostNetwork: false
+      hostNetwork: true
