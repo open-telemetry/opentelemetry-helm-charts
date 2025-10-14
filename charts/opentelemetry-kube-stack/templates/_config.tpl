@@ -110,6 +110,7 @@ processors:
     - sources:
       - from: connection
     extract:
+      otel_annotations: true
       metadata:
         - k8s.namespace.name
         - k8s.pod.name
@@ -130,18 +131,13 @@ processors:
         - container.image.tag
         - container.image.name
         - k8s.cluster.uid
+        - service.namespace
+        - service.name
+        - service.version
+        - service.instance.id
       labels:
-      - tag_name: service.name
-        key: app.kubernetes.io/name
-        from: pod
-      - tag_name: service.name
-        key: k8s-app
-        from: pod
       - tag_name: k8s.app.instance
         key: app.kubernetes.io/instance
-        from: pod
-      - tag_name: service.version
-        key: app.kubernetes.io/version
         from: pod
       - tag_name: k8s.app.component
         key: app.kubernetes.io/component
@@ -239,7 +235,7 @@ receivers:
 {{- define "opentelemetry-kube-stack.collector.clusterMetricsConfig" -}}
 {{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection}}
 {{- if not $disableLeaderElection}}
-{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
 {{- end}}
 receivers:
   k8s_cluster:
@@ -348,7 +344,7 @@ receivers:
 {{- define "opentelemetry-kube-stack.collector.kubernetesEventsConfig" -}}
 {{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection}}
 {{- if not $disableLeaderElection}}
-{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}    
+{{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
 {{- end}}
 receivers:
   k8sobjects:

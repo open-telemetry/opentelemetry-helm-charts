@@ -1,4 +1,4 @@
-{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) -}}
+{{- if or (.Values.clusterRole.create) (.Values.presets.kubernetesAttributes.enabled) (.Values.presets.clusterMetrics.enabled) (.Values.presets.kubeletMetrics.enabled) (.Values.presets.kubernetesEvents.enabled) (.Values.presets.annotationDiscovery.logs.enabled) (.Values.presets.annotationDiscovery.metrics.enabled) -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -52,5 +52,10 @@ rules:
   - apiGroups: ["events.k8s.io"]
     resources: ["events"]
     verbs: ["watch", "list"]
+  {{- end }}
+  {{- if or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled }}
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
   {{- end }}
 {{- end }}

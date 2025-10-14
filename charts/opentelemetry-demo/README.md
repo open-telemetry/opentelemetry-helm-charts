@@ -3,6 +3,16 @@
 The helm chart installs [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo)
 in kubernetes cluster.
 
+> [!NOTE]
+> The [Jaeger Service Performance Monitoring (SPM)](https://www.jaegertracing.io/docs/1.73/deployment/spm/)
+> is currently **not working** in the OTel Demo.
+>
+> This happens because the OTel Demo Helm chart depends on the Jaeger Helm chart, and the latest
+> published Jaeger Helm chart is incompatible with the new span metric names.
+>
+> The issue has already been fixed in newer Jaeger versions, but Helm charts for those versions
+> are not yet available.
+
 ## Prerequisites
 
 - Kubernetes 1.24+
@@ -32,57 +42,58 @@ Installing the chart on OpenShift requires the following additional steps:
 
 1. Create a new project:
 
-```console
-oc new-project opentelemetry-demo
-```
+    ```console
+    oc new-project opentelemetry-demo
+    ```
 
 2. Create a new service account:
 
-```console
-oc create sa opentelemetry-demo
-```
+    ```console
+    oc create sa opentelemetry-demo
+    ```
 
 3. Add the service account to the `anyuid` SCC (may require cluster admin):
 
-```console
-oc adm policy add-scc-to-user anyuid -z opentelemetry-demo
-```
+    ```console
+    oc adm policy add-scc-to-user anyuid -z opentelemetry-demo
+    ```
 
 4. Add `view` role to the service account to allow Prometheus seeing the services pods:
 
-```console
-oc adm policy add-role-to-user view -z opentelemetry-demo
-```
+    ```console
+    oc adm policy add-role-to-user view -z opentelemetry-demo
+    ```
 
 5. Add `privileged` SCC to the service account to allow Grafana to run:
 
-```console
-oc adm policy add-scc-to-user privileged -z opentelemetry-demo
-```
+    ```console
+    oc adm policy add-scc-to-user privileged -z opentelemetry-demo
+    ```
 
 6. Install the chart with the following command:
 
-```console
-helm install my-otel-demo charts/opentelemetry-demo \
-    --namespace opentelemetry-demo \
-    --set serviceAccount.create=false \
-    --set serviceAccount.name=opentelemetry-demo \
-    --set prometheus.rbac.create=false \
-    --set prometheus.serviceAccounts.server.create=false \
-    --set prometheus.serviceAccounts.server.name=opentelemetry-demo \
-    --set grafana.rbac.create=false \
-    --set grafana.serviceAccount.create=false \
-    --set grafana.serviceAccount.name=opentelemetry-demo
-```
+    ```console
+    helm install my-otel-demo charts/opentelemetry-demo \
+        --namespace opentelemetry-demo \
+        --set serviceAccount.create=false \
+        --set serviceAccount.name=opentelemetry-demo \
+        --set prometheus.rbac.create=false \
+        --set prometheus.serviceAccounts.server.create=false \
+        --set prometheus.serviceAccounts.server.name=opentelemetry-demo \
+        --set grafana.rbac.create=false \
+        --set grafana.serviceAccount.create=false \
+        --set grafana.serviceAccount.name=opentelemetry-demo
+    ```
 
 ## Chart Parameters
 
 Chart parameters are separated in 4 general sections:
-* Default - Used to specify defaults applied to all demo components
-* Components - Used to configure the individual components (microservices) for
+
+- Default - Used to specify defaults applied to all demo components
+- Components - Used to configure the individual components (microservices) for
 the demo
-* Observability - Used to enable/disable dependencies
-* Sub-charts - Configuration for all sub-charts
+- Observability - Used to enable/disable dependencies
+- Sub-charts - Configuration for all sub-charts
 
 ### Default parameters (applied to all demo components)
 
@@ -113,7 +124,6 @@ component.
 > **Note**
 > The following parameters require a `components.[NAME].` prefix where `[NAME]`
 > is the name of the demo component
-
 
 | Parameter                              | Description                                                                                                | Default                                                       |
 |----------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
@@ -168,11 +178,12 @@ component.
 ### Sub-charts
 
 The OpenTelemetry Demo Helm chart depends on 5 sub-charts:
-* OpenTelemetry Collector
-* Jaeger
-* Prometheus
-* Grafana
-* OpenSearch
+
+- OpenTelemetry Collector
+- Jaeger
+- Prometheus
+- Grafana
+- OpenSearch
 
 Parameters for each sub-chart can be specified within that sub-chart's
 respective top level. This chart will override some of the dependent sub-chart
@@ -248,6 +259,7 @@ parameters by default. The overriden parameters are specified below.
 | `dashboardConfigMaps` | ConfigMaps reference that contains dashboards      | Dashboard config map deployed with this Helm chart                   |
 
 #### OpenSearch
+
 > **Note**
 > The following parameters have a `opensearch.` prefix.
 

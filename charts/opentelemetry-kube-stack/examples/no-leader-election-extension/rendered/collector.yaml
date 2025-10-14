@@ -6,7 +6,7 @@ metadata:
   name: example-cluster-stats
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.10.2
+    helm.sh/chart: opentelemetry-kube-stack-0.11.1
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -25,17 +25,8 @@ spec:
         extract:
           labels:
           - from: pod
-            key: app.kubernetes.io/name
-            tag_name: service.name
-          - from: pod
-            key: k8s-app
-            tag_name: service.name
-          - from: pod
             key: app.kubernetes.io/instance
             tag_name: k8s.app.instance
-          - from: pod
-            key: app.kubernetes.io/version
-            tag_name: service.version
           - from: pod
             key: app.kubernetes.io/component
             tag_name: k8s.app.component
@@ -59,6 +50,11 @@ spec:
           - container.image.tag
           - container.image.name
           - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+          otel_annotations: true
         passthrough: false
         pod_association:
         - sources:
@@ -171,7 +167,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.10.2
+    helm.sh/chart: opentelemetry-kube-stack-0.11.1
     app.kubernetes.io/version: "0.129.1"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -190,17 +186,8 @@ spec:
         extract:
           labels:
           - from: pod
-            key: app.kubernetes.io/name
-            tag_name: service.name
-          - from: pod
-            key: k8s-app
-            tag_name: service.name
-          - from: pod
             key: app.kubernetes.io/instance
             tag_name: k8s.app.instance
-          - from: pod
-            key: app.kubernetes.io/version
-            tag_name: service.version
           - from: pod
             key: app.kubernetes.io/component
             tag_name: k8s.app.component
@@ -224,6 +211,11 @@ spec:
           - container.image.tag
           - container.image.name
           - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+          otel_annotations: true
         filter:
           node_from_env_var: OTEL_K8S_NODE_NAME
         passthrough: false
@@ -248,9 +240,15 @@ spec:
             name: k8s.namespace.name
         - sources:
           - from: connection
+      resource/hostname:
+        attributes:
+        - action: insert
+          from_attribute: k8s.node.name
+          key: host.name
       resourcedetection/env:
         detectors:
         - env
+        - k8snode
         override: false
         timeout: 2s
     receivers:
@@ -536,6 +534,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - otlp
@@ -546,6 +545,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - prometheus
@@ -558,6 +558,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - otlp
