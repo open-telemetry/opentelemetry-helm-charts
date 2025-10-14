@@ -17,10 +17,6 @@ spec:
     exporters:
       debug: {}
     processors:
-      batch:
-        send_batch_max_size: 1500
-        send_batch_size: 1000
-        timeout: 1s
       k8sattributes:
         extract:
           labels:
@@ -110,7 +106,6 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
-          - batch
           receivers:
           - k8sobjects
         metrics:
@@ -119,7 +114,6 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
-          - batch
           receivers:
           - k8s_cluster
   replicas: 1
