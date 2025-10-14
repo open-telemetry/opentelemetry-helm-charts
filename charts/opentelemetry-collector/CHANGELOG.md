@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.3 / 2025-10-13
+- [Feat] Enable compact metrics for span-derived database metrics by default.
+
 ### v0.121.2 / 2025-10-08
 - [Feat] Enable the compact span metrics preset by default.
 

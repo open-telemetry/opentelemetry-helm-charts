@@ -5,7 +5,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: example-opentelemetry-collector
   labels:
-    helm.sh/chart: opentelemetry-collector-0.121.2
+    helm.sh/chart: opentelemetry-collector-0.121.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.137.0"
@@ -231,7 +231,7 @@ spec:
           expr: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/opentelemetry-collector/.*.log")
             and ((body contains "logRecord") or (body contains "ResourceLog"))
           type: filter
-        - default: export
+        - default: logs-collection-continue
           routes:
           - expr: (body matches "\"resource\":{.*?},?")
             output: parse-body
@@ -261,7 +261,7 @@ spec:
           if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
           on_error: send_quiet
           type: flatten
-        - id: export
+        - id: logs-collection-continue
           type: noop
         retry_on_failure:
           enabled: true

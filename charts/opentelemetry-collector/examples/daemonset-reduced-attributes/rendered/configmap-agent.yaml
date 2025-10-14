@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.121.2
+    helm.sh/chart: opentelemetry-collector-0.121.3
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.137.0"
@@ -498,7 +498,7 @@ data:
           expr: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/opentelemetry-collector/.*.log")
             and ((body contains "logRecord") or (body contains "ResourceLog"))
           type: filter
-        - default: export
+        - default: logs-collection-continue
           routes:
           - expr: (body matches "\"resource\":{.*?},?")
             output: parse-body
@@ -528,13 +528,13 @@ data:
           if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
           on_error: send_quiet
           type: flatten
+        - id: logs-collection-continue
+          type: noop
         - combine_field: body
           is_first_entry: body matches "^([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{2}-[0-9]{2}
             [0-9]{2}:[0-9]{2}:[0-9]{2})"
           source_identifier: attributes["log.file.path"]
           type: recombine
-        - id: export
-          type: noop
         retry_on_failure:
           enabled: true
         start_at: beginning
