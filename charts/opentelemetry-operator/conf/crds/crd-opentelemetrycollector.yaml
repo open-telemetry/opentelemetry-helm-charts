@@ -8,6 +8,12 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
+  {{- if .Values.crds.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.crds.annotations }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
   name: opentelemetrycollectors.opentelemetry.io
 spec:
 {{- if .Values.admissionWebhooks.create }}
