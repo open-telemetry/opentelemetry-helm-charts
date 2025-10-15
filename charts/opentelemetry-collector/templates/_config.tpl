@@ -2332,8 +2332,17 @@ processors:
 
 {{- define "opentelemetry-collector.resourceDetectionConfig" -}}
 processors:
+  {{- $envDetectors := .Values.presets.resourceDetection.detectors.env | default (list "system" "env") }}
+  {{- $cloudDetectors := .Values.presets.resourceDetection.detectors.cloud }}
+  {{- if not $cloudDetectors }}
+    {{- if eq .Values.distribution "ecs" }}
+      {{- $cloudDetectors = (list "gcp" "ec2" "azure") }}
+    {{- else }}
+      {{- $cloudDetectors = (list "gcp" "ec2" "azure" "eks") }}
+    {{- end }}
+  {{- end }}
   resourcedetection/env:
-    detectors: ["system", "env"]
+    detectors: {{ $envDetectors | toJson }}
     timeout: 2s
     override: false
     system:
@@ -2341,15 +2350,10 @@ processors:
         host.id:
           enabled: true
   resourcedetection/region:
-    detectors: 
-      {{- if eq .Values.distribution "ecs" }}
-      ["gcp", "ec2", "azure"]
-      {{- else }}
-      ["gcp", "ec2", "azure", "eks"]
-      {{- end }}
+    detectors: {{ $cloudDetectors | toJson }}
     timeout: 2s
     override: true
-    {{- if ne .Values.distribution "ecs" }}
+    {{- if and (ne .Values.distribution "ecs") (has "eks" $cloudDetectors) }}
     eks:
       node_from_env_var: K8S_NODE_NAME
     {{- end }}

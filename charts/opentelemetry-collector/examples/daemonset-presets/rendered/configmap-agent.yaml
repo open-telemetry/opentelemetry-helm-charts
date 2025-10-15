@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.121.4
+    helm.sh/chart: opentelemetry-collector-0.121.5
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.137.0"
@@ -80,7 +80,6 @@ data:
         sampling_percentage: 10
       resourcedetection/env:
         detectors:
-        - system
         - env
         override: false
         system:
@@ -91,11 +90,7 @@ data:
       resourcedetection/region:
         detectors:
         - gcp
-        - ec2
         - azure
-        - eks
-        eks:
-          node_from_env_var: K8S_NODE_NAME
         override: true
         timeout: 2s
       transform/k8s_attributes:

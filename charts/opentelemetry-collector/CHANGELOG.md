@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.5 / 2025-10-15
+- [Feat] Allow configuring resource detection detectors for environment and cloud metadata.
+
 -### v0.121.4 / 2025-10-14
 - [Feat] Add standalone distribution option that binds Prometheus endpoints to 0.0.0.0 and scrapes host metrics from the root filesystem.
 
