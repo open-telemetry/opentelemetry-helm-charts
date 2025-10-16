@@ -1508,6 +1508,8 @@ processors:
           - extract_count_metric(false, ".count") where name == "compact.duration"
           - set(unit, "") where name == "compact.duration.sum"
           - set(unit, "") where name == "compact.duration.count"
+          - set(name, "compact.duration.ms.sum") where name == "compact.duration.sum"
+          - set(name, "compact.duration.ms.count") where name == "compact.duration.count"
   filter/drop_histogram:
     metrics:
       metric:
@@ -1522,6 +1524,8 @@ processors:
           - extract_count_metric(false, ".count") where name == "db_compact.duration"
           - set(unit, "") where name == "db_compact.duration.sum"
           - set(unit, "") where name == "db_compact.duration.count"
+          - set(name, "db_compact.duration.ms.sum") where name == "db_compact.duration.sum"
+          - set(name, "db_compact.duration.ms.count") where name == "db_compact.duration.count"
   filter/drop_db_compact_histogram:
     metrics:
       metric:
