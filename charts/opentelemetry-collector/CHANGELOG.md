@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.122.0 / 2025-10-16
+- [Feat] Add support for additional Coralogix endpoints in coralogixExporter preset. Each additional endpoint creates a separate coralogix exporter instance with its own domain and private key configuration.
+
 ### v0.121.5 / 2025-10-15
 - [Feat] Allow configuring resource detection detectors for environment and cloud metadata.
 
