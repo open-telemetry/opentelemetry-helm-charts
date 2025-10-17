@@ -361,6 +361,31 @@ presets:
       #  - selector: route() where attributes["service.name"] == "one"
       #    histogramBuckets: []
 
+  # Span Metrics Sanitization wires the redaction processor into the traces pipeline to scrub
+  # high-cardinality span names/HTTP URLs and sanitize database statements whenever span metrics
+  # presets are enabled.
+  # - `enabled` accepts `auto`, `true`, or `false`. The default `auto` turns sanitization on
+  #   automatically whenever `presets.spanMetrics.enabled` or `presets.spanMetricsMulti.enabled`
+  #   is true.
+  # - Set `enabled: false` to opt out even when span metrics are enabled, or `enabled: true` to
+  #   force sanitization on explicitly.
+  # - `sanitize_url` (default true) controls whether URL-like span names and URL
+  #   attributes are normalized (for example `GET /api/users/42/profile` → `GET /api/users/?/profile`).
+  # - `sanitizeDatabases` is an allowlist of database backends whose statements should be scrubbed
+  #   (valid: sql, redis, memcached, mongo, opensearch, es). All supported backends are sanitized
+  #   by default.
+  # Additional redaction settings can be supplied via `extraConfig.processors.redaction`.
+  spanMetricsSanitization:
+    enabled: auto  # auto: enabled when spanMetrics or spanMetricsMulti presets are enabled
+    sanitize_url: true
+    sanitizeDatabases:
+      - sql
+      - redis
+      - memcached
+      - mongo
+      - opensearch
+      - es
+
   # Configures the collector to use loadbalancing exporter.
   loadBalancing:
     enabled: false

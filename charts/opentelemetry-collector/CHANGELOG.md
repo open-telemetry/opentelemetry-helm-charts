@@ -2,13 +2,17 @@
 
 ## OpenTelemetry Collector
 
-### v0.121.6 / 2025-10-16
+### v0.121.7 / 2025-10-16
+- [Feat] Add `spanMetricsSanitization` preset to provide span name, URL, and database statement sanitization when span metrics presets are enabled.
+
+### v0.121.6 / 2025-10-15
 - [FIX] compact metrics unit name change. compact_duration_count -> compact_duration_ms_count, compact_duration_sum -> compact_duration_ms_sum, db_compact_duration_count -> db_compact_duration_ms_count, compact_duration_sum -> compact_duration_ms_sum
--
+
+
 ### v0.121.5 / 2025-10-15
 - [Feat] Allow configuring resource detection detectors for environment and cloud metadata.
 
--### v0.121.4 / 2025-10-14
+### v0.121.4 / 2025-10-14
 - [Feat] Add standalone distribution option that binds Prometheus endpoints to 0.0.0.0 and scrapes host metrics from the root filesystem.
 
 ### v0.121.3 / 2025-10-13

@@ -898,6 +898,32 @@
             }
           }
         },
+        "spanMetricsSanitization": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Controls span metrics sanitization. Accepts boolean true/false or the string \"auto\" to enable sanitization automatically when span metrics presets are active.",
+              "anyOf": [
+                { "type": "boolean" },
+                { "type": "string", "enum": ["auto"] }
+              ],
+              "default": "auto"
+            },
+            "sanitize_url": {
+              "description": "Enables URL sanitization for span names and HTTP attributes.",
+              "type": "boolean"
+            },
+            "sanitizeDatabases": {
+              "description": "Allowlist of database types whose statements should be sanitized. Available values: sql, redis, memcached, mongo, opensearch, es",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["sql", "redis", "memcached", "mongo", "opensearch", "es"]
+              }
+            }
+          }
+        },
         "loadBalancing": {
           "type": "object",
           "additionalProperties": false,

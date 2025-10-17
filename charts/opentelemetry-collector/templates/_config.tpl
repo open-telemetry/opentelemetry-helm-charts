@@ -88,6 +88,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.spanMetricsMulti.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsSanitizationIfEnabled" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- if .Values.presets.kubernetesResources.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesResourcesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -224,6 +225,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.spanMetricsMulti.enabled }}
 {{- $config = (include "opentelemetry-collector.applySpanMetricsMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsSanitizationIfEnabled" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- if .Values.presets.kubernetesResources.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesResourcesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -2886,4 +2888,96 @@ receivers:
         id: move_log_file_path
         from: attributes["log.file.path"]
         to: resource["log.file.path"]
+{{- end }}
+
+{{- define "opentelemetry-collector.applySpanMetricsSanitizationIfEnabled" -}}
+{{- $values := default .Values (.Values.Values) }}
+{{- $config := .config }}
+{{- $presets := $values.presets }}
+{{- $sanitizationPreset := and $presets $presets.spanMetricsSanitization }}
+{{- if not (and $presets $sanitizationPreset) }}
+{{- $config | toYaml }}
+{{- else }}
+{{- $spanSanitizationSetting := $sanitizationPreset.enabled }}
+{{- $spanSanitizationAuto := or (default false (and $presets.spanMetrics $presets.spanMetrics.enabled)) (default false (and $presets.spanMetricsMulti $presets.spanMetricsMulti.enabled)) }}
+{{- $spanSanitizationEnabled := false }}
+{{- if eq $spanSanitizationSetting nil }}
+{{- $spanSanitizationEnabled = $spanSanitizationAuto }}
+{{- else if kindIs "bool" $spanSanitizationSetting }}
+{{- $spanSanitizationEnabled = $spanSanitizationSetting }}
+{{- else if kindIs "string" $spanSanitizationSetting }}
+{{- $normalized := trim (lower $spanSanitizationSetting) }}
+{{- if eq $normalized "auto" }}
+{{- $spanSanitizationEnabled = $spanSanitizationAuto }}
+{{- else if eq $normalized "true" }}
+{{- $spanSanitizationEnabled = true }}
+{{- else if eq $normalized "false" }}
+{{- $spanSanitizationEnabled = false }}
+{{- else }}
+{{- fail (printf "Unsupported value for presets.spanMetricsSanitization.enabled: %s. Expected boolean or \"auto\"." $spanSanitizationSetting) }}
+{{- end }}
+{{- else }}
+{{- fail (printf "Unsupported type for presets.spanMetricsSanitization.enabled: %s" (kindOf $spanSanitizationSetting)) }}
+{{- end }}
+{{- if $spanSanitizationEnabled }}
+{{- $config = (include "opentelemetry-collector.applySpanMetricsSanitization" (dict "Values" (dict "presets" $presets) "config" $config) | fromYaml) }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applySpanMetricsSanitization" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.spanMetricsSanitizationConfig" . | fromYaml) .config }}
+{{- with $config.service }}
+{{- range $name, $_ := .pipelines }}
+{{- if hasPrefix $name "traces" }}
+{{- $pipeline := index $config.service.pipelines $name }}
+{{- $existing := $pipeline.processors | default (list) }}
+{{- $withRedaction := append $existing "redaction/spanname" }}
+{{- $_ := set (index $config.service.pipelines $name) "processors" (uniq $withRedaction) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+
+{{- define "opentelemetry-collector.spanMetricsSanitizationConfig" -}}
+processors:
+  redaction/spanname:
+    allow_all_keys: true
+    url_sanitizer:
+      enabled: {{ .Values.presets.spanMetricsSanitization.sanitize_url }}
+    db_sanitizer:
+{{- $sanitizedDBs := .Values.presets.spanMetricsSanitization.sanitizeDatabases }}
+{{- if has "sql" $sanitizedDBs }}
+      sql:
+        enabled: true
+        attributes: ["db.statement", "db.query"]
+{{- end }}
+{{- if has "redis" $sanitizedDBs }}
+      redis:
+        enabled: true
+        attributes: ["db.statement", "redis.command"]
+{{- end }}
+{{- if has "memcached" $sanitizedDBs }}
+      memcached:
+        enabled: true
+        attributes: ["db.statement", "memcached.command"]
+{{- end }}
+{{- if has "mongo" $sanitizedDBs }}
+      mongo:
+        enabled: true
+        attributes: ["db.statement", "mongodb.query"]
+{{- end }}
+{{- if has "opensearch" $sanitizedDBs }}
+      opensearch:
+        enabled: true
+        attributes: ["db.statement", "opensearch.body"]
+{{- end }}
+{{- if has "es" $sanitizedDBs }}
+      es:
+        enabled: true
+        attributes: ["db.statement", "elasticsearch.body"]
+{{- end }}
 {{- end }}
