@@ -8,7 +8,7 @@ default:
           apiVersion: v1
           fieldPath: "metadata.labels['app.kubernetes.io/component']"
     - name: OTEL_COLLECTOR_NAME
-      value: otel-collector
+      value: otel-demo-opensearch-apps-otel-collector
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
@@ -861,7 +861,7 @@ apps-otel-collector:
   enabled: true
   image:
     repository: "otel/opentelemetry-collector-contrib"
-  fullnameOverride: otel-collector
+  # fullnameOverride: otel-collector
   mode: deployment
   presets:
     kubernetesAttributes:
@@ -938,10 +938,16 @@ apps-otel-collector:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
-      otlphttp/loki:
-        endpoint: http://loki:3100/otlp
-        tls:
-          insecure: true
+      # otlphttp/loki:
+      #   endpoint: http://loki:3100/otlp
+      #   tls:
+      #     insecure: true
+      opensearch:
+        http:
+          endpoint: http://opensearch-cluster-master:9200
+          tls:
+            insecure: true
+        logs_index: otel-logs
 
     processors:
       # This processor is used to help limit high cardinality on next.js span names
@@ -995,7 +1001,8 @@ apps-otel-collector:
             - resource
             - batch
           exporters:
-            - otlphttp/loki
+            # - otlphttp/loki
+            - opensearch
 
 k8s-cluster-otel-collector:
   enabled: true
@@ -1003,7 +1010,7 @@ k8s-cluster-otel-collector:
     repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
   command:
     name: "otelcol-k8s"
-  fullnameOverride: k8s-cluster-otel-collector
+  # fullnameOverride: k8s-cluster-otel-collector
   mode: deployment
   presets:
     kubernetesAttributes:
@@ -1062,10 +1069,16 @@ k8s-cluster-otel-collector:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
-      otlphttp/loki:
-        endpoint: http://loki:3100/otlp
-        tls:
-          insecure: true
+      # otlphttp/loki:
+      #   endpoint: http://loki:3100/otlp
+      #   tls:
+      #     insecure: true
+      opensearch:
+        http:
+          endpoint: http://opensearch-cluster-master:9200
+          tls:
+            insecure: true
+        logs_index: otel-logs
 
     connectors:
       spanmetrics: {}
@@ -1093,7 +1106,8 @@ k8s-cluster-otel-collector:
             - memory_limiter
             - batch
           exporters:
-            - otlphttp/loki
+            # - otlphttp/loki
+            - opensearch
 
 k8s-nodes-otel-collector:
   enabled: true
@@ -1101,7 +1115,7 @@ k8s-nodes-otel-collector:
     repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
   command:
     name: "otelcol-k8s"
-  fullnameOverride: k8s-nodes-otel-collector
+  # fullnameOverride: k8s-nodes-otel-collector
   mode: daemonset
   presets:
     kubernetesAttributes:
@@ -1140,10 +1154,16 @@ k8s-nodes-otel-collector:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
-      otlphttp/loki:
-        endpoint: http://loki:3100/otlp
-        tls:
-          insecure: true
+      # otlphttp/loki:
+      #   endpoint: http://loki:3100/otlp
+      #   tls:
+      #     insecure: true
+      opensearch:
+        http:
+          endpoint: http://opensearch-cluster-master:9200
+          tls:
+            insecure: true
+        logs_index: otel-logs
 
     connectors:
       spanmetrics: {}
@@ -1169,11 +1189,12 @@ k8s-nodes-otel-collector:
             - memory_limiter
             - batch
           exporters:
-            - otlphttp/loki
+            # - otlphttp/loki
+            - opensearch
 
 jaeger:
   enabled: true
-  fullnameOverride: jaeger
+  # fullnameOverride: jaeger
   allInOne:
     enabled: false
   provisionDataStore:
@@ -1243,7 +1264,7 @@ prometheus:
     enabled: false
   server:
     retention: 2h
-    fullnameOverride: prometheus
+    # fullnameOverride: prometheus
     extraFlags:
       - "enable-feature=exemplar-storage"
       - "web.enable-otlp-receiver"
@@ -1610,11 +1631,38 @@ prometheus:
           scrape_timeout: 30s
 
 opensearch:
-  enabled: false
+  # enabled: false
+  enabled: true
+  replicas: 1
+  sysctlVmMaxMapCount: 262144
+  sysctlInit:
+    enabled: true
+  extraEnvs:
+    - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+      value: "MyStr0ng!Pass@2025"
+    - name: DISABLE_SECURITY_PLUGIN
+      value: "true"
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+  data:
+    replicaCount: 0
+  coordinating:
+    replicaCount: 0
+  ingest:
+    replicaCount: 0
+  clusterConfig:
+    cluster.initial_master_nodes: "opensearch-cluster-master-0"
+    discovery.seed_hosts: "opensearch-cluster-master-headless"
+    discovery.type: "single-node"
+    bootstrap.memory_lock: "false"
+    bootstrap.system_call_filter: "false"
 
 loki:
-  enabled: true
-  fullnameOverride: loki
+  # enabled: true
+  enabled: false
+  # fullnameOverride: loki
   deploymentMode: SingleBinary
   singleBinary:
     replicas: 1
@@ -1696,7 +1744,7 @@ loki:
 
 postgresql:
   enabled: true
-  fullnameOverride: postgresql
+  # fullnameOverride: postgresql
   auth:
     username: otelu
     password: otelp
@@ -1752,7 +1800,7 @@ postgresql:
 
 grafana:
   enabled: true
-  fullnameOverride: grafana
+  # fullnameOverride: grafana
   testFramework:
     enabled: false
   grafana.ini:
@@ -1790,13 +1838,25 @@ grafana:
           url: http://jaeger-query:80
           editable: true
           isDefault: false
-        - name: Loki
+        # - name: Loki
+        #   uid: webstore-logs
+        #   type: loki
+        #   url: http://loki:3100
+        #   access: proxy
+        #   editable: true
+        #   isDefault: false
+        - name: OpenSearch Logs
           uid: webstore-logs
-          type: loki
-          url: http://loki:3100
+          type: opensearch
+          url: http://opensearch-cluster-master:9200
           access: proxy
           editable: true
           isDefault: false
+          jsonData:
+            index: otel-logs
+            timeField: "@timestamp"
+            logMessageField: "body"
+            logLevelField: "severity_number"
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -2000,7 +2060,7 @@ grafana:
                 receiver: grafana-default-email
 
 grafana-mcp-server:
-  fullnameOverride: grafana-mcp-server
+  # fullnameOverride: grafana-mcp-server
   disabledCategories:
     - admin
     - incident
