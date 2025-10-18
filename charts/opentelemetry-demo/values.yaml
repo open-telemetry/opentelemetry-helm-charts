@@ -1,3 +1,4 @@
+
 # yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
@@ -942,12 +943,17 @@ apps-otel-collector:
       #   endpoint: http://loki:3100/otlp
       #   tls:
       #     insecure: true
-      opensearch:
-        http:
-          endpoint: http://opensearch-cluster-master:9200
-          tls:
-            insecure: true
-        logs_index: otel-logs
+      # opensearch:
+      #   http:
+      #     endpoint: http://opensearch-cluster-master:9200
+      #     tls:
+      #       insecure: true
+      #   logs_index: otel-logs
+      otlphttp/opensearch:
+        endpoint: http://opensearch-cluster-master:9200
+        tls:
+          insecure: true
+
 
     processors:
       # This processor is used to help limit high cardinality on next.js span names
@@ -1002,7 +1008,8 @@ apps-otel-collector:
             - batch
           exporters:
             # - otlphttp/loki
-            - opensearch
+            # - opensearch
+            - otlphttp/opensearch
 
 k8s-cluster-otel-collector:
   enabled: true
@@ -1073,12 +1080,10 @@ k8s-cluster-otel-collector:
       #   endpoint: http://loki:3100/otlp
       #   tls:
       #     insecure: true
-      opensearch:
-        http:
-          endpoint: http://opensearch-cluster-master:9200
-          tls:
-            insecure: true
-        logs_index: otel-logs
+      otlphttp/opensearch:
+        endpoint: http://opensearch-cluster-master:9200
+        tls:
+          insecure: true
 
     connectors:
       spanmetrics: {}
@@ -1107,7 +1112,7 @@ k8s-cluster-otel-collector:
             - batch
           exporters:
             # - otlphttp/loki
-            - opensearch
+            - otlphttp/opensearch
 
 k8s-nodes-otel-collector:
   enabled: true
@@ -1158,12 +1163,10 @@ k8s-nodes-otel-collector:
       #   endpoint: http://loki:3100/otlp
       #   tls:
       #     insecure: true
-      opensearch:
-        http:
-          endpoint: http://opensearch-cluster-master:9200
-          tls:
-            insecure: true
-        logs_index: otel-logs
+      otlphttp/opensearch:
+        endpoint: http://opensearch-cluster-master:9200
+        tls:
+          insecure: true
 
     connectors:
       spanmetrics: {}
@@ -1190,7 +1193,7 @@ k8s-nodes-otel-collector:
             - batch
           exporters:
             # - otlphttp/loki
-            - opensearch
+            - otlphttp/opensearch
 
 jaeger:
   enabled: true
@@ -1745,6 +1748,10 @@ loki:
 postgresql:
   enabled: true
   # fullnameOverride: postgresql
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: "13.7.0-debian-11-r9"
   auth:
     username: otelu
     password: otelp
