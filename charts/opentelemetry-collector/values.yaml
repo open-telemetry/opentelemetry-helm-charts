@@ -464,6 +464,9 @@ presets:
     pipelines: ["all"]
     denylist:
       metrics:
+        # Entries may be strings or objects with additional matching logic.
+        #   - key: process.command
+        #     condition: not IsMatch(metric.name, "^process\\.")
         - azure.resourcegroup.name
         - azure.vm.name
         - azure.vm.scaleset.name
@@ -500,17 +503,28 @@ presets:
         - k8s.statefulset.uid
         - os.type
         - os.version
-        - process.command
-        - process.command_line
-        - process.command_args
-        - process.executable.name
-        - process.executable.path
-        - process.owner
-        - process.pid
-        - process.parent_pid
-        - process.runtime.description
-        - process.runtime.name
-        - process.runtime.version
+        - key: process.command
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.command_line
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.command_args
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.executable.name
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.executable.path
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.owner
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.pid
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.parent_pid
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.runtime.description
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.runtime.name
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.runtime.version
+          condition: not IsMatch(metric.name, "^process\\.")
         - net.host.name
         - net.host.port
         - telemetry.distro.name

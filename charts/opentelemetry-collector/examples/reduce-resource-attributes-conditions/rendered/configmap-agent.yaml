@@ -17,8 +17,6 @@ data:
     exporters:
       debug: {}
     extensions:
-      file_storage:
-        directory: /var/lib/otelcol
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
@@ -76,13 +74,29 @@ data:
             == "opentelemetry-collector"
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
+      transform/reduce:
+        error_mode: silent
+        log_statements:
+        - context: log
+          statements:
+          - delete_key(resource.attributes, "process.command")
+          - delete_key(resource.attributes, "service.instance.id")
+        metric_statements:
+        - context: metric
+          statements:
+          - delete_key(resource.attributes, "process.command") where not IsMatch(metric.name,
+            "^process\\.")
+          - delete_key(resource.attributes, "process.command_line") where not IsMatch(metric.name,
+            "^process\\.")
+          - delete_key(resource.attributes, "process.command_args") where not IsMatch(metric.name,
+            "^process\\.")
+          - delete_key(resource.attributes, "service.instance.id")
     receivers:
       filelog:
-        exclude:
-        - C:\var\log\pods\default_example-opentelemetry-collector*_*\opentelemetry-collector\*.log
+        exclude: []
         force_flush_period: 0
         include:
-        - C:\var\log\pods\*\*\*.log
+        - /var/log/pods/*/*/*.log
         include_file_name: false
         include_file_path: true
         operators:
@@ -146,7 +160,7 @@ data:
           type: add
           value: ""
         - parse_from: attributes["log.file.path"]
-          regex: ^C:\\var\\log\\pods\\(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[^\/]+)\\(?P<container_name>[^\._]+)\\(?P<restart_count>\d+)\.log$
+          regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
           type: regex_parser
         - from: attributes.stream
           to: attributes["log.iostream"]
@@ -170,27 +184,45 @@ data:
           id: clean-up-log-record
           to: body
           type: move
+        - drop_ratio: 1
+          expr: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/opentelemetry-collector/.*.log")
+            and ((body contains "logRecord") or (body contains "ResourceLog"))
+          type: filter
+        - default: logs-collection-continue
+          routes:
+          - expr: (body matches "\"resource\":{.*?},?")
+            output: parse-body
+          type: router
+        - id: parse-body
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          parse_to: attributes["parsed_body_tmp"]
+          type: json_parser
+        - field: body
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          regex: \"resource\":{.*?},?
+          replace_with: ""
+          type: regex_replace
+        - from: attributes["parsed_body_tmp"]["resource"]
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          to: resource["attributes_tmp"]
+          type: move
+        - field: attributes["parsed_body_tmp"]
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          type: remove
+        - field: resource["attributes_tmp"]
+          id: flatten-resource
+          if: (attributes["log.file.path"] matches "/var/log/pods/default_example-opentelemetry-collector.*_.*/.*/.*.log")
+          on_error: send_quiet
+          type: flatten
         - id: logs-collection-continue
           type: noop
         retry_on_failure:
           enabled: true
         start_at: beginning
-        storage: file_storage
-      hostmetrics:
-        collection_interval: 10s
-        scrapers:
-          cpu:
-            metrics:
-              system.cpu.utilization:
-                enabled: true
-          disk: null
-          filesystem: null
-          load: null
-          memory:
-            metrics:
-              system.memory.utilization:
-                enabled: true
-          network: null
       otlp:
         protocols:
           grpc:
@@ -209,13 +241,13 @@ data:
     service:
       extensions:
       - health_check
-      - file_storage
       pipelines:
         logs:
           exporters:
           - debug
           processors:
           - memory_limiter
+          - transform/reduce
           receivers:
           - filelog
           - otlp
@@ -224,9 +256,9 @@ data:
           - debug
           processors:
           - memory_limiter
+          - transform/reduce
           - transform/prometheus
           receivers:
-          - hostmetrics
           - prometheus
           - otlp
         traces:

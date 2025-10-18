@@ -1,0 +1,25 @@
+mode: daemonset
+
+presets:
+  collectorMetrics:
+    enabled: true
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+  reduceResourceAttributes:
+    enabled: true
+    pipelines:
+      - metrics
+      - logs
+    denylist:
+      metrics:
+        - key: process.command
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.command_line
+          condition: not IsMatch(metric.name, "^process\\.")
+        - key: process.command_args
+          condition: not IsMatch(metric.name, "^process\\.")
+        - service.instance.id
+      logs:
+        - process.command
+        - service.instance.id

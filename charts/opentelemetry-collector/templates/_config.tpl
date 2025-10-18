@@ -1174,26 +1174,47 @@ processors:
     error_mode: silent
 {{- if or (has "metrics" $pipelines) (has "all" $pipelines) }}
     metric_statements:
-      - context: resource
+      - context: metric
         statements:
         {{- range $index, $pattern := .Values.presets.reduceResourceAttributes.denylist.metrics }}
-        - delete_key(attributes, "{{ $pattern }}")
+        {{- if kindIs "string" $pattern }}
+        - delete_key(resource.attributes, "{{ $pattern }}")
+        {{- else if kindIs "map" $pattern }}
+        {{- $key := required "Reduce resource attributes metrics denylist entries of type object must set `key`." (index $pattern "key") }}
+        - delete_key(resource.attributes, "{{ $key }}"){{- with index $pattern "condition" }} where {{ . }}{{- end }}
+        {{- else }}
+        {{- fail (printf "Reduce resource attributes metrics denylist entries must be either strings or objects with `key` and optional `condition`, got %s" (kindOf $pattern)) }}
+        {{- end }}
         {{- end }}
 {{- end }}
 {{- if or (has "traces" $pipelines) (has "all" $pipelines) }}
     trace_statements:
-      - context: resource
+      - context: span
         statements:
         {{- range $index, $pattern := .Values.presets.reduceResourceAttributes.denylist.traces }}
-        - delete_key(attributes, "{{ $pattern }}")
+        {{- if kindIs "string" $pattern }}
+        - delete_key(resource.attributes, "{{ $pattern }}")
+        {{- else if kindIs "map" $pattern }}
+        {{- $key := required "Reduce resource attributes traces denylist entries of type object must set `key`." (index $pattern "key") }}
+        - delete_key(resource.attributes, "{{ $key }}"){{- with index $pattern "condition" }} where {{ . }}{{- end }}
+        {{- else }}
+        {{- fail (printf "Reduce resource attributes traces denylist entries must be either strings or objects with `key` and optional `condition`, got %s" (kindOf $pattern)) }}
+        {{- end }}
         {{- end }}
 {{- end }}
 {{- if or (has "logs" $pipelines) (has "all" $pipelines) }}
     log_statements:
-      - context: resource
+      - context: log
         statements:
         {{- range $index, $pattern := .Values.presets.reduceResourceAttributes.denylist.logs }}
-        - delete_key(attributes, "{{ $pattern }}")
+        {{- if kindIs "string" $pattern }}
+        - delete_key(resource.attributes, "{{ $pattern }}")
+        {{- else if kindIs "map" $pattern }}
+        {{- $key := required "Reduce resource attributes logs denylist entries of type object must set `key`." (index $pattern "key") }}
+        - delete_key(resource.attributes, "{{ $key }}"){{- with index $pattern "condition" }} where {{ . }}{{- end }}
+        {{- else }}
+        {{- fail (printf "Reduce resource attributes logs denylist entries must be either strings or objects with `key` and optional `condition`, got %s" (kindOf $pattern)) }}
+        {{- end }}
         {{- end }}
 {{- end }}
 {{- end }}
