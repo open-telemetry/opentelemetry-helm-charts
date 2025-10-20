@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.121.9
+    helm.sh/chart: opentelemetry-collector-0.121.10
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.137.0"
@@ -154,6 +154,24 @@ data:
             static_configs:
             - targets:
               - 0.0.0.0:8888
+      prometheus/multi:
+        config:
+          scrape_configs:
+          - job_name: mysql
+            scrape_interval: 30s
+            static_configs:
+            - labels:
+                cx.application.name: mysql
+                cx.subsystem.name: primary
+                environment: production
+                tier: database
+              targets:
+              - 10.10.0.20:9104
+          - job_name: backend
+            scrape_interval: 30s
+            static_configs:
+            - targets:
+              - 127.0.0.1:9102
     service:
       extensions:
       - health_check
@@ -174,6 +192,7 @@ data:
           receivers:
           - hostmetrics
           - prometheus
+          - prometheus/multi
           - otlp
         traces:
           exporters:

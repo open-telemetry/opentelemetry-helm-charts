@@ -1368,6 +1368,57 @@
             }
           }
         },
+        "prometheusMulti": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Specifies whether the collector should scrape multiple prometheus targets."
+            },
+            "scrapeInterval": {
+              "type": "string",
+              "description": "Scrape interval applied to all prometheus multi targets."
+            },
+            "targets": {
+              "description": "List of prometheus targets to scrape.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "port"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Unique name for the target. Used as part of the generated prometheus job name."
+                  },
+                  "applicationName": {
+                    "type": "string",
+                    "description": "Application label applied to samples scraped from this target."
+                  },
+                  "subsystemName": {
+                    "type": "string",
+                    "description": "Subsystem label applied to samples scraped from this target."
+                  },
+                  "ip": {
+                    "type": "string",
+                    "description": "Host or IP address to scrape. Defaults to 127.0.0.1 when omitted."
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "Port to scrape for this target."
+                  },
+                  "extraLabels": {
+                    "type": "object",
+                    "description": "Additional static labels to add to the scraped samples.",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "jaegerReceiver": {
           "type": "object",
           "additionalProperties": false,

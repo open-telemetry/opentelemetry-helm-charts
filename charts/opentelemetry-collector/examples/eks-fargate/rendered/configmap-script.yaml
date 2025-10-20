@@ -1,0 +1,29 @@
+---
+# Source: opentelemetry-collector/templates/configmap-script.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-collector-script
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.121.10
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.137.0"
+    app.kubernetes.io/managed-by: Helm
+    
+    component: script
+data:
+  label-node-script: |
+    #!/bin/bash
+    set +x
+    # Download kubectl
+    # If the latest stable version is not compatible with your cluster, adjust accordingly.
+    curl -LOs "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+    # Give execute permissions to kubectl
+    chmod +x kubectl
+
+    # Remove any prior label from other nodes. Label only the current node as the single OTEL-collector-node.
+    ./kubectl label nodes --all OTEL-collector-node-
+    ./kubectl label nodes $K8S_NODE_NAME OTEL-collector-node=true

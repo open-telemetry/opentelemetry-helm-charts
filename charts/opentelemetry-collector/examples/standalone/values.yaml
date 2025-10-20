@@ -9,3 +9,17 @@ presets:
   collectorMetrics:
     enabled: true
     scrapeInterval: "30s"
+  prometheusMulti:
+    enabled: true
+    scrapeInterval: "30s"
+    targets:
+      - name: mysql
+        applicationName: mysql
+        subsystemName: primary
+        ip: "10.10.0.20"
+        port: 9104
+        extraLabels:
+          environment: production
+          tier: database
+      - name: backend
+        port: 9102

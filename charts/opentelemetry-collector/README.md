@@ -312,6 +312,58 @@ presets:
     enabled: true
 ```
 
+### Configuration for Prometheus Multi-Target Scraping
+
+The Prometheus multi-target preset lets the collector scrape metrics from a list of arbitrary endpoints using a single
+`prometheus` receiver instance. Each target is scraped at the same interval and is automatically annotated with
+`cx.application.name` and `cx.subsystem.name` labels derived from the provided target metadata.
+
+To enable this feature, set the `presets.prometheusMulti.enabled` property to `true` and provide at least one target in
+`presets.prometheusMulti.targets`.
+
+Here is an example `values.yaml`:
+
+```yaml
+presets:
+  prometheusMulti:
+    enabled: true
+    scrapeInterval: 15s
+    targets:
+      - name: mysql
+        applicationName: mysql
+        subsystemName: mysql
+        port: 9101
+      - name: backend
+        port: 9102
+        extraLabels:
+          env: prod
+```
+
+When rendered for a release named `demo`, this configuration produces Prometheus jobs similar to the following:
+
+```yaml
+receivers:
+  prometheus/multi:
+    config:
+      scrape_configs:
+        - job_name: mysql
+          scrape_interval: 15s
+          static_configs:
+            - targets: ["127.0.0.1:9101"]
+              labels:
+                cx.application.name: mysql
+                cx.subsystem.name: mysql
+        - job_name: backend
+          scrape_interval: 15s
+          static_configs:
+            - targets: ["127.0.0.1:9102"]
+              labels:
+                env: prod
+```
+
+The chart only emits the CX labels when the target explicitly defines the corresponding field or sets it through
+`extraLabels`. The scrape host defaults to `127.0.0.1` when the `ip` field is omitted.
+
 ### Configuration for ZPages
 
 The collector can expose [zPages](https://opentelemetry.io/docs/collector/monitoring/) for debugging.

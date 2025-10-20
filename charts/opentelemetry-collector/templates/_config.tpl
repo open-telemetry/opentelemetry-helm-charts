@@ -116,6 +116,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.collectorMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyCollectorMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.prometheusMulti.enabled }}
+{{- $config = (include "opentelemetry-collector.applyPrometheusMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.jaegerReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyJaegerReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -261,6 +264,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.collectorMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyCollectorMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.prometheusMulti.enabled }}
+{{- $config = (include "opentelemetry-collector.applyPrometheusMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.jaegerReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyJaegerReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -2686,6 +2692,7 @@ receivers:
 {{- $_ := set $receiver "units" . }}
 {{- end }}
 {{- end }}
+
 {{- with .Values.presets.journaldReceiver.matches }}
 {{- if . }}
 {{- $_ := set $receiver "matches" . }}
@@ -2695,6 +2702,48 @@ receivers:
   journald:{{- if $receiver }}
 {{ toYaml $receiver | indent 4 }}
 {{- else }} {}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyPrometheusMultiConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.prometheusMultiConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.metrics) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus/multi" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.prometheusMultiConfig" -}}
+{{- $targets := .Values.presets.prometheusMulti.targets }}
+{{- $scrapeInterval := default "15s" .Values.presets.prometheusMulti.scrapeInterval }}
+receivers:
+  prometheus/multi:
+    config:
+{{- if $targets }}
+      scrape_configs:
+{{- range $index, $target := $targets }}
+        - job_name: {{ $target.name | quote }}
+          scrape_interval: {{ $scrapeInterval | quote }}
+          static_configs:
+            - targets:
+                - {{ printf "%s:%v" (default "127.0.0.1" $target.ip) $target.port | quote }}
+{{- $labels := dict }}
+{{- if $target.applicationName }}
+{{- $_ := set $labels "cx.application.name" $target.applicationName }}
+{{- end }}
+{{- if $target.subsystemName }}
+{{- $_ := set $labels "cx.subsystem.name" $target.subsystemName }}
+{{- end }}
+{{- if $target.extraLabels }}
+{{- range $labelKey, $labelValue := $target.extraLabels }}
+{{- $_ := set $labels $labelKey $labelValue }}
+{{- end }}
+{{- end }}
+{{- if gt (len $labels) 0 }}
+              labels:
+{{ toYaml $labels | indent 16 }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 
