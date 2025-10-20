@@ -163,6 +163,43 @@ config:
           - otlphttp
 ```
 
+### Configuration for Journald Logs
+
+The collector can read logs directly from the systemd journal by enabling the
+`journaldReceiver` preset. When enabled, the chart mounts the host's journal
+directory (default `/run/log/journal`) into the collector pod and adds the
+`journald` receiver to the logs pipeline.
+
+This feature is disabled by default and requires Linux nodes with access to the
+systemd journal. For clusters where hostPath volumes are restricted (such as
+managed serverless offerings), ensure the required permissions are granted
+before enabling the preset.
+
+Optional fields allow further filtering:
+
+- `directory`: Override the journal directory to mount and read from.
+- `units`: Limit collection to specific systemd units.
+- `matches`: Provide additional journald matchers for fine-grained selection.
+
+Here is an example `values.yaml`:
+
+```yaml
+mode: daemonset
+
+presets:
+  journaldReceiver:
+    enabled: true
+    directory: /run/log/journal
+    units:
+      - ssh
+      - kubelet
+      - docker
+    matches:
+      - _SYSTEMD_UNIT: kubelet.service
+      - _SYSTEMD_UNIT: ssh.service
+        _UID: "1000"
+```
+
 ### Configuration for Kubernetes Attributes Processor
 
 The collector can be configured to add Kubernetes metadata, such as pod name and namespace name, as resource attributes to incoming logs, metrics and traces.

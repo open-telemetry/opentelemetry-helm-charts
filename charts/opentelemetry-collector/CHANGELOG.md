@@ -2,16 +2,18 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.9 / 2025-10-20
+- [feat] Add`journaldReceiver` preset for systemd journal logs with optional directory, unit, and match filters.
+
 ### v0.121.8 / 2025-10-17
-- [Feat] Allow conditional resource attribute removals in the `reduceResourceAttributes` preset via denylist entry conditions.
+- [Feat] Allow conditional resource attribute removals in the `reduceResourceAttributes` preset via denylist entry conditions
 
 ### v0.121.7 / 2025-10-16
 - [Feat] Add `spanMetricsSanitization` preset to provide span name, URL, and database statement sanitization when span metrics presets are enabled.
 
 ### v0.121.6 / 2025-10-15
 - [FIX] compact metrics unit name change. compact_duration_count -> compact_duration_ms_count, compact_duration_sum -> compact_duration_ms_sum, db_compact_duration_count -> db_compact_duration_ms_count, compact_duration_sum -> compact_duration_ms_sum
-
-
+git 
 ### v0.121.5 / 2025-10-15
 - [Feat] Allow configuring resource detection detectors for environment and cloud metadata.
 

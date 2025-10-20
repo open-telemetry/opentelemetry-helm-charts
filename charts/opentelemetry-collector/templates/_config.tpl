@@ -125,6 +125,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.awsecscontainermetricsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyAwsecsContainerMetricsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.journaldReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyJournaldReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.profilesCollection.enabled }}
 {{- $config = (include "opentelemetry-collector.applyProfilesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -140,6 +143,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.awsecscontainermetricsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyAwsecsContainerMetricsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.journaldReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyJournaldReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.statsdReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyStatsdReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -261,6 +267,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.zipkinReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyZipkinReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.journaldReceiver.enabled }}
+{{- $config = (include "opentelemetry-collector.applyJournaldReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.otlpReceiver.enabled }}
 {{- $config = (include "opentelemetry-collector.applyOtlpReceiverConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -2657,6 +2666,36 @@ receivers:
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "statsd" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.applyJournaldReceiverConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.journaldReceiverConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (not (has "journald" $config.service.pipelines.logs.receivers)) }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "journald" | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.journaldReceiverConfig" -}}
+{{- $receiver := dict }}
+{{- with .Values.presets.journaldReceiver.directory }}
+{{- $_ := set $receiver "directory" . }}
+{{- end }}
+{{- with .Values.presets.journaldReceiver.units }}
+{{- if . }}
+{{- $_ := set $receiver "units" . }}
+{{- end }}
+{{- end }}
+{{- with .Values.presets.journaldReceiver.matches }}
+{{- if . }}
+{{- $_ := set $receiver "matches" . }}
+{{- end }}
+{{- end }}
+receivers:
+  journald:{{- if $receiver }}
+{{ toYaml $receiver | indent 4 }}
+{{- else }} {}
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.statsdReceiverConfig" -}}

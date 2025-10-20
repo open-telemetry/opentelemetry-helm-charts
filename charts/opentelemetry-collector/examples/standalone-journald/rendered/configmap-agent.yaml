@@ -1,13 +1,13 @@
 ---
-# Source: opentelemetry-collector/templates/configmap.yaml
+# Source: opentelemetry-collector/templates/configmap-agent.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cx-otel-collector-monitor
+  name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.121.8
-    app.kubernetes.io/name: cx-otel-collector-monitor
+    helm.sh/chart: opentelemetry-collector-0.121.9
+    app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.137.0"
     app.kubernetes.io/managed-by: Helm
@@ -15,78 +15,15 @@ metadata:
 data:
   relay: |
     exporters:
-      coralogix:
-        application_name: otel-fargate-integration
-        application_name_attributes:
-        - k8s.namespace.name
-        - service.namespace
-        domain: eu2.coralogix.com
-        logs:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/
-        metrics:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/
-        private_key: ${env:CORALOGIX_PRIVATE_KEY}
-        profiles:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/
-        subsystem_name: eks-fargate
-        subsystem_name_attributes:
-        - k8s.deployment.name
-        - k8s.statefulset.name
-        - k8s.daemonset.name
-        - k8s.cronjob.name
-        - k8s.job.name
-        - k8s.container.name
-        - k8s.node.name
-        - service.name
-        timeout: 30s
-        traces:
-          headers:
-            X-Coralogix-Distribution: helm-otel-integration/
       debug: {}
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
-      k8s_observer:
-        auth_type: serviceAccount
-        observe_nodes: true
-        observe_pods: true
     processors:
-      batch:
-        send_batch_max_size: 2048
-        send_batch_size: 1024
-        timeout: 60s
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      resource/metadata:
-        attributes:
-        - action: upsert
-          key: k8s.cluster.name
-          value: 'my-eks-fargate-cluster'
-      resourcedetection/env:
-        detectors:
-        - system
-        - env
-        override: false
-        system:
-          resource_attributes:
-            host.id:
-              enabled: true
-        timeout: 2s
-      resourcedetection/region:
-        detectors:
-        - gcp
-        - ec2
-        - azure
-        - eks
-        eks:
-          node_from_env_var: K8S_NODE_NAME
-        override: true
-        timeout: 2s
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -138,13 +75,78 @@ data:
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
     receivers:
+      hostmetrics:
+        collection_interval: 10s
+        root_path: /
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          disk: null
+          filesystem:
+            exclude_fs_types:
+              fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+              match_type: strict
+            exclude_mount_points:
+              match_type: regexp
+              mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /run/containerd/runc/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+          load: null
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          network: null
+          process:
+            metrics:
+              process.cpu.utilization:
+                enabled: true
+              process.memory.utilization:
+                enabled: true
+              process.threads:
+                enabled: true
+            mute_process_exe_error: true
+            mute_process_name_error: true
+            mute_process_user_error: true
+      journald: {}
       otlp:
         protocols:
           grpc:
-            endpoint: ${env:MY_POD_IP}:4317
+            endpoint: 0.0.0.0:4317
             max_recv_msg_size_mib: 20
           http:
-            endpoint: ${env:MY_POD_IP}:4318
+            endpoint: 0.0.0.0:4318
       prometheus:
         config:
           scrape_configs:
@@ -152,39 +154,36 @@ data:
             scrape_interval: 30s
             static_configs:
             - targets:
-              - ${env:MY_POD_IP}:8888
-      receiver_creator:
-        receivers:
-          kubeletstats:
-            config:
-              auth_type: serviceAccount
-              collection_interval: 30s
-              endpoint: '`endpoint`:`kubelet_endpoint_port`'
-              extra_metadata_labels:
-              - container.id
-              insecure_skip_verify: true
-              metric_groups:
-              - container
-              - pod
-              - node
-            rule: type == "k8s.node" && labels["OTEL-collector-node"] == "true"
-        watch_observers:
-        - k8s_observer
+              - 0.0.0.0:8888
     service:
       extensions:
       - health_check
-      - k8s_observer
       pipelines:
-        metrics/colmon:
+        logs:
           exporters:
-          - coralogix
+          - debug
           processors:
           - memory_limiter
-          - resource/metadata
-          - resourcedetection/region
-          - resourcedetection/env
           receivers:
-          - receiver_creator
+          - journald
+          - otlp
+        metrics:
+          exporters:
+          - debug
+          processors:
+          - memory_limiter
+          - transform/prometheus
+          receivers:
+          - hostmetrics
+          - prometheus
+          - otlp
+        traces:
+          exporters:
+          - debug
+          processors:
+          - memory_limiter
+          receivers:
+          - otlp
       telemetry:
         logs:
           encoding: json
@@ -193,5 +192,5 @@ data:
           - pull:
               exporter:
                 prometheus:
-                  host: ${env:MY_POD_IP}
+                  host: 0.0.0.0
                   port: 8888

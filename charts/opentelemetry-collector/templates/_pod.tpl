@@ -241,6 +241,11 @@ containers:
         mountPath: /var/lib/otelcol
       {{- end }}
       {{- end }}
+      {{- if and .Values.presets.journaldReceiver.enabled (not .Values.isWindows) }}
+      - name: journald
+        mountPath: {{ default "/run/log/journal" .Values.presets.journaldReceiver.directory }}
+        readOnly: true
+      {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
       {{- if .Values.isWindows }}
       - mountPath: "C:\\hostfs"
@@ -352,6 +357,12 @@ volumes:
       path: /var/lib/otelcol
       type: DirectoryOrCreate
   {{- end }}
+  {{- end }}
+  {{- if and .Values.presets.journaldReceiver.enabled (not .Values.isWindows) }}
+  - name: journald
+    hostPath:
+      path: {{ default "/run/log/journal" .Values.presets.journaldReceiver.directory }}
+      type: Directory
   {{- end }}
   {{- if .Values.presets.hostMetrics.enabled }}
   {{- if .Values.isWindows }}
