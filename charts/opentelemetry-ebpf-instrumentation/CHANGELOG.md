@@ -2,6 +2,9 @@
 
 ## OpenTelemetry eBPF Instrumentation
 
+### v0.1.5 / 2025-10-21
+- [Feat] Increase http, postgres default buffer sizes, add graphql payload extraction
+
 ### v0.1.4 / 2025-08-11
 - [Fix] add toleration, affinity and nodeSelector to k8s cache deployment
 
