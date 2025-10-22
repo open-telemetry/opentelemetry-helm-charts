@@ -434,6 +434,73 @@ Note due to limited access, these options will not work:
 - `presets.hostMetrics`
 - `presets.logsCollection.storeCheckpoints`
 
+### Configuration for EKS Fargate distribution
+
+AWS EKS Fargate is a serverless compute engine for Kubernetes that removes the need to provision and manage EC2 instances. Since Fargate pods run in an isolated environment, some collector features require special configuration.
+
+To deploy into EKS Fargate, set the `distribution` value to `"eks/fargate"`:
+
+```yaml
+distribution: "eks/fargate"
+```
+
+This setting automatically applies Fargate-specific configurations:
+
+- Adds the node selector `eks.amazonaws.com/compute-type: fargate` to ensure pods run on Fargate
+- Disables hostPath volume mounts (not supported in Fargate)
+- Configures receiver creator for kubelet stats collection from Fargate nodes
+- Adds `eks` detector to resource detection for EKS-specific metadata
+
+#### EKS Fargate Preset Configuration
+
+The `presets.eksFargate` section provides additional configuration options:
+
+```yaml
+presets:
+  eksFargate:
+    # Set to true when deploying a central monitoring collector that collects
+    # kubelet stats from all Fargate nodes. Set to false when deploying
+    # per-namespace collectors on Fargate.
+    monitoringCollector: false
+
+    kubeletStats:
+      # Collection interval for kubelet stats metrics
+      collectionInterval: "30s"
+```
+
+#### Deployment Modes
+
+There are two primary deployment patterns for EKS Fargate:
+
+1. **Per-namespace collector** (`monitoringCollector: false`): Deploy the OpenTelemetry Collector as a StatefulSet in each Fargate namespace where your applications run. This collector will collect your application's telemetry data (traces, metrics, and logs) and also gather kubelet stats metrics from its own Fargate node. This is the recommended approach when you want to deploy the collector alongside your applications in Fargate.
+
+2. **Centralized monitoring collector** (`monitoringCollector: true`): Deploy a dedicated OpenTelemetry Collector as a Deployment that acts as a centralized infrastructure monitoring component. This collector automatically discovers all Fargate nodes in the cluster and collects kubelet stats metrics from each of them. It uses the receiver creator to dynamically discover kubelet endpoints and filters metrics to only collect from Fargate nodes. This pattern is useful when you want to monitor the infrastructure separately from application telemetry, or when you want a single collector to gather node-level metrics across all Fargate pods in the cluster.
+
+#### Required Environment Variables
+
+When using EKS Fargate, you must configure the `K8S_NODE_NAME` environment variable:
+
+```yaml
+extraEnvs:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+```
+
+This variable is used by the resource detection processor to identify the node and by the receiver creator to collect kubelet stats.
+
+#### Examples
+
+See the following example configurations:
+
+- [EKS Fargate per-namespace collector](examples/eks-fargate)
+- [EKS Fargate centralized monitoring collector](examples/eks-fargate-monitoring)
+
+Note: Due to Fargate limitations, these options will not work:
+- `presets.hostMetrics`
+- `presets.logsCollection` (container log collection via hostPath mounts)
+
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
