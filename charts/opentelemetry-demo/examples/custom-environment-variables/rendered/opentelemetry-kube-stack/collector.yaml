@@ -44,6 +44,10 @@ spec:
         auth_type: serviceAccount
         lease_name: k8s.objects.receiver.opentelemetry.io
         lease_namespace: default
+      k8s_observer:
+        observe_ingresses: true
+        observe_nodes: true
+        observe_services: true
     processors:
       batch:
         send_batch_max_size: 1500
@@ -126,9 +130,6 @@ spec:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
-      httpcheck/frontend-proxy:
-        targets:
-        - endpoint: http://frontend-proxy:8080
       k8s_cluster:
         allocatable_types_to_report:
         - cpu
@@ -176,9 +177,6 @@ spec:
             enabled: true
           k8s.pod.uptime:
             enabled: true
-      nginx:
-        collection_interval: 10s
-        endpoint: http://image-provider:8081/status
       otlp:
         protocols:
           grpc:
@@ -189,36 +187,15 @@ spec:
               - http://*
               - https://*
             endpoint: 0.0.0.0:4318
-      postgresql:
-        endpoint: postgresql:5432
-        metrics:
-          postgresql.blks_hit:
-            enabled: true
-          postgresql.blks_read:
-            enabled: true
-          postgresql.deadlocks:
-            enabled: true
-          postgresql.tup_deleted:
-            enabled: true
-          postgresql.tup_fetched:
-            enabled: true
-          postgresql.tup_inserted:
-            enabled: true
-          postgresql.tup_returned:
-            enabled: true
-          postgresql.tup_updated:
-            enabled: true
-        password: otel
-        tls:
-          insecure: true
-        username: root
-      redis:
-        collection_interval: 10s
-        endpoint: valkey-cart:6379
-        username: valkey
+      receiver_creator/k8s:
+        discovery:
+          enabled: true
+        watch_observers:
+        - k8s_observer
     service:
       extensions:
       - health_check
+      - k8s_observer
       - k8s_leader_elector/k8s_objects
       - k8s_leader_elector/k8s_cluster
       pipelines:
@@ -243,10 +220,7 @@ spec:
           - batch
           receivers:
           - otlp
-          - httpcheck/frontend-proxy
-          - nginx
-          - postgresql
-          - redis
+          - receiver_creator/k8s
           - spanmetrics
           - kubeletstats
           - k8s_cluster

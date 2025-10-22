@@ -448,6 +448,11 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: frontend-proxy
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: httpcheck
+      io.opentelemetry.discovery.metrics/config: |
+          targets:
+            - endpoint: "http://`endpoint`"  # FIXME why isn't `endpoint` interpolated?
     env:
       - name: ENVOY_PORT
         value: "8080"
@@ -503,6 +508,12 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: image-provider
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: nginx
+      io.opentelemetry.discovery.metrics/config: |
+          endpoint: "http://`endpoint`/status"
+          collection_interval: "10s"
+          timeout: "20s"
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
@@ -808,6 +819,31 @@ components:
         value: otel
       - name: POSTGRES_DB
         value: otel
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: postgresql
+      io.opentelemetry.discovery.metrics/config: |
+        username: root
+        password: otel
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+        tls:
+          insecure: true
     resources:
       limits:
         memory: 100Mi
@@ -823,6 +859,12 @@ components:
     ports:
       - name: valkey-cart
         value: 6379
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: redis
+      io.opentelemetry.discovery.metrics/config: |
+        username: valkey
+        collection_interval: 10s
     resources:
       limits:
         memory: 20Mi
@@ -863,6 +905,10 @@ opentelemetry-kube-stack:
         extensions:
           health_check:  # For K8s Liveness and Readiness Probes
             endpoint: 0.0.0.0:13133
+          k8s_observer:
+            observe_nodes: true
+            observe_services: true
+            observe_ingresses: true
         receivers:
           otlp:
             protocols:
@@ -873,39 +919,10 @@ opentelemetry-kube-stack:
                   allowed_origins:
                     - "http://*"
                     - "https://*"
-          httpcheck/frontend-proxy:
-            targets:
-              - endpoint: http://frontend-proxy:8080
-          nginx:
-            endpoint: http://image-provider:8081/status
-            collection_interval: 10s
-          postgresql:
-            endpoint: "postgresql:5432"
-            username: "root"
-            password: "otel"
-            metrics:
-              postgresql.blks_hit:
-                enabled: true
-              postgresql.blks_read:
-                enabled: true
-              postgresql.tup_fetched:
-                enabled: true
-              postgresql.tup_returned:
-                enabled: true
-              postgresql.tup_inserted:
-                enabled: true
-              postgresql.tup_updated:
-                enabled: true
-              postgresql.tup_deleted:
-                enabled: true
-              postgresql.deadlocks:
-                enabled: true
-            tls:
-              insecure: true
-          redis:
-            endpoint: "valkey-cart:6379"
-            username: "valkey"
-            collection_interval: 10s
+          receiver_creator/k8s:
+            watch_observers: [k8s_observer]
+            discovery:
+              enabled: true
         exporters:
           debug: {}
           otlp/jaeger:
@@ -935,7 +952,7 @@ opentelemetry-kube-stack:
         connectors:
           spanmetrics: {}
         service:
-          extensions: [health_check]
+          extensions: [health_check, k8s_observer]
           pipelines:
             traces:
               processors:
@@ -949,10 +966,7 @@ opentelemetry-kube-stack:
             metrics:
               receivers:
                 - otlp
-                - httpcheck/frontend-proxy
-                - nginx
-                - postgresql
-                - redis
+                - receiver_creator/k8s
                 - spanmetrics
               processors:
                 - resourcedetection/env

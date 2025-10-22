@@ -1422,6 +1422,11 @@ spec:
         app.kubernetes.io/component: frontend-proxy
         app.kubernetes.io/name: frontend-proxy
       annotations:
+        io.opentelemetry.discovery.metrics/config: |
+          targets:
+            - endpoint: "http://`endpoint`"  # FIXME why isn't `endpoint` interpolated?
+        io.opentelemetry.discovery.metrics/enabled: "true"
+        io.opentelemetry.discovery.metrics/scraper: httpcheck
         resource.opentelemetry.io/service.name: frontend-proxy
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
@@ -1540,6 +1545,12 @@ spec:
         app.kubernetes.io/component: image-provider
         app.kubernetes.io/name: image-provider
       annotations:
+        io.opentelemetry.discovery.metrics/config: |
+          endpoint: "http://`endpoint`/status"
+          collection_interval: "10s"
+          timeout: "20s"
+        io.opentelemetry.discovery.metrics/enabled: "true"
+        io.opentelemetry.discovery.metrics/scraper: nginx
         resource.opentelemetry.io/service.name: image-provider
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
@@ -1909,6 +1920,31 @@ spec:
         
         app.kubernetes.io/component: postgresql
         app.kubernetes.io/name: postgresql
+      annotations:
+        io.opentelemetry.discovery.metrics/config: |
+          username: root
+          password: otel
+          metrics:
+            postgresql.blks_hit:
+              enabled: true
+            postgresql.blks_read:
+              enabled: true
+            postgresql.tup_fetched:
+              enabled: true
+            postgresql.tup_returned:
+              enabled: true
+            postgresql.tup_inserted:
+              enabled: true
+            postgresql.tup_updated:
+              enabled: true
+            postgresql.tup_deleted:
+              enabled: true
+            postgresql.deadlocks:
+              enabled: true
+          tls:
+            insecure: true
+        io.opentelemetry.discovery.metrics/enabled: "true"
+        io.opentelemetry.discovery.metrics/scraper: postgresql
     spec:
       serviceAccountName: example
       containers:
@@ -2347,6 +2383,12 @@ spec:
         
         app.kubernetes.io/component: valkey-cart
         app.kubernetes.io/name: valkey-cart
+      annotations:
+        io.opentelemetry.discovery.metrics/config: |
+          username: valkey
+          collection_interval: 10s
+        io.opentelemetry.discovery.metrics/enabled: "true"
+        io.opentelemetry.discovery.metrics/scraper: redis
     spec:
       serviceAccountName: example
       containers:
