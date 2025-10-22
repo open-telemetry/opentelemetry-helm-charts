@@ -489,7 +489,9 @@ spec:
         app.kubernetes.io/component: accounting
         app.kubernetes.io/name: accounting
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: accounting
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -497,16 +499,44 @@ spec:
           image: 'ghcr.io/open-telemetry/demo:2.1.3-accounting'
           imagePullPolicy: IfNotPresent
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: KAFKA_ADDR
               value: kafka:9092
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-demo-daemon-collector:4318
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: http/protobuf
             - name: DB_CONNECTION_STRING
               value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
             - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
               value: "false"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 120Mi
@@ -551,7 +581,9 @@ spec:
         app.kubernetes.io/component: ad
         app.kubernetes.io/name: ad
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: ad
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -563,18 +595,46 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: AD_PORT
               value: "8080"
             - name: FLAGD_HOST
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
+            - name: OTEL_LOGS_EXPORTER
+              value: otlp
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://otel-demo-daemon-collector:4318
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: http/protobuf
-            - name: OTEL_LOGS_EXPORTER
-              value: otlp
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 300Mi
@@ -612,7 +672,9 @@ spec:
         app.kubernetes.io/component: cart
         app.kubernetes.io/name: cart
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: cart
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -624,6 +686,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: CART_PORT
               value: "8080"
             - name: ASPNETCORE_URLS
@@ -634,6 +722,8 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 160Mi
@@ -679,7 +769,9 @@ spec:
         app.kubernetes.io/component: checkout
         app.kubernetes.io/name: checkout
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: checkout
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -691,6 +783,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: CHECKOUT_PORT
               value: "8080"
             - name: CART_ADDR
@@ -713,6 +831,8 @@ spec:
               value: "8013"
             - name: GOMEMLIMIT
               value: 16MiB
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 20Mi
@@ -757,7 +877,9 @@ spec:
         app.kubernetes.io/component: currency
         app.kubernetes.io/name: currency
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: currency
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -769,10 +891,38 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: CURRENCY_PORT
               value: "8080"
             - name: VERSION
               value: '2.1.3'
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 20Mi
@@ -810,7 +960,9 @@ spec:
         app.kubernetes.io/component: email
         app.kubernetes.io/name: email
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: email
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -822,20 +974,48 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: EMAIL_PORT
               value: "8080"
             - name: APP_ENV
               value: production
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-demo-daemon-collector:4318
             - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
               value: http://otel-demo-daemon-collector:4318/v1/traces
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: http/protobuf
             - name: FLAGD_HOST
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 100Mi
@@ -873,7 +1053,9 @@ spec:
         app.kubernetes.io/component: flagd
         app.kubernetes.io/name: flagd
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: flagd
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -896,12 +1078,40 @@ spec:
             - containerPort: 8016
               name: ofrep
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: FLAGD_METRICS_EXPORTER
               value: otel
             - name: FLAGD_OTEL_COLLECTOR_URI
               value: otel-demo-daemon-collector:4317
             - name: GOMEMLIMIT
               value: 60MiB
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 75Mi
@@ -916,18 +1126,46 @@ spec:
             - containerPort: 4000
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: FLAGD_METRICS_EXPORTER
               value: otel
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-demo-daemon-collector:4318
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: http/protobuf
             - name: FLAGD_UI_PORT
               value: "4000"
             - name: SECRET_KEY_BASE
               value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
             - name: PHX_HOST
               value: localhost
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 250Mi
@@ -984,7 +1222,7 @@ spec:
         app.kubernetes.io/component: fraud-detection
         app.kubernetes.io/name: fraud-detection
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
     spec:
       serviceAccountName: example
       containers:
@@ -992,20 +1230,48 @@ spec:
           image: 'ghcr.io/open-telemetry/demo:2.1.3-fraud-detection'
           imagePullPolicy: IfNotPresent
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: KAFKA_ADDR
               value: kafka:9092
             - name: FLAGD_HOST
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-demo-daemon-collector:4318
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: http/protobuf
             - name: OTEL_INSTRUMENTATION_KAFKA_EXPERIMENTAL_SPAN_ATTRIBUTES
               value: "true"
             - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
               value: "true"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 300Mi
@@ -1050,7 +1316,9 @@ spec:
         app.kubernetes.io/component: frontend
         app.kubernetes.io/name: frontend
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: frontend
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1062,6 +1330,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: FRONTEND_PORT
               value: "8080"
             - name: PORT
@@ -1092,6 +1386,8 @@ spec:
               value: frontend-web
             - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
               value: http://localhost:8080/otlp-http/v1/traces
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 250Mi
@@ -1133,7 +1429,9 @@ spec:
         app.kubernetes.io/component: frontend-proxy
         app.kubernetes.io/name: frontend-proxy
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: frontend-proxy
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1145,6 +1443,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: ENVOY_PORT
               value: "8080"
             - name: ENVOY_ADMIN_PORT
@@ -1181,6 +1505,8 @@ spec:
               value: "4317"
             - name: OTEL_COLLECTOR_PORT_HTTP
               value: "4318"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 65Mi
@@ -1222,7 +1548,9 @@ spec:
         app.kubernetes.io/component: image-provider
         app.kubernetes.io/name: image-provider
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: image-provider
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1234,10 +1562,38 @@ spec:
             - containerPort: 8081
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: IMAGE_PROVIDER_PORT
               value: "8081"
             - name: OTEL_COLLECTOR_PORT_GRPC
               value: "4317"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 50Mi
@@ -1275,7 +1631,9 @@ spec:
         app.kubernetes.io/component: kafka
         app.kubernetes.io/name: kafka
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: kafka
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1289,12 +1647,34 @@ spec:
             - containerPort: 9093
               name: controller
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: KAFKA_ADVERTISED_LISTENERS
               value: PLAINTEXT://kafka:9092
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-demo-daemon-collector:4318
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: http/protobuf
             - name: KAFKA_HEAP_OPTS
               value: -Xmx400M -Xms400M
             - name: KAFKA_LISTENERS
@@ -1303,6 +1683,12 @@ spec:
               value: CONTROLLER
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: 1@kafka:9093
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 600Mi
@@ -1344,7 +1730,9 @@ spec:
         app.kubernetes.io/component: load-generator
         app.kubernetes.io/name: load-generator
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: load-generator
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1356,6 +1744,32 @@ spec:
             - containerPort: 8089
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: LOCUST_WEB_HOST
               value: 0.0.0.0
             - name: LOCUST_WEB_PORT
@@ -1380,6 +1794,8 @@ spec:
               value: "8013"
             - name: FLAGD_OFREP_PORT
               value: "8016"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 1500Mi
@@ -1417,7 +1833,9 @@ spec:
         app.kubernetes.io/component: payment
         app.kubernetes.io/name: payment
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: payment
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1429,12 +1847,40 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: PAYMENT_PORT
               value: "8080"
             - name: FLAGD_HOST
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 120Mi
@@ -1486,12 +1932,40 @@ spec:
             - containerPort: 5432
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: POSTGRES_USER
               value: root
             - name: POSTGRES_PASSWORD
               value: otel
             - name: POSTGRES_DB
               value: otel
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 100Mi
@@ -1529,7 +2003,9 @@ spec:
         app.kubernetes.io/component: product-catalog
         app.kubernetes.io/name: product-catalog
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: product-catalog
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1541,6 +2017,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: PRODUCT_CATALOG_PORT
               value: "8080"
             - name: PRODUCT_CATALOG_RELOAD_INTERVAL
@@ -1551,6 +2053,8 @@ spec:
               value: "8013"
             - name: GOMEMLIMIT
               value: 16MiB
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 20Mi
@@ -1593,7 +2097,9 @@ spec:
         app.kubernetes.io/component: quote
         app.kubernetes.io/name: quote
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: quote
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1605,6 +2111,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: QUOTE_PORT
               value: "8080"
             - name: OTEL_PHP_AUTOLOAD_ENABLED
@@ -1615,6 +2147,8 @@ spec:
               value: http://otel-demo-daemon-collector:4318
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 40Mi
@@ -1656,7 +2190,9 @@ spec:
         app.kubernetes.io/component: recommendation
         app.kubernetes.io/name: recommendation
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: recommendation
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1668,6 +2204,32 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: RECOMMENDATION_PORT
               value: "8080"
             - name: PRODUCT_CATALOG_ADDR
@@ -1680,6 +2242,8 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 500Mi
@@ -1717,7 +2281,9 @@ spec:
         app.kubernetes.io/component: shipping
         app.kubernetes.io/name: shipping
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "false"
+        resource.opentelemetry.io/service.name: shipping
+        resource.opentelemetry.io/service.namespace: opentelemetry-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1729,10 +2295,38 @@ spec:
             - containerPort: 8080
               name: service
           env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
             - name: SHIPPING_PORT
               value: "8080"
             - name: QUOTE_ADDR
               value: http://quote:8080
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 20Mi
@@ -1780,7 +2374,34 @@ spec:
             - containerPort: 6379
               name: valkey-cart
           env:
-            []
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.name']
+            - name: OTEL_SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations['resource.opentelemetry.io/service.namespace']
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-demo-daemon-collector
+            - name: OTEL_PROPAGATORS
+              value: tracecontext,baggage
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version=2.1.3,deployment.environment.name=demo
           resources:
             limits:
               memory: 20Mi

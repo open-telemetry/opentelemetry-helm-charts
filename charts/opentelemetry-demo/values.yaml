@@ -2,7 +2,38 @@
 default:
   # List of environment variables applied to all components
   # Format: {name: some_name, value: some_value} or {name: some_name, valueFrom: ...}
-  env: []
+  env:
+    # Emulate otel operator instrumentation injection OTEL_* config
+    # because the OTel Demo Helm Chart cannot wait for the otel-operator to be up and running
+    # before deploying the demo components so they get instrumented.
+    - name: OTEL_SERVICE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: "metadata.annotations['resource.opentelemetry.io/service.name']"
+    - name: OTEL_SERVICE_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: "metadata.annotations['resource.opentelemetry.io/service.namespace']"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otel-demo-daemon-collector:4317"
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: grpc
+    - name: OTEL_K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: cumulative
+    - name: OTEL_COLLECTOR_HOST
+      value: otel-demo-daemon-collector
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: 'service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version={{ .Chart.AppVersion }},deployment.environment.name=demo'
+    - name: OTEL_PROPAGATORS
+      value: "tracecontext,baggage"
+    - name: OTEL_TRACES_SAMPLER
+      value: parentbased_always_on
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -161,18 +192,21 @@ components:
     useDefault:
       env: true
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: accounting
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://otel-demo-daemon-collector:4318
-      - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: "http/protobuf"
       - name: DB_CONNECTION_STRING
         value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
       - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
         value: "false"
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 120Mi
@@ -188,7 +222,9 @@ components:
     service:
       port: 8080
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: ad
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: AD_PORT
         value: "8080"
@@ -196,12 +232,13 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+      - name: OTEL_LOGS_EXPORTER
+        value: otlp
+    envOverrides:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://otel-demo-daemon-collector:4318
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: "http/protobuf"
-      - name: OTEL_LOGS_EXPORTER
-        value: otlp
     resources:
       limits:
         memory: 300Mi
@@ -212,7 +249,9 @@ components:
     service:
       port: 8080
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: cart
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: CART_PORT
         value: "8080"
@@ -262,7 +301,9 @@ components:
       - name: GOMEMLIMIT
         value: 16MiB
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: checkout
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -283,7 +324,9 @@ components:
       - name: VERSION
         value: "{{ .Chart.AppVersion }}"
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: currency
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -295,22 +338,25 @@ components:
     service:
       port: 8080
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: email
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: EMAIL_PORT
         value: "8080"
       - name: APP_ENV
         value: production
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://otel-demo-daemon-collector:4318
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://otel-demo-daemon-collector:4318/v1/traces
-      - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: "http/protobuf"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 100Mi
@@ -320,7 +366,7 @@ components:
     useDefault:
       env: true
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -328,14 +374,15 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://otel-demo-daemon-collector:4318
-      - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: "http/protobuf"
       - name: OTEL_INSTRUMENTATION_KAFKA_EXPERIMENTAL_SPAN_ATTRIBUTES
         value: "true"
       - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
         value: "true"
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 300Mi
@@ -382,7 +429,9 @@ components:
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: frontend
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 250Mi
@@ -398,7 +447,9 @@ components:
     service:
       port: 8080
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: frontend-proxy
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: ENVOY_PORT
         value: "8080"
@@ -452,7 +503,9 @@ components:
     service:
       port: 8081
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: image-provider
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
@@ -495,7 +548,9 @@ components:
       - name: FLAGD_OFREP_PORT
         value: "8016"
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: load-generator
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 1500Mi
@@ -514,7 +569,9 @@ components:
       - name: FLAGD_PORT
         value: "8013"
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: payment
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 120Mi
@@ -545,7 +602,9 @@ components:
         mountPath: /usr/src/app/products
         existingConfigMap: product-catalog-products
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: product-catalog
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -557,7 +616,9 @@ components:
     service:
       port: 8080
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: quote
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: QUOTE_PORT
         value: "8080"
@@ -565,6 +626,7 @@ components:
         value: "true"
       - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
         value: "true"
+    envOverrides:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://otel-demo-daemon-collector:4318
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
@@ -597,7 +659,9 @@ components:
       - name: FLAGD_PORT
         value: "8013"
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: recommendation
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -614,7 +678,9 @@ components:
       - name: QUOTE_ADDR
         value: http://quote:8080
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: shipping
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -633,7 +699,9 @@ components:
       - name: ofrep
         value: 8016
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: flagd
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: FLAGD_METRICS_EXPORTER
         value: otel
@@ -666,16 +734,17 @@ components:
         env:
           - name: FLAGD_METRICS_EXPORTER
             value: otel
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://otel-demo-daemon-collector:4318
-          - name: OTEL_EXPORTER_OTLP_PROTOCOL
-            value: "http/protobuf"
           - name: FLAGD_UI_PORT
             value: "4000"
           - name: SECRET_KEY_BASE
             value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
           - name: PHX_HOST
             value: localhost
+        envOverrides:
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://otel-demo-daemon-collector:4318
+          - name: OTEL_EXPORTER_OTLP_PROTOCOL
+            value: "http/protobuf"
         resources:
           limits:
             memory: 250Mi
@@ -707,14 +776,12 @@ components:
       - name: controller
         value: 9093
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "true"
+      resource.opentelemetry.io/service.name: kafka
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://otel-demo-daemon-collector:4318
-      - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: "http/protobuf"
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
       - name: KAFKA_LISTENERS
@@ -723,6 +790,11 @@ components:
         value: CONTROLLER
       - name: KAFKA_CONTROLLER_QUORUM_VOTERS
         value: 1@kafka:9093
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 600Mi
@@ -784,10 +856,10 @@ opentelemetry-kube-stack:
       scrape_configs_file: ""
       presets:
         logsCollection:
-          enabled: true  # TODO disable when running on Docker Desktop
+          enabled: false  # TODO disable when running on Docker Desktop
           storeCheckpoints: false  # TODO disable when running on Docker Desktop
         hostMetrics:
-          enabled: true  # TODO disable when running on Docker Desktop
+          enabled: false  # TODO disable when running on Docker Desktop
         kubeletMetrics:
           enabled: true
         kubernetesAttributes:
@@ -1056,6 +1128,9 @@ prometheus:
         - postgresql.schema.name
         - postgresql.table.name
         - postgresql.index.name
+        # MongoDB
+        # See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/mongodbreceiver/metadata.yaml
+        - database
     persistentVolume:
       enabled: false
     service:
