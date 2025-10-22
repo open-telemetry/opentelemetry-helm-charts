@@ -510,19 +510,14 @@ collectors:
             http:
               endpoint: 0.0.0.0:4318
       processors:
-        resourcedetection/env:
-          detectors: [env, k8snode]
-          timeout: 2s
-          override: false
-        resource/hostname:
-          attributes:
-            - key: host.name
-              from_attribute: k8s.node.name
-              action: insert
         batch:
           send_batch_size: 1000
           timeout: 1s
           send_batch_max_size: 1500
+        resourcedetection/env:
+          detectors: [env, k8snode]
+          timeout: 2s
+          override: false
       exporters:
         debug: {}
 
@@ -533,7 +528,6 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
-              - resource/hostname
               - batch
             exporters:
               - debug
@@ -542,7 +536,6 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
-              - resource/hostname
               - batch
             exporters:
               - debug
@@ -551,7 +544,6 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
-              - resource/hostname
               - batch
             exporters:
               - debug
