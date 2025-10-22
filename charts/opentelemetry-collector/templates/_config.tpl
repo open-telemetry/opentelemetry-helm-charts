@@ -2188,6 +2188,8 @@ exporters:
       {{- if eq .Values.distribution "ecs" }}
       - "aws.ecs.cluster"
       - "aws.ecs.task.definition.family"
+      {{- else if eq .Values.distribution "standalone" }}
+      - "service.namespace"
       {{- else }}
       - "k8s.namespace.name"
       - "service.namespace"
@@ -2197,6 +2199,8 @@ exporters:
       - "aws.ecs.container.name"
       - "aws.ecs.docker.name"
       - "docker.name"
+      {{- else if eq .Values.distribution "standalone" }}
+      - "service.name"
       {{- else }}
       - "k8s.deployment.name"
       - "k8s.statefulset.name"

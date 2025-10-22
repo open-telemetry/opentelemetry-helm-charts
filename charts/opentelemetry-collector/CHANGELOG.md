@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.11 / 2025-10-22
+- [Fix] Derive Coralogix application and subsystem names from `service.namespace` and `service.name` when using the standalone distribution.
+
 ### v0.121.10 / 2025-10-20
 - [Feat] Add `prometheusMulti` preset for scraping multiple Prometheus targets with optional custom labels.
 - [Fix] Emit Prometheus multi-target jobs using the provided target name and only apply CX labels when explicitly configured.
