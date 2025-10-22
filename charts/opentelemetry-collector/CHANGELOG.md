@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.12 / 2025-10-22
+- [Fix] Emit Coralogix OTLP headers with the `helm-otel-standalone` distribution tag when the standalone distribution is selected.
+
 ### v0.121.11 / 2025-10-22
 - [Fix] Derive Coralogix application and subsystem names from `service.namespace` and `service.name` when using the standalone distribution.
 

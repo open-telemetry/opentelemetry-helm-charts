@@ -1833,7 +1833,7 @@ exporters:
     subsystem_name: "catalog"
     logs:
       headers:
-        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.global.version }}"
         x-coralogix-ingress: "metadata-as-otlp-logs/v1"
 
 receivers:
@@ -2007,7 +2007,7 @@ exporters:
     subsystem_name: "catalog"
     logs:
       headers:
-        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.global.version }}"
         x-coralogix-ingress: "metadata-as-otlp-logs/v1"
 
 processors:
@@ -2172,16 +2172,16 @@ exporters:
     domain: "{{ .Values.presets.coralogixExporter.domain | default .Values.global.domain }}"
     logs:
       headers:
-        X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else }}helm-otel-integration{{ end }}/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     metrics:
       headers:
-        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     traces:
       headers:
-        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     profiles:
       headers:
-        X-Coralogix-Distribution: "helm-otel-integration/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
+        X-Coralogix-Distribution: "{{ if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.presets.coralogixExporter.version | default .Values.global.version }}"
     application_name: "{{ .Values.presets.coralogixExporter.defaultApplicationName | default .Values.global.defaultApplicationName }}"
     subsystem_name: "{{ .Values.presets.coralogixExporter.defaultSubsystemName | default .Values.global.defaultSubsystemName }}"
     application_name_attributes:
