@@ -26,6 +26,11 @@ spec:
         send_batch_max_size: 1500
         send_batch_size: 1000
         timeout: 1s
+      resource/hostname:
+        attributes:
+        - action: insert
+          from_attribute: k8s.node.name
+          key: host.name
       resourcedetection/env:
         detectors:
         - env
@@ -49,6 +54,7 @@ spec:
           - debug
           processors:
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - otlp
@@ -58,6 +64,7 @@ spec:
           - otlp
           processors:
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - prometheus
@@ -66,6 +73,7 @@ spec:
           - debug
           processors:
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - otlp

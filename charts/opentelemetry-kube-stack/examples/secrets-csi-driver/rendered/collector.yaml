@@ -88,6 +88,11 @@ spec:
             name: k8s.namespace.name
         - sources:
           - from: connection
+      resource/hostname:
+        attributes:
+        - action: insert
+          from_attribute: k8s.node.name
+          key: host.name
       resourcedetection/env:
         detectors:
         - env
@@ -401,6 +406,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - otlp
@@ -412,6 +418,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - prometheus
@@ -425,6 +432,7 @@ spec:
           processors:
           - k8sattributes
           - resourcedetection/env
+          - resource/hostname
           - batch
           receivers:
           - otlp
