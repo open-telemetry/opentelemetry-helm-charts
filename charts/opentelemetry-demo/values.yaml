@@ -194,7 +194,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: accounting
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -224,7 +223,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: ad
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: AD_PORT
         value: "8080"
@@ -251,7 +249,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: cart
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: CART_PORT
         value: "8080"
@@ -303,7 +300,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: checkout
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -326,7 +322,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: currency
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -340,7 +335,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: email
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: EMAIL_PORT
         value: "8080"
@@ -366,7 +360,8 @@ components:
     useDefault:
       env: true
     podAnnotations:
-      instrumentation.opentelemetry.io/inject-sdk: "false"
+      resource.opentelemetry.io/service.name: fraud-detection
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -431,7 +426,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: frontend
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 250Mi
@@ -449,7 +443,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: frontend-proxy
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: ENVOY_PORT
         value: "8080"
@@ -505,7 +498,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: image-provider
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
@@ -550,7 +542,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: load-generator
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 1500Mi
@@ -571,7 +562,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: payment
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 120Mi
@@ -604,7 +594,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: product-catalog
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -618,7 +607,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: quote
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: QUOTE_PORT
         value: "8080"
@@ -661,7 +649,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: recommendation
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -680,7 +667,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: shipping
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     resources:
       limits:
         memory: 20Mi
@@ -701,7 +687,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: flagd
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: FLAGD_METRICS_EXPORTER
         value: otel
@@ -778,7 +763,6 @@ components:
     podAnnotations:
       resource.opentelemetry.io/service.name: kafka
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
-      instrumentation.opentelemetry.io/inject-sdk: "false"
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
@@ -998,31 +982,6 @@ opentelemetry-kube-stack:
     targetAllocator:
       # See https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
       enabled: false
-  instrumentation:
-    enabled: true
-    name: otel-demo-instrumentation
-    env:
-      - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: grpc
-      - name: OTEL_K8S_NODE_NAME
-        valueFrom:
-          fieldRef:
-            fieldPath: spec.nodeName
-      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
-        value: cumulative
-      - name: OTEL_COLLECTOR_HOST
-        value: otel-demo-daemon-collector
-    exporter:
-      endpoint: http://otel-demo-daemon-collector:4317
-    propagators:
-      - tracecontext
-      - baggage
-    sampler:
-      type: parentbased_always_on
-    resource:
-      resourceAttributes:
-        deployment.environment.name: demo
-        service.namespace: opentelemetry-demo
   opentelemetry-operator:
     admissionWebhooks:
       certManager:
