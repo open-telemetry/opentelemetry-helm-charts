@@ -52,6 +52,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- end }}
+{{- if .Values.presets.filelogMulti.enabled }}
+{{- $config = (include "opentelemetry-collector.applyFilelogMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.ecsAttributesContainerLogs.enabled }}
 {{- $config = (include "opentelemetry-collector.applyEcsAttributesContainerLogsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -191,6 +194,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.logsCollection.reduceLogAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- end }}
+{{- if .Values.presets.filelogMulti.enabled }}
+{{- $config = (include "opentelemetry-collector.applyFilelogMultiConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.mysql.metrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyMysqlConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -641,6 +647,17 @@ processors:
 {{- $config | toYaml }}
 {{- end }}
 
+{{- define "opentelemetry-collector.applyFilelogMultiConfig" -}}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.filelogMultiConfig" .Values | fromYaml) .config }}
+{{- if and ($config.service.pipelines.logs) (.Values.Values.presets.filelogMulti.receivers) }}
+{{- range .Values.Values.presets.filelogMulti.receivers }}
+{{- $receiverName := printf "filelog/%s" .name }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $receiverName | uniq) }}
+{{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
 {{- define "opentelemetry-collector.applyProfilesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.profilesCollectionConfig" .Values | fromYaml) .config }}
 {{- $config | toYaml }}
@@ -652,6 +669,7 @@ extensions:
   file_storage:
     directory: /var/lib/otelcol
 {{- end }}
+
 receivers:
   filelog:
     {{- if .Values.isWindows }}
@@ -845,6 +863,52 @@ receivers:
       {{- if .Values.presets.logsCollection.extraFilelogOperators }}
       {{- .Values.presets.logsCollection.extraFilelogOperators | toYaml | nindent 6 }}
       {{- end }}
+{{- end }}
+
+{{- define "opentelemetry-collector.filelogMultiConfig" -}}
+{{- $receivers := .Values.presets.filelogMulti.receivers }}
+{{- if $receivers }}
+receivers:
+{{- range $receiver := $receivers }}
+  filelog/{{ $receiver.name }}:
+    {{- with $receiver.include }}
+    include:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    {{- with $receiver.exclude }}
+    exclude:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    {{- with $receiver.startAt }}
+    start_at: {{ . | quote }}
+    {{- end }}
+    {{- with $receiver.forceFlushPeriod }}
+    force_flush_period: {{ . | quote }}
+    {{- end }}
+    {{- $extraOperators := default (list) $receiver.extraOperators }}
+    {{- $hasApp := and $receiver.applicationName (ne $receiver.applicationName "") }}
+    {{- $hasSubsystem := and $receiver.subsystemName (ne $receiver.subsystemName "") }}
+    {{- $hasExtraOperators := gt (len $extraOperators) 0 }}
+    {{- if or $hasApp (or $hasSubsystem $hasExtraOperators) }}
+    operators:
+      {{- if $hasApp }}
+      - type: add
+        field: resource["cx.application.name"]
+        value: {{ $receiver.applicationName | quote }}
+      {{- end }}
+      {{- if $hasSubsystem }}
+      - type: add
+        field: resource["cx.subsystem.name"]
+        value: {{ $receiver.subsystemName | quote }}
+      {{- end }}
+      {{- if $hasExtraOperators }}
+{{ toYaml $extraOperators | indent 6 }}
+      {{- end }}
+    {{- else }}
+    operators: []
+    {{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionReduceAttributesConfig" -}}

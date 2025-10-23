@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.13 / 2025-10-23
+- [Feat] Add `filelogMulti` preset for configuring multiple filelog receivers with Coralogix resource annotations.
+
 ### v0.121.12 / 2025-10-22
 - [Fix] Emit Coralogix OTLP headers with the `helm-otel-standalone` distribution tag when the standalone distribution is selected.
 

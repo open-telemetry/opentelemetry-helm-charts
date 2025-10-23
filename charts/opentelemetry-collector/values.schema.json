@@ -397,6 +397,68 @@
             }
           }
         },
+        "filelogMulti": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Specifies whether the collector should configure multiple filelog receivers.",
+              "type": "boolean"
+            },
+            "receivers": {
+              "description": "List of additional filelog receivers to create.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "include"],
+                "properties": {
+                  "name": {
+                    "description": "Unique name for the generated filelog receiver.",
+                    "type": "string"
+                  },
+                  "include": {
+                    "description": "File glob patterns to include in the receiver.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "exclude": {
+                    "description": "File glob patterns to exclude from the receiver.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "forceFlushPeriod": {
+                    "description": "Override the receiver force_flush_period value.",
+                    "type": "string"
+                  },
+                  "startAt": {
+                    "description": "Override the receiver start_at value.",
+                    "type": "string"
+                  },
+                  "applicationName": {
+                    "description": "Resource attribute value assigned to cx.application.name.",
+                    "type": "string"
+                  },
+                  "subsystemName": {
+                    "description": "Resource attribute value assigned to cx.subsystem.name.",
+                    "type": "string"
+                  },
+                  "extraOperators": {
+                    "description": "Additional stanza operators appended after the Coralogix resource annotations.",
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "ecsLogsCollection": {
           "type": "object",
           "additionalProperties": false,

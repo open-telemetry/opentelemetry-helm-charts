@@ -361,6 +361,51 @@ receivers:
                 env: prod
 ```
 
+### Configuration for Multiple Filelog Receivers
+
+The `filelogMulti` preset wires additional filelog receivers into the logs pipeline. Each receiver watches its own set of files
+and automatically annotates collected log records with `cx.application.name` and `cx.subsystem.name` resource attributes.
+
+Enable the preset and define at least one receiver:
+
+```yaml
+presets:
+  filelogMulti:
+    enabled: true
+    receivers:
+      - name: backend-logs
+        include:
+          - /var/log/messages
+        applicationName: backend
+        subsystemName: payments
+        extraOperators:
+          - type: json_parser
+            parse_from: body
+```
+
+This configuration renders the following collector snippet:
+
+```yaml
+receivers:
+  filelog/backend-logs:
+    include:
+      - /var/log/messages
+    operators:
+      - type: add
+        field: resource["cx.application.name"]
+        value: "backend"
+      - type: add
+        field: resource["cx.subsystem.name"]
+        value: "payments"
+      - type: json_parser
+        parse_from: body
+service:
+  pipelines:
+    logs:
+      receivers:
+        - filelog/backend-logs
+```
+
 The chart only emits the CX labels when the target explicitly defines the corresponding field or sets it through
 `extraLabels`. The scrape host defaults to `127.0.0.1` when the `ip` field is omitted.
 
