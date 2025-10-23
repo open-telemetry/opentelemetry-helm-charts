@@ -888,8 +888,10 @@ receivers:
     {{- $extraOperators := default (list) $receiver.extraOperators }}
     {{- $hasApp := and $receiver.applicationName (ne $receiver.applicationName "") }}
     {{- $hasSubsystem := and $receiver.subsystemName (ne $receiver.subsystemName "") }}
+    {{- $hasAppAttribute := and $receiver.applicationNameAttribute (ne $receiver.applicationNameAttribute "") }}
+    {{- $hasSubsystemAttribute := and $receiver.subsystemNameAttribute (ne $receiver.subsystemNameAttribute "") }}
     {{- $hasExtraOperators := gt (len $extraOperators) 0 }}
-    {{- if or $hasApp (or $hasSubsystem $hasExtraOperators) }}
+    {{- if or $hasApp (or $hasSubsystem (or $hasExtraOperators (or $hasAppAttribute $hasSubsystemAttribute))) }}
     operators:
       {{- if $hasApp }}
       - type: add
@@ -903,6 +905,16 @@ receivers:
       {{- end }}
       {{- if $hasExtraOperators }}
 {{ toYaml $extraOperators | indent 6 }}
+      {{- end }}
+      {{- if $hasAppAttribute }}
+      - type: copy
+        from: resource[{{ $receiver.applicationNameAttribute | quote }}]
+        to: resource["cx.application.name"]
+      {{- end }}
+      {{- if $hasSubsystemAttribute }}
+      - type: copy
+        from: resource[{{ $receiver.subsystemNameAttribute | quote }}]
+        to: resource["cx.subsystem.name"]
       {{- end }}
     {{- else }}
     operators: []

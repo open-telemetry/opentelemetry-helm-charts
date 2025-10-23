@@ -363,8 +363,7 @@ receivers:
 
 ### Configuration for Multiple Filelog Receivers
 
-The `filelogMulti` preset wires additional filelog receivers into the logs pipeline. Each receiver watches its own set of files
-and automatically annotates collected log records with `cx.application.name` and `cx.subsystem.name` resource attributes.
+The `filelogMulti` preset wires additional filelog receivers into the logs pipeline. Each receiver watches its own set of files and automatically annotates collected log records with `cx.application.name` and `cx.subsystem.name` resource attributes. Static values can be supplied through `applicationName` and `subsystemName`, while the `applicationNameAttribute` and `subsystemNameAttribute` options copy resource attributes after any `extraOperators` run (for example, once JSON parsing has promoted values into the resource scope).
 
 Enable the preset and define at least one receiver:
 
@@ -381,6 +380,8 @@ presets:
         extraOperators:
           - type: json_parser
             parse_from: body
+        applicationNameAttribute: service.namespace
+        subsystemNameAttribute: service.name
 ```
 
 This configuration renders the following collector snippet:
@@ -399,6 +400,12 @@ receivers:
         value: "payments"
       - type: json_parser
         parse_from: body
+      - type: copy
+        from: resource["service.namespace"]
+        to: resource["cx.application.name"]
+      - type: copy
+        from: resource["service.name"]
+        to: resource["cx.subsystem.name"]
 service:
   pipelines:
     logs:

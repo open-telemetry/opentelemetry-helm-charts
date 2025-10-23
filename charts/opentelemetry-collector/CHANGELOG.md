@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.14 / 2025-10-23
+- [Feat] Allow `filelogMulti` receivers to derive Coralogix application and subsystem names from resource attributes after custom operators run.
+
 ### v0.121.13 / 2025-10-23
 - [Feat] Add `filelogMulti` preset for configuring multiple filelog receivers with Coralogix resource annotations.
 
