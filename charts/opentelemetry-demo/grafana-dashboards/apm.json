@@ -1507,7 +1507,7 @@
     },
     {
       "datasource": {
-        "type": "loki",
+        "type": "elasticsearch",
         "uid": "webstore-logs"
       },
       "description": "Logs of the service, filtered by `service.name`, `service.namespace`, and `deployment.environment.name`.\n\nTo explore the logs, open the menu clicking on the icon `⋮` of this panel and click on `Explore`.",
@@ -1601,12 +1601,14 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
+            "type": "elasticsearch",
             "uid": "webstore-logs"
           },
-          "format": "table",
+          "timeField": "@timestamp",
+          "format": "logs",
           "hide": false,
-          "expr": "{service_name=\"$service_name\", service_namespace=\"$service_namespace\"}",
+          "query": "resource.service.name.keyword:(${service_name:lucene}) AND resource.service.namespace.keyword:(${service_namespace:lucene}) AND resource.deployment.environment.name.keyword:(${deployment_environment_name:lucene})",
+          "size": 500,
           "refId": "B"
         }
       ],
@@ -1828,14 +1830,14 @@
       {
         "allowCustomValue": false,
         "current": {
-          "text": "Loki",
+          "text": "Elasticsearch",
           "value": "webstore-logs"
         },
         "description": "OpenTelemetry logs.",
         "label": "Logs",
-        "name": "loki_datasource",
+        "name": "Elasticsearch_datasource",
         "options": [],
-        "query": "loki",
+        "query": "Elasticsearch",
         "refresh": 1,
         "regex": "",
         "type": "datasource"
@@ -1845,7 +1847,7 @@
           "text": ".*",
           "value": ".*"
         },
-        "description": "Waiting to implement support of the optional value of `deployment.environment.name` in the Loki and Jaeger panels, hide variable.",
+        "description": "Waiting to implement support of the optional value of `deployment.environment.name` in the Elasticsearch and Jaeger panels, hide variable.",
         "hide": 2,
         "label": "Environment",
         "name": "deployment_environment_name",
@@ -1912,7 +1914,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "APM Dashboard (Jaeger, Prometheus, Loki)",
+  "title": "APM Dashboard (Jaeger, Prometheus, Opensearch)",
   "uid": "febljk0a32qyoa",
   "version": 1
 }

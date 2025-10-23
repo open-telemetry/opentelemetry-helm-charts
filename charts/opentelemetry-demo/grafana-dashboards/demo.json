@@ -25,7 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 7,
+  "id": 6,
   "links": [],
   "panels": [
     {
@@ -406,7 +406,7 @@
     },
     {
       "datasource": {
-        "type": "loki",
+        "type": "elasticsearch",
         "uid": "webstore-logs"
       },
       "description": "Log volume breakdown by severity level showing distribution of INFO, WARN, ERROR, and other log levels. Helps identify error patterns and application health trends through log analysis.",
@@ -474,14 +474,32 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "bucketAggs": [
+            {
+              "field": "severity.text.keyword",
+              "id": "2",
+              "settings": {
+                "order": "desc",
+                "orderBy": "1",
+                "size": "10"
+              },
+              "type": "terms"
+            }
+          ],
           "datasource": {
-            "type": "loki",
+            "type": "elasticsearch",
             "uid": "webstore-logs"
           },
-          "editorMode": "code",
-          "expr": "sum by (severity_text) (count_over_time({service_name=\"${service}\"}[$__range]))",
-          "queryType": "",
-          "refId": "A"
+          "format": "table",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "resource.service.name.keyword:(${service:lucene})",
+          "refId": "A",
+          "timeField": "@timestamp"
         }
       ],
       "title": "Log Records by Severity",
@@ -494,7 +512,7 @@
             "indexByName": {},
             "renameByName": {
               "Value": "Count",
-              "severity_text": "Severity"
+              "severity.text.keyword": "Severity"
             }
           }
         }
@@ -503,7 +521,7 @@
     },
     {
       "datasource": {
-        "type": "loki",
+        "type": "elasticsearch",
         "uid": "webstore-logs"
       },
       "fieldConfig": {
@@ -626,15 +644,32 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
           "datasource": {
-            "type": "loki",
+            "type": "elasticsearch",
             "uid": "webstore-logs"
           },
-          "editorMode": "code",
-          "expr": "{service_name=\"${service}\"}",
-          "maxLines": 100,
-          "queryType": "",
-          "refId": "A"
+          "format": "logs",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "resource.service.name.keyword:(${service:lucene})",
+          "refId": "A",
+          "size": 100,
+          "timeField": "@timestamp"
         }
       ],
       "title": "Log Records (100 recent entries)",
@@ -731,8 +766,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -853,8 +887,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -960,8 +993,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1058,8 +1090,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",

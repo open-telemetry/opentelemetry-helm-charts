@@ -1029,7 +1029,7 @@
         },
         {
             "datasource": {
-                "type": "loki",
+                "type": "elasticsearch",
                 "uid": "webstore-logs"
             },
             "description": "Log volume breakdown by severity level showing distribution of INFO, WARN, ERROR, and other log levels. Helps identify error patterns and application health trends through log analysis.",
@@ -1094,18 +1094,14 @@
                 "showHeader": true
             },
             "pluginVersion": "11.5.2",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "loki",
-                        "uid": "webstore-logs"
-                    },
-                    "editorMode": "code",
-                    "expr": "sum by (severity_text) (count_over_time({service_name=\"recommendation\"}[$__range]))",
-                    "queryType": "",
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+            "datasource": {"type":"elasticsearch","uid":"webstore-logs"},
+            "timeField":"@timestamp","format":"table",
+            "query":"resource.service.name.keyword:(recommendation)",
+            "metrics":[{"id":"1","type":"count"}],
+            "bucketAggs":[{"id":"2","type":"terms","field":"severity.text.keyword","settings":{"size":"10","order":"desc","orderBy":"1"}}],
+            "refId":"A"
+            }],
             "title": "Log Records by Severity",
             "transformations": [
                 {
@@ -1125,7 +1121,7 @@
         },
         {
             "datasource": {
-                "type": "loki",
+                "type": "elasticsearch",
                 "uid": "webstore-logs"
             },
             "description": "Recent log entries from the recommendation service, including severity levels, trace/span IDs for correlation, and pod information. Use trace IDs to correlate with distributed traces.",
@@ -1246,17 +1242,12 @@
                 ]
             },
             "pluginVersion": "11.5.2",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "loki",
-                        "uid": "webstore-logs"
-                    },
-                    "expr": "{service_name=\"recommendation\"}",
-                    "maxLines": 100,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+            "datasource": {"type":"elasticsearch","uid":"webstore-logs"},
+            "timeField":"@timestamp","format":"logs",
+            "query":"resource.service.name.keyword:(recommendation)",
+            "size":100,"refId":"A"
+            }],
             "title": "Recommendation Service Logs (100 recent entries)",
             "transformations": [
                 {

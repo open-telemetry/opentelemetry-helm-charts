@@ -923,7 +923,7 @@
         },
         {
             "datasource": {
-                "type": "loki",
+                "type": "elasticsearch",
                 "uid": "webstore-logs"
             },
             "description": "Total checkout attempts in the selected time range. Shows overall checkout volume and business activity.",
@@ -989,19 +989,15 @@
                 "showHeader": true
             },
             "pluginVersion": "11.5.2",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "loki",
-                        "uid": "webstore-logs"
-                    },
-                    "direction": "backward",
-                    "editorMode": "code",
-                    "expr": "sum by (severity_text) (count_over_time({service_name=\"checkout\"}[$__range]))",
-                    "queryType": "range",
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+            "datasource": { "type": "elasticsearch", "uid": "webstore-logs" },
+            "refId": "A",
+            "timeField": "@timestamp",
+            "format": "table",
+            "query": "resource.service.name.keyword:(checkout)",
+            "metrics": [{ "id": "1", "type": "count" }],
+            "bucketAggs": [{ "id": "2", "type": "terms", "field": "severity.text.keyword", "settings": { "size": "10", "order": "desc", "orderBy": "1" } }]
+            }],
             "title": "Log Records by Severity",
             "transformations": [
                 {
@@ -1021,7 +1017,7 @@
         },
         {
             "datasource": {
-                "type": "loki",
+                "type": "elasticsearch",
                 "uid": "webstore-logs"
             },
             "description": "Recent log entries from the checkout service, including severity levels, trace/span IDs for correlation, and pod information. Use trace IDs to correlate with distributed traces.",
@@ -1143,17 +1139,15 @@
                 ]
             },
             "pluginVersion": "11.5.2",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "loki",
-                        "uid": "webstore-logs"
-                    },
-                    "expr": "{service_name=\"checkout\"}",
-                    "maxLines": 100,
-                    "refId": "A"
-                }
-            ],
+            "targets": [{
+            "datasource": { "type": "elasticsearch", "uid": "webstore-logs" },
+            "refId": "A",
+            "timeField": "@timestamp",
+            "format": "table",
+            "query": "resource.service.name.keyword:(checkout)",
+            "metrics": [{ "id": "1", "type": "count" }],
+            "bucketAggs": [{ "id": "2", "type": "terms", "field": "severity.text.keyword", "settings": { "size": "10", "order": "desc", "orderBy": "1" } }]
+            }],
             "title": "Checkout Service Logs (100 recent entries)",
             "transformations": [
                 {
