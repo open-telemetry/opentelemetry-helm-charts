@@ -1,0 +1,98 @@
+default:
+  envOverrides:
+    # FIXME how to evolve this test?
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: app.eng.team=$(TEAM_NAME)
+
+components:
+  accounting:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  ad:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: helix-team
+
+  cart:
+     podAnnotations:
+      resource.opentelemetry.io/service.owner: ring-team
+
+  checkout:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  currency:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  email:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  fraud-detection:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  frontend:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: ring-team
+
+  load-generator:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: ring-team
+
+  payment:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  product-catalog:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: helix-team
+
+  quote:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+  recommendation:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: helix-team
+
+  shipping:
+    podAnnotations:
+      resource.opentelemetry.io/service.owner: orion-team
+
+opentelemetry-kube-stack:
+  collectors:
+    daemon:
+      config:
+        processors:
+          transform/set_service_owner:
+            error_mode: ignore
+            trace_statements:
+              -  set(resource.attribute["service.owner"], "ring-team") where resource.attribute["service.name"] == "frontend-proxy"
+            log_statements:
+              -  set(resource.attribute["service.owner"], "ring-team") where resource.attribute["service.name"] == "frontend-proxy"
+            metric_statements:
+              -  set(resource.attribute["service.owner"], "ring-team") where resource.attribute["service.name"] == "frontend-proxy"
+        service:
+          extensions: [health_check, k8s_observer]
+          pipelines:
+            traces:
+              processors:
+                - resourcedetection/env
+                - resource/hostname
+                - transform/set_service_owner
+                - transform/fix_nextjs_span_name
+                - batch
+            metrics:
+              processors:
+                - resourcedetection/env
+                - resource/hostname
+                - transform/set_service_owner
+                - batch
+            logs:
+              processors:
+                - resourcedetection/env
+                - resource/hostname
+                - transform/set_service_owner
+                - batch

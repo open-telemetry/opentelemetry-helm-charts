@@ -1,11 +1,26 @@
-
-default:
-  envOverrides:
-    - name: OTEL_COLLECTOR_NAME
-      value: my-otel-collector.opentelemetry-ns
-
 opentelemetry-kube-stack:
-  enabled: false
+  enabled: true
+  collectors:
+    daemon:
+      config:
+        exporters:
+          debug: {}
+          otlphttp/bring-your-own-o11y:
+            endpoint: "http://otlp.example.com:4318"
+            tls:
+              insecure: true
+        service:
+          pipelines:
+            traces:
+              exporters:
+                - otlphttp/bring-your-own-o11y
+                - spanmetrics
+            metrics:
+              exporters:
+                - otlphttp/bring-your-own-o11y
+            logs:
+              exporters:
+                - otlphttp/bring-your-own-o11y
 
 jaeger:
   enabled: false
@@ -16,3 +31,5 @@ prometheus:
 grafana:
   enabled: false
 
+opensearch:
+  enabled: false

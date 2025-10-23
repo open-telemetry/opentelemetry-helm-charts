@@ -34,8 +34,6 @@ spec:
         tls:
           insecure: true
     extensions:
-      file_storage:
-        directory: /var/lib/otelcol
       health_check:
         endpoint: 0.0.0.0:13133
       k8s_leader_elector/k8s_cluster:
@@ -131,76 +129,18 @@ spec:
           statements:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+      transform/set_service_owner:
+        error_mode: ignore
+        log_statements:
+        - set(resource.attribute["service.owner"], "ring-team") where resource.attribute["service.name"]
+          == "frontend-proxy"
+        metric_statements:
+        - set(resource.attribute["service.owner"], "ring-team") where resource.attribute["service.name"]
+          == "frontend-proxy"
+        trace_statements:
+        - set(resource.attribute["service.owner"], "ring-team") where resource.attribute["service.name"]
+          == "frontend-proxy"
     receivers:
-      filelog:
-        exclude: []
-        include:
-        - /var/log/pods/*/*/*.log
-        include_file_name: false
-        include_file_path: true
-        operators:
-        - id: container-parser
-          max_log_size: 102400
-          type: container
-        retry_on_failure:
-          enabled: true
-        start_at: end
-        storage: file_storage
-      hostmetrics:
-        collection_interval: 10s
-        root_path: /hostfs
-        scrapers:
-          cpu:
-            metrics:
-              system.cpu.utilization:
-                enabled: true
-          disk: {}
-          filesystem:
-            exclude_fs_types:
-              fs_types:
-              - autofs
-              - binfmt_misc
-              - bpf
-              - cgroup2
-              - configfs
-              - debugfs
-              - devpts
-              - devtmpfs
-              - fusectl
-              - hugetlbfs
-              - iso9660
-              - mqueue
-              - nsfs
-              - overlay
-              - proc
-              - procfs
-              - pstore
-              - rpc_pipefs
-              - securityfs
-              - selinuxfs
-              - squashfs
-              - sysfs
-              - tracefs
-              match_type: strict
-            exclude_mount_points:
-              match_type: regexp
-              mount_points:
-              - /dev/*
-              - /proc/*
-              - /sys/*
-              - /run/k3s/containerd/*
-              - /var/lib/docker/*
-              - /var/lib/kubelet/*
-              - /snap/*
-            metrics:
-              system.filesystem.utilization:
-                enabled: true
-          load: {}
-          memory:
-            metrics:
-              system.memory.utilization:
-                enabled: true
-          network: {}
       k8s_cluster:
         allocatable_types_to_report:
         - cpu
@@ -267,7 +207,6 @@ spec:
       extensions:
       - health_check
       - k8s_observer
-      - file_storage
       - k8s_leader_elector/k8s_objects
       - k8s_leader_elector/k8s_cluster
       pipelines:
@@ -278,10 +217,10 @@ spec:
           - k8sattributes
           - resourcedetection/env
           - resource/hostname
+          - transform/set_service_owner
           - batch
           receivers:
           - otlp
-          - filelog
           - k8sobjects
         metrics:
           exporters:
@@ -290,12 +229,12 @@ spec:
           - k8sattributes
           - resourcedetection/env
           - resource/hostname
+          - transform/set_service_owner
           - batch
           receivers:
           - otlp
           - receiver_creator/k8s
           - spanmetrics
-          - hostmetrics
           - kubeletstats
           - k8s_cluster
         traces:
@@ -306,6 +245,7 @@ spec:
           - k8sattributes
           - resourcedetection/env
           - resource/hostname
+          - transform/set_service_owner
           - transform/fix_nextjs_span_name
           - batch
           receivers:
@@ -336,19 +276,6 @@ spec:
     runAsUser: 0
   targetAllocator:
     enabled: false
-  volumeMounts:
-  - name: varlogpods
-    mountPath: /var/log/pods
-    readOnly: true
-  - name: varlibdockercontainers
-    mountPath: /var/lib/docker/containers
-    readOnly: true
-  - name: varlibotelcol
-    mountPath: /var/lib/otelcol
-  - name: hostfs
-    mountPath: /hostfs
-    readOnly: true
-    mountPropagation: HostToContainer
   env:
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
@@ -375,18 +302,3 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.cluster.name=otel-demo-stack"
-  
-  volumes:
-  - name: varlogpods
-    hostPath:
-      path: /var/log/pods
-  - name: varlibotelcol
-    hostPath:
-      path: /var/lib/otelcol
-      type: DirectoryOrCreate
-  - name: varlibdockercontainers
-    hostPath:
-      path: /var/lib/docker/containers
-  - name: hostfs
-    hostPath:
-      path: /

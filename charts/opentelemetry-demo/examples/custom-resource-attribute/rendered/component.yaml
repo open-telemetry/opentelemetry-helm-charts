@@ -491,6 +491,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: accounting
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -530,8 +531,10 @@ spec:
               value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
             - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
               value: "false"
-            - name: TEAM_NAME
-              value: orion
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -580,6 +583,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: ad
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: helix-team
     spec:
       serviceAccountName: example
       containers:
@@ -625,8 +629,10 @@ spec:
               value: "8013"
             - name: OTEL_LOGS_EXPORTER
               value: otlp
-            - name: TEAM_NAME
-              value: helix
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -668,6 +674,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: cart
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: ring-team
     spec:
       serviceAccountName: example
       containers:
@@ -715,8 +722,6 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: TEAM_NAME
-              value: ring
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -766,6 +771,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: checkout
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -825,8 +831,6 @@ spec:
               value: "8013"
             - name: GOMEMLIMIT
               value: 16MiB
-            - name: TEAM_NAME
-              value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -875,6 +879,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: currency
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -916,8 +921,6 @@ spec:
               value: "8080"
             - name: VERSION
               value: '2.1.3'
-            - name: TEAM_NAME
-              value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -959,6 +962,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: email
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -1006,8 +1010,10 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: TEAM_NAME
-              value: orion
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -1217,6 +1223,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: fraud-detection
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -1260,8 +1267,10 @@ spec:
               value: "true"
             - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
               value: "true"
-            - name: TEAM_NAME
-              value: orion
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -1310,6 +1319,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: frontend
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: ring-team
     spec:
       serviceAccountName: example
       containers:
@@ -1377,8 +1387,6 @@ spec:
               value: frontend-web
             - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
               value: http://localhost:8080/otlp-http/v1/traces
-            - name: TEAM_NAME
-              value: ring
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -1733,6 +1741,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: load-generator
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: ring-team
     spec:
       serviceAccountName: example
       containers:
@@ -1794,8 +1803,6 @@ spec:
               value: "8013"
             - name: FLAGD_OFREP_PORT
               value: "8016"
-            - name: TEAM_NAME
-              value: ring
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -1837,6 +1844,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: payment
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -1880,8 +1888,6 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: TEAM_NAME
-              value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -2033,6 +2039,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: product-catalog
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: helix-team
     spec:
       serviceAccountName: example
       containers:
@@ -2080,8 +2087,6 @@ spec:
               value: "8013"
             - name: GOMEMLIMIT
               value: 16MiB
-            - name: TEAM_NAME
-              value: helix
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -2128,6 +2133,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: quote
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -2171,8 +2177,10 @@ spec:
               value: "true"
             - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
               value: "true"
-            - name: TEAM_NAME
-              value: orion
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-demo-daemon-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -2218,6 +2226,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: recommendation
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: helix-team
     spec:
       serviceAccountName: example
       containers:
@@ -2267,8 +2276,6 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: TEAM_NAME
-              value: helix
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:
@@ -2310,6 +2317,7 @@ spec:
       annotations:
         resource.opentelemetry.io/service.name: shipping
         resource.opentelemetry.io/service.namespace: opentelemetry-demo
+        resource.opentelemetry.io/service.owner: orion-team
     spec:
       serviceAccountName: example
       containers:
@@ -2351,8 +2359,6 @@ spec:
               value: "8080"
             - name: QUOTE_ADDR
               value: http://quote:8080
-            - name: TEAM_NAME
-              value: orion
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: app.eng.team=$(TEAM_NAME)
           resources:

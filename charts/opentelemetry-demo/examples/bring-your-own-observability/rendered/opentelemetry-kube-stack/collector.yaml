@@ -29,6 +29,10 @@ spec:
         endpoint: http://jaeger-collector:4317
         tls:
           insecure: true
+      otlphttp/bring-your-own-o11y:
+        endpoint: http://otlp.example.com:4318
+        tls:
+          insecure: true
       otlphttp/prometheus:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
@@ -201,7 +205,7 @@ spec:
       pipelines:
         logs:
           exporters:
-          - opensearch
+          - otlphttp/bring-your-own-o11y
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -212,7 +216,7 @@ spec:
           - k8sobjects
         metrics:
           exporters:
-          - otlphttp/prometheus
+          - otlphttp/bring-your-own-o11y
           processors:
           - k8sattributes
           - resourcedetection/env
@@ -226,7 +230,7 @@ spec:
           - k8s_cluster
         traces:
           exporters:
-          - otlp/jaeger
+          - otlphttp/bring-your-own-o11y
           - spanmetrics
           processors:
           - k8sattributes
