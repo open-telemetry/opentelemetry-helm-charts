@@ -841,6 +841,27 @@ components:
         memory: 512Mi
 
   
+  opensearch-mcp-server:
+    enabled: true
+    useDefault: 
+      env: false 
+    imageOverride: 
+      repository: sandeshgowdasg29/opensearch
+      tag: latest 
+    command: ["elasticsearch-core-mcp-server", "http"]
+    service:
+      port: 8000
+      type: LoadBalancer
+    env:
+      - name: ELASTICSEARCH_URL, 
+        value: "http://opensearch-cluster-master:9200" 
+      - name: ES_URL
+        value: "http://opensearch-cluster-master:9200"
+      # - name: CLI_ARGS
+      #   value: "http"
+
+
+  
 
   db-connection-exhauster:
     enabled: true
