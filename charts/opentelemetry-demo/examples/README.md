@@ -8,4 +8,4 @@ Here is a collection of common configurations for the OpenTelemetry demo.  Each 
 - [Kubernetes Infrastructure Monitoring](kubernetes-infra-monitoring)
 - [Public Hosted Ingress](public-hosted-ingress)
 
-The manifests are rendered using the `helm template` command and the specific example folder's values.yaml.
+The manifests are rendered using the `helm template` command and the specific example folder's `values.yaml`.
