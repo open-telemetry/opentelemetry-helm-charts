@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.15 / 2025-10-23
+- [Feat] Allow `additionalEndpoints` option to `coralogixExporter` preset to add additional Coralogix endpoints.
+
 ### v0.121.14 / 2025-10-23
 - [Feat] Allow `filelogMulti` receivers to derive Coralogix application and subsystem names from resource attributes after custom operators run.
 

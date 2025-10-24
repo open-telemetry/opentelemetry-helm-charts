@@ -514,7 +514,6 @@ presets:
     # kubelet stats from all Fargate nodes. Set to false when deploying
     # per-namespace collectors on Fargate.
     monitoringCollector: false
-
     kubeletStats:
       # Collection interval for kubelet stats metrics
       collectionInterval: "30s"

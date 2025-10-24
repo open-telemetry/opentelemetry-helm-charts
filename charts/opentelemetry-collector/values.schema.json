@@ -1120,6 +1120,33 @@
               "description": "Default subsystem name used by the exporter.",
               "type": "string"
             },
+            "additionalEndpoints": {
+              "description": "Additional Coralogix endpoints to export to. Each endpoint will create a separate coralogix exporter instance.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "description": "Specifies whether this additional endpoint is enabled.",
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "description": "Optional custom name for this endpoint exporter (e.g., 'myeu2' creates 'coralogix/myeu2'). If not specified, the domain will be sanitized and used as the name.",
+                    "type": "string"
+                  },
+                  "domain": {
+                    "description": "Specifies the Coralogix cluster domain for this endpoint.",
+                    "type": "string"
+                  },
+                  "privateKey": {
+                    "description": "Specifies the private key used by this endpoint.",
+                    "type": "string"
+                  }
+                },
+                "required": ["enabled", "domain", "privateKey"]
+              }
+            },
             "retryOnFailure": {
               "type": "object",
               "additionalProperties": false,
@@ -1143,8 +1170,6 @@
                 "queueSize": { "type": "integer" }
               }
             }
-
-
           }
         },
         "transactions": {
