@@ -44,8 +44,8 @@ data:
                       sum by (deployment_environment_name, service_namespace, service_name, service_instance_id, http_route, http_request_method, le) (
                         rate(
                           http_server_request_duration_seconds_bucket{
-                            deployment_environment_name="",
-                            service_namespace="opentelemetry-demo",
+                            deployment_environment_name="demo",
+                            service_namespace="otel-demo",
                             service_name="cart",
                             http_request_method="POST",
                             http_route="/oteldemo.CartService/AddItem"
@@ -103,7 +103,8 @@ data:
                     $labels.http_request_method }} {{ $labels.http_route }}"
             labels:
               service_name: cart
-              service_namespace: opentelemetry-demo
+              service_namespace: otel-demo
+              deployment_environment_name: demo
               severity: warning
               team_name: webstore
             isPaused: false
@@ -16164,30 +16165,6 @@ metadata:
     grafana_datasource: "1"
 data:
   
-  default.yaml: |
-    # Copyright The OpenTelemetry Authors
-    # SPDX-License-Identifier: Apache-2.0
-  
-  
-    apiVersion: 1
-  
-    datasources:
-      - name: Prometheus
-        uid: webstore-metrics
-        type: prometheus
-        url: http://prometheus:9090
-        editable: true
-        isDefault: true
-        jsonData:
-          # Align Prometheus data source time interval with the OTel SDKs' export interval (see OTEL_METRIC_EXPORT_INTERVAL)
-          timeInterval: "60s"
-          exemplarTraceIdDestinations:
-            - datasourceUid: webstore-traces
-              name: trace_id
-  
-            - url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
-              name: trace_id
-              urlDisplayLabel: View in Jaeger UI
   jaeger.yaml: |
     # Copyright The OpenTelemetry Authors
     # SPDX-License-Identifier: Apache-2.0
@@ -16233,3 +16210,27 @@ data:
           pplEnabled: true
           timeField: observedTimestamp
           version: 3.2.0
+  prometheus.yaml: |
+    # Copyright The OpenTelemetry Authors
+    # SPDX-License-Identifier: Apache-2.0
+  
+  
+    apiVersion: 1
+  
+    datasources:
+      - name: Prometheus
+        uid: webstore-metrics
+        type: prometheus
+        url: http://prometheus:9090
+        editable: true
+        isDefault: true
+        jsonData:
+          # Align Prometheus data source time interval with the OTel SDKs' export interval (see OTEL_METRIC_EXPORT_INTERVAL)
+          timeInterval: "60s"
+          exemplarTraceIdDestinations:
+            - datasourceUid: webstore-traces
+              name: trace_id
+  
+            - url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
+              name: trace_id
+              urlDisplayLabel: View in Jaeger UI
