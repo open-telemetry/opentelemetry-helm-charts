@@ -145,7 +145,6 @@ config:
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
   processors:
-    batch: {}
     # Default memory limiter configuration for the collector based on k8s resource limits.
     memory_limiter:
       # check_interval is the time between measurements of memory usage.
@@ -197,7 +196,6 @@ config:
           - debug
         processors:
           - memory_limiter
-          - batch
         receivers:
           - otlp
       metrics:
@@ -205,7 +203,6 @@ config:
           - debug
         processors:
           - memory_limiter
-          - batch
         receivers:
           - otlp
           # if internalTelemetryViaOTLP.metrics.enabled = true, prometheus receiver will be removed
@@ -215,7 +212,6 @@ config:
           - debug
         processors:
           - memory_limiter
-          - batch
         receivers:
           - otlp
           - jaeger
@@ -706,3 +702,7 @@ networkPolicy:
 
 # Allow containers to share processes across pod namespace
 shareProcessNamespace: false
+
+# When true removes the config's default batchprocessor and enables the exporter helper's
+# batching capability on all default exporters.
+useExporterHelperBatch: false
