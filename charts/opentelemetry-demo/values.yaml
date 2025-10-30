@@ -456,6 +456,23 @@ components:
       limits:
         memory: 50Mi
 
+  llm:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8000
+    env:
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+    resources:
+      limits:
+        memory: 100Mi
+
   load-generator:
     enabled: true
     useDefault:
@@ -542,6 +559,41 @@ components:
     resources:
       limits:
         memory: 20Mi
+
+  product-reviews:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 3551
+    env:
+      - name: PRODUCT_REVIEWS_PORT
+        value: "3551"
+      - name: OTEL_PYTHON_LOG_CORRELATION
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+        value: "true"
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
+      - name: DB_CONNECTION_STRING
+        value: "host=postgresql user=otelu password=otelp dbname=otel"
+      - name: LLM_BASE_URL
+        value: "http://llm:8000/v1"
+      - name: LLM_MODEL
+        value: "astronomy-llm"
+      - name: OPENAI_API_KEY
+        value: "dummy"
+      - name: PRODUCT_CATALOG_ADDR
+        value: product-catalog:8080
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+    resources:
+      limits:
+        memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
 
   quote:
     enabled: true
