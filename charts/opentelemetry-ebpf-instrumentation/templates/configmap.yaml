@@ -1,0 +1,22 @@
+{{- if not .Values.config.skipConfigMapCheck }}
+{{- if and (not .Values.config.create) (eq .Values.config.name "") }}
+  {{- fail "if .Values.config.name is not set, then .Values.config.create should be set to true to use default configuration" }}
+{{- end }}
+{{- end }}
+{{- if and (.Values.config.create) (eq .Values.config.name "") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obi.fullname" . }}
+  namespace: {{ include "obi.namespace" . }}
+  labels:
+    {{- include "obi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  ebpf-instrument-config.yml: |
+{{- include "obi.configData" . | nindent 4 }}
+{{- end }}
