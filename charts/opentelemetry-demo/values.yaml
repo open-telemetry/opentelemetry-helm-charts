@@ -137,6 +137,16 @@ components:
   #       data:
   #         my-config.yaml: |
   #           key: value
+  ## Configuration to create an custom Volume
+  #   additionalVolumes:
+  #     - name: nginx-logs
+  #       hostPath:
+  #         path: /var/log/nginx
+  #       type: ""
+  ## Configuration to mount the custom Volume to the container
+  # additionalVolumeMounts:
+  #     - name: nginx-logs
+  #       mountPath: /var/log/nginx
   # # Kubernetes container health check options
   #   livenessProbe: {}
   # # Optional init container to run before the pod starts.
@@ -165,6 +175,10 @@ components:
         value: kafka:9092
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: DB_CONNECTION_STRING
+        value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
+      - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
+        value: "false"
     resources:
       limits:
         memory: 120Mi
@@ -241,7 +255,7 @@ components:
       - name: PRODUCT_CATALOG_ADDR
         value: product-catalog:8080
       - name: SHIPPING_ADDR
-        value: shipping:8080
+        value: http://shipping:8080
       - name: KAFKA_ADDR
         value: kafka:9092
       - name: FLAGD_HOST
@@ -250,6 +264,8 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: GOMEMLIMIT
+        value: 16MiB
     resources:
       limits:
         memory: 20Mi
@@ -286,8 +302,12 @@ components:
         value: "8080"
       - name: APP_ENV
         value: production
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
     resources:
       limits:
         memory: 100Mi
@@ -305,6 +325,10 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: OTEL_INSTRUMENTATION_KAFKA_EXPERIMENTAL_SPAN_ATTRIBUTES
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
+        value: "true"
     resources:
       limits:
         memory: 300Mi
@@ -322,6 +346,8 @@ components:
     env:
       - name: FRONTEND_PORT
         value: "8080"
+      - name: PORT
+        value: $(FRONTEND_PORT)
       - name: FRONTEND_ADDR
         value: :8080
       - name: AD_ADDR
@@ -337,11 +363,13 @@ components:
       - name: RECOMMENDATION_ADDR
         value: recommendation:8080
       - name: SHIPPING_ADDR
-        value: shipping:8080
+        value: http://shipping:8080
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+      - name: ENV_PLATFORM
+        value: kubernetes
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -367,6 +395,8 @@ components:
     env:
       - name: ENVOY_PORT
         value: "8080"
+      - name: ENVOY_ADMIN_PORT
+        value: "10000"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -389,7 +419,7 @@ components:
         value: "8081"
       - name: JAEGER_HOST
         value: jaeger-query
-      - name: JAEGER_PORT
+      - name: JAEGER_UI_PORT
         value: "16686"
       - name: LOCUST_WEB_HOST
         value: load-generator
@@ -453,6 +483,8 @@ components:
         value: python
       - name: FLAGD_HOST
         value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
       - name: FLAGD_OFREP_PORT
         value: "8016"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -501,6 +533,8 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: GOMEMLIMIT
+        value: 16MiB
     mountedConfigMaps:
       - name: product-catalog-products
         mountPath: /usr/src/app/products
@@ -519,6 +553,8 @@ components:
       - name: QUOTE_PORT
         value: "8080"
       - name: OTEL_PHP_AUTOLOAD_ENABLED
+        value: "true"
+      - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
         value: "true"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
@@ -576,7 +612,7 @@ components:
     enabled: true
     imageOverride:
       repository: "ghcr.io/open-feature/flagd"
-      tag: "v0.11.1"
+      tag: "v0.12.8"
     useDefault:
       env: true
     replicas: 1
@@ -590,6 +626,8 @@ components:
         value: otel
       - name: FLAGD_OTEL_COLLECTOR_URI
         value: $(OTEL_COLLECTOR_NAME):4317
+      - name: GOMEMLIMIT
+        value: 60MiB
     resources:
       limits:
         memory: 75Mi
@@ -605,7 +643,7 @@ components:
     mountedEmptyDirs:
       - name: config-rw
         mountPath: /etc/flagd
-    # flgad-ui as a sidecar container in the same pod so the flag json file can be shared
+    # flagd-ui as a sidecar container in the same pod so the flag json file can be shared
     sidecarContainers:
       - name: flagd-ui
         useDefault:
@@ -617,9 +655,15 @@ components:
             value: otel
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: http://$(OTEL_COLLECTOR_NAME):4318
+          - name: FLAGD_UI_PORT
+            value: "4000"
+          - name: SECRET_KEY_BASE
+            value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
+          - name: PHX_HOST
+            value: localhost
         resources:
           limits:
-            memory: 100Mi
+            memory: 250Mi
         volumeMounts:
           - name: config-rw
             mountPath: /app/data
@@ -654,6 +698,12 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
+      - name: KAFKA_LISTENERS
+        value: PLAINTEXT://:9092,CONTROLLER://:9093
+      - name: KAFKA_CONTROLLER_LISTENER_NAMES
+        value: CONTROLLER
+      - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+        value: 1@kafka:9093
     resources:
       limits:
         memory: 600Mi
@@ -662,13 +712,31 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
+  postgresql:
+    enabled: true
+    useDefault:
+      env: true
+    replicas: 1
+    service:
+      port: 5432
+    env:
+      - name: POSTGRES_USER
+        value: root
+      - name: POSTGRES_PASSWORD
+        value: otel
+      - name: POSTGRES_DB
+        value: otel
+    resources:
+      limits:
+        memory: 100Mi
+
   valkey-cart:
     enabled: true
     useDefault:
       env: true
     imageOverride:
       repository: "valkey/valkey"
-      tag: "7.2-alpine"
+      tag: "8.1.3-alpine"
     replicas: 1
     ports:
       - name: valkey-cart
@@ -715,8 +783,35 @@ opentelemetry-collector:
       httpcheck/frontend-proxy:
         targets:
           - endpoint: http://frontend-proxy:8080
+      nginx:
+        endpoint: http://image-provider:8081/status
+        collection_interval: 10s
+      postgresql:
+        endpoint: "postgresql:5432"
+        username: "root"
+        password: "otel"
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+        tls:
+          insecure: true
       redis:
         endpoint: "valkey-cart:6379"
+        username: "valkey"
         collection_interval: 10s
 
     exporters:
@@ -731,13 +826,20 @@ opentelemetry-collector:
         tls:
           insecure: true
       opensearch:
-        logs_index: otel
+        logs_index: otel-logs
+        logs_index_time_format: "yyyy-MM-dd"
         http:
           endpoint: http://opensearch:9200
           tls:
             insecure: true
 
     processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      resourcedetection:
+        detectors: [env, system]
       # This processor is used to help limit high cardinality on next.js span names
       # When this PR is merged (and released) we can remove this transform processor
       # https://github.com/vercel/next.js/pull/64852
@@ -761,14 +863,14 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, resource, transform, batch]
+          processors: [memory_limiter, resourcedetection, resource, transform, batch]
           exporters: [otlp, debug, spanmetrics]
         metrics:
-          receivers: [httpcheck/frontend-proxy, redis, otlp, spanmetrics]
-          processors: [memory_limiter, resource, batch]
+          receivers: [httpcheck/frontend-proxy, nginx, otlp, postgresql, redis, spanmetrics]
+          processors: [memory_limiter, resourcedetection, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
-          processors: [memory_limiter, resource, batch]
+          processors: [memory_limiter, resourcedetection, resource, batch]
           exporters: [opensearch, debug]
       telemetry:
         metrics:
@@ -779,7 +881,7 @@ opentelemetry-collector:
                 timeout: 5000
                 exporter:
                   otlp:
-                    protocol: grpc
+                    protocol: http/protobuf
                     endpoint: otel-collector:4318
 
 jaeger:
@@ -832,34 +934,43 @@ prometheus:
     extraFlags:
       - "enable-feature=exemplar-storage"
       - "web.enable-otlp-receiver"
-    global:
-      scrape_interval: 5s
-      scrape_timeout: 3s
-      evaluation_interval: 30s
     tsdb:
       out_of_order_time_window: 30m
-    prometheus.yml:
-      otlp:
-        keep_identifying_resource_attributes: true
-        # Recommended attributes to be promoted to labels.
-        promote_resource_attributes:
-          - service.instance.id
-          - service.name
-          - service.namespace
-          - cloud.availability_zone
-          - cloud.region
-          - container.name
-          - deployment.environment.name
-          - k8s.cluster.name
-          - k8s.container.name
-          - k8s.cronjob.name
-          - k8s.daemonset.name
-          - k8s.deployment.name
-          - k8s.job.name
-          - k8s.namespace.name
-          - k8s.pod.name
-          - k8s.replicaset.name
-          - k8s.statefulset.name
+    otlp:
+      keep_identifying_resource_attributes: true
+      # Recommended attributes to be promoted to labels.
+      promote_resource_attributes:
+        - service.instance.id
+        - service.name
+        - service.namespace
+        - service.version
+        - cloud.availability_zone
+        - cloud.region
+        - deployment.environment.name
+        # When deploying on Kubernetes, resource attributes used to identify the
+        # kubernetes resources in dashboards and alerts.
+        - k8s.cluster.name
+        - k8s.container.name
+        - k8s.cronjob.name
+        - k8s.daemonset.name
+        - k8s.deployment.name
+        - k8s.job.name
+        - k8s.namespace.name
+        - k8s.node.name
+        - k8s.pod.name
+        - k8s.replicaset.name
+        - k8s.statefulset.name
+        - container.name
+        # When deploying on VMs, resource attributes used to identify
+        # the host in dashboards and alerts.
+        - host.name
+        # PostgreSQL resource attributes produced by the OTel Collector PostgreSQL receiver
+        # and used in dashboards and alerts.
+        # See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/metadata.yaml
+        - postgresql.database.name
+        - postgresql.schema.name
+        - postgresql.table.name
+        - postgresql.index.name
     persistentVolume:
       enabled: false
     service:
@@ -886,61 +997,17 @@ grafana:
   adminPassword: admin
   plugins:
     - grafana-opensearch-datasource
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          uid: webstore-metrics
-          type: prometheus
-          url: http://prometheus:9090
-          editable: true
-          isDefault: true
-          jsonData:
-            exemplarTraceIdDestinations:
-              - datasourceUid: webstore-traces
-                name: trace_id
-
-              - url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
-                name: trace_id
-                urlDisplayLabel: View in Jaeger UI
-
-        - name: Jaeger
-          uid: webstore-traces
-          type: jaeger
-          url: http://jaeger-query:16686/jaeger/ui
-          editable: true
-          isDefault: false
-
-        - name: OpenSearch
-          uid: webstore-logs
-          type: grafana-opensearch-datasource
-          url: http://opensearch:9200/
-          access: proxy
-          editable: true
-          isDefault: false
-          jsonData:
-            database: otel
-            flavor: opensearch
-            logLevelField: severity.text.keyword
-            logMessageField: body
-            pplEnabled: true
-            timeField: observedTimestamp
-            version: 2.18.0
-  dashboardProviders:
-    dashboardproviders.yaml:
-      apiVersion: 1
-      providers:
-        - name: 'default'
-          orgId: 1
-          folder: ''
-          type: file
-          disableDeletion: false
-          editable: true
-          options:
-            path: /var/lib/grafana/dashboards/default
-  dashboardsConfigMaps:
-    default: grafana-dashboards
+  sidecar:
+    alerts:
+      enabled: true
+    dashboards:
+      enabled: true
+    datasources:
+      enabled: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
   resources:
     limits:
       memory: 150Mi
@@ -951,7 +1018,7 @@ opensearch:
   clusterName: demo-cluster
   nodeGroup: otel-demo
   singleNode: true
-  opensearchJavaOpts: "-Xms300m -Xmx300m"
+  opensearchJavaOpts: "-Xms400m -Xmx400m"
   persistence:
     enabled: false
   extraEnvs:

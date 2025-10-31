@@ -5,14 +5,14 @@ kind: StatefulSet
 metadata:
   name: opensearch
   labels:
-    helm.sh/chart: opensearch-2.31.0
+    helm.sh/chart: opensearch-3.2.1
     app.kubernetes.io/name: opensearch
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.19.0"
+    app.kubernetes.io/version: "3.2.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: opensearch
   annotations:
-    majorVersion: "2"
+    majorVersion: "3"
 spec:
   serviceName: opensearch-headless
   selector:
@@ -27,14 +27,14 @@ spec:
     metadata:
       name: "opensearch"
       labels:
-        helm.sh/chart: opensearch-2.31.0
+        helm.sh/chart: opensearch-3.2.1
         app.kubernetes.io/name: opensearch
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "2.19.0"
+        app.kubernetes.io/version: "3.2.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: opensearch
       annotations:
-        configchecksum: 838f0e165e6aa96864905c927dda39e2e2a6480bff7bfa9b9110e6a50cc1408
+        configchecksum: 52cb483949e5d3223764abb58188425e1216ead39156a9d761f3ab1a8b9ae83
     spec:
       securityContext:
         fsGroup: 1000
@@ -66,7 +66,7 @@ spec:
       enableServiceLinks: true
       initContainers:
       - name: configfile
-        image: "opensearchproject/opensearch:2.19.0"
+        image: "opensearchproject/opensearch:3.2.0"
         imagePullPolicy: "IfNotPresent"
         command:
         - sh
@@ -74,6 +74,12 @@ spec:
         - |
           #!/usr/bin/env bash
           cp -r /tmp/configfolder/*  /tmp/config/
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
         resources:
           {}
         volumeMounts:
@@ -91,7 +97,7 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
 
-        image: "opensearchproject/opensearch:2.19.0"
+        image: "opensearchproject/opensearch:3.2.0"
         imagePullPolicy: "IfNotPresent"
         readinessProbe:
           failureThreshold: 3
@@ -131,7 +137,7 @@ spec:
         - name: network.host
           value: "0.0.0.0"
         - name: OPENSEARCH_JAVA_OPTS
-          value: "-Xms300m -Xmx300m"
+          value: "-Xms400m -Xmx400m"
         - name: node.roles
           value: "master,ingest,data,remote_cluster_client,"
         - name: discovery.type

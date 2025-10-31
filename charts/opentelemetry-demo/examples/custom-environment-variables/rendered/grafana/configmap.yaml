@@ -6,10 +6,10 @@ metadata:
   name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-8.10.1
+    helm.sh/chart: grafana-10.1.2
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "11.5.2"
+    app.kubernetes.io/version: "12.2.0"
 data:
   
   plugins: grafana-opensearch-datasource
@@ -35,51 +35,3 @@ data:
     domain = ''
     root_url = %(protocol)s://%(domain)s:%(http_port)s/grafana
     serve_from_sub_path = true
-  datasources.yaml: |
-    apiVersion: 1
-    datasources:
-    - editable: true
-      isDefault: true
-      jsonData:
-        exemplarTraceIdDestinations:
-        - datasourceUid: webstore-traces
-          name: trace_id
-        - name: trace_id
-          url: http://localhost:8080/jaeger/ui/trace/$${__value.raw}
-          urlDisplayLabel: View in Jaeger UI
-      name: Prometheus
-      type: prometheus
-      uid: webstore-metrics
-      url: http://prometheus:9090
-    - editable: true
-      isDefault: false
-      name: Jaeger
-      type: jaeger
-      uid: webstore-traces
-      url: http://jaeger-query:16686/jaeger/ui
-    - access: proxy
-      editable: true
-      isDefault: false
-      jsonData:
-        database: otel
-        flavor: opensearch
-        logLevelField: severity.text.keyword
-        logMessageField: body
-        pplEnabled: true
-        timeField: observedTimestamp
-        version: 2.18.0
-      name: OpenSearch
-      type: grafana-opensearch-datasource
-      uid: webstore-logs
-      url: http://opensearch:9200/
-  dashboardproviders.yaml: |
-    apiVersion: 1
-    providers:
-    - disableDeletion: false
-      editable: true
-      folder: ""
-      name: default
-      options:
-        path: /var/lib/grafana/dashboards/default
-      orgId: 1
-      type: file

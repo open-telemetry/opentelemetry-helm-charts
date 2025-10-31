@@ -17,8 +17,8 @@ cleanupJob:
   enabled: true
   # Image details for the kubectl
   image:
-    repository: bitnami/kubectl
-    tag: latest
+    repository: rancher/kubectl
+    tag: v1.34.1
     # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
     digest: ""
   # To use the existingServiceAccount
@@ -243,6 +243,14 @@ defaultCRConfig:
   #   scrapeConfigSelector:
   #     key1: value1
   #     key2: value2
+  #   # List of namespaces to allow for scraping
+  #   allowNamespaces:
+  #     - namespace-1
+  #     - namespace-2
+  #   # List of namespaces to exclude from scraping
+  #   denyNamespaces:
+  #     - namespace-3
+  #     - namespace-4
   # securityContext:
   #   runAsUser: 1000
   #   capabilities:
@@ -307,8 +315,16 @@ defaultCRConfig:
   #   metrics:
   #     enableMetrics: true
 
-  # Update strategy for the collector
+  # NOTE: the updateStrategy value is deprecated. Use daemonSetUpdateStrategy instead.
   updateStrategy: {}
+  #   type: RollingUpdate
+
+  # Update strategy for the DaemonSet collector
+  daemonSetUpdateStrategy: {}
+  #   type: RollingUpdate
+
+  # Update strategy for the Deployment collector
+  deploymentUpdateStrategy: {}
   #   type: RollingUpdate
 
   # Volume mounts for the collector
@@ -494,14 +510,19 @@ collectors:
             http:
               endpoint: 0.0.0.0:4318
       processors:
+        resourcedetection/env:
+          detectors: [env, k8snode]
+          timeout: 2s
+          override: false
+        resource/hostname:
+          attributes:
+            - key: host.name
+              from_attribute: k8s.node.name
+              action: insert
         batch:
           send_batch_size: 1000
           timeout: 1s
           send_batch_max_size: 1500
-        resourcedetection/env:
-          detectors: [env]
-          timeout: 2s
-          override: false
       exporters:
         debug: {}
 
@@ -512,6 +533,7 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
+              - resource/hostname
               - batch
             exporters:
               - debug
@@ -520,6 +542,7 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
+              - resource/hostname
               - batch
             exporters:
               - debug
@@ -528,6 +551,7 @@ collectors:
               - otlp
             processors:
               - resourcedetection/env
+              - resource/hostname
               - batch
             exporters:
               - debug

@@ -23,6 +23,7 @@ spec:
     whenDeleted: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenDeleted }}
     whenScaled: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenScaled }}
 {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
@@ -32,7 +33,9 @@ spec:
   template:
     metadata:
       annotations:
+        {{- if .Values.enableConfigChecksumAnnotation }}
         {{- include "opentelemetry-collector.configTemplateChecksumAnnotation" . | nindent 8 }}
+        {{- end }}
         {{- include "opentelemetry-collector.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "opentelemetry-collector.selectorLabels" . | nindent 8 }}

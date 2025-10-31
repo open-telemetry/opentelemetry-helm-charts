@@ -6,11 +6,12 @@ metadata:
   name: otel-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.117.1
+    helm.sh/chart: opentelemetry-collector-0.134.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.120.0"
+    app.kubernetes.io/version: "0.135.0"
     app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: standalone-collector
 data:
   relay: |
@@ -23,7 +24,8 @@ data:
           endpoint: http://opensearch:9200
           tls:
             insecure: true
-        logs_index: otel
+        logs_index: otel-logs
+        logs_index_time_format: yyyy-MM-dd
       otlp:
         endpoint: jaeger-collector:4317
         tls:
@@ -78,6 +80,10 @@ data:
         - action: insert
           from_attribute: k8s.pod.uid
           key: service.instance.id
+      resourcedetection:
+        detectors:
+        - env
+        - system
       transform:
         error_mode: ignore
         trace_statements:
@@ -97,6 +103,9 @@ data:
             endpoint: ${env:MY_POD_IP}:6831
           thrift_http:
             endpoint: ${env:MY_POD_IP}:14268
+      nginx:
+        collection_interval: 10s
+        endpoint: http://image-provider:8081/status
       otlp:
         protocols:
           grpc:
@@ -107,6 +116,29 @@ data:
               - http://*
               - https://*
             endpoint: ${env:MY_POD_IP}:4318
+      postgresql:
+        endpoint: postgresql:5432
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+        password: otel
+        tls:
+          insecure: true
+        username: root
       prometheus:
         config:
           scrape_configs:
@@ -118,6 +150,7 @@ data:
       redis:
         collection_interval: 10s
         endpoint: valkey-cart:6379
+        username: valkey
       zipkin:
         endpoint: ${env:MY_POD_IP}:9411
     service:
@@ -131,6 +164,7 @@ data:
           processors:
           - k8sattributes
           - memory_limiter
+          - resourcedetection
           - resource
           - batch
           receivers:
@@ -142,12 +176,15 @@ data:
           processors:
           - k8sattributes
           - memory_limiter
+          - resourcedetection
           - resource
           - batch
           receivers:
           - httpcheck/frontend-proxy
-          - redis
+          - nginx
           - otlp
+          - postgresql
+          - redis
           - spanmetrics
         traces:
           exporters:
@@ -166,13 +203,12 @@ data:
           - zipkin
       telemetry:
         metrics:
-          address: ${env:MY_POD_IP}:8888
           level: detailed
           readers:
           - periodic:
               exporter:
                 otlp:
                   endpoint: otel-collector:4318
-                  protocol: grpc
+                  protocol: http/protobuf
               interval: 10000
               timeout: 5000

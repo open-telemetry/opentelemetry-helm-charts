@@ -6,13 +6,13 @@ metadata:
   name: example-kube-state-metrics
   namespace: default
   labels:    
-    helm.sh/chart: kube-state-metrics-5.21.0
+    helm.sh/chart: kube-state-metrics-6.3.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: metrics
     app.kubernetes.io/part-of: kube-state-metrics
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.12.0"
+    app.kubernetes.io/version: "2.17.0"
     release: example
 spec:
   selector:
@@ -26,13 +26,13 @@ spec:
   template:
     metadata:
       labels:        
-        helm.sh/chart: kube-state-metrics-5.21.0
+        helm.sh/chart: kube-state-metrics-6.3.0
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: metrics
         app.kubernetes.io/part-of: kube-state-metrics
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "2.12.0"
+        app.kubernetes.io/version: "2.17.0"
         release: example
     spec:
       automountServiceAccountToken: true
@@ -45,21 +45,22 @@ spec:
         runAsUser: 65534
         seccompProfile:
           type: RuntimeDefault
+      dnsPolicy: ClusterFirst
       containers:
       - name: kube-state-metrics
         args:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpoints,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
         imagePullPolicy: IfNotPresent
-        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.12.0
+        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.17.0
         ports:
         - containerPort: 8080
-          name: "http"
+          name: http
         livenessProbe:
           failureThreshold: 3
           httpGet:
             httpHeaders:
-            path: /healthz
+            path: /livez
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 5
@@ -70,8 +71,8 @@ spec:
           failureThreshold: 3
           httpGet:
             httpHeaders:
-            path: /
-            port: 8080
+            path: /readyz
+            port: 8081
             scheme: HTTP
           initialDelaySeconds: 5
           periodSeconds: 10

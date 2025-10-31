@@ -62,6 +62,7 @@ For more information about the maintainer role, see the [community repository](h
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
 - [Josh Voravong](https://github.com/jvoravong), Splunk
+- [Juliano Costa](https://github.com/julianocosta89), Datadog
 - [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
 
