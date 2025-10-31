@@ -1,18 +1,39 @@
 # yaml-language-server: $schema=./values.schema.json
 default:
   # List of environment variables applied to all components
+  # Format: {name: some_name, value: some_value} or {name: some_name, valueFrom: ...}
   env:
+    # Emulate otel operator instrumentation injection OTEL_* config
+    # because the OTel Demo Helm Chart cannot wait for the otel-operator to be up and running
+    # before deploying the demo components so they get instrumented.
     - name: OTEL_SERVICE_NAME
       valueFrom:
         fieldRef:
           apiVersion: v1
-          fieldPath: "metadata.labels['app.kubernetes.io/component']"
-    - name: OTEL_COLLECTOR_NAME
-      value: otel-collector
+          fieldPath: "metadata.annotations['resource.opentelemetry.io/service.name']"
+    - name: OTEL_SERVICE_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: "metadata.annotations['resource.opentelemetry.io/service.namespace']"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otel-demo-daemon-collector:4317"
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: grpc
+    - name: OTEL_K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
+    - name: OTEL_COLLECTOR_HOST
+      value: otel-demo-daemon-collector
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version={{ .Chart.AppVersion }}'
+      value: 'service.namespace=$(OTEL_SERVICE_NAMESPACE),service.version={{ .Chart.AppVersion }},deployment.environment.name=demo'
+    - name: OTEL_PROPAGATORS
+      value: "tracecontext,baggage"
+    - name: OTEL_TRACES_SAMPLER
+      value: parentbased_always_on
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -170,15 +191,22 @@ components:
     enabled: true
     useDefault:
       env: true
+    podAnnotations:
+      resource.opentelemetry.io/service.name: accounting
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: DB_CONNECTION_STRING
         value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
       - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
         value: "false"
+    envOverrides:
+      # Use the http/protobuf OTLP endpoint when the global config is the grpc endpoint
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 120Mi
@@ -193,6 +221,9 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.name: ad
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: AD_PORT
         value: "8080"
@@ -200,10 +231,14 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_LOGS_EXPORTER
         value: otlp
+    envOverrides:
+      # Use the http/protobuf OTLP endpoint when the global config is the grpc endpoint
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 300Mi
@@ -214,6 +249,9 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.name: cart
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: CART_PORT
         value: "8080"
@@ -225,8 +263,6 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 160Mi
@@ -262,10 +298,11 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: GOMEMLIMIT
         value: 16MiB
+    podAnnotations:
+      resource.opentelemetry.io/service.name: checkout
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 20Mi
@@ -283,10 +320,11 @@ components:
     env:
       - name: CURRENCY_PORT
         value: "8080"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: VERSION
         value: "{{ .Chart.AppVersion }}"
+    podAnnotations:
+      resource.opentelemetry.io/service.name: currency
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 20Mi
@@ -297,17 +335,26 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.name: email
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: EMAIL_PORT
         value: "8080"
       - name: APP_ENV
         value: production
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318/v1/traces
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
+    envOverrides:
+      # Use the http/protobuf OTLP endpoint when the global config is the grpc endpoint
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 100Mi
@@ -316,6 +363,9 @@ components:
     enabled: true
     useDefault:
       env: true
+    podAnnotations:
+      resource.opentelemetry.io/service.name: fraud-detection
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -323,12 +373,16 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_INSTRUMENTATION_KAFKA_EXPERIMENTAL_SPAN_ATTRIBUTES
         value: "true"
       - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
         value: "true"
+    envOverrides:
+      # Use the http/protobuf OTLP endpoint when the global config is the grpc endpoint
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 300Mi
@@ -370,14 +424,13 @@ components:
         value: "8013"
       - name: ENV_PLATFORM
         value: kubernetes
-      - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
+    podAnnotations:
+      resource.opentelemetry.io/service.name: frontend
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 250Mi
@@ -392,6 +445,14 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.name: frontend-proxy
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: httpcheck
+      io.opentelemetry.discovery.metrics/config: |
+          targets:
+            - endpoint: "http://`endpoint`"  # FIXME why isn't `endpoint` interpolated?
     env:
       - name: ENVOY_PORT
         value: "8080"
@@ -425,8 +486,7 @@ components:
         value: load-generator
       - name: LOCUST_WEB_PORT
         value: "8089"
-      - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
+      # workaround https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1888
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
@@ -445,13 +505,21 @@ components:
       env: true
     service:
       port: 8081
+    podAnnotations:
+      resource.opentelemetry.io/service.name: image-provider
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: nginx
+      io.opentelemetry.discovery.metrics/config: |
+          endpoint: "http://`endpoint`/status"
+          collection_interval: "10s"
+          timeout: "20s"
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
+        # https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1888
       - name: OTEL_COLLECTOR_PORT_GRPC
         value: "4317"
-      - name: OTEL_COLLECTOR_HOST
-        value: $(OTEL_COLLECTOR_NAME)
     resources:
       limits:
         memory: 50Mi
@@ -487,8 +555,9 @@ components:
         value: "8013"
       - name: FLAGD_OFREP_PORT
         value: "8016"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      resource.opentelemetry.io/service.name: load-generator
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 1500Mi
@@ -506,8 +575,9 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      resource.opentelemetry.io/service.name: payment
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 120Mi
@@ -531,14 +601,15 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: GOMEMLIMIT
         value: 16MiB
     mountedConfigMaps:
       - name: product-catalog-products
         mountPath: /usr/src/app/products
         existingConfigMap: product-catalog-products
+    podAnnotations:
+      resource.opentelemetry.io/service.name: product-catalog
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 20Mi
@@ -549,6 +620,9 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.name: quote
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: QUOTE_PORT
         value: "8080"
@@ -556,8 +630,12 @@ components:
         value: "true"
       - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
         value: "true"
+    envOverrides:
+      # Use the http/protobuf OTLP endpoint when the global config is the grpc endpoint
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 40Mi
@@ -585,8 +663,9 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      resource.opentelemetry.io/service.name: recommendation
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -602,8 +681,9 @@ components:
         value: "8080"
       - name: QUOTE_ADDR
         value: http://quote:8080
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+    podAnnotations:
+      resource.opentelemetry.io/service.name: shipping
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 20Mi
@@ -621,11 +701,14 @@ components:
         value: 8013
       - name: ofrep
         value: 8016
+    podAnnotations:
+      resource.opentelemetry.io/service.name: flagd
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: FLAGD_METRICS_EXPORTER
         value: otel
       - name: FLAGD_OTEL_COLLECTOR_URI
-        value: $(OTEL_COLLECTOR_NAME):4317
+        value: otel-demo-daemon-collector:4317
       - name: GOMEMLIMIT
         value: 60MiB
     resources:
@@ -653,14 +736,17 @@ components:
         env:
           - name: FLAGD_METRICS_EXPORTER
             value: otel
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://$(OTEL_COLLECTOR_NAME):4318
           - name: FLAGD_UI_PORT
             value: "4000"
           - name: SECRET_KEY_BASE
             value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
           - name: PHX_HOST
             value: localhost
+        envOverrides:
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://otel-demo-daemon-collector:4318
+          - name: OTEL_EXPORTER_OTLP_PROTOCOL
+            value: "http/protobuf"
         resources:
           limits:
             memory: 250Mi
@@ -691,11 +777,12 @@ components:
         value: 9092
       - name: controller
         value: 9093
+    podAnnotations:
+      resource.opentelemetry.io/service.name: kafka
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: KAFKA_HEAP_OPTS
         value: "-Xmx400M -Xms400M"
       - name: KAFKA_LISTENERS
@@ -704,6 +791,12 @@ components:
         value: CONTROLLER
       - name: KAFKA_CONTROLLER_QUORUM_VOTERS
         value: 1@kafka:9093
+    envOverrides:
+      # Use the http/protobuf OTLP endpoint when the global config is the grpc endpoint
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-demo-daemon-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: "http/protobuf"
     resources:
       limits:
         memory: 600Mi
@@ -726,70 +819,12 @@ components:
         value: otel
       - name: POSTGRES_DB
         value: otel
-    resources:
-      limits:
-        memory: 100Mi
-
-  valkey-cart:
-    enabled: true
-    useDefault:
-      env: true
-    imageOverride:
-      repository: "valkey/valkey"
-      tag: "8.1.3-alpine"
-    replicas: 1
-    ports:
-      - name: valkey-cart
-        value: 6379
-    resources:
-      limits:
-        memory: 20Mi
-    securityContext:
-      runAsUser: 999  # valkey
-      runAsGroup: 1000
-      runAsNonRoot: true
-
-opentelemetry-collector:
-  enabled: true
-  image:
-    repository: "otel/opentelemetry-collector-contrib"
-  fullnameOverride: otel-collector
-  mode: deployment
-  presets:
-    kubernetesAttributes:
-      enabled: true
-  resources:
-    limits:
-      memory: 200Mi
-  service:
-    type: ClusterIP
-  ports:
-    metrics:
-      enabled: true
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    opentelemetry_community_demo: "true"
-  config:
-    receivers:
-      otlp:
-        protocols:
-          http:
-            # Since this collector needs to receive data from the web, enable cors for all origins
-            # `allowed_origins` can be refined for your deployment domain
-            cors:
-              allowed_origins:
-                - "http://*"
-                - "https://*"
-      httpcheck/frontend-proxy:
-        targets:
-          - endpoint: http://frontend-proxy:8080
-      nginx:
-        endpoint: http://image-provider:8081/status
-        collection_interval: 10s
-      postgresql:
-        endpoint: "postgresql:5432"
-        username: "root"
-        password: "otel"
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: postgresql
+      io.opentelemetry.discovery.metrics/config: |
+        username: root
+        password: otel
         metrics:
           postgresql.blks_hit:
             enabled: true
@@ -809,80 +844,182 @@ opentelemetry-collector:
             enabled: true
         tls:
           insecure: true
-      redis:
-        endpoint: "valkey-cart:6379"
-        username: "valkey"
+    resources:
+      limits:
+        memory: 100Mi
+
+  valkey-cart:
+    enabled: true
+    useDefault:
+      env: true
+    imageOverride:
+      repository: "valkey/valkey"
+      tag: "8.1.3-alpine"
+    replicas: 1
+    ports:
+      - name: valkey-cart
+        value: 6379
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: redis
+      io.opentelemetry.discovery.metrics/config: |
+        username: valkey
         collection_interval: 10s
+    resources:
+      limits:
+        memory: 20Mi
+    securityContext:
+      runAsUser: 999  # valkey
+      runAsGroup: 1000
+      runAsNonRoot: true
 
-    exporters:
-      ## Create an exporter to Jaeger using the standard `otlp` export format
-      otlp:
-        endpoint: jaeger-collector:4317
-        tls:
-          insecure: true
-      # Create an exporter to Prometheus (metrics)
-      otlphttp/prometheus:
-        endpoint: http://prometheus:9090/api/v1/otlp
-        tls:
-          insecure: true
-      opensearch:
-        logs_index: otel-logs
-        logs_index_time_format: "yyyy-MM-dd"
-        http:
-          endpoint: http://opensearch:9200
-          tls:
-            insecure: true
-
-    processors:
-      memory_limiter:
-        check_interval: 5s
-        limit_percentage: 80
-        spike_limit_percentage: 25
-      resourcedetection:
-        detectors: [env, system]
-      # This processor is used to help limit high cardinality on next.js span names
-      # When this PR is merged (and released) we can remove this transform processor
-      # https://github.com/vercel/next.js/pull/64852
-      transform:
-        error_mode: ignore
-        trace_statements:
-          - context: span
-            statements:
-              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
-              - replace_pattern(name, "\\?.*", "")
-              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
-      resource:
-        attributes:
-        - key: service.instance.id
-          from_attribute: k8s.pod.uid
-          action: insert
-
-    connectors:
-      spanmetrics: {}
-
-    service:
-      pipelines:
-        traces:
-          processors: [memory_limiter, resourcedetection, resource, transform, batch]
-          exporters: [otlp, debug, spanmetrics]
-        metrics:
-          receivers: [httpcheck/frontend-proxy, nginx, otlp, postgresql, redis, spanmetrics]
-          processors: [memory_limiter, resourcedetection, resource, batch]
-          exporters: [otlphttp/prometheus, debug]
-        logs:
-          processors: [memory_limiter, resourcedetection, resource, batch]
-          exporters: [opensearch, debug]
-      telemetry:
-        metrics:
-          level: detailed
-          readers:
-            - periodic:
-                interval: 10000
-                timeout: 5000
-                exporter:
-                  otlp:
-                    protocol: http/protobuf
-                    endpoint: otel-collector:4318
+opentelemetry-kube-stack:
+  enabled: true
+  # https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-kube-stack
+  clusterName: otel-demo-stack  # TODO set the K8s Cluster Name value
+  crds:
+    installOtel: true
+    installPrometheus: false  # disable to prevent install of Prometheus components
+  collectors:
+    daemon:
+      enabled: true
+      fullnameOverride: otel-demo-daemon
+      # disable scrapping using daemon_scrape_configs.yaml as it assumes the Prometheus Node Exporter and CAdvisor are setup
+      # https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-kube-stack#scrape_configs_file-details
+      scrape_configs_file: ""
+      presets:
+        logsCollection:
+          enabled: false  # TODO disable when running on Docker Desktop
+          storeCheckpoints: false  # TODO disable when running on Docker Desktop
+        hostMetrics:
+          enabled: false  # TODO disable when running on Docker Desktop
+        kubeletMetrics:
+          enabled: true
+        kubernetesAttributes:
+          enabled: true
+        kubernetesEvents:
+          enabled: true
+        clusterMetrics:
+          enabled: true
+      config:
+        extensions:
+          health_check:  # For K8s Liveness and Readiness Probes
+            endpoint: 0.0.0.0:13133
+          k8s_observer:
+            observe_nodes: true
+            observe_services: true
+            observe_ingresses: true
+        receivers:
+          otlp:
+            protocols:
+              http:
+                # Since this collector needs to receive data from the web, enable cors for all origins
+                # `allowed_origins` can be refined for your deployment domain
+                cors:
+                  allowed_origins:
+                    - "http://*"
+                    - "https://*"
+          receiver_creator/k8s:
+            watch_observers: [k8s_observer]
+            discovery:
+              enabled: true
+        exporters:
+          debug: {}
+          otlp/jaeger:
+            endpoint: "http://jaeger-collector:4317"
+            tls:
+              insecure: true
+          otlphttp/prometheus:
+            endpoint: "http://prometheus:9090/api/v1/otlp"
+            tls:
+              insecure: true
+          opensearch:
+            logs_index: otel-logs
+            logs_index_time_format: "yyyy-MM-dd"
+            http:
+              endpoint: "http://opensearch:9200"
+              tls:
+                insecure: true
+        processors:
+          transform/fix_nextjs_span_name:
+            error_mode: ignore
+            trace_statements:
+              - context: span
+                statements:
+                  # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+                  - replace_pattern(name, "\\?.*", "")
+                  - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+        connectors:
+          spanmetrics: {}
+        service:
+          extensions: [health_check, k8s_observer]
+          pipelines:
+            traces:
+              processors:
+                - resourcedetection/env
+                - resource/hostname
+                - transform/fix_nextjs_span_name
+                - batch
+              exporters:
+                - otlp/jaeger
+                - spanmetrics
+            metrics:
+              receivers:
+                - otlp
+                - receiver_creator/k8s
+                - spanmetrics
+              processors:
+                - resourcedetection/env
+                - resource/hostname
+                - batch
+              exporters:
+                - otlphttp/prometheus
+            logs:
+              processors:
+                - resourcedetection/env
+                - resource/hostname
+                - batch
+              exporters:
+                - opensearch
+          telemetry:
+            metrics:
+              readers:
+                # TODO consider exporting to prometheus
+                - pull:
+                    exporter:
+                      prometheus:
+                        host: '0.0.0.0'
+                        port: 8888
+            logs:
+              level: info
+      securityContext:  # Run daemon collector as root for metrics & logs scrapping
+        runAsUser: 0
+        runAsGroup: 0
+  defaultCRConfig:
+    enabled: true
+    image:
+      repository: otel/opentelemetry-collector-contrib
+      tag: "0.134.1"
+    targetAllocator:
+      # See https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
+      enabled: false
+  opentelemetry-operator:
+    admissionWebhooks:
+      certManager:
+        enabled: false
+      autoGenerateCert:
+        enabled: true
+  resources:
+    limits:
+      memory: 200Mi
+  service:
+    type: ClusterIP
+  ports:
+    metrics:
+      enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    opentelemetry_community_demo: "true"
 
 jaeger:
   enabled: true
@@ -971,6 +1108,9 @@ prometheus:
         - postgresql.schema.name
         - postgresql.table.name
         - postgresql.index.name
+        # MongoDB
+        # See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/mongodbreceiver/metadata.yaml
+        - database
     persistentVolume:
       enabled: false
     service:
