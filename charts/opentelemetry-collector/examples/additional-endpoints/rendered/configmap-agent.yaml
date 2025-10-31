@@ -175,15 +175,137 @@ data:
         traces:
           headers:
             X-Coralogix-Distribution: helm-otel-integration/1.0
+      coralogix/resource_catalog:
+        application_name: resource
+        domain: coralogix.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+            x-coralogix-ingress: metadata-as-otlp-logs/v1
+        private_key: ${CORALOGIX_PRIVATE_KEY}
+        subsystem_name: catalog
+        timeout: 30s
+      coralogix/resource_catalog_coralogixsg_com:
+        application_name: resource
+        domain: coralogixsg.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+            x-coralogix-ingress: metadata-as-otlp-logs/v1
+        private_key: ${env:CORALOGIX_PRIVATE_KEY_AP2}
+        subsystem_name: catalog
+        timeout: 30s
+      coralogix/resource_catalog_myeu2:
+        application_name: resource
+        domain: eu2.coralogix.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+            x-coralogix-ingress: metadata-as-otlp-logs/v1
+        private_key: ${env:CORALOGIX_PRIVATE_KEY_EU2}
+        subsystem_name: catalog
+        timeout: 30s
+      coralogix/resource_catalog_private_coralogix_com:
+        application_name: resource
+        domain: private.coralogix.com
+        logs:
+          headers:
+            X-Coralogix-Distribution: helm-otel-integration/1.0
+            x-coralogix-ingress: metadata-as-otlp-logs/v1
+        private_key: ${env:CORALOGIX_PRIVATE_KEY_US2}
+        subsystem_name: catalog
+        timeout: 30s
       debug: {}
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
+      opamp:
+        agent_description:
+          include_resource_attributes: true
+          non_identifying_attributes:
+            helm.chart.opentelemetry-collector.version: 0.121.16
+        server:
+          http:
+            endpoint: https://ingress.coralogix.com/opamp/v1
+            headers:
+              Authorization: Bearer ${env:CORALOGIX_PRIVATE_KEY}
+            polling_interval: 2m
+      opamp/coralogixsg_com:
+        agent_description:
+          include_resource_attributes: true
+          non_identifying_attributes:
+            helm.chart.opentelemetry-collector.version: 0.121.16
+        server:
+          http:
+            endpoint: https://ingress.coralogixsg.com/opamp/v1
+            headers:
+              Authorization: Bearer ${env:CORALOGIX_PRIVATE_KEY_AP2}
+            polling_interval: 2m
+      opamp/myeu2:
+        agent_description:
+          include_resource_attributes: true
+          non_identifying_attributes:
+            helm.chart.opentelemetry-collector.version: 0.121.16
+        server:
+          http:
+            endpoint: https://ingress.eu2.coralogix.com/opamp/v1
+            headers:
+              Authorization: Bearer ${env:CORALOGIX_PRIVATE_KEY_EU2}
+            polling_interval: 2m
+      opamp/private_coralogix_com:
+        agent_description:
+          include_resource_attributes: true
+          non_identifying_attributes:
+            helm.chart.opentelemetry-collector.version: 0.121.16
+        server:
+          http:
+            endpoint: https://ingress.private.coralogix.com/opamp/v1
+            headers:
+              Authorization: Bearer ${env:CORALOGIX_PRIVATE_KEY_US2}
+            polling_interval: 2m
     processors:
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resourcedetection/entity:
+        detectors:
+        - system
+        - env
+        override: false
+        system:
+          resource_attributes:
+            host.cpu.cache.l2.size:
+              enabled: true
+            host.cpu.family:
+              enabled: true
+            host.cpu.model.id:
+              enabled: true
+            host.cpu.model.name:
+              enabled: true
+            host.cpu.stepping:
+              enabled: true
+            host.cpu.vendor.id:
+              enabled: true
+            host.id:
+              enabled: true
+            host.ip:
+              enabled: true
+            host.mac:
+              enabled: true
+            os.description:
+              enabled: true
+        timeout: 2s
+      transform/entity-event:
+        error_mode: silent
+        log_statements:
+        - context: log
+          statements:
+          - set(attributes["otel.entity.id"]["host.id"], resource.attributes["host.id"])
+          - merge_maps(attributes, resource.attributes, "insert")
+        - context: resource
+          statements:
+          - keep_keys(attributes, [""])
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -235,6 +357,59 @@ data:
           - delete_key(attributes, "otel_scope_name") where attributes["service.name"]
             == "opentelemetry-collector"
     receivers:
+      hostmetrics:
+        collection_interval: 10s
+        root_path: /hostfs
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          disk: null
+          filesystem:
+            exclude_fs_types:
+              fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+              match_type: strict
+            exclude_mount_points:
+              match_type: regexp
+              mount_points:
+              - /dev/*
+              - /proc/*
+              - /sys/*
+              - /run/k3s/containerd/*
+              - /run/containerd/runc/*
+              - /var/lib/docker/*
+              - /var/lib/kubelet/*
+              - /snap/*
+          load: null
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          network: null
       otlp:
         protocols:
           grpc:
@@ -253,6 +428,10 @@ data:
     service:
       extensions:
       - health_check
+      - opamp
+      - opamp/myeu2
+      - opamp/coralogixsg_com
+      - opamp/private_coralogix_com
       pipelines:
         logs:
           exporters:
@@ -265,6 +444,20 @@ data:
           - memory_limiter
           receivers:
           - otlp
+        logs/resource_catalog:
+          exporters:
+          - coralogix/resource_catalog
+          - coralogix/resource_catalog_myeu2
+          - coralogix/resource_catalog_coralogixsg_com
+          - coralogix/resource_catalog_private_coralogix_com
+          processors:
+          - memory_limiter
+          - resource/metadata
+          - resourcedetection/entity
+          - resourcedetection/region
+          - transform/entity-event
+          receivers:
+          - hostmetrics
         metrics:
           exporters:
           - debug
@@ -276,6 +469,7 @@ data:
           - memory_limiter
           - transform/prometheus
           receivers:
+          - hostmetrics
           - prometheus
           - otlp
         traces:

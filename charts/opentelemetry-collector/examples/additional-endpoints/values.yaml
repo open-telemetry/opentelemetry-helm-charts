@@ -1,0 +1,53 @@
+mode: daemonset
+
+global:
+  domain: coralogix.com
+  defaultApplicationName: otel
+  defaultSubsystemName: integration
+  version: "1.0"
+  additionalEndpoints:
+    - enabled: true
+      name: "myeu2"
+      domain: "eu2.coralogix.com"
+      privateKey: ${env:CORALOGIX_PRIVATE_KEY_EU2}
+    - enabled: true
+      domain: "coralogixsg.com"
+      privateKey: ${env:CORALOGIX_PRIVATE_KEY_AP2}
+    - enabled: true
+      domain: "private.coralogix.com"
+      privateKey: ${env:CORALOGIX_PRIVATE_KEY_US2}
+
+presets:
+  fleetManagement:
+    enabled: true
+    # IMPORTANT: The `supervisor` preset is in alpha stage and under heavy development.
+    # It's not recommended for use in production environments.
+    # Support will be provided only when it reaches a stable release.
+    # supervisor:
+    #   enabled: false
+    # agentType: ""
+    # clusterName: ""
+    # integrationID: ""
+  hostEntityEvents:
+    enabled: true
+  hostMetrics:
+    enabled: true
+  coralogixExporter:
+    enabled: true
+    pipelines: ["all"]
+    privateKey: ${env:CORALOGIX_PRIVATE_KEY}
+    # Demonstrate exporter helper settings
+    retryOnFailure:
+      enabled: true
+      initialInterval: 2s
+      maxInterval: 20s
+      maxElapsedTime: 120s
+      multiplier: 2.0
+    sendingQueue:
+      enabled: true
+      numConsumers: 5
+      waitForResult: false
+      blockOnOverflow: true
+      sizer: requests
+      queueSize: 500
+    

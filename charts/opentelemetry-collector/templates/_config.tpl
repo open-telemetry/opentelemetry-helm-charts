@@ -37,6 +37,18 @@ Merge user supplied config into memory limiter config.
 {{- end }}
 
 {{/*
+Calculate exporter suffix from endpoint configuration.
+Returns the endpoint name if provided, otherwise sanitizes the domain.
+*/}}
+{{- define "opentelemetry-collector.getExporterSuffix" -}}
+{{- if .name }}
+{{- .name }}
+{{- else }}
+{{- .domain | replace "https://" "" | replace "http://" "" | replace ":" "_" | replace "/" "_" | replace "." "_" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Build config file for daemonset OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.daemonsetConfig" -}}
@@ -1333,6 +1345,18 @@ processors:
 {{- if and ($config.service.extensions) (not (has "opamp" $config.service.extensions)) }}
 {{- $_ := set $config.service "extensions" (append $config.service.extensions "opamp" | uniq) }}
 {{- end }}
+{{- /* Add additional opamp extensions for each enabled endpoint */ -}}
+{{- if .Values.Values.global.additionalEndpoints }}
+{{- range $endpoint := .Values.Values.global.additionalEndpoints }}
+  {{- if eq $endpoint.enabled true }}
+    {{- $exporterSuffix := include "opentelemetry-collector.getExporterSuffix" $endpoint }}
+    {{- $extensionName := printf "opamp/%s" $exporterSuffix }}
+    {{- if and ($config.service.extensions) (not (has $extensionName $config.service.extensions)) }}
+      {{- $_ := set $config.service "extensions" (append $config.service.extensions $extensionName | uniq) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -1350,6 +1374,25 @@ extensions:
         non_identifying_attributes:
         {{- include "opentelemetry-collector.fleetAttributes" . | nindent 10 -}}
         {{- include "opentelemetry-collector.chartMetadataAttributes" . | nindent 10 -}}
+{{- if .Values.global.additionalEndpoints }}
+{{- range $endpoint := .Values.global.additionalEndpoints }}
+  {{- if eq $endpoint.enabled true }}
+    {{- $exporterSuffix := include "opentelemetry-collector.getExporterSuffix" $endpoint }}
+    opamp/{{ $exporterSuffix }}:
+      server:
+        http:
+          endpoint: "https://ingress.{{ $endpoint.domain }}/opamp/v1"
+          polling_interval: 2m
+          headers:
+            Authorization: "Bearer {{ $endpoint.privateKey }}"
+      agent_description:
+        include_resource_attributes: true
+        non_identifying_attributes:
+        {{- include "opentelemetry-collector.fleetAttributes" $ | nindent 10 -}}
+        {{- include "opentelemetry-collector.chartMetadataAttributes" $ | nindent 10 -}}
+  {{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyK8sResourceAttributesConfig" -}}
@@ -1911,6 +1954,24 @@ exporters:
       headers:
         X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.global.version }}"
         x-coralogix-ingress: "metadata-as-otlp-logs/v1"
+{{- if .Values.global.additionalEndpoints }}
+{{- range $endpoint := .Values.global.additionalEndpoints }}
+  {{- if eq $endpoint.enabled true }}
+  {{- $exporterSuffix := include "opentelemetry-collector.getExporterSuffix" $endpoint }}
+  {{- $exporterName := printf "coralogix/resource_catalog_%s" $exporterSuffix }}
+  {{ $exporterName }}:
+    timeout: "30s"
+    private_key: "{{ $endpoint.privateKey }}"
+    domain: "{{ $endpoint.domain }}"
+    application_name: "{{ $endpoint.applicationName | default "resource" }}"
+    subsystem_name: "{{ $endpoint.subsystemName | default "catalog" }}"
+    logs:
+      headers:
+        X-Coralogix-Distribution: "{{ if eq $.Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq $.Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ $.Values.global.version }}"
+        x-coralogix-ingress: "{{ $endpoint.ingress | default "metadata-as-otlp-logs/v1" }}"
+  {{- end }}
+{{- end }}
+{{- end }}
 
 receivers:
   k8sobjects/resource_catalog:
@@ -2039,6 +2100,14 @@ service:
     logs/resource_catalog:
       exporters:
         - coralogix/resource_catalog
+        {{- if .Values.global.additionalEndpoints }}
+        {{- range $endpoint := .Values.global.additionalEndpoints }}
+        {{- if eq $endpoint.enabled true }}
+        {{- $exporterSuffix := include "opentelemetry-collector.getExporterSuffix" $endpoint }}
+        - coralogix/resource_catalog_{{ $exporterSuffix }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
       processors:
         - memory_limiter
         - resourcedetection/resource_catalog
@@ -2085,6 +2154,24 @@ exporters:
       headers:
         X-Coralogix-Distribution: "{{ if eq .Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq .Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ .Values.global.version }}"
         x-coralogix-ingress: "metadata-as-otlp-logs/v1"
+{{- if .Values.global.additionalEndpoints }}
+{{- range $endpoint := .Values.global.additionalEndpoints }}
+  {{- if eq $endpoint.enabled true }}
+  {{- $exporterSuffix := include "opentelemetry-collector.getExporterSuffix" $endpoint }}
+  {{- $exporterName := printf "coralogix/resource_catalog_%s" $exporterSuffix }}
+  {{ $exporterName }}:
+    timeout: "30s"
+    private_key: "{{ $endpoint.privateKey }}"
+    domain: "{{ $endpoint.domain }}"
+    application_name: "resource"
+    subsystem_name: "catalog"
+    logs:
+      headers:
+        X-Coralogix-Distribution: "{{ if eq $.Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq $.Values.distribution "standalone" }}helm-otel-standalone{{ else }}helm-otel-integration{{ end }}/{{ $.Values.global.version }}"
+        x-coralogix-ingress: "metadata-as-otlp-logs/v1"
+  {{- end }}
+{{- end }}
+{{- end }}
 
 processors:
   resourcedetection/entity:
@@ -2128,6 +2215,14 @@ service:
     logs/resource_catalog:
       exporters:
         - coralogix/resource_catalog
+        {{- if .Values.global.additionalEndpoints }}
+        {{- range $endpoint := .Values.global.additionalEndpoints }}
+        {{- if eq $endpoint.enabled true }}
+        {{- $exporterSuffix := include "opentelemetry-collector.getExporterSuffix" $endpoint }}
+        - coralogix/resource_catalog_{{ $exporterSuffix }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
       processors:
         - memory_limiter
         - resource/metadata
@@ -2259,8 +2354,8 @@ exporters:
     "defaultSubsystemName" (.Values.presets.coralogixExporter.defaultSubsystemName | default .Values.global.defaultSubsystemName)
 }}
 {{- $endpoints = append $endpoints $mainEndpoint }}
-{{- if .Values.presets.coralogixExporter.additionalEndpoints }}
-  {{- range $idx, $endpoint := .Values.presets.coralogixExporter.additionalEndpoints }}
+{{- if .Values.presets.coralogixExporter.additionalEndpoints | default .Values.global.additionalEndpoints }}
+  {{- range $idx, $endpoint := (.Values.presets.coralogixExporter.additionalEndpoints | default .Values.global.additionalEndpoints) }}
     {{- if eq $endpoint.enabled true }}
       {{- /* Use custom name if provided, otherwise sanitize domain to create valid YAML key */ -}}
       {{- $exporterName := "" }}

@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: e7897df9ef1a80e66d950833162ef2c2bf998298a2bf235abf32c78afae6a95d
+        checksum/config: c5e89b6781f8c110abdd65e521a58c127b67ed488c93106b18f512197548e59f
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -59,6 +59,11 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
           livenessProbe:
             httpGet:
               path: /
@@ -70,6 +75,10 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
+            - name: hostfs
+              mountPath: /hostfs
+              readOnly: true
+              mountPropagation: HostToContainer
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
@@ -77,6 +86,9 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
+        - name: hostfs
+          hostPath:
+            path: /
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: false

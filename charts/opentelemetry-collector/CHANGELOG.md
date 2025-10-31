@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.121.16 / 2025-10-29
+- [Feat] extend opamp extension and resource catalog exporter to support additional endpoints.
+
 ### v0.121.15 / 2025-10-23
 - [Feat] Allow `additionalEndpoints` option to `coralogixExporter` preset to add additional Coralogix endpoints.
 
