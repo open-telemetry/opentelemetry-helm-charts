@@ -262,6 +262,31 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: llm
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.38.5
+    
+    opentelemetry.io/name: llm
+    
+    app.kubernetes.io/component: llm
+    app.kubernetes.io/name: llm
+    app.kubernetes.io/version: "2.1.3"
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      name: tcp-service
+      targetPort: 8000
+  selector:
+    
+    opentelemetry.io/name: llm
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: v1
+kind: Service
+metadata:
   name: load-generator
   labels:
     helm.sh/chart: opentelemetry-demo-0.38.5
@@ -357,6 +382,31 @@ spec:
   selector:
     
     opentelemetry.io/name: product-catalog
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-reviews
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.38.5
+    
+    opentelemetry.io/name: product-reviews
+    
+    app.kubernetes.io/component: product-reviews
+    app.kubernetes.io/name: product-reviews
+    app.kubernetes.io/version: "2.1.3"
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3551
+      name: tcp-service
+      targetPort: 3551
+  selector:
+    
+    opentelemetry.io/name: product-reviews
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: v1
@@ -1436,6 +1486,70 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: llm
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.38.5
+    
+    opentelemetry.io/name: llm
+    
+    app.kubernetes.io/component: llm
+    app.kubernetes.io/name: llm
+    app.kubernetes.io/version: "2.1.3"
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      
+      opentelemetry.io/name: llm
+  template:
+    metadata:
+      labels:
+        
+        opentelemetry.io/name: llm
+        
+        app.kubernetes.io/component: llm
+        app.kubernetes.io/name: llm
+    spec:
+      serviceAccountName: example
+      containers:
+        - name: llm
+          image: 'ghcr.io/open-telemetry/demo:2.1.3-llm'
+          imagePullPolicy: IfNotPresent
+          ports:
+            
+            - containerPort: 8000
+              name: service
+          env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
+            - name: OTEL_COLLECTOR_NAME
+              value: $(OTEL_K8S_NODE_NAME)
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://$(OTEL_COLLECTOR_NAME):4317
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.1.3
+          resources:
+            limits:
+              memory: 100Mi
+          volumeMounts:
+      volumes:
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: load-generator
   labels:
     helm.sh/chart: opentelemetry-demo-0.38.5
@@ -1724,6 +1838,88 @@ spec:
         - name: product-catalog-products
           configMap:
             name: product-catalog-products
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-reviews
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.38.5
+    
+    opentelemetry.io/name: product-reviews
+    
+    app.kubernetes.io/component: product-reviews
+    app.kubernetes.io/name: product-reviews
+    app.kubernetes.io/version: "2.1.3"
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      
+      opentelemetry.io/name: product-reviews
+  template:
+    metadata:
+      labels:
+        
+        opentelemetry.io/name: product-reviews
+        
+        app.kubernetes.io/component: product-reviews
+        app.kubernetes.io/name: product-reviews
+    spec:
+      serviceAccountName: example
+      containers:
+        - name: product-reviews
+          image: 'ghcr.io/open-telemetry/demo:2.1.3-product-reviews'
+          imagePullPolicy: IfNotPresent
+          ports:
+            
+            - containerPort: 3551
+              name: service
+          env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
+            - name: OTEL_COLLECTOR_NAME
+              value: $(OTEL_K8S_NODE_NAME)
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: PRODUCT_REVIEWS_PORT
+              value: "3551"
+            - name: OTEL_PYTHON_LOG_CORRELATION
+              value: "true"
+            - name: OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+              value: "true"
+            - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+              value: python
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: DB_CONNECTION_STRING
+              value: host=postgresql user=otelu password=otelp dbname=otel
+            - name: LLM_BASE_URL
+              value: http://llm:8000/v1
+            - name: LLM_MODEL
+              value: astronomy-llm
+            - name: OPENAI_API_KEY
+              value: dummy
+            - name: PRODUCT_CATALOG_ADDR
+              value: product-catalog:8080
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://$(OTEL_COLLECTOR_NAME):4317
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.1.3
+          resources:
+            limits:
+              memory: 500Mi
+          volumeMounts:
+      volumes:
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
