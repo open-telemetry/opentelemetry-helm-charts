@@ -1,0 +1,42 @@
+---
+# Source: opentelemetry-ebpf-instrumentation/templates/cache-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-ebpf-instrumentation-k8s-cache
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-ebpf-instrumentation-0.1.0
+    app.kubernetes.io/name: opentelemetry-ebpf-instrumentation-k8s-cache
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: obi
+    app.kubernetes.io/component: workload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-ebpf-instrumentation-k8s-cache
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: opentelemetry-ebpf-instrumentation-0.1.0
+        app.kubernetes.io/name: opentelemetry-ebpf-instrumentation-k8s-cache
+        app.kubernetes.io/instance: example
+        app.kubernetes.io/version: "0.1.0"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: obi
+    spec:
+      serviceAccountName: example-opentelemetry-ebpf-instrumentation
+      containers:
+        - name: obi-k8s-cache
+          image: docker.io/otel/opentelemetry-ebpf-k8s-cache:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50055
+              protocol: TCP
+              name: grpc
+          env:
+            - name: OTEL_EBPF_K8S_CACHE_PORT
+              value: "50055"
