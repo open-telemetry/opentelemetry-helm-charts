@@ -439,6 +439,29 @@
                     "description": "Override the receiver start_at value.",
                     "type": "string"
                   },
+                  "multiline": {
+                    "description": "Optional multiline configuration block for the filelog receiver.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "lineStartPattern": {
+                        "description": "Regex that matches the beginning of a new log entry.",
+                        "type": "string"
+                      },
+                      "lineEndPattern": {
+                        "description": "Regex that matches the end of a log entry.",
+                        "type": "string"
+                      },
+                      "omitPattern": {
+                        "description": "Whether to omit the matching start/end pattern from each entry.",
+                        "type": "boolean"
+                      }
+                    },
+                    "oneOf": [
+                      { "required": ["lineStartPattern"] },
+                      { "required": ["lineEndPattern"] }
+                    ]
+                  },
                   "applicationName": {
                     "description": "Resource attribute value assigned to cx.application.name.",
                     "type": "string"
