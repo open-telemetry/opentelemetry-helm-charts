@@ -4,6 +4,12 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## Feature Gates
+
+### useExporterHelperBatch
+
+When `useExporterHelperBatch` is true the chart will remove the default batch processor and use the exporter helper's batching capability on all default exporters.
+
 ## 0.121.0 to 0.122.0
 
 In the v0.123.1 Collector release we stopped pushing images to Dockerhub due to how their new rate limit changes affected our CI. If you're using `otel/opentelemetry-collector-k8s` for the image you should switch to `ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s`. See https://github.com/open-telemetry/community/issues/2641 for more details.

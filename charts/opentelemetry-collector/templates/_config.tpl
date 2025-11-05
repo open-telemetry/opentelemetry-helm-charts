@@ -62,6 +62,31 @@ logs:
 {{- .Values.alternateConfig | toYaml }}
 {{- else}}
 {{- $config := deepCopy .Values.config }}
+{{- if .Values.useExporterHelperBatch }}
+{{- if and (hasKey $config "exporters") (hasKey $config.exporters "debug") }}
+  {{- $config = mustMergeOverwrite (dict "exporters" (dict "debug" (dict "batch" (dict)) )) $config}}
+{{- end}}
+{{- else }}
+  {{- $config = mustMergeOverwrite (dict "processors" (dict "batch" (dict) )) $config}}
+  {{- if $config.service.pipelines.logs }}
+    {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
+    {{- if not (has "batch" $config.service.pipelines.logs.processors) }}
+      {{- $_ := set $config.service.pipelines.logs "processors" (append $config.service.pipelines.logs.processors "batch" | uniq)  }}
+    {{- end }}
+  {{- end }}
+  {{- if $config.service.pipelines.metrics }}
+    {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
+    {{- if not (has "batch" $config.service.pipelines.metrics.processors) }}
+      {{- $_ := set $config.service.pipelines.metrics "processors" (append $config.service.pipelines.metrics.processors "batch" | uniq)  }}
+    {{- end }}
+  {{- end }}
+  {{- if $config.service.pipelines.traces }}
+    {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
+    {{- if not (has "batch" $config.service.pipelines.traces.processors) }}
+      {{- $_ := set $config.service.pipelines.traces "processors" (append $config.service.pipelines.traces.processors "batch" | uniq)  }}
+    {{- end }}
+  {{- end }}
+{{- end}}
 {{- if .Values.internalTelemetryViaOTLP.traces.enabled }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.traces" . | fromYaml)) }}
 {{- end }}
