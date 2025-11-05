@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.122.0 / 2025-11-05
+- [CHORE] Bump Collector to 0.139.0
+
 ### v0.121.17 / 2025-11-03
 - [Feat] Allow `filelogMulti` preset receivers to configure multiline log parsing.
 
