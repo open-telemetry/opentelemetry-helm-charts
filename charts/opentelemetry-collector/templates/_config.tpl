@@ -1444,6 +1444,11 @@ cx.cluster.name: "{{ .Values.presets.fleetManagement.clusterName }}"
 {{- if .Values.presets.fleetManagement.integrationID }}
 cx.integrationID: "{{ .Values.presets.fleetManagement.integrationID }}"
 {{- end }}
+{{- if .Values.presets.fleetManagement.customAttributes }}
+{{- range $key, $value := .Values.presets.fleetManagement.customAttributes }}
+{{ $key }}: "{{ $value }}"
+{{- end }}
+{{- end }}
 {{- end -}}
 
 {{- define "opentelemetry-collector.applySpanMetricsConfig" -}}

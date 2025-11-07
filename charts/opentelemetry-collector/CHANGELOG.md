@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.4.0 / 2025-11-07
+- [Feat] Allow setting custom non-identifying attributes for both supervisor and OpAMP extensions via `fleetManagement.customAttributes` preset.
+
 ### v0.123.0 / 2025-11-05
 - [CHORE] Revert Collector to 0.137.0
 
