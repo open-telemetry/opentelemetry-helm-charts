@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.124.1 / 2025-11-07
+- [Feat] Make the `fleetManagement.supervisor` preset ship a minimal collector config that only wires the OpAMP extension so the supervisor can connect to the Coralogix OpAMP backend.
+
 ### v0.4.0 / 2025-11-07
 - [Feat] Allow setting custom non-identifying attributes for both supervisor and OpAMP extensions via `fleetManagement.customAttributes` preset.
 
@@ -48,7 +51,7 @@
 
 ### v0.121.6 / 2025-10-15
 - [FIX] compact metrics unit name change. compact_duration_count -> compact_duration_ms_count, compact_duration_sum -> compact_duration_ms_sum, db_compact_duration_count -> db_compact_duration_ms_count, compact_duration_sum -> compact_duration_ms_sum
-git 
+
 ### v0.121.5 / 2025-10-15
 - [Feat] Allow configuring resource detection detectors for environment and cloud metadata.
 
