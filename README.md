@@ -43,7 +43,7 @@ in a Kubernetes cluster. More detailed documentation can be found in
 
 The chart can be used to install [OpenTelemetry eBPF Instrumentation](https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation)
 in a Kubernetes cluster. More detailed documentation can be found in
-[OpenTelemetry Operator chart directory](./charts/opentelemetry-ebpf-instrumentation).
+[OpenTelemetry eBPF Instrumentation chart directory](./charts/opentelemetry-ebpf-instrumentation).
 
 ## Contributing
 
