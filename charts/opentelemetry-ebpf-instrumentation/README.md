@@ -1,4 +1,4 @@
-# OpenTelemetry Collector eBPF Helm Chart
+# OpenTelemetry eBPF Instrumentation Helm Chart
 
 The helm chart installs [OpenTelemetry eBPF Instrumentation](https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation)
 in kubernetes cluster.
