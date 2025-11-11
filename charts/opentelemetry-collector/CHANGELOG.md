@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.124.2 / 2025-11-11
+- [Fix] Keep compact spanmetrics and database histograms by default by setting `dropHistogram` to `false`.
+
 ### v0.124.1 / 2025-11-07
 - [Feat] Make the `fleetManagement.supervisor` preset ship a minimal collector config that only wires the OpAMP extension so the supervisor can connect to the Coralogix OpAMP backend.
 
