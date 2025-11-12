@@ -201,24 +201,30 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyClusterMetricsConfig" -}}
+{{- $vals := .Values.Values -}}
+{{- $disableLeaderElection := false -}}
+{{- if and (hasKey $vals "presets") (hasKey $vals.presets "clusterMetrics") -}}
+  {{- $disableLeaderElection = $vals.presets.clusterMetrics.disableLeaderElection -}}
+{{- end -}}
+{{- $useLeaderElection := and (eq $vals.mode "daemonset") (not $disableLeaderElection) -}}
 {{- $electorName := "k8s_cluster" }}
-{{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "electorName" $electorName) .Values }}
+{{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.clusterMetricsConfig" $ctx | fromYaml) .config }}
+{{- if $useLeaderElection}}
 {{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq)  }}
+{{- end }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "k8s_cluster" | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.clusterMetricsConfig" -}}
-{{- $disableLeaderElection := .Values.presets.kubernetesEvents.disableLeaderElection}}
-{{- $useLeaderElection := and (eq .Values.mode "daemonset") (not $disableLeaderElection) }}
-{{- if $useLeaderElection}}
+{{- if .useLeaderElection}}
 {{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
 {{- end}}
 receivers:
   k8s_cluster:
-    {{- if $useLeaderElection}}
+    {{- if .useLeaderElection}}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
     {{- end}}
     collection_interval: 10s
