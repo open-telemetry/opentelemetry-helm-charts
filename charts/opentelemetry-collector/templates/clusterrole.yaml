@@ -12,6 +12,14 @@ metadata:
     {{- end }}
   {{- end }}
 rules:
+{{- $clusterMetricsEnabled := .Values.presets.clusterMetrics.enabled }}
+{{- $disableLeaderElectionForClusterMetrics := .Values.presets.clusterMetrics.disableLeaderElection}}
+{{- $useLeaderElectionForClusterMetrics := and (eq .Values.mode "daemonset") ( $clusterMetricsEnabled ) (not $disableLeaderElectionForClusterMetrics) }}
+{{- if $useLeaderElectionForClusterMetrics }}
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get","list","watch","create","update","patch","delete"]
+{{- end }}
   {{- if .Values.clusterRole.rules -}}
   {{ toYaml .Values.clusterRole.rules | nindent 2 -}}
   {{- end }}
