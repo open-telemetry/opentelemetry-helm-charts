@@ -11,9 +11,6 @@
 {{ end }}
 
 {{- if .Values.presets.clusterMetrics.enabled }}
-{{- if eq .Values.mode "daemonset"}}
-{{- fail "Cluster Metrics preset is not suitable for daemonset mode. Please use statefulset or deployment mode with replicaCount: 1"}}
-{{ end }}
 {{- if gt (int .Values.replicaCount) 1 }}
 {{- fail "Cluster Metrics preset is not suitable for replicaCount greater than one. Please change replica count to one." }}
 {{ end }}
