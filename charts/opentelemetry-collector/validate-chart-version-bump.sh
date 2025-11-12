@@ -71,9 +71,32 @@ echo ""
 
 # Validation: Chart version bumped without appVersion change
 if [[ "${CHART_VERSION_CHANGED}" == "true" ]] && [[ "${APP_VERSION_CHANGED}" == "false" ]]; then
+    # Determine chart version bump type
+    CHART_BUMP_TYPE=""
+    if [[ "${CURRENT_CHART_MAJOR}" -gt "${BASE_CHART_MAJOR}" ]]; then
+        CHART_BUMP_TYPE="major"
+    elif [[ "${CURRENT_CHART_MINOR}" -gt "${BASE_CHART_MINOR}" ]]; then
+        CHART_BUMP_TYPE="minor"
+    elif [[ "${CURRENT_CHART_PATCH}" -gt "${BASE_CHART_PATCH}" ]]; then
+        CHART_BUMP_TYPE="patch"
+    else
+        echo "VALIDATION FAILED"
+        echo "Chart version appears to have been downgraded or changed incorrectly."
+        echo "Base: ${BASE_CHART_VERSION} -> Current: ${CURRENT_CHART_VERSION}"
+        exit 1
+    fi
+    
+    # Patch bumps are allowed without appVersion changes
+    if [[ "${CHART_BUMP_TYPE}" == "patch" ]]; then
+        echo "Chart version patch bump detected without appVersion change."
+        echo "This is allowed. Validation passed."
+        exit 0
+    fi
+    
+    # Minor or major bumps require appVersion changes
     echo "VALIDATION FAILED"
-    echo "Chart version was bumped but appVersion did not change."
-    echo "Chart version should only be bumped when the OpenTelemetry Collector version (appVersion) changes."
+    echo "Chart version had a ${CHART_BUMP_TYPE} bump but appVersion did not change."
+    echo "Minor/major chart version bumps should only occur when appVersion changes."
     exit 1
 fi
 
@@ -143,7 +166,8 @@ fi
 
 # Only appVersion changed
 if [[ "${CHART_VERSION_CHANGED}" == "false" ]] && [[ "${APP_VERSION_CHANGED}" == "true" ]]; then
-    echo "WARNING: appVersion changed but chart version was not bumped."
-    echo "This is acceptable during development, but remember to bump the chart version before release."
-    exit 0
+    echo "VALIDATION FAILED"
+    echo "appVersion changed (${BASE_APP_VERSION} -> ${CURRENT_APP_VERSION}) but chart version was not bumped."
+    echo "Chart minor version must be bumped when appVersion changes."
+    exit 1
 fi
