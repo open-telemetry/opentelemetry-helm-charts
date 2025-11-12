@@ -2,6 +2,9 @@
 
 ## OpenTelemetry Collector
 
+### v0.124.3 / 2025-11-12
+- [Fix] Default `deployment.environment.name` to `global.clusterName` when the resource detection preset's `deploymentEnvironmentName` stays empty and preserve it when span metrics' compact pipelines drop resource keys so the cluster identity remains set.
+
 ### v0.124.2 / 2025-11-11
 - [Fix] Keep compact spanmetrics and database histograms by default by setting `dropHistogram` to `false`.
 

@@ -1693,14 +1693,14 @@ processors:
     trace_statements:
       - context: resource
         statements:
-          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
+          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name", "deployment.environment.name"])
 {{- end }}
 {{- if .Values.presets.spanMetrics.dbMetrics.compactMetrics.enabled }}
   transform/db_compact:
     trace_statements:
       - context: resource
         statements:
-          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name"])
+          - keep_keys(attributes, ["service.name", "k8s.cluster.name", "host.name", "deployment.environment.name"])
       - context: span
         statements:
           - keep_keys(attributes, ["db.namespace", "db.system"])
