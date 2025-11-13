@@ -43,7 +43,7 @@ Determine the container image to use based on presets and user overrides.
 {{- $imageRepository := "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib" }}
 {{- $imageTag := .Chart.AppVersion }}
 {{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) (not .Values.collectorCRD.generate)) }}
-{{- $imageRepository = "coralogixrepo/otel-supervised-collector" }}
+{{- $imageRepository = "cgx.jfrog.io/coralogix-docker-images/otel-supervised-collector" }}
 {{- end }}
 {{- if .Values.image.repository }}
 {{- $imageRepository = .Values.image.repository }}
