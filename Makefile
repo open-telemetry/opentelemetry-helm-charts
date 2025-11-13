@@ -37,12 +37,13 @@ generate-examples:
 		echo "Processing chart: $${chart_name} (max $(MAX_PARALLEL_EXAMPLES) parallel examples)"; \
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
 		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
-		helm dependency build charts/$${chart_name}; \
 		$(call run_parallel_with_logging,$${EXAMPLES},$${chart_name}, \
 			echo "Generating example: $${example}"; \
 			VALUES=$$(find $${EXAMPLES_DIR}/$${example} -name *values.yaml); \
 			rm -rf "$${EXAMPLES_DIR}/$${example}/rendered"; \
 			for value in $${VALUES}; do \
+				printf "Using values file: $${value}\n"; \
+				helm dependency build charts/$${chart_name}; \
 				helm template example charts/$${chart_name} --namespace default --values $${value} --output-dir "$${EXAMPLES_DIR}/$${example}/rendered" | sed '/^$$/d'; \
 				mv $${EXAMPLES_DIR}/$${example}/rendered/$${chart_name}/templates/* "$${EXAMPLES_DIR}/$${example}/rendered"; \
 				SUBCHARTS_DIR=$${EXAMPLES_DIR}/$${example}/rendered/$${chart_name}/charts; \
