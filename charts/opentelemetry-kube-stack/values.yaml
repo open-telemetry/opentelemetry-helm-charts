@@ -1656,10 +1656,12 @@ nodeExporter:
 ## https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
 prometheus-node-exporter:
   namespaceOverride: ""
+  ## Add the 'node-exporter' label to be used by serviceMonitor to match standard common usage in rules and grafana dashboards
   podLabels:
-    ## Add the 'node-exporter' label to be used by serviceMonitor to match standard common usage in rules and grafana dashboards
-    ##
     jobLabel: node-exporter
+  service:
+    labels:
+      jobLabel: node-exporter
   releaseLabel: true
   extraArgs:
     - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
