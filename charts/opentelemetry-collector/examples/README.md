@@ -6,6 +6,7 @@ Here is a collection of common configurations for the OpenTelemetry collector. E
 - [Deployment only](deployment-only)
 - [Daemonset and deployment](daemonset-and-deployment)
 - [Log collection, including collector logs](daemonset-collector-logs)
+- [Log collection, excluding logs by namespace](daemonset-logs-exclude-namespaces)
 - [Add component (hostmetrics)](daemonset-hostmetrics)
 
 The manifests are rendered using the `helm template` command and the specific example folder's values.yaml.
