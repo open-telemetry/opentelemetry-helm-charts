@@ -245,11 +245,20 @@ extensions:
 receivers:
   filelog:
     include: [ /var/log/pods/*/*/*.log ]
-    {{- if .Values.presets.logsCollection.includeCollectorLogs }}
-    exclude: []
+    {{- $excludeList := list }}
+    {{- range .Values.presets.logsCollection.excludeNamespaces }}
+    {{- $excludeList = append $excludeList (printf "/var/log/pods/%s_*/*/*.log" .) }}
+    {{- end }}
+    {{- if not .Values.presets.logsCollection.includeCollectorLogs }}
+    {{- $collectorExclude := printf "/var/log/pods/%s_%s*_*/%s/*.log" (include "opentelemetry-collector.namespace" .) (include "opentelemetry-collector.fullname" .) (include "opentelemetry-collector.lowercase_chartname" .) }}
+    {{- $excludeList = append $excludeList $collectorExclude }}
+    {{- end }}
+    {{- if $excludeList }}
+    # Exclude logs from specified namespaces and optionally collector container's logs.
+    # The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
+    exclude: {{ $excludeList | toJson }}
     {{- else }}
-    # Exclude collector container's logs. The file format is /var/log/pods/<namespace_name>_<pod_name>_<pod_uid>/<container_name>/<run_id>.log
-    exclude: [ /var/log/pods/{{ include "opentelemetry-collector.namespace" . }}_{{ include "opentelemetry-collector.fullname" . }}*_*/{{ include "opentelemetry-collector.lowercase_chartname" . }}/*.log ]
+    exclude: []
     {{- end }}
     start_at: end
     retry_on_failure:

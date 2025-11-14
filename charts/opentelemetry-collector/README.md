@@ -129,6 +129,20 @@ config:
         - /var/log/pods/example-namespace_*/*/*.log
 ```
 
+Alternatively, you can exclude logs from specific namespaces using the `excludeNamespaces` property:
+
+```yaml
+mode: daemonset
+
+presets:
+  logsCollection:
+    enabled: true
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+```
+
 The container logs pipeline uses the `debug` exporter by default.
 Paired with the default `filelog` receiver that receives all containers' console output,
 it is easy to accidentally feed the exported logs back into the receiver.

@@ -1,0 +1,20 @@
+mode: daemonset
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: false
+    # Exclude logs from specific namespaces
+    # This is useful for excluding system namespaces or other namespaces 
+    # where you don't want to collect logs
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+
