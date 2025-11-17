@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.124.5 / 2025-11-16
+
+- [Fix] Remove pipelines that have no exporters after presets are applied so limiting `presets.coralogixExporter.pipelines` to a subset no longer leaves invalid empty pipelines.
+
 ### v0.124.4 / 2025-11-13
 
 - [Fix] Use new container image in the Supervisor preset hosted in Coralogix' JFrog instance.

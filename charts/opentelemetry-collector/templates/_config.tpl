@@ -209,6 +209,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.removePipelinesWithoutExporters" (dict "config" $config) | fromYaml) }}
 {{- $supervisorEnabled := and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) }}
 {{- if and ($supervisorEnabled) (.Values.presets.fleetManagement.supervisor.minimalCollectorConfig) }}
 {{- $config = include "opentelemetry-collector.supervisorCollectorConfig" . | fromYaml }}
@@ -340,11 +341,29 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- $config = (include "opentelemetry-collector.applyBatchProcessorAsLast" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- $config = (include "opentelemetry-collector.applyMemoryLimiterProcessorAsFirst" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.removePipelinesWithoutExporters" (dict "config" $config) | fromYaml) }}
 {{- $supervisorEnabled := and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) }}
 {{- if and ($supervisorEnabled) (.Values.presets.fleetManagement.supervisor.minimalCollectorConfig) }}
 {{- $config = include "opentelemetry-collector.supervisorCollectorConfig" .  | fromYaml }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
+{{- end }}
+
+{{- define "opentelemetry-collector.removePipelinesWithoutExporters" -}}
+{{- $config := deepCopy .config -}}
+{{- if and $config.service $config.service.pipelines }}
+  {{- $pipelinesToRemove := list }}
+  {{- range $pipelineName, $pipeline := $config.service.pipelines }}
+    {{- $exporters := default (list) $pipeline.exporters }}
+    {{- if eq (len $exporters) 0 }}
+      {{- $pipelinesToRemove = append $pipelinesToRemove $pipelineName }}
+    {{- end }}
+  {{- end }}
+  {{- range $pipelineName := $pipelinesToRemove }}
+    {{- $_ := unset $config.service.pipelines $pipelineName }}
+  {{- end }}
+{{- end }}
+{{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyBatchProcessorAsLast" -}}
