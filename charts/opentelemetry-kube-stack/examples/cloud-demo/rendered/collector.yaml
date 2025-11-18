@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.0
+    helm.sh/chart: opentelemetry-kube-stack-0.12.1
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -124,6 +124,8 @@ spec:
         scrapers:
           cpu:
             metrics:
+              system.cpu.logical.count:
+                enabled: true
               system.cpu.utilization:
                 enabled: true
           disk: {}
@@ -170,9 +172,19 @@ spec:
           load: {}
           memory:
             metrics:
+              system.memory.limit:
+                enabled: true
               system.memory.utilization:
                 enabled: true
           network: {}
+          paging:
+            metrics:
+              system.paging.usage:
+                enabled: true
+          system:
+            metrics:
+              system.uptime:
+                enabled: true
       k8s_cluster:
         allocatable_types_to_report:
         - cpu
