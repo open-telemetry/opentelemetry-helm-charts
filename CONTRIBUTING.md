@@ -75,16 +75,6 @@ Any breaking (backwards incompatible) changes to a chart should:
 2. In the README, under a section called "Upgrading", describe the manual steps
    necessary to upgrade to the new (specified) MAJOR version
 
-## Examples
-
-All charts maintain examples for the current version. After updating the version, examples must be updated with the `make generate-examples` target.
-
-The default `generate-examples` command will update all charts.  In order generate a chart's examples you must have the chart's dependencies added to your helm repo.
-
-If you need update a single chart's examples you can use the `CHARTS` variable.  For example, if you want to update only the collector chart's examples you can run `make generate-examples CHARTS=opentelemetry-collector`
-
-New examples should be added as independent folders in the respective chart's `examples` folder.  Examples should always contain a `values.yaml` and a `rendered` folder.
-
 ## Further Help
 
 - Join [#helm-charts](https://cloud-native.slack.com/archives/C03HVLM8LAH) on OpenTelemetry Slack.
