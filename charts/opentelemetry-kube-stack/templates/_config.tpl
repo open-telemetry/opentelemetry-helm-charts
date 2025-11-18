@@ -172,12 +172,20 @@ receivers:
         cpu:
           metrics:
             system.cpu.utilization:
-                enabled: true
+              enabled: true
+            system.cpu.logical.count:
+              enabled: true
         load: {}
         memory:
           metrics:
             system.memory.utilization:
-                enabled: true
+              enabled: true
+            system.memory.limit:
+              enabled: true
+        paging:
+          metrics:
+            system.paging.usage:
+              enabled: true
         disk: {}
         filesystem:
           metrics:
@@ -220,6 +228,10 @@ receivers:
               - tracefs
             match_type: strict
         network: {}
+        system:
+          metrics:
+            system.uptime:
+              enabled: true
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" -}}
