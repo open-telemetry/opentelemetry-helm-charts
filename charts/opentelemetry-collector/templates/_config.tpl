@@ -44,7 +44,12 @@ receivers:
   nop:
 exporters:
   nop:
+extensions:
+  health_check:
+    endpoint: ${env:MY_POD_IP}:13133
 service:
+  extensions:
+    - health_check
   telemetry:
     logs:
       encoding: json

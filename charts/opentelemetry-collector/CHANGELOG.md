@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.124.6 / 2025-11-19
+
+- [Fix] Add the `health_check` extension to the Supervisor minimal Collector configuration.
+
 ### v0.124.5 / 2025-11-16
 
 - [Fix] Remove pipelines that have no exporters after presets are applied so limiting `presets.coralogixExporter.pipelines` to a subset no longer leaves invalid empty pipelines.

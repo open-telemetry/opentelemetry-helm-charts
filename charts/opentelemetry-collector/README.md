@@ -565,7 +565,7 @@ the chart will deploy a minimal Collector configuration that connects to the Cor
 configuration will not include any other enabled preset, processors, exporters, etc.
 
 To override this behavior and retain the Collector configuration according to the enabled presets, set the
-`presets.fleetManagement.minimalCollectorConfig` to `false`.
+`presets.fleetManagement.supervisor.minimalCollectorConfig` to `false`.
 
 ## CRDs
 
