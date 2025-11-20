@@ -362,17 +362,31 @@ processors:
     - sources:
       - from: connection
     extract:
+      otel_annotations: true
       metadata:
-        - "k8s.namespace.name"
-        - "k8s.deployment.name"
-        - "k8s.statefulset.name"
-        - "k8s.daemonset.name"
-        - "k8s.cronjob.name"
-        - "k8s.job.name"
-        - "k8s.node.name"
-        - "k8s.pod.name"
-        - "k8s.pod.uid"
-        - "k8s.pod.start_time"
+        - k8s.namespace.name
+        - k8s.pod.name
+        - k8s.pod.uid
+        - k8s.node.name
+        - k8s.pod.start_time
+        - k8s.deployment.name
+        - k8s.replicaset.name
+        - k8s.replicaset.uid
+        - k8s.daemonset.name
+        - k8s.daemonset.uid
+        - k8s.job.name
+        - k8s.job.uid
+        - k8s.container.name
+        - k8s.cronjob.name
+        - k8s.statefulset.name
+        - k8s.statefulset.uid
+        - container.image.tag
+        - container.image.name
+        - k8s.cluster.uid
+        - service.namespace
+        - service.name
+        - service.version
+        - service.instance.id
       {{- if .Values.presets.kubernetesAttributes.extractAllPodLabels }}
       labels:
         - tag_name: $$1
