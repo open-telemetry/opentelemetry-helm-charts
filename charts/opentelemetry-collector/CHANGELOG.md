@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.125.0 / 2025-11-21
+
+- [CHORE] Bump Collector to 0.140.1
+
 ### v0.124.6 / 2025-11-19
 
 - [Fix] Add the `health_check` extension to the Supervisor minimal Collector configuration.
