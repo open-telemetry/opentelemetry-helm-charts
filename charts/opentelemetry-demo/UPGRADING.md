@@ -5,6 +5,10 @@
 > another. If you need to upgrade the chart, you must first delete the existing
 > release and then install the new version.
 
+## To 0.39
+
+Support for IPv6 environments was introduced to the demo.
+
 ## To 0.38
 
 A new postgresql container was introduced to the demo.
