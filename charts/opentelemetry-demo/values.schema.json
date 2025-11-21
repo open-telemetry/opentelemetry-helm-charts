@@ -49,6 +49,9 @@
     },
     "opensearch": {
       "type": "object"
+    },
+    "keda": {
+      "type": "object"
     }
   },
   "required": [
@@ -224,6 +227,9 @@
         },
         "additionalVolumes": {
           "type": "array"
+        },
+        "keda": {
+          "$ref": "#/definitions/KedaConfig"
         }
       },
       "required": [
@@ -302,6 +308,12 @@
         },
         "podSecurityContext": {
           "type": "object"
+        },
+        "resources": {
+          "$ref": "#/definitions/ContainerResources"
+        },
+        "keda": {
+          "$ref": "#/definitions/KedaConfig"
         }
       },
       "required": [
@@ -310,6 +322,19 @@
         "securityContext"
       ],
       "title": "Default"
+    },
+    "KedaConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "pollingInterval": {"type": "number"},
+        "cooldownPeriod": {"type": "number"},
+        "minReplicas": {"type": "number"},
+        "maxReplicas": {"type": "number"},
+        "targetCPUMillicores": {"type": "number"},
+        "advanced": {"type": "object"}
+      },
+      "title": "KedaConfig"
     },
     "ConfigMapKeyRef": {
       "type": "object",

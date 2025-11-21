@@ -62,7 +62,14 @@ spec:
           env:
             {{- include "otel-demo.pod.env" . | nindent 12 }}
           resources:
-            {{- .resources | toYaml | nindent 12 }}
+            {{- $mergedResources := dict }}
+            {{- if .defaultValues.resources }}
+            {{- $mergedResources = .defaultValues.resources | deepCopy }}
+            {{- end }}
+            {{- if .resources }}
+            {{- $mergedResources = mergeOverwrite $mergedResources .resources }}
+            {{- end }}
+            {{- $mergedResources | toYaml | nindent 12 }}
           {{- if or .defaultValues.securityContext .securityContext }}
           securityContext:
             {{- .securityContext | default .defaultValues.securityContext | toYaml | nindent 12 }}
@@ -107,9 +114,16 @@ spec:
           {{- end }}
           env:
             {{- include "otel-demo.pod.env" . | nindent 12 }}
+          {{- $mergedResources := dict }}
+          {{- if .defaultValues.resources }}
+          {{- $mergedResources = .defaultValues.resources | deepCopy }}
+          {{- end }}
           {{- if .resources }}
+          {{- $mergedResources = mergeOverwrite $mergedResources .resources }}
+          {{- end }}
+          {{- if or .defaultValues.resources .resources }}
           resources:
-            {{- .resources | toYaml | nindent 12 }}
+            {{- $mergedResources | toYaml | nindent 12 }}
           {{- end }}
           {{- if or .defaultValues.securityContext .securityContext }}
           securityContext:
@@ -128,6 +142,7 @@ spec:
       initContainers:
         {{- tpl (toYaml .initContainers) . | nindent 8 }}
       {{- end}}
+      {{- if or .mountedConfigMaps .mountedEmptyDirs .additionalVolumes }}
       volumes:
         {{- range .mountedConfigMaps }}
         - name: {{ .name | lower}}
@@ -145,6 +160,7 @@ spec:
         {{- if .additionalVolumes }}
         {{- tpl (toYaml .additionalVolumes) . | nindent 8 }}
         {{- end }}
+      {{- end }}
 {{- end }}
 
 {{/*
@@ -297,3 +313,48 @@ spec:
 {{- end}}
 {{- end}}
 {{- end}}
+
+
+{{/*
+Demo component KEDA ScaledObject template
+*/}}
+{{- define "otel-demo.scaledobject" -}}
+{{- $componentKeda := .keda | default dict -}}
+{{- $defaultKeda := .defaultValues.keda | default dict -}}
+
+{{- if or ($defaultKeda.enabled | default false) ($componentKeda.enabled | default false) }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .name }}
+  labels:
+    {{- include "otel-demo.labels" $ | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ .name }}
+  pollingInterval: {{ $componentKeda.pollingInterval | default $defaultKeda.pollingInterval | default 5 }}
+  cooldownPeriod: {{ $componentKeda.cooldownPeriod | default $defaultKeda.cooldownPeriod | default 30 }}
+  minReplicaCount: {{ $componentKeda.minReplicas | default $defaultKeda.minReplicas | default 1 }}
+  maxReplicaCount: {{ $componentKeda.maxReplicas | default $defaultKeda.maxReplicas | default 5 }}
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus.{{ .Release.Namespace }}.svc.cluster.local:9090
+      metricName: {{ include "otel-demo.name" . }}-{{ .name }}-cpu-utilization
+      # This query calculates the total CPU usage in cores across all pods.
+      query: |
+        sum(rate(container_cpu_usage_seconds_total{container!="", pod=~"^{{ .name }}-[^-]+-[^-]+$"}[25s]))
+      threshold: '{{ divf ($componentKeda.targetCPUMillicores | default $defaultKeda.targetCPUMillicores | default 100.0) 1000.0 }}'
+  {{- /* Merge advanced settings - component-specific takes precedence over default */ -}}
+  {{- $mergedAdvanced := $defaultKeda.advanced }}
+  {{- if $componentKeda.advanced }}
+  {{- $mergedAdvanced = mergeOverwrite $defaultKeda.advanced $componentKeda.advanced }}
+  {{- end }}
+  {{- if $mergedAdvanced }}
+  advanced:
+    {{- $mergedAdvanced | toYaml | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
