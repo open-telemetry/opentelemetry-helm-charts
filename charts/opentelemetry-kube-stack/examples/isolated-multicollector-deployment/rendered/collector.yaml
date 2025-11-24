@@ -6,7 +6,7 @@ metadata:
   name: agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.3
+    helm.sh/chart: opentelemetry-kube-stack-0.12.4
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -176,6 +176,10 @@ spec:
   - mountPath: /var/lib/otelcol/agent
     name: varlibotelcol
   env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
@@ -228,7 +232,7 @@ metadata:
   name: gateway
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.3
+    helm.sh/chart: opentelemetry-kube-stack-0.12.4
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -311,6 +315,10 @@ spec:
   - mountPath: /var/lib/otelcol/gateway
     name: varlibotelcol
   env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
@@ -357,7 +365,7 @@ metadata:
   name: ingress
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.3
+    helm.sh/chart: opentelemetry-kube-stack-0.12.4
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -434,6 +442,10 @@ spec:
   - mountPath: /var/lib/otelcol/ingress
     name: varlibotelcol
   env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:

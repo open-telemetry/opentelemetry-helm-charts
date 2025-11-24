@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.3
+    helm.sh/chart: opentelemetry-kube-stack-0.12.4
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"    
@@ -99,6 +99,10 @@ spec:
       scrapeInterval: 30s
       serviceMonitorSelector: {}
   env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:

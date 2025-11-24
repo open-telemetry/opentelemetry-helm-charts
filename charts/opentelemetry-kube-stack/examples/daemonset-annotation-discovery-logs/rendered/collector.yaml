@@ -1,0 +1,124 @@
+---
+# Source: opentelemetry-kube-stack/templates/collector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: example-daemon
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.12.4
+    app.kubernetes.io/version: "0.138.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"        
+spec:
+  managementState: managed
+  mode: daemonset
+  config:
+    exporters:
+      debug: {}
+    extensions:
+      k8s_observer:
+        auth_type: serviceAccount
+        node: ${env:K8S_NODE_NAME}
+    processors:
+      batch:
+        send_batch_max_size: 1500
+        send_batch_size: 1000
+        timeout: 1s
+      resource/hostname:
+        attributes:
+        - action: insert
+          from_attribute: k8s.node.name
+          key: host.name
+      resourcedetection/env:
+        detectors:
+        - env
+        - k8snode
+        override: false
+        timeout: 2s
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      receiver_creator/logs:
+        discovery:
+          default_annotations:
+            io.opentelemetry.discovery.logs/enabled: "true"
+          enabled: true
+        watch_observers:
+        - k8s_observer
+    service:
+      extensions:
+      - k8s_observer
+      pipelines:
+        logs:
+          exporters:
+          - debug
+          processors:
+          - resourcedetection/env
+          - resource/hostname
+          - batch
+          receivers:
+          - otlp
+          - receiver_creator/logs
+        metrics:
+          exporters:
+          - debug
+          processors:
+          - resourcedetection/env
+          - resource/hostname
+          - batch
+          receivers:
+          - otlp
+        traces:
+          exporters:
+          - debug
+          processors:
+          - resourcedetection/env
+          - resource/hostname
+          - batch
+          receivers:
+          - otlp
+  imagePullPolicy: IfNotPresent
+  upgradeStrategy: automatic
+  terminationGracePeriodSeconds: 30
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 250Mi
+  securityContext:
+    {}
+  env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
