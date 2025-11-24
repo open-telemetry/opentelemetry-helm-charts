@@ -13,7 +13,7 @@ metadata:
     release: "example"
 spec:
   jobLabel: jobLabel
-  
+
   selector:
     matchLabels:
       app: opentelemetry-kube-stack-kube-scheduler
@@ -24,3 +24,7 @@ spec:
   endpoints:
   - port: http-metrics
     bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    scheme: https
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true
