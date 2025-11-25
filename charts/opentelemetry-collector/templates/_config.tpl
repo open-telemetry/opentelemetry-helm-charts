@@ -1084,6 +1084,7 @@ processors:
         - k8s.pod.name
         - k8s.node.name
         - container.id
+        - k8s.container.name
       labels:
         - tag_name: k8s.label.name
           key: app.kubernetes.io/name
