@@ -8,50 +8,54 @@ metadata:
     {{- include "opentelemetry-collector.labels" . | nindent 4 }}
 data:
   supervisor.yaml: |
-    server:
-      endpoint: "https://ingress.{{.Values.global.domain}}/opamp/v1"
-      headers:
-        Authorization: "Bearer ${env:CORALOGIX_PRIVATE_KEY}"
+{{- tpl (include "opentelemetry-collector.supervisorConfigData" .) . | nindent 4 }}
+{{- end }}
 
-    capabilities:
-      reports_effective_config: true
-      reports_own_metrics: true
-      reports_own_logs: true
-      reports_own_traces: true
-      reports_health: true
-      accepts_remote_config: true
-      reports_remote_config: true
+{{- define "opentelemetry-collector.supervisorConfigData" -}}
+server:
+  endpoint: "https://ingress.{{.Values.global.domain}}/opamp/v1"
+  headers:
+    Authorization: "Bearer ${env:CORALOGIX_PRIVATE_KEY}"
 
-    agent:
-      executable: /otelcol-contrib
-      passthrough_logs: true
+capabilities:
+  reports_effective_config: true
+  reports_own_metrics: true
+  reports_own_logs: true
+  reports_own_traces: true
+  reports_health: true
+  accepts_remote_config: true
+  reports_remote_config: true
 
-      {{- if .Values.configMap.create }}
-      # This passes config files to the Collector.
-      config_files:
-      - {{ .Values.isWindows | ternary "C:\\conf\\" "/conf/" }}relay.yaml
-      {{- end }}
+agent:
+  executable: /otelcol-contrib
+  passthrough_logs: true
 
-      # This adds CLI arguments to the Collector.
-      args: []
+  {{- if .Values.configMap.create }}
+  # This passes config files to the Collector.
+  config_files:
+  - {{ .Values.isWindows | ternary "C:\\conf\\" "/conf/" }}relay.yaml
+  {{- end }}
 
-      # This adds env vars to the Collector process.
-      env: {}
+  # This adds CLI arguments to the Collector.
+  args: []
 
-      description:
-        non_identifying_attributes:
-        {{- if .Values.presets.k8sResourceAttributes.enabled }}
-          {{- include "opentelemetry-collector.k8sResourceAttributes" . | nindent 10 }}
-        {{- end }}
-        {{- include "opentelemetry-collector.fleetAttributes" . | nindent 10 }}
+  # This adds env vars to the Collector process.
+  env: {}
 
-    # The storage can be used for many things:
-    # - It stores configuration sent by the OpAMP server so that new collector
-    #   processes can start with the most known desired config.
-    storage:
-      directory: /etc/otelcol-contrib/supervisor-data/
+  description:
+    non_identifying_attributes:
+    {{- if .Values.presets.k8sResourceAttributes.enabled }}
+      {{- include "opentelemetry-collector.k8sResourceAttributes" . | nindent 6 }}
+    {{- end }}
+    {{- include "opentelemetry-collector.fleetAttributes" . | nindent 6 }}
 
-    telemetry:
-      logs:
-        level: {{ .Values.global.logLevel | default "info" }}
+# The storage can be used for many things:
+# - It stores configuration sent by the OpAMP server so that new collector
+#   processes can start with the most known desired config.
+storage:
+  directory: /etc/otelcol-contrib/supervisor-data/
+
+telemetry:
+  logs:
+    level: {{ .Values.global.logLevel | default "info" }}
 {{- end }}

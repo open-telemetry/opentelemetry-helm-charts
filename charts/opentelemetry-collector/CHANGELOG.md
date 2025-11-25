@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.125.1 / 2025-11-25
+
+- [Fix] Fix cluster name rendering in Supervisor configuration.
+
 ### v0.125.0 / 2025-11-21
 
 - [CHORE] Bump Collector to 0.140.1

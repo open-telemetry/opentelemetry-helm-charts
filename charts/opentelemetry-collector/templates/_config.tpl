@@ -1495,7 +1495,7 @@ k8s.pod.name: ${env:KUBE_POD_NAME}
 cx.agent.type: "{{.Values.presets.fleetManagement.agentType | default .Values.presets.k8sResourceAttributes.agentType}}"
 {{- end }}
 {{- if .Values.presets.fleetManagement.clusterName }}
-cx.cluster.name: "{{ .Values.presets.fleetManagement.clusterName }}"
+cx.cluster.name: "{{.Values.presets.fleetManagement.clusterName}}"
 {{- end }}
 {{- if .Values.presets.fleetManagement.integrationID }}
 cx.integrationID: "{{ .Values.presets.fleetManagement.integrationID }}"

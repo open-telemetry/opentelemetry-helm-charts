@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-supervisor
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.125.0
+    helm.sh/chart: opentelemetry-collector-0.125.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.140.1"
@@ -18,7 +18,7 @@ data:
       endpoint: "https://ingress.eu2.coralogix.com/opamp/v1"
       headers:
         Authorization: "Bearer ${env:CORALOGIX_PRIVATE_KEY}"
-
+    
     capabilities:
       reports_effective_config: true
       reports_own_metrics: true
@@ -27,20 +27,20 @@ data:
       reports_health: true
       accepts_remote_config: true
       reports_remote_config: true
-
+    
     agent:
       executable: /otelcol-contrib
       passthrough_logs: true
       # This passes config files to the Collector.
       config_files:
       - /conf/relay.yaml
-
+    
       # This adds CLI arguments to the Collector.
       args: []
-
+    
       # This adds env vars to the Collector process.
       env: {}
-
+    
       description:
         non_identifying_attributes:
           k8s.daemonset.name: "example-opentelemetry-collector"
@@ -51,13 +51,13 @@ data:
           cx.agent.type: "agent"
           environment: "production"
           team: "platform"
-
+    
     # The storage can be used for many things:
     # - It stores configuration sent by the OpAMP server so that new collector
     #   processes can start with the most known desired config.
     storage:
       directory: /etc/otelcol-contrib/supervisor-data/
-
+    
     telemetry:
       logs:
         level: info
