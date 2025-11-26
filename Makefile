@@ -2,6 +2,37 @@ TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack opentelemetry-target-allocator opentelemetry-ebpf-instrumentation
 OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')"
 
+
+CYAN  := \033[36m
+GREEN := \033[32m
+RED   := \033[31m
+BOLD  := \033[1m
+RESET := \033[0m
+
+KUBECONFORM_K8S_VERSION ?= 1.34.2
+KUBECONFORM_CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-ebpf opentelemetry-target-allocator opentelemetry-ebpf-instrumentation
+KUBECONFORM_OPTS = -schema-location default
+KUBECONFORM_OPTS += -schema-location 'https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.NormalizedKubernetesVersion}}/{{.ResourceKind}}.json'
+KUBECONFORM_OPTS += -ignore-missing-schemas
+KUBECONFORM_OPTS += -summary
+KUBECONFORM_OPTS += -strict
+KUBECONFORM_OPTS += -output pretty
+
+.PHONY: kubeconform
+kubeconform:
+	@for chart in $(KUBECONFORM_CHARTS); do \
+		printf "$(CYAN)==> Validating chart: %s$(RESET)\n" "$$chart"; \
+		helm dependency build charts/$$chart >/dev/null || exit 1; \
+		if ! helm template $$chart charts/$$chart --namespace default \
+			-f charts/$$chart/ci/kubeconform-values.yaml \
+			| kubeconform $(KUBECONFORM_OPTS) -kubernetes-version $(KUBECONFORM_K8S_VERSION); \
+		then \
+			printf "$(RED)$(BOLD)✖ kubeconform failed for %s$(RESET)\n" "$$chart"; \
+		else \
+			printf "$(GREEN)$(BOLD)✔ kubeconform passed for %s$(RESET)\n" "$$chart"; \
+		fi; \
+	done
+
 .PHONY: generate-examples
 generate-examples:
 	for chart_name in $(CHARTS); do \
@@ -92,5 +123,10 @@ define get-crd
 @sed -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
 @sed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
 @sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
+@sed -i '/^[[:space:]]*creationTimestamp: null$$/d' $(1)
+@awk 'BEGIN{in_status=0} \
+  /^status:$$/ {in_status=1; next} \
+  in_status && /^[^[:space:]]/ {in_status=0} \
+  !in_status {print}' $(1) > $(1).tmp && mv $(1).tmp $(1)
 @echo '{{- end }}' >> $(1)
 endef
