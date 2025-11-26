@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.125.5
+    helm.sh/chart: opentelemetry-collector-0.125.6
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.140.1"
@@ -95,22 +95,7 @@ data:
         spike_limit_percentage: 25
       redaction/spanname:
         allow_all_keys: true
-        db_sanitizer:
-          memcached:
-            attributes:
-            - db.statement
-            - memcached.command
-            enabled: true
-          redis:
-            attributes:
-            - db.statement
-            - redis.command
-            enabled: true
-          sql:
-            attributes:
-            - db.statement
-            - db.query
-            enabled: true
+        db_sanitizer: null
         url_sanitizer:
           enabled: true
       transform/prometheus:

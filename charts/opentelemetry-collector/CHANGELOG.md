@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.125.6 / 2025-11-26
+
+- [Change] Disable database statement sanitization in the span metrics sanitization preset by default.
+
 ### v0.125.5 / 2025-11-26
 
 - [Feat] Add `nodeSelector` option to `targetAllocator` preset.
