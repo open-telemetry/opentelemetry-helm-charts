@@ -394,8 +394,8 @@ presets:
   # - `sanitize_url` (default true) controls whether URL-like span names and URL
   #   attributes are normalized (for example `GET /api/users/42/profile` → `GET /api/users/?/profile`).
   # - `sanitizeDatabases` is an allowlist of database backends whose statements should be scrubbed
-  #   (valid: sql, redis, memcached, mongo, opensearch, es). All supported backends are sanitized
-  #   by default.
+  #   (valid: sql, redis, memcached, mongo, opensearch, es). By default only SQL, Redis, and Memcached
+  #   statements are sanitized.
   # Additional redaction settings can be supplied via `extraConfig.processors.redaction`.
   spanMetricsSanitization:
     enabled: auto  # auto: enabled when spanMetrics or spanMetricsMulti presets are enabled
@@ -404,9 +404,6 @@ presets:
       - sql
       - redis
       - memcached
-      - mongo
-      - opensearch
-      - es
 
   # Configures the collector to use loadbalancing exporter.
   loadBalancing:
