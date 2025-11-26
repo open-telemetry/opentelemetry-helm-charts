@@ -39,6 +39,10 @@ spec:
         {{- include "opentelemetry-target-allocator.selectorLabels" . | nindent 8 }}
         component: target-allocator
     spec:
+      {{- if .Values.targetAllocator.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.targetAllocator.nodeSelector | nindent 8 }}
+      {{- end }}
       {{- if .Values.targetAllocator.affinity }}
       affinity:
         {{- toYaml .Values.targetAllocator.affinity | nindent 8 }}

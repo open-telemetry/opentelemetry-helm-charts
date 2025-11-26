@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.125.5 / 2025-11-26
+
+- [Feat] Add `nodeSelector` option to `targetAllocator` preset.
+
 ### v0.125.4 / 2025-11-26
 
 - [Change] Narrow default span metrics database sanitization to SQL, Redis, and Memcached statements.
