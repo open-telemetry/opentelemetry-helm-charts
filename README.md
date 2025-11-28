@@ -83,3 +83,5 @@ For more information about the emeritus role, see the [community repository](htt
 ## License
 
 [Apache 2.0 License](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/LICENSE).
+
+## test sync comment
