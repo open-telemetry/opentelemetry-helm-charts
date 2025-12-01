@@ -14,7 +14,7 @@ image:
   repository: open-telemetry/opentelemetry-ebpf-instrumentation/ebpf-instrument
   # -- (string) Opentelemetry eBPF Instrumentation image tag. When empty, the Chart's appVersion is
   # used.
-  tag: v0.1.0
+  tag: v0.2.0
   # -- Opentelemetry eBPF Instrumentation image's SHA256 digest (either in format "sha256:XYZ" or "XYZ"). When set, will override `image.tag`.
   digest: null
   # -- Opentelemetry eBPF Instrumentation image pull policy.
@@ -206,16 +206,21 @@ config:
     #     cloud_zone: prod-eu-west-0
     #     cloud_instance_id: 123456
     #     cloud_api_key:
-    buffer_sizes:
-      http: 2048
-      mysql: 4096
-      postgres: 4096
-    payload_extraction:
-      http:
-        graphql:
-          enabled: true
-    redis_db_cache:
-      enabled: true
+    ebpf:
+      buffer_sizes:
+        http: 2048
+        mysql: 4096
+        postgres: 4096
+      payload_extraction:
+        http:
+          graphql:
+            enabled: true
+          elasticsearch:
+            enabled: true
+          aws:
+            enabled: true
+      redis_db_cache:
+        enabled: true
     otel_traces_export:
       endpoint: "http://${HOST_IP}:4317"
     otel_metrics_export:

@@ -107,6 +107,10 @@ spec:
             - name: OTEL_EBPF_KUBE_META_CACHE_ADDRESS
               value: {{ .Values.k8sCache.service.name }}:{{ .Values.k8sCache.service.port }}
           {{- end }}
+          {{- if .Values.contextPropagation.enabled }}
+            - name: OTEL_EBPF_BPF_CONTEXT_PROPAGATION
+              value: all
+          {{- end }}
           {{- range $key, $value := .Values.envValueFrom }}
             - name: {{ $key | quote }}
               valueFrom:
