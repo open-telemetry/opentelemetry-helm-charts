@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.125.7 / 2025-12-01
+
+- [Fix] Increase the Supervisor config apply timeout to 30 seconds (previously 5 seconds). This should match the default heartbeat interval.
+
 ### v0.125.6 / 2025-11-26
 
 - [Change] Disable database statement sanitization in the span metrics sanitization preset by default.
