@@ -2,6 +2,17 @@
 
 ## OpenTelemetry eBPF Instrumentation
 
+### v0.1.8 / 2025-12-04
+- [Change] Bump OBI image to v0.3.0
+- [Fix] Get Image tag from appVersion in Chart.yaml
+
+### v0.1.7 / 2025-12-02
+- [Change] Bump OBI image to v0.2.0
+- [Fix] Fixes in OBI default config
+
+### v0.1.6 / 2025-11-03
+- [Change] Bump OBI image to v0.1.0
+
 ### v0.1.5 / 2025-10-21
 - [Feat] Increase http, postgres default buffer sizes, add graphql payload extraction
 
