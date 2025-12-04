@@ -20,8 +20,11 @@ spec:
   sampler:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  {{- $envOutput := include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.instrumentation.env) | trim -}}
+  {{- if $envOutput }}
   env:
-  {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" .Values.instrumentation.env) | indent 4 }}
+    {{- $envOutput | nindent 4 }}
+  {{- end }}
   {{- with .Values.instrumentation.resource }}
   resource:
     {{- toYaml . | nindent 4 }}
