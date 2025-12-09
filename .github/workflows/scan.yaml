@@ -1,39 +1,37 @@
-name: Code Scanning
+name: trivy scan IaC
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
-  schedule:
-    - cron: '0 0 * * 1'
-  watch:
-    types: [started]
+
+permissions:
+  contents: read
 
 jobs:
-  Trivy-Scan:
+  build:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    name: Build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner in fs mode
-        uses: anandg112/trivy-action@feat/add-skip-dirs-option
+      - name: Run Trivy vulnerability scanner in IaC mode
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          scan-type: 'fs'
-#          scan-ref: '.'
-          ignore-unfixed: true
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results-fs.sarif'
-          severity: 'CRITICAL'
-          skip-dirs: "ignored-dir"
+          scan-type: 'config'
+          hide-progress: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '1' # May be set to 0 until all critical/high issues are resolved
+          severity: 'CRITICAL,HIGH'
 
-#      - name: Upload Trivy scan results to GitHub Security tab
-#        uses: github/codeql-action/upload-sarif@v1
-#        with:
-#          sarif_file: 'trivy-results-fs.sarif'
-
-      - name: DEBUG Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v1
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: 'debug-trivy-results.sarif'
+          sarif_file: 'trivy-results.sarif'
