@@ -1,0 +1,39 @@
+name: Code Scanning
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 1'
+  watch:
+    types: [started]
+
+jobs:
+  Trivy-Scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Trivy vulnerability scanner in fs mode
+        uses: anandg112/trivy-action@feat/add-skip-dirs-option
+        with:
+          scan-type: 'fs'
+#          scan-ref: '.'
+          ignore-unfixed: true
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results-fs.sarif'
+          severity: 'CRITICAL'
+          skip-dirs: "ignored-dir"
+
+#      - name: Upload Trivy scan results to GitHub Security tab
+#        uses: github/codeql-action/upload-sarif@v1
+#        with:
+#          sarif_file: 'trivy-results-fs.sarif'
+
+      - name: DEBUG Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'debug-trivy-results.sarif'
