@@ -24,30 +24,30 @@ You can then run `helm search repo open-telemetry` to see the charts.
 
 The chart can be used to install [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector)
 in a Kubernetes cluster. More detailed documentation can be found in
-[OpenTelemetry Collector chart directory](./charts/opentelemetry-collector).
+[OpenTelemetry Collector chart directory](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector).
 
 ### OpenTelemetry Demo
 
 The chart can be used to install [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo)
 in a Kubernetes cluster. More detailed documentation can be found in
-[OpenTelemetry Demo chart directory](./charts/opentelemetry-demo).
+[OpenTelemetry Demo chart directory](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-demo).
 
 ### OpenTelemetry Operator
 
 The chart can be used to install [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator)
 in a Kubernetes cluster. More detailed documentation can be found in
-[OpenTelemetry Operator chart directory](./charts/opentelemetry-operator).
+[OpenTelemetry Operator chart directory](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-operator).
 
 
 ### OpenTelemetry eBPF Instrumentation
 
 The chart can be used to install [OpenTelemetry eBPF Instrumentation](https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation)
 in a Kubernetes cluster. More detailed documentation can be found in
-[OpenTelemetry eBPF Instrumentation chart directory](./charts/opentelemetry-ebpf-instrumentation).
+[OpenTelemetry eBPF Instrumentation chart directory](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-ebpf-instrumentation).
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/CONTRIBUTING.md).
 
 ### Maintainers
 
@@ -82,4 +82,4 @@ For more information about the emeritus role, see the [community repository](htt
 
 ## License
 
-[Apache 2.0 License](./LICENSE).
+[Apache 2.0 License](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/LICENSE).
