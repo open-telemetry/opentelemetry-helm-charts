@@ -10,8 +10,8 @@ ARG KIND_VERSION='0.30.0'
 ARG KUBECTL_VERSION='1.34.2'
 # renovate: datasource=github-releases packageName=aquasecurity/trivy
 ARG TRIVY_VERSION='0.68.1'
-# # renovate: datasource=github-releases packageName=pre-commit/pre-commit
-# ARG PRE_COMMIT_VERSION='4.5.0'
+# renovate: datasource=github-releases packageName=git-lfs/git-lfs
+ARG GIT_LFS_VERSION='3.7.1'
 
 FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm AS base
 SHELL ["/bin/bash", "-euxo", "pipefail", "-c"]
@@ -27,7 +27,7 @@ EOT
 
 FROM base AS tools-misc
 ARG TARGETARCH
-ARG TRIVY_VERSION PRE_COMMIT_VERSION
+ARG TRIVY_VERSION GIT_LFS_VERSION
 
 RUN <<EOF
 
@@ -36,6 +36,11 @@ RUN <<EOF
 	tar -xzf /tmp/trivy.tar.gz -C /tmp/output-bin/ --no-same-owner trivy
 	rm -f /tmp/trivy.tar.gz
 	/tmp/output-bin/trivy --version
+
+	wget -qO /tmp/git-lfs.tar.gz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${TARGETARCH}-v${GIT_LFS_VERSION}.tar.gz"
+	tar -xzf /tmp/git-lfs.tar.gz -C /tmp/output-bin/ --no-same-owner "git-lfs-${GIT_LFS_VERSION}/git-lfs" --strip-components=1
+	rm -f /tmp/git-lfs.tar.gz
+	/tmp/output-bin/git-lfs version
 EOF
 
 FROM base AS tools-k8s
