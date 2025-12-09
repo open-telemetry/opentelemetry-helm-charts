@@ -6,7 +6,7 @@ metadata:
   name: example-cluster-stats
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.4
+    helm.sh/chart: opentelemetry-kube-stack-0.12.6
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -136,6 +136,10 @@ spec:
   securityContext:
     {}
   env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
@@ -167,7 +171,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.12.4
+    helm.sh/chart: opentelemetry-kube-stack-0.12.6
     app.kubernetes.io/version: "0.138.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -598,6 +602,10 @@ spec:
     readOnly: true
     mountPropagation: HostToContainer
   env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: OTEL_K8S_NODE_NAME
     valueFrom:
       fieldRef:
