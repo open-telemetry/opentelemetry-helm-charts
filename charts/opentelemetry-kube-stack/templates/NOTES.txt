@@ -1,5 +1,7 @@
 {{- range $name, $collector := .Values.collectors }}
-{{- $collector := (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- if $.Values.defaultCRConfig.enabled }}
+{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- end }}
 {{- if $collector.updateStrategy }}
 [WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1. Please migrate to use the `daemonSetUpdateStrategy` value.
 {{- end }}
