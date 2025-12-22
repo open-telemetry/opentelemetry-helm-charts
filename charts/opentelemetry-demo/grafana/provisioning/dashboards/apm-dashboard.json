@@ -2177,6 +2177,7 @@
           "value": "demo"
         },
         "definition": "label_values(target_info,deployment_environment_name)",
+        "description": "Deployment environment (`production`, `staging`...).\nResource attribute `deployment.environment.name` via `target_info`.\nValue `<<not defined>>` when the resource attribute `deployment.environment.name` is not set.",
         "label": "Environment",
         "name": "deployment_environment_name",
         "options": [],
@@ -2207,7 +2208,7 @@
           "uid": "${prometheus_datasource}"
         },
         "definition": "label_values(target_info{deployment_environment_name=~\"$deployment_environment_name\", telemetry_sdk_name=~\"\\\\S.*\"},service_namespace)",
-        "description": "Service namespace.\nResource attribute `service.namespace` via `target_info`",
+        "description": "Service namespace.\nResource attribute `service.namespace` via `target_info`.\nValue `<<not defined>>` when the resource attribute `service.namespace` is not set.",
         "includeAll": false,
         "label": "Namespace",
         "name": "service_namespace",
@@ -2220,6 +2221,12 @@
         "refresh": 1,
         "regex": "",
         "sort": 1,
+        "staticOptions": [
+          {
+            "text": "<<not defined>>",
+            "value": ""
+          }
+        ],
         "type": "query"
       },
       {

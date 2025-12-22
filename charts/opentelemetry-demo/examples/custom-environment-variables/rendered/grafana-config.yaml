@@ -2570,6 +2570,7 @@ data:
               "value": "demo"
             },
             "definition": "label_values(target_info,deployment_environment_name)",
+            "description": "Deployment environment (`production`, `staging`...).\nResource attribute `deployment.environment.name` via `target_info`.\nValue `<<not defined>>` when the resource attribute `deployment.environment.name` is not set.",
             "label": "Environment",
             "name": "deployment_environment_name",
             "options": [],
@@ -2599,20 +2600,26 @@ data:
               "type": "prometheus",
               "uid": "${prometheus_datasource}"
             },
-            "definition": "label_values(target_info{deployment_environment_name=~\"$deployment_environment_name\"},service_namespace)",
-            "description": "Service namespace.\nResource attribute `service.namespace` via `target_info`",
+            "definition": "label_values(target_info{deployment_environment_name=~\"$deployment_environment_name\", telemetry_sdk_name=~\"\\\\S.*\"},service_namespace)",
+            "description": "Service namespace.\nResource attribute `service.namespace` via `target_info`.\nValue `<<not defined>>` when the resource attribute `service.namespace` is not set.",
             "includeAll": false,
             "label": "Namespace",
             "name": "service_namespace",
             "options": [],
             "query": {
               "qryType": 1,
-              "query": "label_values(target_info{deployment_environment_name=~\"$deployment_environment_name\"},service_namespace)",
+              "query": "label_values(target_info{deployment_environment_name=~\"$deployment_environment_name\", telemetry_sdk_name=~\"\\\\S.*\"},service_namespace)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             },
             "refresh": 1,
             "regex": "",
             "sort": 1,
+            "staticOptions": [
+              {
+                "text": "<<not defined>>",
+                "value": ""
+              }
+            ],
             "type": "query"
           },
           {
@@ -2624,14 +2631,14 @@ data:
               "type": "prometheus",
               "uid": "webstore-metrics"
             },
-            "definition": "label_values(target_info{service_namespace=~\"$service_namespace\", deployment_environment_name=~\"$deployment_environment_name\"},service_name)",
+            "definition": "label_values(target_info{service_namespace=~\"$service_namespace\", deployment_environment_name=~\"$deployment_environment_name\", telemetry_sdk_name=~\"\\\\S.*\"},service_name)",
             "description": "Service name.\nResource attribute `service.name` via `target_info`.",
             "label": "Name",
             "name": "service_name",
             "options": [],
             "query": {
               "qryType": 1,
-              "query": "label_values(target_info{service_namespace=~\"$service_namespace\", deployment_environment_name=~\"$deployment_environment_name\"},service_name)",
+              "query": "label_values(target_info{service_namespace=~\"$service_namespace\", deployment_environment_name=~\"$deployment_environment_name\", telemetry_sdk_name=~\"\\\\S.*\"},service_name)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             },
             "refresh": 2,
