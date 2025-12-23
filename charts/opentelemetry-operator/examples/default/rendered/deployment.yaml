@@ -87,25 +87,6 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        
-        - args:
-            - --secure-listen-address=0.0.0.0:8443
-            - --upstream=http://127.0.0.1:8080/
-            - --v=0
-          image: "quay.io/brancz/kube-rbac-proxy:v0.20.0"
-          name: kube-rbac-proxy
-          ports:
-            - containerPort: 8443
-              name: https
-              protocol: TCP
-          securityContext: 
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
       nodeSelector: 
         kubernetes.io/os: linux
       serviceAccountName: opentelemetry-operator
