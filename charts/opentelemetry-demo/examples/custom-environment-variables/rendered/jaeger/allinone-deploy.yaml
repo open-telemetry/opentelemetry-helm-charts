@@ -5,10 +5,10 @@ kind: Deployment
 metadata:
   name: jaeger
   labels:
-    helm.sh/chart: jaeger-3.4.1
+    helm.sh/chart: jaeger-4.1.5
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "1.53.0"
+    app.kubernetes.io/version: "2.13.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: all-in-one
     prometheus.io/port: "14269"
@@ -52,7 +52,7 @@ spec:
               value: "true"
           securityContext:
             {}
-          image: jaegertracing/all-in-one:1.53.0
+          image: jaegertracing/jaeger:2.13.0
           imagePullPolicy: IfNotPresent
           name: jaeger
           args:
@@ -80,11 +80,13 @@ spec:
               protocol: TCP
             - containerPort: 4318
               protocol: TCP
+            - containerPort: 13133
+              protocol: TCP
           livenessProbe:
             failureThreshold: 5
             httpGet:
-              path: /
-              port: 14269
+              path: /status
+              port: 13133
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 15
@@ -93,8 +95,8 @@ spec:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
-              port: 14269
+              path: /status
+              port: 13133
               scheme: HTTP
             initialDelaySeconds: 1
             periodSeconds: 10
