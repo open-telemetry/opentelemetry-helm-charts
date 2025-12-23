@@ -38,7 +38,6 @@ The chart can be used to install [OpenTelemetry Operator](https://github.com/ope
 in a Kubernetes cluster. More detailed documentation can be found in
 [OpenTelemetry Operator chart directory](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-operator).
 
-
 ### OpenTelemetry eBPF Instrumentation
 
 The chart can be used to install [OpenTelemetry eBPF Instrumentation](https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation)
