@@ -659,6 +659,14 @@ spec:
               value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.1.3
+          readinessProbe:
+            grpc:
+              port: 50051
+              service: "oteldemo.CartService"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
           resources:
             limits:
               memory: 160Mi
