@@ -12,7 +12,7 @@ default:
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version={{ .Chart.AppVersion }}'
+      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version={{ .Chart.AppVersion }}'
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -394,6 +394,12 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: httpcheck
+      io.opentelemetry.discovery.metrics/config: |
+          targets:
+            - endpoint: "http://`endpoint`"  # FIXME why isn't `endpoint` interpolated?
     env:
       - name: ENVOY_PORT
         value: "8080"
@@ -449,6 +455,13 @@ components:
       env: true
     service:
       port: 8081
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: nginx
+      io.opentelemetry.discovery.metrics/config: |
+          endpoint: "http://`endpoint`/status"
+          collection_interval: "10s"
+          timeout: "20s"
     env:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
@@ -729,6 +742,31 @@ components:
     replicas: 1
     service:
       port: 5432
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: postgresql
+      io.opentelemetry.discovery.metrics/config: |
+        username: root
+        password: otel
+        metrics:
+          postgresql.blks_hit:
+            enabled: true
+          postgresql.blks_read:
+            enabled: true
+          postgresql.tup_fetched:
+            enabled: true
+          postgresql.tup_returned:
+            enabled: true
+          postgresql.tup_inserted:
+            enabled: true
+          postgresql.tup_updated:
+            enabled: true
+          postgresql.tup_deleted:
+            enabled: true
+          postgresql.deadlocks:
+            enabled: true
+        tls:
+          insecure: true
     env:
       - name: POSTGRES_USER
         value: root
@@ -751,6 +789,12 @@ components:
     ports:
       - name: valkey-cart
         value: 6379
+    podAnnotations:
+      io.opentelemetry.discovery.metrics/enabled: 'true'
+      io.opentelemetry.discovery.metrics/scraper: redis
+      io.opentelemetry.discovery.metrics/config: |
+        username: valkey
+        collection_interval: 10s
     resources:
       limits:
         memory: 20Mi
@@ -764,15 +808,27 @@ opentelemetry-collector:
   image:
     repository: "otel/opentelemetry-collector-contrib"
   fullnameOverride: otel-collector
-  mode: deployment
+  mode: daemonset
   presets:
+    logsCollection:
+      enabled: true
+      storeCheckpoints: true
+    hostMetrics:
+      enabled: true
     kubernetesAttributes:
       enabled: true
+    kubeletMetrics:
+      enabled: true
+    clusterMetrics:
+      enabled: true
+    annotationDiscovery:
+      metrics:
+        enabled: true
   resources:
     limits:
       memory: 200Mi
   service:
-    type: ClusterIP
+    enabled: true
   ports:
     metrics:
       enabled: true
@@ -790,47 +846,12 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
-      httpcheck/frontend-proxy:
-        targets:
-          - endpoint: http://frontend-proxy:8080
-      nginx:
-        endpoint: http://image-provider:8081/status
-        collection_interval: 10s
-      postgresql:
-        endpoint: "postgresql:5432"
-        username: "root"
-        password: "otel"
-        metrics:
-          postgresql.blks_hit:
-            enabled: true
-          postgresql.blks_read:
-            enabled: true
-          postgresql.tup_fetched:
-            enabled: true
-          postgresql.tup_returned:
-            enabled: true
-          postgresql.tup_inserted:
-            enabled: true
-          postgresql.tup_updated:
-            enabled: true
-          postgresql.tup_deleted:
-            enabled: true
-          postgresql.deadlocks:
-            enabled: true
-        tls:
-          insecure: true
-      redis:
-        endpoint: "valkey-cart:6379"
-        username: "valkey"
-        collection_interval: 10s
 
     exporters:
-      ## Create an exporter to Jaeger using the standard `otlp` export format
-      otlp:
+      otlp/jaeger:
         endpoint: jaeger-collector:4317
         tls:
           insecure: true
-      # Create an exporter to Prometheus (metrics)
       otlphttp/prometheus:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
@@ -874,9 +895,9 @@ opentelemetry-collector:
       pipelines:
         traces:
           processors: [memory_limiter, resourcedetection, resource, transform, batch]
-          exporters: [otlp, debug, spanmetrics]
+          exporters: [otlp/jaeger, debug, spanmetrics]
         metrics:
-          receivers: [httpcheck/frontend-proxy, nginx, otlp, postgresql, redis, spanmetrics]
+          receivers: [otlp, spanmetrics]
           processors: [memory_limiter, resourcedetection, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
@@ -892,7 +913,7 @@ opentelemetry-collector:
                 exporter:
                   otlp:
                     protocol: http/protobuf
-                    endpoint: otel-collector:4318
+                    endpoint: http://otel-collector:4318
 
 jaeger:
   enabled: true
