@@ -12,7 +12,7 @@
     "clusterDomain",
     "pdb",
     "manager",
-    "kubeRBACProxy",
+    "metricsServer",
     "admissionWebhooks",
     "crds",
     "role",
@@ -1338,210 +1338,80 @@
         }
       ]
     },
-    "kubeRBACProxy": {
+    "metricsServer": {
       "type": "object",
       "default": {},
-      "title": "The kubeRBACProxy Schema",
+      "title": "The metricsServer Schema",
       "required": [
-        "enabled",
-        "image",
-        "ports",
-        "extraArgs",
-        "securityContext"
+        "secure",
+        "port",
+        "tls"
       ],
       "additionalProperties": false,
       "properties": {
-        "enabled": {
+        "secure": {
           "type": "boolean",
           "default": false,
-          "title": "The enabled Schema",
+          "title": "Enable authentication and authorization for metrics",
+          "description": "Corresponds to --metrics-secure flag in the operator",
           "examples": [
-            true
+            false
           ]
         },
-        "image": {
+        "port": {
+          "type": "integer",
+          "default": 8443,
+          "title": "Port for the metrics server",
+          "description": "Use 8443 when secure is true, 8080 when false",
+          "examples": [
+            8443
+          ]
+        },
+        "tls": {
           "type": "object",
           "default": {},
-          "title": "The image Schema",
+          "title": "TLS configuration for metrics server",
           "required": [
-            "repository",
-            "tag"
+            "certFile",
+            "keyFile"
           ],
           "additionalProperties": false,
           "properties": {
-            "repository": {
+            "certFile": {
               "type": "string",
               "default": "",
-              "title": "The repository Schema",
+              "title": "Path to TLS certificate file",
+              "description": "Corresponds to --metrics-tls-cert-file flag",
               "examples": [
-                "quay.io/brancz/kube-rbac-proxy"
+                ""
               ]
             },
-            "tag": {
+            "keyFile": {
               "type": "string",
               "default": "",
-              "title": "The tag Schema",
+              "title": "Path to TLS private key file",
+              "description": "Corresponds to --metrics-tls-key-file flag",
               "examples": [
-                "v0.15.0"
+                ""
               ]
             }
           },
           "examples": [
             {
-              "repository": "quay.io/brancz/kube-rbac-proxy",
-              "tag": "v0.15.0"
+              "certFile": "",
+              "keyFile": ""
             }
-          ]
-        },
-        "ports": {
-          "type": "object",
-          "default": {},
-          "title": "The ports Schema",
-          "required": [
-            "proxyPort"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "proxyPort": {
-              "type": "integer",
-              "default": 0,
-              "title": "The proxyPort Schema",
-              "examples": [
-                8443
-              ]
-            }
-          },
-          "examples": [
-            {
-              "proxyPort": 8443
-            }
-          ]
-        },
-        "resources": {
-          "type": "object",
-          "default": {},
-          "title": "The resources Schema",
-          "required": [],
-          "additionalProperties": false,
-          "properties": {
-            "limits": {
-              "type": "object",
-              "default": {},
-              "title": "The limits Schema",
-              "required": [],
-              "additionalProperties": true,
-              "properties": {
-                "cpu": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The cpu Schema",
-                  "examples": [
-                    "500m"
-                  ]
-                },
-                "memory": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The memory Schema",
-                  "examples": [
-                    "128Mi"
-                  ]
-                }
-              },
-              "examples": [
-                {
-                  "cpu": "500m",
-                  "memory": "128Mi"
-                }
-              ]
-            },
-            "requests": {
-              "type": "object",
-              "default": {},
-              "title": "The requests Schema",
-              "required": [],
-              "additionalProperties": true,
-              "properties": {
-                "cpu": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The cpu Schema",
-                  "examples": [
-                    "5m"
-                  ]
-                },
-                "memory": {
-                  "type": "string",
-                  "default": "",
-                  "title": "The memory Schema",
-                  "examples": [
-                    "64Mi"
-                  ]
-                }
-              },
-              "examples": [
-                {
-                  "cpu": "5m",
-                  "memory": "64Mi"
-                }
-              ]
-            }
-          },
-          "examples": [
-            {
-              "limits": {
-                "cpu": "500m",
-                "memory": "128Mi"
-              },
-              "requests": {
-                "cpu": "5m",
-                "memory": "64Mi"
-              }
-            }
-          ]
-        },
-        "extraArgs": {
-          "type": "array",
-          "default": [],
-          "title": "The extraArgs Schema",
-          "items": {},
-          "examples": [
-            []
-          ]
-        },
-        "securityContext": {
-          "type": "object",
-          "default": {},
-          "title": "The securityContext Schema",
-          "required": [],
-          "properties": {},
-          "examples": [
-            {}
           ]
         }
       },
       "examples": [
         {
-          "enabled": true,
-          "image": {
-            "repository": "quay.io/brancz/kube-rbac-proxy",
-            "tag": "v0.15.0"
-          },
-          "ports": {
-            "proxyPort": 8443
-          },
-          "resources": {
-            "limits": {
-              "cpu": "500m",
-              "memory": "128Mi"
-            },
-            "requests": {
-              "cpu": "5m",
-              "memory": "64Mi"
-            }
-          },
-          "extraArgs": [],
-          "securityContext": {}
+          "secure": false,
+          "port": 8443,
+          "tls": {
+            "certFile": "",
+            "keyFile": ""
+          }
         }
       ]
     },
@@ -2216,27 +2086,13 @@
         "rolling": false,
         "securityContext": {}
       },
-      "kubeRBACProxy": {
-        "enabled": true,
-        "image": {
-          "repository": "quay.io/brancz/kube-rbac-proxy",
-          "tag": "v0.15.0"
-        },
-        "ports": {
-          "proxyPort": 8443
-        },
-        "resources": {
-          "limits": {
-            "cpu": "500m",
-            "memory": "128Mi"
-          },
-          "requests": {
-            "cpu": "5m",
-            "memory": "64Mi"
-          }
-        },
-        "extraArgs": [],
-        "securityContext": {}
+      "metricsServer": {
+        "secure": false,
+        "port": 8443,
+        "tls": {
+          "certFile": "",
+          "keyFile": ""
+        }
       },
       "admissionWebhooks": {
         "create": true,

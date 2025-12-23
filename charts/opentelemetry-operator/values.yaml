@@ -233,38 +233,25 @@ manager:
     seccompProfile:
       type: RuntimeDefault
 
-## Provide OpenTelemetry Operator kube-rbac-proxy container image.
-##
-kubeRBACProxy:
-  enabled: true
-  image:
-    repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.20.0
-  ports:
-    proxyPort: 8443
-  resources: {}
-  # resources:
-  #   limits:
-  #     cpu: 500m
-  #     memory: 128Mi
-  #   requests:
-  #     cpu: 5m
-  #     memory: 64Mi
-
-  ## List of additional cli arguments to configure the kube-rbac-proxy
-  ## for example: --tls-cipher-suites, --tls-min-version, etc.
-  extraArgs: []
-
-  ## Container specific securityContext
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-        - ALL
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
+## Metrics server configuration
+## The operator uses controller-runtime built-in auth for the metrics server
+## Authentication is disabled by default for backward compatibility
+metricsServer:
+  # Enable authentication and authorization for the metrics server
+  # Corresponds to --metrics-secure flag in the operator
+  secure: false
+  
+  # Port for the metrics server
+  # Use 8443 when secure is true, 8080 when false
+  port: 8443
+  
+  # TLS configuration (optional, self-signed certs generated if not provided)
+  # Corresponds to --metrics-tls-cert-file and --metrics-tls-key-file flags
+  tls:
+    # Path to TLS certificate file (optional)
+    certFile: ""
+    # Path to TLS private key file (optional)
+    keyFile: ""
 
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
 ## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
