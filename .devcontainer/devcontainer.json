@@ -1,0 +1,52 @@
+{
+    "name": "otel helm charts",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "target": "development",
+    },
+    "hostRequirements": {
+        "cpus": 2,
+        "memory": "4gb",
+        "storage": "8gb"
+    },
+    "features": {
+        // Don't add more features as they are very slow to build, use the Dockerfile instead.
+        // Only dind feature makes sense to install as it is non trivial to setup manually.
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    },
+    "forwardPorts": [
+    ],
+    "portsAttributes": {},
+    "otherPortsAttributes": {
+        "onAutoForward" : "ignore"
+    },
+    "mounts": [
+        {
+            "source": "vscode-home-${devcontainerId}",
+            "target": "/home/vscode/",
+            "type": "volume"
+        }
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "docker.docker",
+                "exiasr.hadolint",
+                "github.vscode-github-actions",
+                "aquasecurityofficial.trivy-vulnerability-scanner",
+
+                "eamodio.gitlens",
+                "mutantdino.resourcemonitor",
+                "shd101wyy.markdown-preview-enhanced",
+                "streetsidesoftware.code-spell-checker",
+            ],
+            "settings": {
+                "resmon.show.battery": false,
+                "resmon.show.cpufreq": false,
+                "telemetry.enableTelemetry": false,
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                // Prefer .vscode/settings.json over putting settings here.
+            }
+        }
+    }
+}
