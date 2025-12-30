@@ -146,7 +146,7 @@ Generate the configmap data based on preset and configuration values
 {{- end }}
 {{- if eq .Values.preset "application" }}
 {{- if not .Values.config.data.discovery }}
-{{- $discovery := dict "services" (list (dict "k8s_namespace" ".")) "exclude_services" (list (dict "exe_path" ".*ebpf-instrument.*|.*otelcol.*")) }}
+{{- $discovery := dict "instrument" (list (dict "k8s_namespace" "*")) "exclude_instrument" (list (dict "exe_path" "{*ebpf-instrument*,*otelcol*}")) }}
 {{- $_ := set $config "discovery" $discovery }}
 {{- end }}
 {{- end }}
