@@ -69,14 +69,6 @@ generate_release_notes() {
     echo "- **Chart Version**: ${chart_version}"
     echo "- **App Version**: ${app_version}"
     echo "- **Chart Path**: ${chart_path}"
-    echo ""
-    echo "## Installation"
-    echo ""
-    echo "\`\`\`bash"
-    echo "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts"
-    echo "helm repo update"
-    echo "helm install my-${chart_name} open-telemetry/${chart_name} --version ${chart_version}"
-    echo "\`\`\`"
 }
 
 # Main execution
