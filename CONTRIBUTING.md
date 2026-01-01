@@ -26,7 +26,7 @@ To work with this repository, ensure you have:
 
 Docker or Kubernetes cluster access (for testing chart installations)
 
-## Workflow 
+## Workflow
 
 1. Fork this repository
 1. Develop, and test your changes
@@ -88,7 +88,7 @@ New examples should be added as independent folders in the respective chart's `e
 ## Further Help
 
 - Join [#helm-charts](https://cloud-native.slack.com/archives/C03HVLM8LAH) on OpenTelemetry Slack.
-  
+
 ### Chart-specific Contributing Guides
 
 - [opentelemetry-collector](./charts/opentelemetry-collector/CONTRIBUTING.md)
