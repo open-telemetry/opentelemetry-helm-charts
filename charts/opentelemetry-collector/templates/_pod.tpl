@@ -66,12 +66,12 @@ containers:
       - name: GOMEMLIMIT
         value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
       {{- end }}
-      {{- with .Values.extraEnvs }}
-      {{- . | toYaml | nindent 6 }}
+      {{- if .Values.extraEnvs }}
+      {{- tpl (toYaml .Values.extraEnvs) . | nindent 6 }}
       {{- end }}
-    {{- with .Values.extraEnvsFrom }}
+    {{- if .Values.extraEnvsFrom }}
     envFrom:
-    {{- . | toYaml | nindent 6 }}
+    {{- tpl (toYaml .Values.extraEnvsFrom) . | nindent 6 }}
     {{- end }}
     {{- if .Values.lifecycleHooks }}
     lifecycle:
