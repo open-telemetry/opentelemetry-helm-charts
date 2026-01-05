@@ -3,15 +3,7 @@
 The helm chart installs [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo)
 in kubernetes cluster.
 
-> [!NOTE]
-> The [Jaeger Service Performance Monitoring (SPM)](https://www.jaegertracing.io/docs/1.73/deployment/spm/)
-> is currently **not working** in the OTel Demo.
->
-> This happens because the OTel Demo Helm chart depends on the Jaeger Helm chart, and the latest
-> published Jaeger Helm chart is incompatible with the new span metric names.
->
-> The issue has already been fixed in newer Jaeger versions, but Helm charts for those versions
-> are not yet available.
+
 
 ## Prerequisites
 
