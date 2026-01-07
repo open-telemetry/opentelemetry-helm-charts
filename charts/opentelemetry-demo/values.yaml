@@ -362,6 +362,8 @@ components:
         value: currency:8080
       - name: PRODUCT_CATALOG_ADDR
         value: product-catalog:8080
+      - name: PRODUCT_REVIEWS_ADDR
+        value: product-reviews:3551
       - name: RECOMMENDATION_ADDR
         value: recommendation:8080
       - name: SHIPPING_ADDR
@@ -422,7 +424,7 @@ components:
       - name: IMAGE_PROVIDER_PORT
         value: "8081"
       - name: JAEGER_HOST
-        value: jaeger-query
+        value: jaeger
       - name: JAEGER_UI_PORT
         value: "16686"
       - name: LOCUST_WEB_HOST
@@ -459,7 +461,7 @@ components:
     resources:
       limits:
         memory: 50Mi
-
+  
   load-generator:
     enabled: true
     useDefault:
@@ -516,7 +518,7 @@ components:
         value: "false"
     resources:
       limits:
-        memory: 120Mi
+        memory: 140Mi
     securityContext:
       runAsUser: 1000  # node
       runAsGroup: 1000
@@ -531,8 +533,6 @@ components:
     env:
       - name: PRODUCT_CATALOG_PORT
         value: "8080"
-      - name: PRODUCT_CATALOG_RELOAD_INTERVAL
-        value: "10"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -548,6 +548,45 @@ components:
     resources:
       limits:
         memory: 20Mi
+
+  product-reviews:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 3551
+    env:
+      - name: OPENAI_API_KEY
+        value: dummy
+      - name: LLM_MODEL
+        value: astronomy-llm
+      - name: LLM_HOST
+        value: llm
+      - name: LLM_PORT
+        value: "8000"
+      - name: LLM_BASE_URL
+        value: http://$(LLM_HOST):$(LLM_PORT)/v1
+      - name: PRODUCT_REVIEWS_PORT
+        value: "3551"
+      - name: PRODUCT_CATALOG_ADDR
+        value: product-catalog:8080
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"        
+      - name: DB_CONNECTION_STRING
+        value: host=postgresql user=otelu password=otelp dbname=otel
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
+      - name: OTEL_PYTHON_LOG_CORRELATION
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+        value: "true"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+    resources:
+      limits:
+        memory: 100Mi
 
   quote:
     enabled: true
@@ -622,7 +661,7 @@ components:
     enabled: true
     imageOverride:
       repository: "ghcr.io/open-feature/flagd"
-      tag: "v0.12.8"
+      tag: "v0.12.9"
     useDefault:
       env: true
     replicas: 1
@@ -722,10 +761,25 @@ components:
       runAsGroup: 1000
       runAsNonRoot: true
 
-  postgresql:
+  llm:
     enabled: true
     useDefault:
       env: true
+    service:
+      port: 8000
+    env:
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"  
+
+  postgresql:
+    enabled: true
+    useDefault:
+      env: false
+    imageOverride:
+      repository: "postgres"
+      tag: "17.6"      
     replicas: 1
     service:
       port: 5432
@@ -736,6 +790,10 @@ components:
         value: otel
       - name: POSTGRES_DB
         value: otel
+    mountedConfigMaps:
+      - name: postgresql-init
+        mountPath: /docker-entrypoint-initdb.d
+        existingConfigMap: postgresql-init
     resources:
       limits:
         memory: 100Mi
@@ -743,10 +801,10 @@ components:
   valkey-cart:
     enabled: true
     useDefault:
-      env: true
+      env: false
     imageOverride:
       repository: "valkey/valkey"
-      tag: "8.1.3-alpine"
+      tag: "9.0.1-alpine3.23"
     replicas: 1
     ports:
       - name: valkey-cart
@@ -827,14 +885,18 @@ opentelemetry-collector:
     exporters:
       ## Create an exporter to Jaeger using the standard `otlp` export format
       otlp:
-        endpoint: jaeger-collector:4317
+        endpoint: jaeger:4317
         tls:
           insecure: true
+        sending_queue:
+          batch:
       # Create an exporter to Prometheus (metrics)
       otlphttp/prometheus:
         endpoint: http://prometheus:9090/api/v1/otlp
         tls:
           insecure: true
+        sending_queue:
+          batch:
       opensearch:
         logs_index: otel-logs
         logs_index_time_format: "yyyy-MM-dd"
@@ -893,38 +955,88 @@ opentelemetry-collector:
                   otlp:
                     protocol: http/protobuf
                     endpoint: otel-collector:4318
+                    insecure: true
 
 jaeger:
   enabled: true
   fullnameOverride: jaeger
-  provisionDataStore:
-    cassandra: false
-  allInOne:
-    enabled: true
-    args:
-      - "--memory.max-traces=5000"
-      - "--query.base-path=/jaeger/ui"
-      - "--prometheus.server-url=http://prometheus:9090"
-      - "--prometheus.query.normalize-calls=true"
-      - "--prometheus.query.normalize-duration=true"
+  jaeger:
+    storage:
+      type: memory
     extraEnv:
-      - name: METRICS_STORAGE_TYPE
-        value: prometheus
-      - name: COLLECTOR_OTLP_GRPC_HOST_PORT
-        value: 0.0.0.0:4317
-      - name: COLLECTOR_OTLP_HTTP_HOST_PORT
-        value: 0.0.0.0:4318
+      - name: MEMORY_MAX_TRACES
+        value: "5000"
+      - name: PROMETHEUS_ADDR
+        value: prometheus:9090
+      - name: OTEL_COLLECTOR_HOST
+        value: otel-collector
+      - name: OTEL_COLLECTOR_PORT_HTTP
+        value: "4318"
+      - name: JAEGER_HOST
+        value: "0.0.0.0"
+      - name: JAEGER_GRPC_PORT
+        value: "4317"
     resources:
       limits:
         memory: 400Mi
-  storage:
-    type: memory
-  agent:
-    enabled: false
-  collector:
-    enabled: false
-  query:
-    enabled: false
+  userconfig: |
+    service:
+      extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [jaeger_storage_exporter]
+      telemetry:
+        resource:
+          service.name: jaeger-query
+        metrics:
+          level: detailed
+          readers:
+            - periodic:
+                interval: 10000
+                timeout: 5000
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
+                    insecure: true
+        logs:
+          level: info
+    extensions:
+      healthcheckv2:
+        use_v2: true
+        http:
+          endpoint: 0.0.0.0:13133
+      jaeger_query:
+        storage:
+          traces: memory_backend
+          metrics: metrics_backend
+        base_path: /jaeger/ui
+      jaeger_storage:
+        backends:
+          memory_backend:
+            memory:
+              max_traces: ${env:MEMORY_MAX_TRACES}
+        metric_backends:
+          metrics_backend:
+            prometheus:
+              endpoint: "http://${env:PROMETHEUS_ADDR}"
+              normalize_calls: true
+              normalize_duration: true
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:JAEGER_HOST}:${env:JAEGER_GRPC_PORT}
+
+    processors:
+      batch:
+
+    exporters:
+      jaeger_storage_exporter:
+        trace_storage: memory_backend
 
 prometheus:
   enabled: true
@@ -944,6 +1056,7 @@ prometheus:
     extraFlags:
       - "enable-feature=exemplar-storage"
       - "web.enable-otlp-receiver"
+    retention: 7d
     tsdb:
       out_of_order_time_window: 30m
     otlp:
@@ -987,7 +1100,7 @@ prometheus:
       servicePort: 9090
     resources:
       limits:
-        memory: 300Mi
+        memory: 200Mi
 
 grafana:
   enabled: true
@@ -1020,7 +1133,7 @@ grafana:
         memory: 100Mi
   resources:
     limits:
-      memory: 150Mi
+      memory: 175Mi
 
 opensearch:
   enabled: true
