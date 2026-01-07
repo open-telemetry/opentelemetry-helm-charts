@@ -541,10 +541,6 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: GOMEMLIMIT
         value: 16MiB
-    mountedConfigMaps:
-      - name: product-catalog-products
-        mountPath: /usr/src/app/products
-        existingConfigMap: product-catalog-products
     resources:
       limits:
         memory: 20Mi
@@ -834,9 +830,6 @@ opentelemetry-collector:
   ports:
     metrics:
       enabled: true
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    opentelemetry_community_demo: "true"
   config:
     receivers:
       otlp:
