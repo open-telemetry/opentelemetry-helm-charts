@@ -958,7 +958,7 @@ jaeger:
       type: memory
     extraEnv:
       - name: MEMORY_MAX_TRACES
-        value: "5000"
+        value: "25000"
       - name: PROMETHEUS_ADDR
         value: prometheus:9090
       - name: OTEL_COLLECTOR_HOST
@@ -971,7 +971,7 @@ jaeger:
         value: "4317"
     resources:
       limits:
-        memory: 400Mi
+        memory: 1200Mi
   userconfig: |
     service:
       extensions: [jaeger_storage, jaeger_query, healthcheckv2]
@@ -982,7 +982,7 @@ jaeger:
           exporters: [jaeger_storage_exporter]
       telemetry:
         resource:
-          service.name: jaeger-query
+          service.name: jaeger
         metrics:
           level: detailed
           readers:
