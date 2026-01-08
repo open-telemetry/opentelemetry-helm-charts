@@ -7,7 +7,7 @@
 
 ## To 0.40
 
-The prduct catalog has been moved to use a Postgres database. Custom products
+The product catalog has been moved to use a Postgres database. Custom products
 (and product reviews) can be specified with your own init-db.sql script
 contained in a custom ConfigMap, and referenced for the Postgres component.
 
