@@ -1,17 +1,17 @@
 ---
-# Source: opentelemetry-demo/charts/jaeger/templates/allinone-deploy.yaml
+# Source: opentelemetry-demo/charts/jaeger/templates/jaeger-deploy.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jaeger
   labels:
-    helm.sh/chart: jaeger-3.4.1
+    helm.sh/chart: jaeger-4.3.0
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "1.53.0"
+    app.kubernetes.io/version: "2.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: all-in-one
-    prometheus.io/port: "14269"
+    prometheus.io/port: "8888"
     prometheus.io/scrape: "true"
 spec:
   replicas: 1
@@ -29,18 +29,24 @@ spec:
         app.kubernetes.io/instance: example
         app.kubernetes.io/component: all-in-one
       annotations:
-        prometheus.io/port: "14269"
+        prometheus.io/port: "8888"
         prometheus.io/scrape: "true"
     spec:
       
       containers:
         - env:
-            - name: METRICS_STORAGE_TYPE
-              value: prometheus
-            - name: COLLECTOR_OTLP_GRPC_HOST_PORT
-              value: 0.0.0.0:4317
-            - name: COLLECTOR_OTLP_HTTP_HOST_PORT
-              value: 0.0.0.0:4318
+            - name: MEMORY_MAX_TRACES
+              value: "25000"
+            - name: PROMETHEUS_ADDR
+              value: prometheus:9090
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-collector
+            - name: OTEL_COLLECTOR_PORT_HTTP
+              value: "4318"
+            - name: JAEGER_HOST
+              value: 0.0.0.0
+            - name: JAEGER_GRPC_PORT
+              value: "4317"
             - name: SPAN_STORAGE_TYPE
               value: memory
             
@@ -52,15 +58,12 @@ spec:
               value: "true"
           securityContext:
             {}
-          image: jaegertracing/all-in-one:1.53.0
+          image: jaegertracing/jaeger:2.14.1
           imagePullPolicy: IfNotPresent
           name: jaeger
           args:
-            - "--memory.max-traces=5000"
-            - "--query.base-path=/jaeger/ui"
-            - "--prometheus.server-url=http://prometheus:9090"
-            - "--prometheus.query.normalize-calls=true"
-            - "--prometheus.query.normalize-duration=true"
+            - "--config"
+            - "/etc/jaeger/user-config.yaml"
           ports:
             - containerPort: 5775
               protocol: UDP
@@ -80,11 +83,15 @@ spec:
               protocol: TCP
             - containerPort: 4318
               protocol: TCP
+            - containerPort: 13133
+              protocol: TCP
+            - containerPort: 8888
+              protocol: TCP
           livenessProbe:
             failureThreshold: 5
             httpGet:
-              path: /
-              port: 14269
+              path: /status
+              port: 13133
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 15
@@ -93,8 +100,8 @@ spec:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
-              port: 14269
+              path: /status
+              port: 13133
               scheme: HTTP
             initialDelaySeconds: 1
             periodSeconds: 10
@@ -102,11 +109,16 @@ spec:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 400Mi
+              memory: 1200Mi
           volumeMounts:
+            - name: user-config
+              mountPath: /etc/jaeger
       securityContext:
         fsGroup: 10001
         runAsGroup: 10001
         runAsUser: 10001
       serviceAccountName: jaeger
       volumes:
+        - name: user-config
+          configMap:
+            name: user-config
