@@ -1,4 +1,4 @@
-{{- if and (.Values.admissionWebhooks.create) (not .Values.admissionWebhooks.certManager.enabled) }}
+{{- if or (ne .Values.admissionWebhooks.certificateSource "cert-manager") (and (eq .Values.admissionWebhooks.certificateSource "prefer-cert-manager") (not (.Capabilities.APIVersions.Has "cert-manager.io/v1"))) }}
 {{- $cert := fromYaml (include "opentelemetry-operator.WebhookCert" .) }}
 {{- $caCertEnc := $cert.ca }}
 {{- $certCrtEnc := $cert.crt }}
