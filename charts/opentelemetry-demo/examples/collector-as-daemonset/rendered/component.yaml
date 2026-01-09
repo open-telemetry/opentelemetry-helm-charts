@@ -1819,10 +1819,14 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: GOMEMLIMIT
               value: 16MiB
+            - name: DB_CONNECTION_STRING
+              value: postgres://otelu:otelp@postgresql/otel?sslmode=disable
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: database
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.2.0
           resources:
