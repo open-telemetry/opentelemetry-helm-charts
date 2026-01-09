@@ -537,10 +537,14 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: GOMEMLIMIT
         value: 16MiB
+      - name: DB_CONNECTION_STRING
+        value: postgres://otelu:otelp@postgresql/otel?sslmode=disable
+      - name: OTEL_SEMCONV_STABILITY_OPT_IN
+        value: database
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
         memory: 20Mi
@@ -971,7 +975,7 @@ jaeger:
         value: "4317"
     resources:
       limits:
-        memory: 1200Mi
+        memory: 600Mi
   userconfig: |
     service:
       extensions: [jaeger_storage, jaeger_query, healthcheckv2]
@@ -1093,7 +1097,7 @@ prometheus:
       servicePort: 9090
     resources:
       limits:
-        memory: 200Mi
+        memory: 400Mi
 
 grafana:
   enabled: true
