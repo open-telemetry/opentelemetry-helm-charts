@@ -1,4 +1,5 @@
-{{- if and (.Values.admissionWebhooks.create) (.Values.admissionWebhooks.certManager.enabled) }}
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" -}}
+{{- if or (eq .Values.admissionWebhooks.certificateSource "cert-manager") (eq .Values.admissionWebhooks.certificateSource "prefer-cert-manager") }}
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
@@ -234,4 +235,9 @@ webhooks:
         scope: Namespaced
     sideEffects: None
     timeoutSeconds: {{ .Values.admissionWebhooks.timeoutSeconds }}
+{{- end }}
+{{- else -}}
+{{ if eq .Values.admissionWebhooks.certificateSource "cert-manager" }}
+{{ fail "certificateSource is set to cert-manager but cert manager APIs are not available" }}
+{{- end }}
 {{- end }}
