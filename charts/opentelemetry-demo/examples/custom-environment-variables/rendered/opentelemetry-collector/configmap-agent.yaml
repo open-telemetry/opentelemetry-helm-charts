@@ -35,8 +35,6 @@ data:
         tls:
           insecure: true
     extensions:
-      file_storage:
-        directory: /var/lib/otelcol
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
       k8s_leader_elector/k8s_cluster:
@@ -117,21 +115,6 @@ data:
           - replace_pattern(name, "\\?.*", "")
           - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
     receivers:
-      filelog:
-        exclude:
-        - /var/log/pods/default_otel-collector*_*/opentelemetry-collector/*.log
-        include:
-        - /var/log/pods/*/*/*.log
-        include_file_name: false
-        include_file_path: true
-        operators:
-        - id: container-parser
-          max_log_size: 102400
-          type: container
-        retry_on_failure:
-          enabled: true
-        start_at: end
-        storage: file_storage
       hostmetrics:
         collection_interval: 10s
         root_path: /hostfs
@@ -221,7 +204,6 @@ data:
     service:
       extensions:
       - health_check
-      - file_storage
       - k8s_observer
       - k8s_leader_elector/k8s_cluster
       pipelines:
@@ -237,7 +219,6 @@ data:
           - batch
           receivers:
           - otlp
-          - filelog
         metrics:
           exporters:
           - otlphttp/prometheus

@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: bfa8fa63a7b0296ff70f509086e98429c559b39f7d62b9968cb4906390cd9e46
+        checksum/config: 63f9c558c272ac4fba6231446e13d48109d6696c0a75ea18dea07916b7653a00
         opentelemetry_community_demo: "true"
         prometheus.io/scrape: "true"
       labels:
@@ -44,8 +44,7 @@ spec:
           args:
             - --config=/conf/relay.yaml
           securityContext:
-            runAsUser: 0
-            runAsGroup: 0
+            {}
           image: "otel/opentelemetry-collector-contrib:0.141.0"
           imagePullPolicy: IfNotPresent
           ports:
@@ -107,14 +106,6 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-            - name: varlogpods
-              mountPath: /var/log/pods
-              readOnly: true
-            - name: varlibdockercontainers
-              mountPath: /var/lib/docker/containers
-              readOnly: true
-            - name: varlibotelcol
-              mountPath: /var/lib/otelcol
             - name: hostfs
               mountPath: /hostfs
               readOnly: true
@@ -126,16 +117,6 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
-        - name: varlogpods
-          hostPath:
-            path: /var/log/pods
-        - name: varlibotelcol
-          hostPath:
-            path: /var/lib/otelcol
-            type: DirectoryOrCreate
-        - name: varlibdockercontainers
-          hostPath:
-            path: /var/lib/docker/containers
         - name: hostfs
           hostPath:
             path: /
