@@ -6,10 +6,10 @@ metadata:
   name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-10.1.2
+    helm.sh/chart: grafana-10.5.3
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "12.2.0"
+    app.kubernetes.io/version: "12.3.1"
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -22,10 +22,10 @@ spec:
   template:
     metadata:
       labels:
-        helm.sh/chart: grafana-10.1.2
+        helm.sh/chart: grafana-10.5.3
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "12.2.0"
+        app.kubernetes.io/version: "12.3.1"
       annotations:
         checksum/config: 3aef97dc43bb7f320b3d3f00d79efff7580bf83005ec5574a0619b42268584cf
         checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
@@ -44,7 +44,7 @@ spec:
       enableServiceLinks: true
       containers:
         - name: grafana-sc-alerts
-          image: "quay.io/kiwigrid/k8s-sidecar:1.30.10"
+          image: "quay.io/kiwigrid/k8s-sidecar:2.2.1"
           imagePullPolicy: IfNotPresent
           env:
             - name: METHOD
@@ -69,6 +69,8 @@ spec:
               value: http://localhost:3000/api/admin/provisioning/alerting/reload
             - name: REQ_METHOD
               value: POST
+            - name: REQ_SKIP_INIT
+              value: "true"
           resources:
             limits:
               cpu: 100m
@@ -84,7 +86,7 @@ spec:
             - name: sc-alerts-volume
               mountPath: "/etc/grafana/provisioning/alerting"
         - name: grafana-sc-dashboard
-          image: "quay.io/kiwigrid/k8s-sidecar:1.30.10"
+          image: "quay.io/kiwigrid/k8s-sidecar:2.2.1"
           imagePullPolicy: IfNotPresent
           env:
             - name: METHOD
@@ -109,6 +111,8 @@ spec:
               value: http://localhost:3000/api/admin/provisioning/dashboards/reload
             - name: REQ_METHOD
               value: POST
+            - name: REQ_SKIP_INIT
+              value: "true"
           resources:
             limits:
               cpu: 100m
@@ -124,7 +128,7 @@ spec:
             - name: sc-dashboard-volume
               mountPath: "/tmp/dashboards"
         - name: grafana-sc-datasources
-          image: "quay.io/kiwigrid/k8s-sidecar:1.30.10"
+          image: "quay.io/kiwigrid/k8s-sidecar:2.2.1"
           imagePullPolicy: IfNotPresent
           env:
             - name: METHOD
@@ -149,6 +153,8 @@ spec:
               value: http://localhost:3000/api/admin/provisioning/datasources/reload
             - name: REQ_METHOD
               value: POST
+            - name: REQ_SKIP_INIT
+              value: "true"
           resources:
             limits:
               cpu: 100m
@@ -164,7 +170,7 @@ spec:
             - name: sc-datasources-volume
               mountPath: "/etc/grafana/provisioning/datasources"
         - name: grafana
-          image: "docker.io/grafana/grafana:12.2.0"
+          image: "docker.io/grafana/grafana:12.3.1"
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -238,16 +244,16 @@ spec:
             failureThreshold: 10
             httpGet:
               path: /api/health
-              port: 3000
+              port: grafana
             initialDelaySeconds: 60
             timeoutSeconds: 30
           readinessProbe:
             httpGet:
               path: /api/health
-              port: 3000
+              port: grafana
           resources:
             limits:
-              memory: 150Mi
+              memory: 175Mi
       volumes:
         - name: config
           configMap:

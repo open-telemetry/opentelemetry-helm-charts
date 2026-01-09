@@ -5,6 +5,15 @@
 > another. If you need to upgrade the chart, you must first delete the existing
 > release and then install the new version.
 
+## To 0.40
+
+The product catalog has been moved to use a Postgres database. Custom products
+(and product reviews) can be specified with your own init-db.sql script
+contained in a custom ConfigMap, and referenced for the Postgres component.
+
+The Jaeger sub-chart was upgraded to 4.3, which included several breaking
+changes to prior configurations.
+
 ## To 0.39
 
 Support for IPv6 environments was introduced to the demo.

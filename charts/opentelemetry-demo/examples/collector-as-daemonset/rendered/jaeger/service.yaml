@@ -1,0 +1,67 @@
+---
+# Source: opentelemetry-demo/charts/jaeger/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+  labels:
+    helm.sh/chart: jaeger-4.3.0
+    app.kubernetes.io/name: jaeger
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "2.14.1"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: all-in-one
+spec:
+  type: ClusterIP
+  ports:
+    # Agent Ports
+    - name: zk-compact-trft
+      port: 5775
+      protocol: UDP
+      targetPort: 5775
+    - name: config-rest
+      port: 5778
+      targetPort: 5778
+    - name: jg-compact-trft
+      port: 6831
+      protocol: UDP
+      targetPort: 6831
+    - name: jg-binary-trft
+      port: 6832
+      protocol: UDP
+      targetPort: 6832
+    # Collector Ports
+    - name: http-zipkin
+      port: 9411
+      targetPort: 9411
+      appProtocol: http
+    - name: grpc-http
+      port: 14250
+      targetPort: 14250
+      appProtocol: grpc
+    - name: c-tchan-trft
+      port: 14267
+      targetPort: 14267
+    - name: http-c-binary-trft
+      port: 14268
+      targetPort: 14268
+      appProtocol: http
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      appProtocol: grpc
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      appProtocol: http
+    # Query Ports
+    - name: http-query
+      port: 16686
+      targetPort: 16686
+    - name: grpc-query
+      port: 16685
+      targetPort: 16685
+  selector:
+    app.kubernetes.io/name: jaeger
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: all-in-one
