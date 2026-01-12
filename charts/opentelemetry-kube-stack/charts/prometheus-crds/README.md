@@ -1,6 +1,6 @@
 # OpenTelemetry Collector CRDs
 
-This chart contains the CRDs for _*installation*_ only right now for the opentelemetry-operator. This allows the OpenTelemetry Kubernetes Stack chart to work on install. You can see more discussion about this [here](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/677) and [here](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1203).
+This chart contains the CRDs for _*installation*_ only right now for the opentelemetry-operator. This allows the OpenTelemetry Kubernetes Stack chart to work on install. You can see more discussion about this in the upstream repository: [issue 677](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/677) and [PR 1203](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1203).
 
 This approach is inspired by the kube-prometheus-stack approach which you can see discussion on [here](https://github.com/prometheus-community/helm-charts/issues/3548).
 

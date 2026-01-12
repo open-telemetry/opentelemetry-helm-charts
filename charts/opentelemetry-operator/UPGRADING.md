@@ -45,7 +45,7 @@ OpenTelemetry Operator [0.99.0](https://github.com/open-telemetry/opentelemetry-
 This Chart now installs CRDs as templates. If you were managing CRDs separately by using the `--skip-crds` Helm flag, you need to set `crds.create=false` in your values.yaml.
 
 The reason for this change is OpenTelemetry Operator rolling out a new version of the OpenTelemetryCollector CRD. For information
-about this, see the [following document](https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1). The new CRD version includes a conversion webhook, which needs to reference a namespaced webhook Service, and therefore needs to include the release namespace. See [the following issue](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1167) for more information on the CRD change.
+about this, see the [following document](https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1). The new CRD version includes a conversion webhook, which needs to reference a namespaced webhook Service, and therefore needs to include the release namespace. See [upstream issue 1167](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1167) for more information on the CRD change.
 
 As a result, manual steps are necessary to convince Helm to manage existing CRDs. This involves adding some annotations and labels, and needs to
 be done before upgrading - otherwise the upgrade will fail.
@@ -86,13 +86,13 @@ manager:
     repository: "otel/opentelemetry-collector-contrib"
 ```
 
-For more details see [#1153](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1153).
+For more details see [upstream #1153](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/1153).
 
 ## <0.54.0 to 0.55.2
 
 > **_NOTE:_**  Versions 0.54.0 to 0.55.1 of the opentelemetry-operator helm chart should be avoided if providing user-managed certificates as file paths.
 
-[Changes to functionality, and variable names used for providing user-managed webhook certificates](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1121)
+[Changes to functionality, and variable names used for providing user-managed webhook certificates](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/1121) (upstream)
 
 Below variables have been renamed to be consistent with the chart's naming format. v0.54.0 also has a bug fix which makes the chart now read the contents of the file paths provided by these variables, instead of just using the value of the variables.
 ```
@@ -112,10 +112,10 @@ A type of flag `autoGenerateCert` has been changed, now it is an object with two
 If you previously set `autoGenerateCert` to `true` or `false` you have to set `autoGenerateCert.enabled` accordingly.
 
 ## <0.35.0 to 0.35.0
-OpenTelemetry Operator [0.82.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.82.0) includes a change that allows setting the management state of custom resources [PR 1888](https://github.com/open-telemetry/opentelemetry-operator/pull/1888). Since helm doesn't upgrade CRDs ([documented](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-operator#upgrade-chart)) it is critical to manually update CRDs from chart `0.35.0` or above, possibly using [this procedure](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/69#issuecomment-1567285625).  If this step isn't taken existing otelcol CRs won't be reconciled by the operator.
+OpenTelemetry Operator [0.82.0](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.82.0) includes a change that allows setting the management state of custom resources [PR 1888](https://github.com/open-telemetry/opentelemetry-operator/pull/1888). Since helm doesn't upgrade CRDs ([documented](https://github.com/liteverge/opentelemetry-helm-charts/tree/main/charts/opentelemetry-operator#upgrade-chart)) it is critical to manually update CRDs from chart `0.35.0` or above, possibly using [this procedure](https://github.com/open-telemetry/opentelemetry-helm-charts/issues/69#issuecomment-1567285625) (upstream).  If this step isn't taken existing otelcol CRs won't be reconciled by the operator.
 
 ## 0.27 to 0.28
-[Allow using own self-signed certificate](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/760)
+[Allow using own self-signed certificate](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/760) (upstream)
 
 A new flag `admissionWebhooks.autoGenerateCert` has been added. If you want to keep benefiting from the helm generated certificate as in previous versions, you must set `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert` to `true`.
 
@@ -135,7 +135,7 @@ It is important that the `jaegerremotesampling` extension and the `jaegerreceive
 
 ## 0.13.0 to 0.14.0
 
-[Allow byo webhooks and cert](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/411)
+[Allow byo webhooks and cert](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/411) (upstream)
 
 The ability to use admission webhooks has been moved from `admissionWebhooks.enabled` to `admissionWebhooks.create` as it now supports more use cases.
 

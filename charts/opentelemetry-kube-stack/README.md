@@ -3,8 +3,8 @@
 | Status        |           |
 | ------------- |-----------|
 | Stability     | [alpha]   |
-| Issues        | [![Open issues](https://img.shields.io/github/issues-search/open-telemetry/opentelemetry-helm-charts?query=is%3Aissue+is%3Aopen+label%3Achart%3Akube-stack&label=open&color=orange&logo=opentelemetry)](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aissue+is%3Aopen+label%3Achart%3Akube-stack) [![Closed issues](https://img.shields.io/github/issues-search/open-telemetry/opentelemetry-helm-charts?query=is%3Aissue%20is%3Aclosed%20label%3Achart%3Akube-stack%20&label=closed&color=blue&logo=opentelemetry)](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aclosed+is%3Aissue+label%3Achart%3Akube-stack) |
-| [Code Owners](https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/CONTRIBUTING.md)    | [@jaronoff97](https://www.github.com/jaronoff97), [@TylerHelmuth](https://github.com/TylerHelmuth), [@dmitryax](https://github.com/dmitryax) |
+| Issues        | See [upstream repository](https://github.com/open-telemetry/opentelemetry-helm-charts/issues?q=is%3Aissue+label%3Achart%3Akube-stack) for upstream issues |
+| [Code Owners](https://github.com/liteverge/opentelemetry-helm-charts/blob/main/CONTRIBUTING.md)    | Liteverge Team |
 
 
 This Helm chart serves as a quickstart for OpenTelemetry in a Kubernetes environment. The chart installs an [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) and a suite of collectors that help you get started with OpenTelemetry metrics, traces, and logs.
@@ -76,7 +76,7 @@ certificate that the API server is configured to trust. There are a few differen
 ## Add Repository
 
 ```console
-$ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+$ helm repo add liteverge-opentelemetry https://liteverge.github.io/opentelemetry-helm-charts
 $ helm repo update
 ```
 
@@ -86,14 +86,14 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ```console
 $ helm install \
-  opentelemetry-kube-stack open-telemetry/opentelemetry-kube-stack
+  opentelemetry-kube-stack liteverge-opentelemetry/opentelemetry-kube-stack
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
 $ helm install --namespace opentelemetry-operator-system \
-  opentelemetry-kube-stack open-telemetry/opentelemetry-kube-stack
+  opentelemetry-kube-stack liteverge-opentelemetry/opentelemetry-kube-stack
 ```
 
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:

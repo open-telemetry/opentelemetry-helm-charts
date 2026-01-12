@@ -10,16 +10,16 @@ in kubernetes cluster.
 
 ## Installing the Chart
 
-Add OpenTelemetry Helm repository:
+Add Liteverge OpenTelemetry Helm repository:
 
 ```console
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo add liteverge-opentelemetry https://liteverge.github.io/opentelemetry-helm-charts
 ```
 
 To install the chart with the release name my-opentelemetry-collector, run the following command:
 
 ```console
-helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value> --set image.repository="ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" --set command.name="otelcol-k8s"
+helm install my-opentelemetry-collector liteverge-opentelemetry/opentelemetry-collector --set mode=<value> --set image.repository="ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" --set command.name="otelcol-k8s"
 ```
 
 Where the `mode` value needs to be set to one of `daemonset`, `deployment` or `statefulset`.

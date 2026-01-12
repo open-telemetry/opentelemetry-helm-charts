@@ -35,9 +35,9 @@ Docker or Kubernetes cluster access (for testing chart installations)
 Remember to always work in a branch of your local copy, as you might otherwise
 have to contend with conflicts in master.
 
-Please also see [GitHub
+This is a fork of [opentelemetry/opentelemetry-helm-charts](https://github.com/open-telemetry/opentelemetry-helm-charts). Please also see the upstream [GitHub
 workflow](https://github.com/open-telemetry/community/blob/main/CONTRIBUTING.md#github-workflow)
-section of general project contributing guide.
+section for general contribution guidelines.
 
 Local Run/Build
 

@@ -30,7 +30,7 @@ certificate that the API server is configured to trust. There are a few differen
 ## Add Repository
 
 ```console
-$ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+$ helm repo add liteverge-opentelemetry https://liteverge.github.io/opentelemetry-helm-charts
 $ helm repo update
 ```
 
@@ -42,7 +42,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 > This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Use `crds.create=false` instead if you do not want the chart to install the OpenTelemetry Operator's CRDs.
 
 ```console
-$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+$ helm install opentelemetry-operator liteverge-opentelemetry/opentelemetry-operator \
 --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 

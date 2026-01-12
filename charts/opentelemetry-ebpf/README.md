@@ -10,16 +10,16 @@ in kubernetes cluster.
 
 ## Installing the Chart
 
-Add OpenTelemetry Helm repository:
+Add Liteverge OpenTelemetry Helm repository:
 
 ```console
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo add liteverge-opentelemetry https://liteverge.github.io/opentelemetry-helm-charts
 ```
 
 To install the chart with the release name my-opentelemetry-ebpf, run the following command:
 
 ```console
-helm install my-opentelemetry-ebpf open-telemetry/opentelemetry-ebpf
+helm install my-opentelemetry-ebpf liteverge-opentelemetry/opentelemetry-ebpf
 ```
 
 ### Other configuration options
