@@ -6,10 +6,10 @@ metadata:
   name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.134.0
+    helm.sh/chart: opentelemetry-collector-0.142.2
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.135.0"
+    app.kubernetes.io/version: "0.142.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
@@ -27,11 +27,15 @@ data:
         logs_index: otel-logs
         logs_index_time_format: yyyy-MM-dd
       otlp:
-        endpoint: jaeger-collector:4317
+        endpoint: jaeger:4317
+        sending_queue:
+          batch: null
         tls:
           insecure: true
       otlphttp/prometheus:
         endpoint: http://prometheus:9090/api/v1/otlp
+        sending_queue:
+          batch: null
         tls:
           insecure: true
     extensions:
@@ -43,15 +47,29 @@ data:
         extract:
           metadata:
           - k8s.namespace.name
-          - k8s.deployment.name
-          - k8s.statefulset.name
-          - k8s.daemonset.name
-          - k8s.cronjob.name
-          - k8s.job.name
-          - k8s.node.name
           - k8s.pod.name
           - k8s.pod.uid
+          - k8s.node.name
           - k8s.pod.start_time
+          - k8s.deployment.name
+          - k8s.replicaset.name
+          - k8s.replicaset.uid
+          - k8s.daemonset.name
+          - k8s.daemonset.uid
+          - k8s.job.name
+          - k8s.job.uid
+          - k8s.container.name
+          - k8s.cronjob.name
+          - k8s.statefulset.name
+          - k8s.statefulset.uid
+          - container.image.tag
+          - container.image.name
+          - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+          otel_annotations: true
         filter:
           node_from_env_var: K8S_NODE_NAME
         passthrough: false
@@ -203,6 +221,7 @@ data:
               exporter:
                 otlp:
                   endpoint: otel-collector:4318
+                  insecure: true
                   protocol: http/protobuf
               interval: 10000
               timeout: 5000
