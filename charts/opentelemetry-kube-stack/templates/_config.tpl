@@ -432,26 +432,30 @@ extensions:
 
 {{- define "opentelemetry-kube-stack.collector.applyResourceDetectionConfig" -}}
 
-{{- if not .collector.presets.resourceDetection.kubernetesDetector }}
-{{- fail "collector.presets.resourceDetection.kubernetesDetector must be defined with a valid OTel Collector Resource Detection processor detector (e.g., eks, aks, gcp...)" }}
+{{- if not .collector.presets.resourceDetection.detectors }}
+{{- fail "collector.presets.resourceDetection.detectors must be defined with a valid OTel Collector Resource Detection processor detectors (e.g., eks, aks, gcp...)" }}
 {{- end }}
 
 {{- $config := .collector.config }}
-{{- $detector := .collector.presets.resourceDetection.kubernetesDetector -}}
+{{- $presetDetectors := .collector.presets.resourceDetection.detectors -}}
 {{- $processors := get $config "processors" | default dict }}
 {{- $resourceDetectionProcessor := get $processors "resourcedetection/env" | default dict }}
 {{- $detectors := get $resourceDetectionProcessor "detectors" | default list }}
-{{- $newDetectors := append $detectors $detector | uniq }}
+{{- $newDetectors := $detectors }}
+{{- range $presetDetector := $presetDetectors }}
+{{- $newDetectors = append $newDetectors $presetDetector | uniq }}
+{{- end }}
 {{- $_ := set $resourceDetectionProcessor "detectors" $newDetectors  }}
 
 {{- $overwriteFunctionByDetector :=  dict "eks" "opentelemetry-kube-stack.collector.resourceDetectionEksConfigOverwrite" "aks" "opentelemetry-kube-stack.collector.resourceDetectionAksDetectorConfig" -}}
-{{- if hasKey $overwriteFunctionByDetector $detector }}
-{{- $overwriteFunction := index $overwriteFunctionByDetector $detector -}}
+{{- range $presetDetector := $presetDetectors }}
+{{- if hasKey $overwriteFunctionByDetector $presetDetector }}
+{{- $overwriteFunction := index $overwriteFunctionByDetector $presetDetector -}}
 {{- $resourceDetectionProcessorOverwrite := include $overwriteFunction . | fromYaml }}
 {{- $newResourceDetectionProcessor :=mergeOverwrite $resourceDetectionProcessor $resourceDetectionProcessorOverwrite -}}
 {{- $_ := set $config.processors "resourcedetection/env" $newResourceDetectionProcessor  }}
 {{- end }}
-
+{{- end  }}
 {{- $config | toYaml }}
 {{- end }}
 
