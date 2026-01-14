@@ -1,0 +1,900 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "OpenTelemetry eBPF Instrumentation Helm Chart",
+  "description": "Values schema for the OpenTelemetry eBPF Instrumentation Helm chart. This chart deploys eBPF-based instrumentation to automatically collect and transmit telemetry from containerized applications without code modification.",
+  "additionalProperties": false,
+  "required": ["image"],
+  "properties": {
+    "image": {
+      "type": "object",
+      "title": "Container Image Configuration",
+      "description": "Configuration for the eBPF instrumentation container image",
+      "additionalProperties": false,
+      "required": ["registry", "repository", "pullPolicy"],
+      "properties": {
+        "registry": {
+          "type": "string",
+          "title": "Image Registry",
+          "description": "Container image registry URL.",
+          "default": "ghcr.io",
+          "examples": ["ghcr.io", "docker.io", "quay.io", "registry.example.com"]
+        },
+        "repository": {
+          "type": "string",
+          "title": "Image Repository",
+          "description": "Container image repository name. Can include organization/path components depending on the registry.",
+          "examples": [
+            "open-telemetry/opentelemetry-ebpf-instrumentation/ebpf-instrument",
+            "otel/ebpf-instrument",
+            "myorg/myapp/ebpf-instrument",
+            "ebpf-instrument"
+          ]
+        },
+        "tag": {
+          "type": "string",
+          "title": "Image Tag",
+          "description": "Container image tag. When empty, the Chart's appVersion is used.",
+          "default": "",
+          "examples": [
+            "v0.4.0",
+            "latest",
+            "v1.2.3",
+            "main"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "title": "Image Digest",
+          "description": "Container image SHA256 digest (either in format 'sha256:XYZ' or 'XYZ'). When set, will override image.tag for guaranteed reproducible deployments.",
+          "default": "",
+          "examples": [
+            "",
+            "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+          ]
+        },
+        "pullPolicy": {
+          "type": "string",
+          "title": "Image Pull Policy",
+          "description": "Image pull policy for the container",
+          "default": "IfNotPresent",
+          "enum": ["Always", "IfNotPresent", "Never"]
+        },
+        "pullSecrets": {
+          "type": "array",
+          "title": "Image Pull Secrets",
+          "description": "Optional set of image pull secrets for private registries",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "annotations": {
+      "type": "object",
+      "title": "DaemonSet Annotations",
+      "description": "Annotations to add to the DaemonSet and related resources (ConfigMap, ClusterRole, ClusterRoleBinding)",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "example": {
+        "prometheus.io/scrape": "true",
+        "prometheus.io/port": "9090"
+      }
+    },
+    "initContainers": {
+      "type": "array",
+      "title": "Init Containers",
+      "description": "Additional init containers to run before the main eBPF instrumentation container. Useful for setup tasks, downloading configuration files, or other initialization logic",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "example": [
+        {
+          "name": "setup-config",
+          "image": "busybox:latest",
+          "command": ["sh", "-c", "echo 'Initializing'"],
+          "imagePullPolicy": "IfNotPresent"
+        }
+      ]
+    },
+    "nameOverride": {
+      "type": "string",
+      "title": "Name Override",
+      "description": "Overrides the chart name for resource naming",
+      "default": ""
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "title": "Full Name Override",
+      "description": "Overrides the full chart name for resource naming",
+      "default": ""
+    },
+    "namespaceOverride": {
+      "type": "string",
+      "title": "Namespace Override",
+      "description": "Override the deployment namespace",
+      "default": ""
+    },
+    "rbac": {
+      "type": "object",
+      "title": "RBAC Configuration",
+      "description": "Role-Based Access Control settings for the instrumentation",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "title": "Create RBAC Resources",
+          "description": "Whether to create RBAC resources (ClusterRole and ClusterRoleBinding)",
+          "default": true
+        },
+        "extraClusterRoleRules": {
+          "type": "array",
+          "title": "Extra Cluster Role Rules",
+          "description": "Extra cluster roles to be created for OpenTelemetry eBPF Instrumentation",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "title": "Service Account Configuration",
+      "description": "Kubernetes service account settings for the instrumentation pods",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "title": "Create Service Account",
+          "description": "Whether to create a Kubernetes service account",
+          "default": true
+        },
+        "automount": {
+          "type": "boolean",
+          "title": "Automount Service Account Credentials",
+          "description": "Automatically mount a ServiceAccount's API credentials",
+          "default": true
+        },
+        "annotations": {
+          "type": "object",
+          "title": "Service Account Annotations",
+          "description": "Annotations to add to the service account",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "title": "Service Account Labels",
+          "description": "ServiceAccount labels",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "type": "string",
+          "title": "Service Account Name",
+          "description": "The name of the service account to use. If not set and create is true, a name is auto-generated.",
+          "default": ""
+        }
+      }
+    },
+    "podAnnotations": {
+      "type": "object",
+      "title": "Pod Annotations",
+      "description": "Annotations to add to the OBI pods",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "podLabels": {
+      "type": "object",
+      "title": "Pod Labels",
+      "description": "Adds custom labels to the OBI Pods",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "title": "Pod Security Context",
+      "description": "Security context settings for the entire pod",
+      "additionalProperties": true,
+      "example": {
+        "fsGroup": 2000
+      }
+    },
+    "privileged": {
+      "type": "boolean",
+      "title": "Privileged Mode",
+      "description": "If set to false, deploys an unprivileged / less privileged setup",
+      "default": true
+    },
+    "extraCapabilities": {
+      "type": "array",
+      "title": "Extra Capabilities",
+      "description": "Extra capabilities for unprivileged / less privileged setup",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        "SYS_RESOURCE",
+        "SYS_ADMIN"
+      ]
+    },
+    "securityContext": {
+      "type": "object",
+      "title": "Container Security Context",
+      "description": "Security context settings for the instrumentation container when running in privileged mode",
+      "additionalProperties": true,
+      "example": {
+        "privileged": true
+      }
+    },
+    "priorityClassName": {
+      "type": "string",
+      "title": "Priority Class Name",
+      "description": "Priority class name for the pods",
+      "default": "",
+      "example": "system-cluster-critical"
+    },
+    "service": {
+      "type": "object",
+      "title": "Service Configuration",
+      "description": "Configuration for exposing metrics via Kubernetes Service",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable Service",
+          "description": "Whether to create a Service resource for the instrumentation",
+          "default": false
+        },
+        "type": {
+          "type": "string",
+          "title": "Service Type",
+          "description": "Kubernetes service type",
+          "default": "ClusterIP",
+          "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+          "example": "ClusterIP"
+        },
+        "annotations": {
+          "type": "object",
+          "title": "Service Annotations",
+          "description": "Service annotations",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "title": "Service Labels",
+          "description": "Service labels",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "clusterIP": {
+          "type": "string",
+          "title": "Cluster IP",
+          "description": "Cluster IP address for the service",
+          "default": ""
+        },
+        "loadBalancerIP": {
+          "type": "string",
+          "title": "LoadBalancer IP",
+          "description": "LoadBalancer IP address",
+          "default": ""
+        },
+        "loadBalancerClass": {
+          "type": "string",
+          "title": "LoadBalancer Class",
+          "description": "LoadBalancer class name",
+          "default": ""
+        },
+        "loadBalancerSourceRanges": {
+          "type": "array",
+          "title": "LoadBalancer Source Ranges",
+          "description": "Source ranges for LoadBalancer",
+          "items": {
+            "type": "string"
+          }
+        },
+        "port": {
+          "type": "integer",
+          "title": "Service Port",
+          "description": "Prometheus metrics service port",
+          "default": 80,
+          "example": [
+            80,
+            8080
+          ]
+        },
+        "targetPort": {
+          "type": ["integer", "null"],
+          "title": "Target Port",
+          "description": "Target port for the service. Defaults to prometheus_export.port from configuration."
+        },
+        "portName": {
+          "type": "string",
+          "title": "Port Name",
+          "description": "Name of the port for Prometheus metrics",
+          "default": "metrics",
+          "example": "prom-metrics"
+        },
+        "appProtocol": {
+          "type": "string",
+          "title": "App Protocol",
+          "description": "App protocol field for the service port (e.g., 'http' or 'tcp')",
+          "default": ""
+        },
+        "nodePort": {
+          "type": ["integer", "null"],
+          "title": "Node Port",
+          "description": "Static node port for the service when type is NodePort. Valid port range is 30000-32767. Leave empty for automatic assignment",
+          "example": 30090
+        },
+        "externalIPs": {
+          "type": "array",
+          "title": "External IPs",
+          "description": "List of external IP addresses that are assigned to the service. Kubernetes will forward traffic to these IPs to the service",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "192.168.1.100",
+            "192.168.1.101"
+          ]
+        },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "title": "External Traffic Policy",
+          "description": "Specifies how the service routes traffic from external sources. Set to 'Local' to preserve client source IP, or 'Cluster' (default) to allow any endpoint",
+          "enum": ["", "Local", "Cluster"],
+          "default": "",
+          "example": "Local"
+        },
+        "internalMetrics": {
+          "type": "object",
+          "title": "Internal Metrics Configuration",
+          "description": "Configuration for exposing internal instrumentation metrics",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "title": "Enable Internal Metrics Service",
+              "description": "Whether to expose internal metrics from the service",
+              "default": false
+            },
+            "port": {
+              "type": "integer",
+              "title": "Internal Metrics Port",
+              "description": "Port for exposing internal metrics",
+              "default": 8080,
+              "example": [
+                8080,
+                9090
+              ]
+            },
+            "targetPort": {
+              "type": ["integer", "null"],
+              "title": "Internal Metrics Target Port",
+              "description": "Target port for internal metrics. Defaults to internal_metrics.prometheus.port from configuration.",
+              "example": null
+            },
+            "portName": {
+              "type": "string",
+              "title": "Internal Metrics Port Name",
+              "description": "Name of the port for internal metrics",
+              "default": "int-metrics",
+              "example": "internal-metrics"
+            },
+            "appProtocol": {
+              "type": "string",
+              "title": "Internal Metrics App Protocol",
+              "description": "App protocol field for internal metrics port",
+              "default": ""
+            },
+            "nodePort": {
+              "type": ["integer", "null"],
+              "title": "Internal Metrics Node Port",
+              "description": "Static node port for internal metrics when service type is NodePort. Valid port range is 30000-32767. Leave empty for automatic assignment",
+              "example": 30091
+            }
+          }
+        }
+      }
+    },
+    "k8sCache": {
+      "type": "object",
+      "title": "Kubernetes Metadata Cache Configuration",
+      "description": "Settings for the optional Kubernetes metadata cache deployment that helps the instrumentation enrich telemetry with cluster metadata",
+      "additionalProperties": false,
+      "properties": {
+        "replicas": {
+          "type": "integer",
+          "title": "Cache Replicas",
+          "description": "Number of replicas for the Kubernetes metadata cache. Set to 0 to disable the cache.",
+          "default": 0,
+          "example": 0
+        },
+        "profilePort": {
+          "type": "integer",
+          "title": "Profile Port",
+          "description": "Enables the profile port for the eBPF Instrumentation cache",
+          "default": 0,
+          "example": 0
+        },
+        "image": {
+          "type": "object",
+          "title": "Cache Image Configuration",
+          "description": "Container image settings for the Kubernetes metadata cache",
+          "additionalProperties": false,
+          "properties": {
+            "registry": {
+              "type": "string",
+              "title": "Cache Image Registry",
+              "description": "Registry for the cache container image.",
+              "default": "ghcr.io",
+              "examples": ["ghcr.io", "docker.io", "quay.io", "registry.example.com"]
+            },
+            "repository": {
+              "type": "string",
+              "title": "Cache Image Repository",
+              "description": "Repository name for the cache container image. Can include organization/path components depending on the registry.",
+              "examples": [
+                "open-telemetry/opentelemetry-ebpf-instrumentation/opentelemetry-ebpf-k8s-cache",
+                "otel/ebpf-k8s-cache",
+                "myorg/myapp/k8s-cache",
+                "ebpf-k8s-cache"
+              ]
+            },
+            "tag": {
+              "type": "string",
+              "title": "Cache Image Tag",
+              "description": "Tag for the cache container image. When empty, the Chart's appVersion is used.",
+              "default": "",
+              "examples": [
+                "v0.4.0",
+                "latest",
+                "v1.2.3",
+                "main"
+              ]
+            },
+            "digest": {
+              "type": ["string", "null"],
+              "title": "Cache Image Digest",
+              "description": "Cache image SHA256 digest (either in format 'sha256:XYZ' or 'XYZ'). When set, will override the image tag for guaranteed reproducible deployments.",
+              "default": null,
+              "examples": [
+                null,
+                "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+              ]
+            },
+            "pullPolicy": {
+              "type": "string",
+              "title": "Cache Image Pull Policy",
+              "description": "K8s Cache image pull policy",
+              "default": "IfNotPresent",
+              "enum": ["Always", "IfNotPresent", "Never"],
+              "example": "IfNotPresent"
+            },
+            "pullSecrets": {
+              "type": "array",
+              "title": "Cache Image Pull Secrets",
+              "description": "Optional set of image pull secrets for the cache",
+              "items": {
+                "type": "object"
+              },
+              "example": []
+            }
+          }
+        },
+        "env": {
+          "type": "object",
+          "title": "Cache Environment Variables",
+          "description": "Environment variables that will override cache configmap values",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "envValueFrom": {
+          "type": "object",
+          "title": "Cache Environment Variables from Resources",
+          "description": "Environment variables to be set from resources such as ConfigMaps or Secrets",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "resources": {
+          "type": "object",
+          "title": "Cache Resource Requests and Limits",
+          "description": "CPU and memory resource requests and limits for the cache container",
+          "additionalProperties": false,
+          "properties": {
+            "requests": {
+              "type": "object",
+              "title": "Resource Requests",
+              "description": "Minimum resources required by the cache container",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "example": {}
+            },
+            "limits": {
+              "type": "object",
+              "title": "Resource Limits",
+              "description": "Maximum resources allowed for the cache container",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "example": {}
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "title": "Cache Service Configuration",
+          "description": "Service settings for the Kubernetes metadata cache",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Service Name",
+              "description": "Name of both the Service and Deployment",
+              "default": "opentelemetry-ebpf-instrumentation-k8s-cache",
+              "example": "k8s-cache"
+            },
+            "port": {
+              "type": "integer",
+              "title": "Cache Service Port",
+              "description": "Port on which the cache service listens",
+              "default": 50055,
+              "example": 50055
+            },
+            "type": {
+              "type": "string",
+              "title": "Cache Service Type",
+              "description": "Kubernetes service type for the cache",
+              "default": "ClusterIP",
+              "enum": ["ClusterIP", "NodePort"],
+              "example": "ClusterIP"
+            },
+            "annotations": {
+              "type": "object",
+              "title": "Cache Service Annotations",
+              "description": "Service annotations",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "labels": {
+              "type": "object",
+              "title": "Cache Service Labels",
+              "description": "Service labels",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "internalMetrics": {
+          "type": "object",
+          "title": "Cache Internal Metrics Configuration",
+          "description": "Configuration for cache internal metrics exposure",
+          "additionalProperties": false,
+          "properties": {
+            "port": {
+              "type": "integer",
+              "title": "Cache Internal Metrics Port",
+              "description": "Port for exposing cache internal metrics. A value of 0 disables internal metrics",
+              "default": 0
+            },
+            "path": {
+              "type": "string",
+              "title": "Internal Metrics Path",
+              "description": "Path for cache internal metrics endpoint",
+              "default": "/metrics",
+              "example": "/metrics"
+            },
+            "portName": {
+              "type": "string",
+              "title": "Internal Metrics Port Name",
+              "description": "Port name for cache internal metrics",
+              "default": "metrics",
+              "example": "metrics"
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "title": "Cache Deployment Annotations",
+          "description": "Deployment annotations",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "podAnnotations": {
+          "type": "object",
+          "title": "Cache Pod Annotations",
+          "description": "Adds custom annotations to the eBPF Instrumentation Kube Cache Pods",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "podLabels": {
+          "type": "object",
+          "title": "Cache Pod Labels",
+          "description": "Adds custom labels to the eBPF Instrumentation Kube Cache Pods",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "title": "eBPF Instrumentation Configuration",
+      "description": "Configuration object passed to the eBPF instrumentation agent, including receivers, processors, and exporters",
+      "additionalProperties": false,
+      "properties": {
+        "skipConfigMapCheck": {
+          "type": "boolean",
+          "title": "Skip ConfigMap Check",
+          "description": "Set to true to skip the check around ConfigMap creation",
+          "default": false
+        },
+        "create": {
+          "type": "boolean",
+          "title": "Create ConfigMap",
+          "description": "Set to true to use the default configurations",
+          "default": true
+        },
+        "name": {
+          "type": "string",
+          "title": "ConfigMap Name",
+          "description": "Name of an external ConfigMap containing the eBPF Instrumentation configuration",
+          "default": "",
+          "example": ""
+        },
+        "data": {
+          "type": "object",
+          "title": "Configuration Data",
+          "description": "Default OpenTelemetry eBPF Instrumentation configuration data. User-provided values will be merged with these defaults. The configuration includes settings for telemetry export endpoints, attributes, filters, Prometheus metrics, and other instrumentation options.",
+          "additionalProperties": true,
+          "default": {
+            "otel_traces_export": {
+              "endpoint": "http://${HOST_IP}:4317"
+            },
+            "otel_metrics_export": {
+              "endpoint": "http://${HOST_IP}:4318"
+            },
+            "attributes": {
+              "kubernetes": {
+                "enable": true
+              }
+            },
+            "filter": {
+              "network": {
+                "k8s_dst_owner_name": {
+                  "not_match": "{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}"
+                },
+                "k8s_src_owner_name": {
+                  "not_match": "{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}"
+                }
+              }
+            },
+            "prometheus_export": {
+              "port": 9090,
+              "path": "/metrics"
+            }
+          },
+          "example": {
+            "profile_port": 6060,
+            "log_level": "debug",
+            "otel_traces_export": {
+              "endpoint": "http://collector:4317"
+            }
+          }
+        }
+      }
+    },
+    "preset": {
+      "type": "string",
+      "title": "Instrumentation Preset",
+      "description": "Preconfigures some default properties for network or application observability",
+      "enum": ["application", "cache", "network"],
+      "default": "application",
+      "example": "application"
+    },
+    "env": {
+      "type": "object",
+      "title": "Environment Variables",
+      "description": "Environment variables that will override configmap values. Keys are environment variable names, values are strings.",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "example": {
+        "OTEL_RESOURCE": "service.name=svc",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc"
+      }
+    },
+    "envValueFrom": {
+      "type": "object",
+      "title": "Environment Variables from Resources",
+      "description": "Environment variables to be set from resources such as Kubernetes ConfigMaps or Secrets",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "example": {}
+    },
+    "resources": {
+      "type": "object",
+      "title": "Container Resource Requests and Limits",
+      "description": "CPU and memory resource requests and limits for the instrumentation container",
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "object",
+          "title": "Resource Requests",
+          "description": "Minimum resources required by the container",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "example": {}
+        },
+        "limits": {
+          "type": "object",
+          "title": "Resource Limits",
+          "description": "Maximum resources allowed for the container",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "example": {}
+        }
+      }
+    },
+    "updateStrategy": {
+      "type": "object",
+      "title": "DaemonSet Update Strategy",
+      "description": "Update strategy for the DaemonSet",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Update Strategy Type",
+          "description": "Update strategy type for the DaemonSet. 'RollingUpdate' gradually replaces old pods with new ones, while 'OnDelete' only updates pods when they are manually deleted.",
+          "default": "RollingUpdate",
+          "enum": ["RollingUpdate", "OnDelete"],
+          "example": "RollingUpdate"
+        }
+      }
+    },
+    "volumes": {
+      "type": "array",
+      "title": "Additional Volumes",
+      "description": "Additional volumes on the output DaemonSet definition",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "volumeMounts": {
+      "type": "array",
+      "title": "Additional Volume Mounts",
+      "description": "Additional volume mounts on the output DaemonSet definition",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "title": "Node Selector",
+      "description": "Node labels for pod scheduling constraints",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "tolerations": {
+      "type": "array",
+      "title": "Pod Tolerations",
+      "description": "Tolerations for pod scheduling on tainted nodes",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "affinity": {
+      "type": "object",
+      "title": "Pod Affinity Rules",
+      "description": "Affinity rules for pod scheduling preferences",
+      "additionalProperties": true
+    },
+    "dnsPolicy": {
+      "type": "string",
+      "title": "DNS Policy",
+      "description": "Determines how DNS resolution is handled for that pod. If preset is 'network' or config.data.network is enabled, eBPF Instrumentation requires hostNetwork access.",
+      "default": "ClusterFirstWithHostNet",
+      "example": "ClusterFirstWithHostNet"
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "title": "ServiceMonitor Configuration",
+      "description": "Configuration for Prometheus Operator ServiceMonitor to enable automatic metrics scraping",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable ServiceMonitor",
+          "description": "Whether to create a ServiceMonitor resource for Prometheus integration",
+          "default": false
+        },
+        "additionalLabels": {
+          "type": "object",
+          "title": "Additional Labels",
+          "description": "Add custom labels to the ServiceMonitor resource",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "title": "ServiceMonitor Annotations",
+          "description": "ServiceMonitor annotations",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "title": "Metrics Configuration",
+          "description": "Metrics scraping endpoint configuration",
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {
+              "type": "object",
+              "title": "Metrics Endpoint",
+              "description": "ServiceMonitor Prometheus scraping endpoint configuration. Supports interval, timeout, scrapeTimeout, and other ServiceMonitor endpoint fields",
+              "additionalProperties": true,
+              "example": {
+                "interval": "15s"
+              }
+            }
+          }
+        },
+        "internalMetrics": {
+          "type": "object",
+          "title": "Internal Metrics Configuration",
+          "description": "Internal metrics scraping endpoint configuration",
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {
+              "type": "object",
+              "title": "Internal Metrics Endpoint",
+              "description": "ServiceMonitor internal metrics scraping endpoint configuration. Supports interval, timeout, scrapeTimeout, and other ServiceMonitor endpoint fields",
+              "additionalProperties": true,
+              "example": {
+                "interval": "15s"
+              }
+            }
+          }
+        },
+        "jobLabel": {
+          "type": "string",
+          "title": "Prometheus Job Label",
+          "description": "Prometheus job label. If empty, chart release name is used",
+          "default": "",
+          "example": ""
+        }
+      }
+    }
+  }
+}
