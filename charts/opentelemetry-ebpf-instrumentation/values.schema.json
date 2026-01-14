@@ -4,21 +4,32 @@
   "title": "OpenTelemetry eBPF Instrumentation Helm Chart",
   "description": "Values schema for the OpenTelemetry eBPF Instrumentation Helm chart. This chart deploys eBPF-based instrumentation to automatically collect and transmit telemetry from containerized applications without code modification.",
   "additionalProperties": false,
-  "required": ["image"],
+  "required": [
+    "image"
+  ],
   "properties": {
     "image": {
       "type": "object",
       "title": "Container Image Configuration",
       "description": "Configuration for the eBPF instrumentation container image",
       "additionalProperties": false,
-      "required": ["registry", "repository", "pullPolicy"],
+      "required": [
+        "registry",
+        "repository",
+        "pullPolicy"
+      ],
       "properties": {
         "registry": {
           "type": "string",
           "title": "Image Registry",
           "description": "Container image registry URL.",
           "default": "ghcr.io",
-          "examples": ["ghcr.io", "docker.io", "quay.io", "registry.example.com"]
+          "examples": [
+            "ghcr.io",
+            "docker.io",
+            "quay.io",
+            "registry.example.com"
+          ]
         },
         "repository": {
           "type": "string",
@@ -59,7 +70,11 @@
           "title": "Image Pull Policy",
           "description": "Image pull policy for the container",
           "default": "IfNotPresent",
-          "enum": ["Always", "IfNotPresent", "Never"]
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ]
         },
         "pullSecrets": {
           "type": "array",
@@ -95,7 +110,11 @@
         {
           "name": "setup-config",
           "image": "busybox:latest",
-          "command": ["sh", "-c", "echo 'Initializing'"],
+          "command": [
+            "sh",
+            "-c",
+            "echo 'Initializing'"
+          ],
           "imagePullPolicy": "IfNotPresent"
         }
       ]
@@ -259,7 +278,11 @@
           "title": "Service Type",
           "description": "Kubernetes service type",
           "default": "ClusterIP",
-          "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+          "enum": [
+            "ClusterIP",
+            "NodePort",
+            "LoadBalancer"
+          ],
           "example": "ClusterIP"
         },
         "annotations": {
@@ -315,7 +338,10 @@
           ]
         },
         "targetPort": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "title": "Target Port",
           "description": "Target port for the service. Defaults to prometheus_export.port from configuration."
         },
@@ -333,7 +359,10 @@
           "default": ""
         },
         "nodePort": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "title": "Node Port",
           "description": "Static node port for the service when type is NodePort. Valid port range is 30000-32767. Leave empty for automatic assignment",
           "example": 30090
@@ -354,7 +383,11 @@
           "type": "string",
           "title": "External Traffic Policy",
           "description": "Specifies how the service routes traffic from external sources. Set to 'Local' to preserve client source IP, or 'Cluster' (default) to allow any endpoint",
-          "enum": ["", "Local", "Cluster"],
+          "enum": [
+            "",
+            "Local",
+            "Cluster"
+          ],
           "default": "",
           "example": "Local"
         },
@@ -381,7 +414,10 @@
               ]
             },
             "targetPort": {
-              "type": ["integer", "null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "title": "Internal Metrics Target Port",
               "description": "Target port for internal metrics. Defaults to internal_metrics.prometheus.port from configuration.",
               "example": null
@@ -400,7 +436,10 @@
               "default": ""
             },
             "nodePort": {
-              "type": ["integer", "null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "title": "Internal Metrics Node Port",
               "description": "Static node port for internal metrics when service type is NodePort. Valid port range is 30000-32767. Leave empty for automatic assignment",
               "example": 30091
@@ -440,7 +479,12 @@
               "title": "Cache Image Registry",
               "description": "Registry for the cache container image.",
               "default": "ghcr.io",
-              "examples": ["ghcr.io", "docker.io", "quay.io", "registry.example.com"]
+              "examples": [
+                "ghcr.io",
+                "docker.io",
+                "quay.io",
+                "registry.example.com"
+              ]
             },
             "repository": {
               "type": "string",
@@ -466,7 +510,10 @@
               ]
             },
             "digest": {
-              "type": ["string", "null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "title": "Cache Image Digest",
               "description": "Cache image SHA256 digest (either in format 'sha256:XYZ' or 'XYZ'). When set, will override the image tag for guaranteed reproducible deployments.",
               "default": null,
@@ -481,7 +528,11 @@
               "title": "Cache Image Pull Policy",
               "description": "K8s Cache image pull policy",
               "default": "IfNotPresent",
-              "enum": ["Always", "IfNotPresent", "Never"],
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ],
               "example": "IfNotPresent"
             },
             "pullSecrets": {
@@ -563,7 +614,10 @@
               "title": "Cache Service Type",
               "description": "Kubernetes service type for the cache",
               "default": "ClusterIP",
-              "enum": ["ClusterIP", "NodePort"],
+              "enum": [
+                "ClusterIP",
+                "NodePort"
+              ],
               "example": "ClusterIP"
             },
             "annotations": {
@@ -709,7 +763,11 @@
       "type": "string",
       "title": "Instrumentation Preset",
       "description": "Preconfigures some default properties for network or application observability",
-      "enum": ["application", "cache", "network"],
+      "enum": [
+        "application",
+        "cache",
+        "network"
+      ],
       "default": "application",
       "example": "application"
     },
@@ -772,7 +830,10 @@
           "title": "Update Strategy Type",
           "description": "Update strategy type for the DaemonSet. 'RollingUpdate' gradually replaces old pods with new ones, while 'OnDelete' only updates pods when they are manually deleted.",
           "default": "RollingUpdate",
-          "enum": ["RollingUpdate", "OnDelete"],
+          "enum": [
+            "RollingUpdate",
+            "OnDelete"
+          ],
           "example": "RollingUpdate"
         }
       }
