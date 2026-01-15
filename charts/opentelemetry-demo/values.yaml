@@ -11,8 +11,6 @@ default:
       value: otel-collector
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
-    - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version={{ .Chart.AppVersion }}'
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -170,6 +168,8 @@ components:
     enabled: true
     useDefault:
       env: true
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -193,6 +193,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: AD_PORT
         value: "8080"
@@ -214,6 +216,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: CART_PORT
         value: "8080"
@@ -241,6 +245,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: CHECKOUT_PORT
         value: "8080"
@@ -280,6 +286,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: CURRENCY_PORT
         value: "8080"
@@ -299,6 +307,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: EMAIL_PORT
         value: "8080"
@@ -318,6 +328,8 @@ components:
     enabled: true
     useDefault:
       env: true
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -345,6 +357,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: FRONTEND_PORT
         value: "8080"
@@ -397,6 +411,7 @@ components:
     service:
       port: 8080
     podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: httpcheck
       io.opentelemetry.discovery.metrics/config: |
@@ -458,6 +473,7 @@ components:
     service:
       port: 8081
     podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: nginx
       io.opentelemetry.discovery.metrics/config: |
@@ -481,6 +497,8 @@ components:
       env: true
     service:
       port: 8089
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: LOCUST_WEB_HOST
         value: "0.0.0.0"
@@ -518,6 +536,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: PAYMENT_PORT
         value: "8080"
@@ -543,6 +563,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: PRODUCT_CATALOG_PORT
         value: "8080"
@@ -568,6 +590,8 @@ components:
       env: true
     service:
       port: 3551
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: OPENAI_API_KEY
         value: dummy
@@ -607,6 +631,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: QUOTE_PORT
         value: "8080"
@@ -632,6 +658,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: RECOMMENDATION_PORT
         value: "8080"
@@ -657,6 +685,8 @@ components:
       env: true
     service:
       port: 8080
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: SHIPPING_PORT
         value: "8080"
@@ -683,6 +713,8 @@ components:
         value: 8013
       - name: ofrep
         value: 8016
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: FLAGD_METRICS_EXPORTER
         value: otel
@@ -753,6 +785,8 @@ components:
         value: 9092
       - name: controller
         value: 9093
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
@@ -780,6 +814,8 @@ components:
       env: true
     service:
       port: 8000
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
     env:
       - name: FLAGD_HOST
         value: flagd
@@ -797,6 +833,7 @@ components:
     service:
       port: 5432
     podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: postgresql
       io.opentelemetry.discovery.metrics/config: |
@@ -848,6 +885,7 @@ components:
       - name: valkey-cart
         value: 6379
     podAnnotations:
+      resource.opentelemetry.io/service.namespace: otel-demo
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: redis
       io.opentelemetry.discovery.metrics/config: |

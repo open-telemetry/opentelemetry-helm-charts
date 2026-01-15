@@ -538,6 +538,8 @@ spec:
         
         app.kubernetes.io/component: accounting
         app.kubernetes.io/name: accounting
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -562,8 +564,6 @@ spec:
               value: Host=postgresql;Username=otelu;Password=otelp;Database=otel
             - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
               value: "false"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 120Mi
@@ -607,6 +607,8 @@ spec:
         
         app.kubernetes.io/component: ad
         app.kubernetes.io/name: ad
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -637,8 +639,6 @@ spec:
               value: http://$(OTEL_COLLECTOR_NAME):4318
             - name: OTEL_LOGS_EXPORTER
               value: otlp
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 300Mi
@@ -675,6 +675,8 @@ spec:
         
         app.kubernetes.io/component: cart
         app.kubernetes.io/name: cart
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -707,8 +709,6 @@ spec:
               value: "8013"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4317
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 160Mi
@@ -753,6 +753,8 @@ spec:
         
         app.kubernetes.io/component: checkout
         app.kubernetes.io/name: checkout
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -797,8 +799,6 @@ spec:
               value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: GOMEMLIMIT
               value: 16MiB
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 20Mi
@@ -842,6 +842,8 @@ spec:
         
         app.kubernetes.io/component: currency
         app.kubernetes.io/name: currency
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -870,8 +872,6 @@ spec:
               value: '2.2.0'
             - name: IPV6_ENABLED
               value: "false"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 20Mi
@@ -908,6 +908,8 @@ spec:
         
         app.kubernetes.io/component: email
         app.kubernetes.io/name: email
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -938,8 +940,6 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 100Mi
@@ -976,6 +976,8 @@ spec:
         
         app.kubernetes.io/component: flagd
         app.kubernetes.io/name: flagd
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1013,8 +1015,6 @@ spec:
               value: $(OTEL_COLLECTOR_NAME):4317
             - name: GOMEMLIMIT
               value: 60MiB
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 75Mi
@@ -1048,8 +1048,6 @@ spec:
               value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
             - name: PHX_HOST
               value: localhost
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 250Mi
@@ -1105,6 +1103,8 @@ spec:
         
         app.kubernetes.io/component: fraud-detection
         app.kubernetes.io/name: fraud-detection
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1133,8 +1133,6 @@ spec:
               value: "true"
             - name: OTEL_INSTRUMENTATION_MESSAGING_EXPERIMENTAL_RECEIVE_TELEMETRY_ENABLED
               value: "true"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 300Mi
@@ -1178,6 +1176,8 @@ spec:
         
         app.kubernetes.io/component: frontend
         app.kubernetes.io/name: frontend
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1234,8 +1234,6 @@ spec:
               value: frontend-web
             - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
               value: http://localhost:8080/otlp-http/v1/traces
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 250Mi
@@ -1282,6 +1280,7 @@ spec:
             - endpoint: "http://`endpoint`"
         io.opentelemetry.discovery.metrics/enabled: "true"
         io.opentelemetry.discovery.metrics/scraper: httpcheck
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1342,8 +1341,6 @@ spec:
               value: "4317"
             - name: OTEL_COLLECTOR_PORT_HTTP
               value: "4318"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 65Mi
@@ -1391,6 +1388,7 @@ spec:
           timeout: "20s"
         io.opentelemetry.discovery.metrics/enabled: "true"
         io.opentelemetry.discovery.metrics/scraper: nginx
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1417,8 +1415,6 @@ spec:
               value: "4317"
             - name: OTEL_COLLECTOR_HOST
               value: $(OTEL_COLLECTOR_NAME)
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 50Mi
@@ -1455,6 +1451,8 @@ spec:
         
         app.kubernetes.io/component: kafka
         app.kubernetes.io/name: kafka
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1489,8 +1487,6 @@ spec:
               value: CONTROLLER
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: 1@kafka:9093
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 600Mi
@@ -1531,6 +1527,8 @@ spec:
         
         app.kubernetes.io/component: llm
         app.kubernetes.io/name: llm
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1555,8 +1553,6 @@ spec:
               value: flagd
             - name: FLAGD_PORT
               value: "8013"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             null
           volumeMounts:
@@ -1592,6 +1588,8 @@ spec:
         
         app.kubernetes.io/component: load-generator
         app.kubernetes.io/name: load-generator
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1638,8 +1636,6 @@ spec:
               value: "8016"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4317
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 1500Mi
@@ -1676,6 +1672,8 @@ spec:
         
         app.kubernetes.io/component: payment
         app.kubernetes.io/name: payment
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1706,8 +1704,6 @@ spec:
               value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: IPV6_ENABLED
               value: "false"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 140Mi
@@ -1773,6 +1769,7 @@ spec:
             insecure: true
         io.opentelemetry.discovery.metrics/enabled: "true"
         io.opentelemetry.discovery.metrics/scraper: postgresql
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1831,6 +1828,8 @@ spec:
         
         app.kubernetes.io/component: product-catalog
         app.kubernetes.io/name: product-catalog
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1865,8 +1864,6 @@ spec:
               value: database
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4317
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 20Mi
@@ -1903,6 +1900,8 @@ spec:
         
         app.kubernetes.io/component: product-reviews
         app.kubernetes.io/name: product-reviews
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -1951,8 +1950,6 @@ spec:
               value: "true"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4317
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 100Mi
@@ -1989,6 +1986,8 @@ spec:
         
         app.kubernetes.io/component: quote
         app.kubernetes.io/name: quote
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -2019,8 +2018,6 @@ spec:
               value: http://$(OTEL_COLLECTOR_NAME):4318
             - name: IPV6_ENABLED
               value: "false"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 40Mi
@@ -2061,6 +2058,8 @@ spec:
         
         app.kubernetes.io/component: recommendation
         app.kubernetes.io/name: recommendation
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -2095,8 +2094,6 @@ spec:
               value: "8013"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4317
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 500Mi
@@ -2133,6 +2130,8 @@ spec:
         
         app.kubernetes.io/component: shipping
         app.kubernetes.io/name: shipping
+      annotations:
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
@@ -2161,8 +2160,6 @@ spec:
               value: http://$(OTEL_COLLECTOR_NAME):4317
             - name: IPV6_ENABLED
               value: "false"
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version=2.2.0
           resources:
             limits:
               memory: 20Mi
@@ -2205,6 +2202,7 @@ spec:
           collection_interval: 10s
         io.opentelemetry.discovery.metrics/enabled: "true"
         io.opentelemetry.discovery.metrics/scraper: redis
+        resource.opentelemetry.io/service.namespace: otel-demo
     spec:
       serviceAccountName: example
       containers:
