@@ -1,0 +1,25 @@
+suite: cache deployment
+templates:
+  - templates/cache-deployment.yaml
+tests:
+  - it: renders cache deployment when k8sCache.replicas is set
+    set:
+      k8sCache:
+        replicas: 1
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: opentelemetry-ebpf-instrumentation-k8s-cache
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  - it: does not render when k8sCache.replicas is 0
+    set:
+      k8sCache:
+        replicas: 0
+    asserts:
+      - hasDocuments:
+          count: 0

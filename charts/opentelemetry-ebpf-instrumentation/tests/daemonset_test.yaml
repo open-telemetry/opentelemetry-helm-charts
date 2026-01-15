@@ -1,0 +1,24 @@
+suite: daemonset
+templates:
+  - templates/daemonset.yaml
+  - templates/configmap.yaml
+tests:
+  - it: renders daemonset with default settings
+    template: templates/daemonset.yaml
+    asserts:
+      - isKind:
+          of: DaemonSet
+      - equal:
+          path: spec.template.spec.hostPID
+          value: true
+
+  - it: uses external configmap when configured
+    template: templates/daemonset.yaml
+    set:
+      config:
+        create: false
+        name: external-config
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].configMap.name
+          value: external-config

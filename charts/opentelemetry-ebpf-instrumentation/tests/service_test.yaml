@@ -1,0 +1,53 @@
+suite: service
+templates:
+  - templates/service.yaml
+tests:
+  - it: renders metrics service when enabled
+    set:
+      service:
+        enabled: true
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-opentelemetry-ebpf-instrumentation
+      - equal:
+          path: spec.type
+          value: ClusterIP
+      - equal:
+          path: spec.ports[0].port
+          value: 80
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 9090
+
+  - it: exposes internal metrics port when configured
+    set:
+      service:
+        enabled: true
+        internalMetrics:
+          port: 8080
+      config:
+        data:
+          prometheus_export:
+            port: 9090
+            path: /metrics
+          internal_metrics:
+            prometheus:
+              port: 6060
+              path: /intmetrics
+    asserts:
+      - isKind:
+          of: Service
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.ports[1].name
+          value: int-metrics
+      - equal:
+          path: spec.ports[1].targetPort
+          value: 6060
+      - equal:
+          path: spec.ports[1].port
+          value: 8080
