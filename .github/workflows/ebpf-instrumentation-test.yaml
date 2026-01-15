@@ -1,0 +1,36 @@
+name: Test eBPF Instrumentation Chart
+
+on:
+  pull_request:
+    paths:
+      - "charts/opentelemetry-ebpf-instrumentation/**"
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  ebpf-instrumentation-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "true"
+
+      - name: Run helm-unittest
+        run: helm unittest ./charts/opentelemetry-ebpf-instrumentation
+
+      - name: Run chart-testing (install)
+        run: ct install --charts charts/opentelemetry-ebpf-instrumentation
+
+      - name: Run cache example install test
+        run: |
+          kubectl apply -f ./charts/opentelemetry-ebpf-instrumentation/examples/with-k8s-cache/rendered
+          kubectl rollout status daemonset example-opentelemetry-ebpf-instrumentation --timeout=60s
+          kubectl rollout status deployment opentelemetry-ebpf-instrumentation-k8s-cache --timeout=60s
