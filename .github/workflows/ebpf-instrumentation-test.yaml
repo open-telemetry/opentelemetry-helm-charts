@@ -24,7 +24,10 @@ jobs:
           create-kind-cluster: "true"
 
       - name: Run helm-unittest
-        run: helm unittest ./charts/opentelemetry-ebpf-instrumentation
+        uses: d3adb5/helm-unittest-action@v2.5.0
+        with:
+          unittest-version: 0.5.1
+          charts: charts/opentelemetry-ebpf-instrumentation
 
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-ebpf-instrumentation
