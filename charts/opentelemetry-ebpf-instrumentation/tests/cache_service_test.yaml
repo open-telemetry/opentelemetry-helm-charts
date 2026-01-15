@@ -1,0 +1,25 @@
+suite: cache service
+templates:
+  - templates/cache-service.yaml
+tests:
+  - it: renders cache service when replicas are set
+    set:
+      k8sCache:
+        replicas: 1
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: opentelemetry-ebpf-instrumentation-k8s-cache
+      - equal:
+          path: spec.ports[0].port
+          value: 50055
+      - equal:
+          path: spec.selector["app.kubernetes.io/name"]
+          value: opentelemetry-ebpf-instrumentation-k8s-cache
+
+  - it: does not render when replicas disabled
+    asserts:
+      - hasDocuments:
+          count: 0

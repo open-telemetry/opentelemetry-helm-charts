@@ -1,0 +1,53 @@
+suite: servicemonitor
+templates:
+  - templates/servicemonitor.yaml
+tests:
+  - it: renders service monitor when enabled with service
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+      - equal:
+          path: spec.jobLabel
+          value: RELEASE-NAME-opentelemetry-ebpf-instrumentation
+
+  - it: adds internal metrics endpoint when configured
+    set:
+      service:
+        enabled: true
+        internalMetrics:
+          port: 8080
+      serviceMonitor:
+        enabled: true
+        jobLabel: ebpf-int
+      config:
+        data:
+          prometheus_export:
+            port: 9090
+            path: /metrics
+          internal_metrics:
+            prometheus:
+              port: 6060
+              path: /intmetrics
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.endpoints[1].port
+          value: int-metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /intmetrics
+      - equal:
+          path: spec.jobLabel
+          value: ebpf-int
