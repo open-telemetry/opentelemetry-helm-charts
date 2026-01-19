@@ -122,13 +122,13 @@ spec:
       for: 1m
       labels:
         severity: warning
-        {{- with .Values.prometheusRule.defaultRules.additionalRuleLabels }}
+        {{- with $.Values.prometheusRule.defaultRules.additionalRuleLabels }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
         description: '{{`The {{ $labels.exporter }} sending queue failed to accept {{ $value }} `}} {{ $signal }}'
         runbook_url: 'https://opentelemetry.io/docs/collector/internal-telemetry/#queue-length'
-        {{- with .Values.prometheusRule.defaultRules.additionalRuleAnnotations }}
+        {{- with $.Values.prometheusRule.defaultRules.additionalRuleAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
 {{- end }}
