@@ -462,6 +462,7 @@ extensions:
 {{- define "opentelemetry-kube-stack.collector.resourceDetectionEksConfigOverwrite" -}}
 timeout: 15s
 eks:
+  # K8S_NODE_NAME is configured by the collector deployment, no need to overwrite `node_from_env_var`
   resource_attributes:
     k8s.cluster.name:
       enabled: true
