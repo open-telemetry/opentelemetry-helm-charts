@@ -20,6 +20,9 @@ spec:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
         {{- include "otel-demo.workloadLabels" . | nindent 8 }}
+        {{- if .podLabels }}
+        {{- toYaml .podLabels | nindent 8 }}
+        {{- end }}
       {{- if .podAnnotations }}
       annotations:
         {{- toYaml .podAnnotations | nindent 8 }}
