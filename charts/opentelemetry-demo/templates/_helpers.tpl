@@ -19,9 +19,6 @@ Common labels
 helm.sh/chart: {{ include "otel-demo.chart" . }}
 {{ include "otel-demo.selectorLabels" . }}
 {{ include "otel-demo.workloadLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/part-of: opentelemetry-demo
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
@@ -32,6 +29,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Workload (Pod) labels
 */}}
 {{- define "otel-demo.workloadLabels" -}}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
 {{- if .name }}
 app.kubernetes.io/component: {{ .name}}
 app.kubernetes.io/name: {{ .name }}
