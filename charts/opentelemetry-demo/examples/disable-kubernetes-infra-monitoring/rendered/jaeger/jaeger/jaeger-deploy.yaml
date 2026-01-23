@@ -1,11 +1,11 @@
 ---
-# Source: opentelemetry-demo/charts/jaeger/templates/jaeger-deploy.yaml
+# Source: opentelemetry-demo/charts/jaeger/templates/jaeger/jaeger-deploy.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jaeger
   labels:
-    helm.sh/chart: jaeger-4.3.0
+    helm.sh/chart: jaeger-4.4.2
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "2.14.1"
@@ -35,27 +35,18 @@ spec:
       
       containers:
         - env:
-            - name: MEMORY_MAX_TRACES
-              value: "25000"
-            - name: PROMETHEUS_ADDR
-              value: prometheus:9090
-            - name: OTEL_COLLECTOR_HOST
-              value: otel-collector
-            - name: OTEL_COLLECTOR_PORT_HTTP
-              value: "4318"
-            - name: JAEGER_HOST
-              value: 0.0.0.0
-            - name: JAEGER_GRPC_PORT
-              value: "4317"
-            - name: SPAN_STORAGE_TYPE
-              value: memory
-            
-            - name: COLLECTOR_ZIPKIN_HOST_PORT
-              value: :9411
-            - name: JAEGER_DISABLED
-              value: "false"
-            - name: COLLECTOR_OTLP_ENABLED
-              value: "true"
+          - name: MEMORY_MAX_TRACES
+            value: "25000"
+          - name: PROMETHEUS_ADDR
+            value: prometheus:9090
+          - name: OTEL_COLLECTOR_HOST
+            value: otel-collector
+          - name: OTEL_COLLECTOR_PORT_HTTP
+            value: "4318"
+          - name: JAEGER_HOST
+            value: 0.0.0.0
+          - name: JAEGER_GRPC_PORT
+            value: "4317"
           securityContext:
             {}
           image: jaegertracing/jaeger:2.14.1
@@ -112,7 +103,8 @@ spec:
               memory: 600Mi
           volumeMounts:
             - name: user-config
-              mountPath: /etc/jaeger
+              mountPath: /etc/jaeger/user-config.yaml
+              subPath: user-config.yaml
       securityContext:
         fsGroup: 10001
         runAsGroup: 10001
