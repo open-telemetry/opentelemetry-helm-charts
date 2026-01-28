@@ -122,6 +122,12 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   {{- end }}
+   {{- if eq $collector.mode "statefulset" }}
+  {{- with $collector.persistentVolumeClaimRetentionPolicy }}
+  persistentVolumeClaimRetentionPolicy:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- end }}
   {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumeMounts) }}
   volumeMounts:
   {{- if $collector.presets.logsCollection.enabled }}

@@ -6,7 +6,7 @@ metadata:
   name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-10.5.3
+    helm.sh/chart: grafana-10.5.8
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "12.3.1"
@@ -22,12 +22,12 @@ spec:
   template:
     metadata:
       labels:
-        helm.sh/chart: grafana-10.5.3
+        helm.sh/chart: grafana-10.5.8
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: example
         app.kubernetes.io/version: "12.3.1"
       annotations:
-        checksum/config: 3aef97dc43bb7f320b3d3f00d79efff7580bf83005ec5574a0619b42268584cf
+        checksum/config: 4bc37edad15da2620fa7b48cb4d0af4ca30f6d344ac238d6aa702abb2d92c6ba
         checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
         checksum/secret: bed677784356b2af7fb0d87455db21f077853059b594101a4f6532bfbd962a7f
         kubectl.kubernetes.io/default-container: grafana
@@ -69,8 +69,6 @@ spec:
               value: http://localhost:3000/api/admin/provisioning/alerting/reload
             - name: REQ_METHOD
               value: POST
-            - name: REQ_SKIP_INIT
-              value: "true"
           resources:
             limits:
               cpu: 100m
@@ -111,8 +109,6 @@ spec:
               value: http://localhost:3000/api/admin/provisioning/dashboards/reload
             - name: REQ_METHOD
               value: POST
-            - name: REQ_SKIP_INIT
-              value: "true"
           resources:
             limits:
               cpu: 100m
@@ -153,8 +149,6 @@ spec:
               value: http://localhost:3000/api/admin/provisioning/datasources/reload
             - name: REQ_METHOD
               value: POST
-            - name: REQ_SKIP_INIT
-              value: "true"
           resources:
             limits:
               cpu: 100m
@@ -185,6 +179,8 @@ spec:
               subPath: grafana.ini
             - name: storage
               mountPath: "/var/lib/grafana"
+            - name: search
+              mountPath: "/var/lib/grafana-search"
             - name: sc-alerts-volume
               mountPath: "/etc/grafana/provisioning/alerting"
             - name: sc-dashboard-volume
@@ -235,6 +231,8 @@ spec:
               value: /var/lib/grafana/plugins
             - name: GF_PATHS_PROVISIONING
               value: /etc/grafana/provisioning
+            - name: GF_UNIFIED_STORAGE_INDEX_PATH
+              value: /var/lib/grafana-search/bleve
             - name: GOMEMLIMIT
               valueFrom:
                 resourceFieldRef:
@@ -259,6 +257,8 @@ spec:
           configMap:
             name: grafana
         - name: storage
+          emptyDir: {}
+        - name: search
           emptyDir: {}
         - name: sc-alerts-volume
           emptyDir: {}
