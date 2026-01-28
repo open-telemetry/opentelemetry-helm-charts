@@ -4,6 +4,10 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.144.0 to 0.144.1
+
+The `extraEnvs` and `extraEnvsFrom` are now templated in the same manner other templated fields, e.g. `extraVolumes`. If you are using any `{{ }}` syntax in `extraEnvs` or `extraEnvsFrom` you will need to escape them using ``` {{` <original content> `}} ```.
+
 ## 0.121.0 to 0.122.0
 
 In the v0.123.1 Collector release we stopped pushing images to Dockerhub due to how their new rate limit changes affected our CI. If you're using `otel/opentelemetry-collector-k8s` for the image you should switch to `ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s`. See https://github.com/open-telemetry/community/issues/2641 for more details.
@@ -21,7 +25,7 @@ The deprecated memory ballast extension has been removed from the default config
 
 ## 0.88.0 to 0.89.0
 
-> [!WARNING]  
+> [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
 As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.
