@@ -291,11 +291,16 @@ admissionWebhooks:
   namespaceSelector: {}
   objectSelector: {}
 
+  ## Choose the certificate approach to take
+  ## - prefer-cert-manager (default): Uses cert manager if available, falls back to generated certificates
+  ## - cert-manager: Use cert-manager to generate certificates
+  ## - helm-generated: Generate certificates with helm
+  ## - self-signed: Provide your own certificate
+  certificateSource: 'prefer-cert-manager'
+
   ## https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/README.md#tls-certificate-requirement
   ## TLS Certificate Option 1: Use certManager to generate self-signed certificate.
-  ## certManager must be enabled. If enabled, always takes precedence over options 2 and 3.
   certManager:
-    enabled: true
     ## Provide the issuer kind and name to do the cert auth job.
     ## By default, OpenTelemetry Operator will use self-signer issuer.
     issuerRef: {}
@@ -312,17 +317,14 @@ admissionWebhooks:
     renewBefore: ""
 
   ## TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate.
-  ## certManager must be disabled and autoGenerateCert must be enabled.
-  ## If true and certManager.enabled is false, Helm will automatically create a self-signed cert and secret for you.
   autoGenerateCert:
-    enabled: true
     # If set to true, new webhook key/certificate is generated on helm upgrade.
     recreate: true
     # Cert period time in days. The default is 365 days.
     certPeriodDays: 365
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
-  ## certManager and autoGenerateCert must be disabled and certFile, keyFile, and caFile must be set.
+  ## certFile, keyFile, and caFile must be set.
   ## The chart reads the contents of the file paths with the helm .Files.Get function.
   ## Refer to this doc https://helm.sh/docs/chart_template_guide/accessing_files/ to understand
   ## limitations of file paths accessible to the chart.
