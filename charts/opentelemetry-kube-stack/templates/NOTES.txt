@@ -11,17 +11,18 @@ OpenTelemetry Kube Stack Helm Chart installation completed successfully!
 With the features you've enabled, you can:
 {{ printf "" }}
 {{- if .Values.instrumentation.enabled -}}
-{{ printf "\n* \033[1m\033[36mAuto-instrument\033[0m applications:" }}
+{{ printf "\n* \033[1mAuto-instrument and auto-configure\033[0m applications:" }}
 {{ printf "   Add this annotation to your pod specs to inject the OTel SDK and automatic configuration:" }}
-{{ printf "      \033[90minstrumentation.opentelemetry.io/inject-<language>: %s/%s\033[0m" .Release.Namespace (include "opentelemetry-kube-stack.instrumentation" .) }}
-{{ printf "   Replace `\033[90m<language>\033[0m` with: `\033[90mdotnet\033[0m`, `\033[90mgo\033[0m`, `\033[90mjava\033[0m`, `\033[90mnodejs\033[0m`, `\033[90mpython\033[0m`, etc." }}
+{{ printf "      \033[36minstrumentation.opentelemetry.io/inject-<language>: %s/%s\033[0m" .Release.Namespace (include "opentelemetry-kube-stack.instrumentation" .) }}
+{{ printf "   Replace `\033[36m<language>\033[0m` with: `\033[36mdotnet\033[0m`, `\033[36mgo\033[0m`, `\033[36mjava\033[0m`, `\033[36mnodejs\033[0m`, `\033[36mpython\033[0m`, etc." }}
 
-{{ printf "* Manually instrument with OTel SDKs and \033[1m\033[36mauto-configure\033[0m these OTel SDKs:" }}
+{{ printf "* \033[1mManually instrument and auto-configure\033[0m applications:" }}
 {{ printf "   Bundle the OTel SDK in your application containers, then add this annotation for auto-configuration" }}
 {{ printf "   through environment variable injection:" }}
-{{ printf "      \033[90minstrumentation.opentelemetry.io/inject-sdk: %s/%s\033[0m'" .Release.Namespace (include "opentelemetry-kube-stack.instrumentation" .) }}
+{{ printf "      \033[36minstrumentation.opentelemetry.io/inject-sdk: %s/%s\033[0m'" .Release.Namespace (include "opentelemetry-kube-stack.instrumentation" .) }}
 {{ end }}
-{{ printf "* \033[1m\033[36mManually instrument and configure\033[0m with OTel SDKs:" }}
+{{ printf "* \033[1mManually instrument and manually configure\033[0m applications:" }}
+{{ printf "   Bundle the OTel SDK in your application containers and manually configure them using:" }}
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $.Values.defaultCRConfig.enabled }}
 {{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
@@ -32,7 +33,7 @@ With the features you've enabled, you can:
 {{ $endpoint := dig "receivers" "otlp" "protocols" $protocol "endpoint" "" $collector.config}}
 {{- if and $collector.enabled (ne $endpoint "") -}}
 {{- $port := regexFind ":[0-9]+$" $endpoint -}}
-{{ printf "   - %s: \033[90m%s-collector.%s.svc.cluster.local%s\033[0m" $protocol $fullname (include "opentelemetry-kube-stack.namespace" $) $port }}
+{{ printf "   - %s: \033[36m%s-collector.%s.svc.cluster.local%s\033[0m" $protocol $fullname (include "opentelemetry-kube-stack.namespace" $) $port }}
 {{ end -}}
 {{- end -}}
 {{- end -}}
