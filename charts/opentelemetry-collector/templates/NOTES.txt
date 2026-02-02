@@ -10,12 +10,6 @@
 {{- fail "[ERROR] dnsConfig should be provided when dnsPolicy is None" }}
 {{ end }}
 
-{{- if .Values.presets.clusterMetrics.enabled }}
-{{- if gt (int .Values.replicaCount) 1 }}
-{{- fail "Cluster Metrics preset is not suitable for replicaCount greater than one. Please change replica count to one." }}
-{{ end }}
-{{ end }}
-
 {{/* validate extensions must include health_check */}}
 {{- if and (not (has "health_check" .Values.config.service.extensions)) (not (has "healthcheckv2" .Values.config.service.extensions)) }}
 {{ fail "[ERROR] The opentelemetry-collector chart requires that the health_check extension or the healthcheckv2 extension to be included in the extension list." }}
