@@ -134,6 +134,12 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
 
+{{- define "obi.podAnnotations" -}}
+{{- if .Values.podAnnotations }}
+{{- tpl (.Values.podAnnotations | toYaml) . }}
+{{- end }}
+{{- end }}
+
 {{/*
 Generate the configmap data based on preset and configuration values
 */}}
