@@ -1,12 +1,19 @@
 
-default:
-  envOverrides:
-    - name: OTEL_COLLECTOR_NAME
-      value: my-otel-collector.opentelemetry-ns
-
 opentelemetry-collector:
-  enabled: false
-
+  config:
+    exporters:
+      otlp/my-own-observability-endpoint:
+        endpoint: "my-observability-endpoint:4317"
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          exporters: [otlp/my-own-observability-endpoint, debug, spanmetrics]
+        metrics:
+          exporters: [otlp/my-own-observability-endpoint, debug]
+        logs:
+          exporters: [otlp/my-own-observability-endpoint, debug]
 jaeger:
   enabled: false
 
