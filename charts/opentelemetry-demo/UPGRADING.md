@@ -14,6 +14,8 @@ contained in a custom ConfigMap, and referenced for the Postgres component.
 The Jaeger sub-chart was upgraded to 4.3, which included several breaking
 changes to prior configurations.
 
+Support for `podLabels` has been added to all components.
+
 ## To 0.39
 
 Support for IPv6 environments was introduced to the demo.
@@ -32,7 +34,7 @@ component that was renamed will need to be updated to use the new name. The
 following table shows the old and new names for each component:
 
 | Old Name               | New Name        |
-|------------------------|-----------------|
+| ---------------------- | --------------- |
 | accountingservice      | accounting      |
 | adservice              | ad              |
 | cartservice            | cart            |
