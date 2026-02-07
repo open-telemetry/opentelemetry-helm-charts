@@ -140,6 +140,7 @@ component.
 | `schedulingRules.tolerations`           | Tolerations for pod assignment                                                           | `[]`                                                          |
 | `securityContext`                       | Container security context                                                               | `{}`                                                          |
 | `podSecurityContext`                    | Pod security context s                                                                   | `{}`                                                          |
+| `podLabels`                             | Pod labels for this component                                                            | `{}`                                                          |
 | `podAnnotations`                        | Pod annotations for this component                                                       | `{}`                                                          |
 | `ingress.enabled`                       | Enable the creation of Ingress rules                                                     | `false`                                                       |
 | `ingress.annotations`                   | Annotations to add to the ingress rule                                                   | `{}`                                                          |
