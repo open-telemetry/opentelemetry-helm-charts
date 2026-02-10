@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.105.0
+    helm.sh/chart: opentelemetry-operator-0.106.0
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.144.0"
     app.kubernetes.io/managed-by: Helm
@@ -25,7 +25,7 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        helm.sh/chart: opentelemetry-operator-0.105.0
+        helm.sh/chart: opentelemetry-operator-0.106.0
         app.kubernetes.io/name: opentelemetry-operator
         app.kubernetes.io/version: "0.144.0"
         app.kubernetes.io/managed-by: Helm
@@ -37,7 +37,8 @@ spec:
       hostNetwork: false
       containers:
         - args:
-            - --metrics-addr=0.0.0.0:8080
+            - --metrics-addr=0.0.0.0:8443
+            - --metrics-secure=true
             - --enable-leader-election
             - --health-probe-addr=:8081
             - --webhook-port=9443
@@ -79,25 +80,6 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
-          securityContext: 
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-        
-        - args:
-            - --secure-listen-address=0.0.0.0:8443
-            - --upstream=http://127.0.0.1:8080/
-            - --v=0
-          image: "quay.io/brancz/kube-rbac-proxy:v0.20.0"
-          name: kube-rbac-proxy
-          ports:
-            - containerPort: 8443
-              name: https
-              protocol: TCP
           securityContext: 
             allowPrivilegeEscalation: false
             capabilities:
