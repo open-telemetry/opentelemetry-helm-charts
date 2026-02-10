@@ -6,23 +6,24 @@
 [WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1. Please migrate to use the `daemonSetUpdateStrategy` value.
 {{- end }}
 {{- end }}
-{{ printf "" }}
+
 OpenTelemetry Kube Stack Helm Chart installation completed successfully!
 With the features you've enabled, you can:
-{{ printf "" }}
-{{- if .Values.instrumentation.enabled -}}
-{{ printf "\n* \033[1mAuto-instrument and auto-configure\033[0m applications:" }}
-{{ printf "   Add this annotation to your pod specs to inject the OTel SDK and automatic configuration:" }}
-{{ printf "      \033[36minstrumentation.opentelemetry.io/inject-<language>: %s/%s\033[0m" .Release.Namespace (include "opentelemetry-kube-stack.instrumentation" .) }}
-{{ printf "   Replace `\033[36m<language>\033[0m` with: `\033[36mdotnet\033[0m`, `\033[36mgo\033[0m`, `\033[36mjava\033[0m`, `\033[36mnodejs\033[0m`, `\033[36mpython\033[0m`, etc." }}
 
-{{ printf "* \033[1mManually instrument and auto-configure\033[0m applications:" }}
-{{ printf "   Bundle the OTel SDK in your application containers, then add this annotation for auto-configuration" }}
-{{ printf "   through environment variable injection:" }}
-{{ printf "      \033[36minstrumentation.opentelemetry.io/inject-sdk: %s/%s\033[0m" .Release.Namespace (include "opentelemetry-kube-stack.instrumentation" .) }}
-{{ end }}
-{{ printf "* \033[1mManually instrument and manually configure\033[0m applications:" }}
-{{ printf "   Bundle the OTel SDK in your application containers and manually configure them using:" }}
+{{- if .Values.instrumentation.enabled }}
+
+* Auto-instrument and auto-configure applications:
+   Add this annotation to your pod specs to inject the OTel SDK and automatic configuration:
+      instrumentation.opentelemetry.io/inject-<language>: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+   Replace <language> with: dotnet, go, java, nodejs, python, etc.
+
+* Manually instrument and auto-configure applications:
+   Bundle the OTel SDK in your application containers, then add this annotation for auto-configuration
+   through environment variable injection:
+      instrumentation.opentelemetry.io/inject-sdk: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+{{ end -}}
+* Manually instrument and manually configure applications:
+   Bundle the OTel SDK in your application containers and manually configure them using:
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $.Values.defaultCRConfig.enabled }}
 {{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
@@ -33,14 +34,14 @@ With the features you've enabled, you can:
 {{ $endpoint := dig "receivers" "otlp" "protocols" $protocol "endpoint" "" $collector.config}}
 {{- if and $collector.enabled (ne $endpoint "") -}}
 {{- $port := regexFind ":[0-9]+$" $endpoint -}}
-{{ printf "   - %s: \033[36m%s-collector.%s.svc.cluster.local%s\033[0m" $protocol $fullname (include "opentelemetry-kube-stack.namespace" $) $port }}
+   - {{ $protocol }}: {{ $fullname }}-collector.{{ include "opentelemetry-kube-stack.namespace" $ }}.svc.cluster.local{{ $port }}
 {{ end -}}
 {{- end -}}
 {{- end -}}
 
-{{- if .Values.instrumentation.enabled -}}
-{{ printf "" }}
-{{ printf "For more details, visit:"}}
-{{ printf "https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annotations-to-existing-deployments" }}
-{{ end }}
-{{ printf "Happy observing!" }}
+{{- if .Values.instrumentation.enabled }}
+
+For more details, visit:
+https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annotations-to-existing-deployments
+{{ end -}}
+Happy observing!
