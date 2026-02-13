@@ -638,6 +638,14 @@ rollout:
   # When 'mode: daemonset', maxSurge cannot be used when hostPort is set for any of the ports
   # maxSurge: 25%
   # maxUnavailable: 0
+  # Custom controllers like OpenKruise support additional rollingUpdate fields:
+  # rollingUpdate:
+  #   maxUnavailable: 1
+  #   partition: 0
+  #   paused: false
+  #   selector:
+  #     matchLabels:
+  #       app: example
   strategy: RollingUpdate
 
 prometheusRule:
@@ -663,6 +671,13 @@ statefulset:
     enabled: false
     whenDeleted: Retain
     whenScaled: Retain
+
+daemonset:
+  # Override the default apiVersion for custom controllers (e.g., OpenKruise)
+  # or for testing new API versions.
+  # If not set, defaults to "apps/v1".
+  # Example: apps.kruise.io/v1alpha1
+  apiVersion: ""
 
 networkPolicy:
   enabled: false
