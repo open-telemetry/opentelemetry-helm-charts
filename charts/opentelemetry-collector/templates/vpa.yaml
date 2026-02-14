@@ -1,0 +1,40 @@
+{{- if and (.Capabilities.APIVersions.Has "autoscaling.k8s.io/v1") .Values.verticalPodAutoscaler.enabled }}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "opentelemetry-collector.fullname" . }}
+  namespace: {{ template "opentelemetry-collector.namespace" . }}
+  labels:
+    {{- include "opentelemetry-collector.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.verticalPodAutoscaler.recommenders }}
+  recommenders:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  resourcePolicy:
+    containerPolicies:
+    {{- if .Values.verticalPodAutoscaler.containerPolicies }}
+    {{- toYaml .Values.verticalPodAutoscaler.containerPolicies | nindent 4 }}
+    {{- else }}
+    - containerName: {{ include "opentelemetry-collector.lowercase_chartname" . }}
+      {{- if .Values.verticalPodAutoscaler.controlledResources }}
+      controlledResources: {{ toYaml .Values.verticalPodAutoscaler.controlledResources | nindent 8 }}
+      {{- end }}
+      {{- with .Values.verticalPodAutoscaler.maxAllowed }}
+      maxAllowed:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.verticalPodAutoscaler.minAllowed }}
+      minAllowed:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+  targetRef:
+    apiVersion: apps/v1
+    kind: {{ include "opentelemetry-collector.vpaKind" . }}
+    name: {{ include "opentelemetry-collector.fullname" . }}
+  {{- with .Values.verticalPodAutoscaler.updatePolicy }}
+  updatePolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
