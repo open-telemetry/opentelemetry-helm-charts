@@ -408,6 +408,29 @@
         }
       }
     },
+    "resizePolicy": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resourceName": {
+            "type": "string"
+          },
+          "restartPolicy": {
+            "type": "string",
+            "enum": [
+              "NotRequired",
+              "RestartContainer"
+            ]
+          }
+        },
+        "required": [
+          "resourceName",
+          "restartPolicy"
+        ]
+      }
+    },
     "resources": {
       "type": "object",
       "additionalProperties": false,
@@ -1021,6 +1044,52 @@
           "type": "integer"
         },
         "additionalMetrics": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "verticalPodAutoscaler": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "recommenders": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "controlledResources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "maxAllowed": {
+          "type": "object"
+        },
+        "minAllowed": {
+          "type": "object"
+        },
+        "updatePolicy": {
+          "type": "object",
+          "properties": {
+            "updateMode": {
+              "type": "string"
+            },
+            "minReplicas": {
+              "type": "integer"
+            }
+          }
+        },
+        "containerPolicies": {
           "type": "array",
           "items": {
             "type": "object"
