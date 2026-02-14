@@ -222,6 +222,21 @@ The capitalization is important for StatefulSet.
 {{- end }}
 
 {{/*
+Get VPA kind from mode.
+*/}}
+{{- define "opentelemetry-collector.vpaKind" -}}
+{{- if eq .Values.mode "daemonset" -}}
+{{- print "DaemonSet" -}}
+{{- end -}}
+{{- if eq .Values.mode "deployment" -}}
+{{- print "Deployment" -}}
+{{- end -}}
+{{- if eq .Values.mode "statefulset" -}}
+{{- print "StatefulSet" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Get ConfigMap name if existingName is defined, otherwise use default name for generated config.
 */}}
 {{- define "opentelemetry-collector.configName" -}}

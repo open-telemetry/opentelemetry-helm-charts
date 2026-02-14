@@ -381,6 +381,15 @@ ports:
 # It is HIGHLY recommend to enable this setting and set a value for resources.limits.memory.
 useGOMEMLIMIT: true
 
+# Container resize policy for in-place resource resize (Kubernetes >= 1.27).
+# https://kubernetes.io/docs/concepts/workloads/autoscaling/#in-place-resizing
+resizePolicy: []
+# resizePolicy:
+#   - resourceName: cpu
+#     restartPolicy: NotRequired
+#   - resourceName: memory
+#     restartPolicy: RestartContainer
+
 # Resource limits & requests.
 # It is HIGHLY recommended to set resource limits.
 resources: {}
@@ -632,6 +641,47 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
   # Supply an array of custom metrics to be used for autoscaling. It includes externalMetrics, objectMetrics, and podsMetrics.
   additionalMetrics: []
+
+# Vertical Pod Autoscaler - https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
+verticalPodAutoscaler:
+  enabled: false
+
+  # Recommender responsible for generating recommendation for the object.
+  # List should be empty (then the default recommender will generate the recommendation)
+  # or contain exactly one recommender.
+  # recommenders:
+  # - name: custom-recommender-performance
+
+  # List of resources that the vertical pod autoscaler can control. Defaults to cpu and memory.
+  controlledResources: []
+
+  # Define the max allowed resources for the pod
+  maxAllowed: {}
+  # cpu: 200m
+  # memory: 100Mi
+  # Define the min allowed resources for the pod
+  minAllowed: {}
+  # cpu: 200m
+  # memory: 100Mi
+
+  updatePolicy:
+    # Specifies whether recommended updates are applied when a Pod is started and whether recommended updates
+    # are applied during the life of a Pod. Possible values are "Off", "Initial", "Recreate", and "Auto".
+    updateMode: Auto
+    # Minimal number of replicas which need to be alive for Updater to attempt pod eviction.
+    # Only positive values are allowed. The default is 2.
+    minReplicas: 2
+
+  # Override the default container policies. When set, controlledResources, maxAllowed, and minAllowed are ignored.
+  # containerPolicies:
+  # - containerName: opentelemetry-collector
+  #   controlledResources: ["cpu", "memory"]
+  #   maxAllowed:
+  #     cpu: 200m
+  #     memory: 100Mi
+  #   minAllowed:
+  #     cpu: 100m
+  #     memory: 50Mi
 
 rollout:
   rollingUpdate: {}
