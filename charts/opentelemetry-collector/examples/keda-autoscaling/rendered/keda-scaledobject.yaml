@@ -1,0 +1,40 @@
+---
+# Source: opentelemetry-collector/templates/keda-scaledobject.yaml
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: example-opentelemetry-collector
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.146.0
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.146.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-collector
+    app.kubernetes.io/component: standalone-collector
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: example-opentelemetry-collector
+  pollingInterval: 30
+  cooldownPeriod: 300
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          policies:
+          - periodSeconds: 15
+            type: Percent
+            value: 100
+          stabilizationWindowSeconds: 300
+  triggers:
+    - metadata:
+        metricName: otelcol_process_cpu_seconds
+        query: rate(otelcol_process_cpu_seconds{job="otel-collector"}[2m])
+        serverAddress: http://prometheus:9090
+        threshold: "0.8"
+      type: prometheus

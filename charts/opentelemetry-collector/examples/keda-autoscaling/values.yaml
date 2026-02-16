@@ -1,0 +1,36 @@
+mode: deployment
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+autoscaling:
+  keda:
+    enabled: true
+    pollingInterval: 30
+    cooldownPeriod: 300
+    minReplicaCount: 1
+    maxReplicaCount: 10
+    advanced:
+      horizontalPodAutoscalerConfig:
+        behavior:
+          scaleDown:
+            stabilizationWindowSeconds: 300
+            policies:
+              - type: Percent
+                value: 100
+                periodSeconds: 15
+    triggers:
+      - type: prometheus
+        metadata:
+          serverAddress: http://prometheus:9090
+          metricName: otelcol_process_cpu_seconds
+          threshold: "0.8"
+          query: rate(otelcol_process_cpu_seconds{job="otel-collector"}[2m])
+
+resources:
+  limits:
+    cpu: 2
+    memory: 4Gi

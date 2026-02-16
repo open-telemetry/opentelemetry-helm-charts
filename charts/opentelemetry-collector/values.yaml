@@ -624,6 +624,7 @@ podDisruptionBudget:
 
 # autoscaling is used only if mode is "deployment" or "statefulset"
 autoscaling:
+  # DEPRECATED: Use autoscaling.hpa instead. Kept for backward compatibility.
   enabled: false
   minReplicas: 1
   maxReplicas: 10
@@ -632,6 +633,28 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
   # Supply an array of custom metrics to be used for autoscaling. It includes externalMetrics, objectMetrics, and podsMetrics.
   additionalMetrics: []
+
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 10
+    behavior: {}
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+    additionalMetrics: []
+
+  keda:
+    enabled: false
+    pollingInterval: 30
+    cooldownPeriod: 300
+    minReplicaCount: 1
+    maxReplicaCount: 10
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+    # idleReplicaCount: 0
+    # fallback: {}
+    advanced: {}
+    triggers: []
 
 rollout:
   rollingUpdate: {}
