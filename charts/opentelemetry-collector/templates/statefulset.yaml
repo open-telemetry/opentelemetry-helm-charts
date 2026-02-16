@@ -1,4 +1,5 @@
 {{- if eq .Values.mode "statefulset" -}}
+{{- include "opentelemetry-collector.validateScaling" . -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -15,7 +16,7 @@ metadata:
 spec:
   serviceName: {{ include "opentelemetry-collector.fullname" . }}
   podManagementPolicy: {{ .Values.statefulset.podManagementPolicy }}
-{{- if not .Values.autoscaling.enabled }}
+{{- if not (or .Values.autoscaling.enabled .Values.keda.enabled) }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
 {{- if .Values.statefulset.persistentVolumeClaimRetentionPolicy.enabled }}

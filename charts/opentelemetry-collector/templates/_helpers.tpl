@@ -209,6 +209,15 @@ Allow the release namespace to be overridden
 {{- end }}
 
 {{/*
+Validate that autoscaling and keda are not both enabled.
+*/}}
+{{- define "opentelemetry-collector.validateScaling" -}}
+{{- if and .Values.autoscaling.enabled .Values.keda.enabled -}}
+{{- fail "autoscaling.enabled and keda.enabled are mutually exclusive" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Get HPA kind from mode.
 The capitalization is important for StatefulSet.
 */}}

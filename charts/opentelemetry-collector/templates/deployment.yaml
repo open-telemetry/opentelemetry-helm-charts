@@ -1,4 +1,5 @@
 {{- if eq .Values.mode "deployment" -}}
+{{- include "opentelemetry-collector.validateScaling" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,7 +14,7 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-{{- if not .Values.autoscaling.enabled }}
+{{- if not (or .Values.autoscaling.enabled .Values.keda.enabled) }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
