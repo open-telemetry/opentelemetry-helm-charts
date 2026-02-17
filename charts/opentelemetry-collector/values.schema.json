@@ -1006,7 +1006,8 @@
       "type": "object",
       "properties": {
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "DEPRECATED: Use autoscaling.hpa.enabled instead."
         },
         "minReplicas": {
           "type": "integer"
@@ -1025,6 +1026,82 @@
           "items": {
             "type": "object"
           }
+        },
+        "hpa": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "minReplicas": {
+              "type": "integer"
+            },
+            "maxReplicas": {
+              "type": "integer"
+            },
+            "behavior": {
+              "type": "object"
+            },
+            "targetCPUUtilizationPercentage": {
+              "type": "integer"
+            },
+            "targetMemoryUtilizationPercentage": {
+              "type": "integer"
+            },
+            "additionalMetrics": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        },
+        "keda": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "pollingInterval": {
+              "type": "integer"
+            },
+            "cooldownPeriod": {
+              "type": "integer"
+            },
+            "minReplicaCount": {
+              "type": "integer"
+            },
+            "maxReplicaCount": {
+              "type": "integer"
+            },
+            "targetCPUUtilizationPercentage": {
+              "type": "integer"
+            },
+            "targetMemoryUtilizationPercentage": {
+              "type": "integer"
+            },
+            "idleReplicaCount": {
+              "type": "integer"
+            },
+            "fallback": {
+              "type": "object"
+            },
+            "advanced": {
+              "type": "object"
+            },
+            "triggers": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "enabled"
+          ]
         }
       },
       "required": [

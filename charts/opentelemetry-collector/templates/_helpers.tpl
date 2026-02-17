@@ -222,6 +222,28 @@ The capitalization is important for StatefulSet.
 {{- end }}
 
 {{/*
+Check if any autoscaling method is enabled (legacy HPA, new HPA, or KEDA).
+*/}}
+{{- define "opentelemetry-collector.autoscalingEnabled" -}}
+{{- if or .Values.autoscaling.enabled .Values.autoscaling.hpa.enabled .Values.autoscaling.keda.enabled -}}
+true
+{{- end -}}
+{{- end }}
+
+{{/*
+Validate that only one autoscaling method is enabled at a time.
+*/}}
+{{- define "opentelemetry-collector.validateAutoscaling" -}}
+{{- $count := 0 -}}
+{{- if .Values.autoscaling.enabled -}}{{- $count = add $count 1 -}}{{- end -}}
+{{- if .Values.autoscaling.hpa.enabled -}}{{- $count = add $count 1 -}}{{- end -}}
+{{- if .Values.autoscaling.keda.enabled -}}{{- $count = add $count 1 -}}{{- end -}}
+{{- if gt (int $count) 1 -}}
+{{- fail "Only one autoscaling method can be enabled at a time. Set only one of: autoscaling.enabled (deprecated), autoscaling.hpa.enabled, or autoscaling.keda.enabled" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Get ConfigMap name if existingName is defined, otherwise use default name for generated config.
 */}}
 {{- define "opentelemetry-collector.configName" -}}

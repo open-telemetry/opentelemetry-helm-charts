@@ -1,4 +1,8 @@
-{{- if and .Values.autoscaling.enabled (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
+{{- include "opentelemetry-collector.validateAutoscaling" . -}}
+{{- $legacyEnabled := .Values.autoscaling.enabled -}}
+{{- $hpaEnabled := .Values.autoscaling.hpa.enabled -}}
+{{- if and (or $legacyEnabled $hpaEnabled) (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) }}
+{{- $as := ternary .Values.autoscaling.hpa .Values.autoscaling $hpaEnabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -11,30 +15,30 @@ spec:
     apiVersion: apps/v1
     kind: {{ include "opentelemetry-collector.hpaKind" . }}
     name: {{ include "opentelemetry-collector.fullname" . }}
-  minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
-  {{- if .Values.autoscaling.behavior }}
+  minReplicas: {{ $as.minReplicas }}
+  maxReplicas: {{ $as.maxReplicas }}
+  {{- if $as.behavior }}
   behavior:
-    {{- toYaml .Values.autoscaling.behavior | nindent 4 }}
+    {{- toYaml $as.behavior | nindent 4 }}
   {{- end }}
   metrics:
-  {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+  {{- if $as.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+          averageUtilization: {{ $as.targetMemoryUtilizationPercentage }}
   {{- end }}
-  {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+  {{- if $as.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+          averageUtilization: {{ $as.targetCPUUtilizationPercentage }}
   {{- end }}
-  {{- with .Values.autoscaling.additionalMetrics }}
+  {{- with $as.additionalMetrics }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}

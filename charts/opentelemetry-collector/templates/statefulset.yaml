@@ -15,7 +15,7 @@ metadata:
 spec:
   serviceName: {{ include "opentelemetry-collector.fullname" . }}
   podManagementPolicy: {{ .Values.statefulset.podManagementPolicy }}
-{{- if not .Values.autoscaling.enabled }}
+{{- if not (include "opentelemetry-collector.autoscalingEnabled" .) }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
 {{- if .Values.statefulset.persistentVolumeClaimRetentionPolicy.enabled }}
