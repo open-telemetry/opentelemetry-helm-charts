@@ -65,7 +65,13 @@ jobs:
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY}"
           done
 
+      - name: Fetch newly created tags
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git fetch --tags origin
+
       - name: Enhance release notes with OpenTelemetry links
         run: .github/scripts/enhance-release-notes.sh
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_REPOSITORY: "${{ github.repository }}"
