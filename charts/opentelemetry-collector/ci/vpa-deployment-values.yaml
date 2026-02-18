@@ -1,0 +1,22 @@
+mode: deployment
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+verticalPodAutoscaler:
+  enabled: true
+  controlledResources:
+    - cpu
+    - memory
+  maxAllowed:
+    cpu: 2
+    memory: 2Gi
+  minAllowed:
+    cpu: 100m
+    memory: 128Mi
+  updatePolicy:
+    updateMode: Auto
+    minReplicas: 2
