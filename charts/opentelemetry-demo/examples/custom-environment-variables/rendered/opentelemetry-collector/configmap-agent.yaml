@@ -114,26 +114,24 @@ data:
       transform:
         error_mode: ignore
         trace_statements:
+        - conditions:
+          - span.kind == SPAN_KIND_SERVER and resource.attributes["service.name"] == "frontend"
+            and span.attributes["http.route"] == nil
+          context: span
+          statements:
+          - set(span.attributes["http.route"], "/api/cart") where IsMatch(span.attributes["http.target"],
+            "\\/api\\/cart")
+          - set(span.attributes["http.route"], "/api/checkout") where IsMatch(span.attributes["http.target"],
+            "\\/api\\/checkout")
+          - set(span.attributes["http.route"], "/api/products/{productId}") where IsMatch(span.attributes["http.target"],
+            "\\/api\\/products\\/.*")
+          - set(span.attributes["http.route"], "/api/recommendations") where IsMatch(span.attributes["http.target"],
+            "\\/api\\/recommendations")
+          - set(span.attributes["http.route"], "/api/data") where IsMatch(span.attributes["http.target"],
+            "\\/api\\/data.*")
         - context: span
           statements:
-          - set(span.attributes["http.route"], "/api/cart") where span.kind == SPAN_KIND_SERVER
-            and resource.attributes["service.name"] == "frontend" and span.attributes["http.route"]
-            == nil and IsMatch(span.attributes["http.target"], "\\/api\\/cart")
-          - set(span.attributes["http.route"], "/api/checkout") where span.kind == SPAN_KIND_SERVER
-            and resource.attributes["service.name"] == "frontend" and span.attributes["http.route"]
-            == nil and IsMatch(span.attributes["http.target"], "\\/api\\/checkout")
-          - set(span.attributes["http.route"], "/api/products/{productId}") where span.kind
-            == SPAN_KIND_SERVER and resource.attributes["service.name"] == "frontend"
-            and span.attributes["http.route"] == nil and IsMatch(span.attributes["http.target"],
-            "\\/api\\/products\\/.*")
-          - set(span.attributes["http.route"], "/api/recommendations") where span.kind
-            == SPAN_KIND_SERVER and resource.attributes["service.name"] == "frontend"
-            and span.attributes["http.route"] == nil and IsMatch(span.attributes["http.target"],
-            "\\/api\\/recommendations")
-          - set(span.attributes["http.route"], "/api/data") where span.kind == SPAN_KIND_SERVER
-            and resource.attributes["service.name"] == "frontend" and span.attributes["http.route"]
-            == nil and IsMatch(span.attributes["http.target"], "\\/api\\/data.*")
-          - set_semconv_span_name("1.37.0", "original_span_name")
+          - set_semconv_span_name("1.37.0", "unsanitized_span_name")
     receivers:
       hostmetrics:
         collection_interval: 10s
