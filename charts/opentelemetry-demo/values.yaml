@@ -967,7 +967,7 @@ opentelemetry-collector:
         spike_limit_percentage: 25
       resourcedetection:
         detectors: [env, system]
-      transform/sanitize_spans:
+      transform:
         error_mode: ignore
         trace_statements:
           - context: span
@@ -1024,7 +1024,7 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, resourcedetection, resource, transform/sanitize_spans, batch]
+          processors: [memory_limiter, resourcedetection, resource, transform, batch]
           exporters: [otlp/jaeger, debug, spanmetrics]
         metrics:
           receivers: [otlp, spanmetrics]

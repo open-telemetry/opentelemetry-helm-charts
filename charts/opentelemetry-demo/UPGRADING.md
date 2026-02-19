@@ -8,10 +8,9 @@
 
 ## To 0.40.4
 
-The `transform` processor has been renamed to `transform/sanitize_spans` and now uses the
-`set_semconv_span_name()` function to reduce span metrics cardinality explosion caused by
-high-cardinality span names. See the
-[processor documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor#set_semconv_span_name)
+The `transform` processor now uses the `set_semconv_span_name()` function to
+reduce span metrics cardinality explosion caused by high-cardinality span names.
+See the [processor documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor#set_semconv_span_name)
 and [troubleshooting guide](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/connector/spanmetricsconnector/README.md#troubleshooting-span-metrics-high-cardinality)
 for details.
 
