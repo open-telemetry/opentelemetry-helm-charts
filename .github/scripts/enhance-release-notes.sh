@@ -58,7 +58,7 @@ enhance_release_notes() {
                 # If release was created within the last 5 minutes (300 seconds), check if appVersion changed
                 if [[ $time_diff -lt 300 ]]; then
                     # Check if appVersion changed compared to the previous chart version
-                    previous_chart_version=$(git tag -l "${chart_name}-*" --sort=-version:refname | grep -v "^${release_tag}$" | head -1)
+                    previous_chart_version=$(git tag -l "${chart_name}-*" --sort=-version:refname | grep -v "^${release_tag}$" | head -1 || echo "")
 
                     if [[ -n "$previous_chart_version" ]]; then
                         # Get the previous appVersion from git

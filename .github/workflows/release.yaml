@@ -3,7 +3,7 @@ name: Release Charts
 on:
   push:
     branches:
-      - bugfix/2082-testing-release-workflow
+      - main
 
 permissions:
   contents: read
@@ -55,6 +55,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to Helm OCI Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
+            --username ${{ github.actor }} \
+            --password-stdin
+
       - name: Push charts to GHCR
         run: |
           shopt -s nullglob
@@ -62,6 +68,7 @@ jobs:
             if [ -z "${pkg:-}" ]; then
               break
             fi
+            echo "Pushing ${pkg} to oci://ghcr.io/${GITHUB_REPOSITORY}"
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY}"
           done
 
