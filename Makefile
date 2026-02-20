@@ -2,6 +2,17 @@ TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack opentelemetry-target-allocator opentelemetry-ebpf-instrumentation
 OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')"
 
+# Detect OS and set SED command accordingly
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	SED := $(shell command -v gsed 2> /dev/null)
+	ifndef SED
+		$(error "gsed not found. Please install it with 'brew install gnu-sed'")
+	endif
+else
+	SED := sed
+endif
+
 .PHONY: generate-examples
 generate-examples:
 	for chart_name in $(CHARTS); do \
@@ -84,13 +95,13 @@ check-operator-crds:
 
 define get-crd
 @curl -s -o $(1) $(2)
-@sed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
-@sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
-@sed -i 's/opentelemetry-operator-system/{{ template "opentelemetry-operator.namespace" . }}/g' $(1)
-@sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
-@sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
-@sed -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
-@sed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
-@sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
+@$(SED) -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
+@$(SED) -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
+@$(SED) -i 's/opentelemetry-operator-system/{{ template "opentelemetry-operator.namespace" . }}/g' $(1)
+@$(SED) -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
+@$(SED) -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
+@$(SED) -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
+@$(SED) -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
+@$(SED) -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
 @echo '{{- end }}' >> $(1)
 endef
