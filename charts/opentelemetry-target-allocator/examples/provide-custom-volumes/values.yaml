@@ -1,0 +1,15 @@
+configMap:
+  # Specifies whether a configMap should be created (true by default)
+  create: false
+
+extraVolumes:
+  - name: custom-ta-configmap
+    configMap:
+      name: demo-configmap
+      items:
+        - key: demo-key
+          path: targetallocator.yaml
+      defaultMode: 420
+extraVolumeMounts:
+  - name: custom-ta-configmap
+    mountPath: /conf

@@ -6,7 +6,7 @@ metadata:
   namespace: default
   name: example-opentelemetry-target-allocator-ta
   labels:
-    helm.sh/chart: opentelemetry-target-allocator-0.126.10
+    helm.sh/chart: opentelemetry-target-allocator-0.126.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-target-allocator
     app.kubernetes.io/version: "0.126.0"
@@ -21,9 +21,9 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: b9a1b8259a45255a236d7f0e429b916b514bb625a4bc1da3b9b65e1f45e798dd
+        checksum/config: 37f9c813f3bc568c248b97b9b5f7b87a6cf0f86bf7c5c2bacc3ef5309777fb86
       labels:
-        helm.sh/chart: opentelemetry-target-allocator-0.126.10
+        helm.sh/chart: opentelemetry-target-allocator-0.126.11
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: opentelemetry-target-allocator
         app.kubernetes.io/version: "0.126.0"
@@ -39,8 +39,8 @@ spec:
             - containerPort: 8080
               name: http-port
           volumeMounts:
-            - name: config-volume
-              mountPath: /conf/
+            - name: ta-config
+              mountPath: /conf
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: serviceaccount-token
               readOnly: true
@@ -61,9 +61,12 @@ spec:
             periodSeconds: 10
           
       volumes:
-        - name: config-volume
+        - name: ta-config
           configMap:
             name: example-opentelemetry-target-allocator-ta-configmap
+            items:
+              - key: targetallocator.yaml
+                path: targetallocator.yaml
         - name: serviceaccount-token
           projected:
             defaultMode: 0444

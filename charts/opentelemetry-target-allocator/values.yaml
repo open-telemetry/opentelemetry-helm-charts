@@ -16,6 +16,17 @@ fullnameOverride: ""
 # Number of replicas for the target allocator deployment
 replicaCount: 1
 
+configMap:
+  # Specifies whether a configMap should be created (true by default)
+  create: true
+  # Specifies an existing ConfigMap to be mounted to the pod
+  # The ConfigMap MUST include the configuration via a key named 'targetallocator.yaml'. If not you can additionaly set existingKey to the desired one in the configmap
+  existingName: ""
+  # If the key in your provided configmap does not match 'targetallocator.yaml' you can set here the custom one
+  # existingKey: demo-key
+  
+  # You can also set create: false and dont specify a existing one, but than you have to provide custom config volume mount via the mounts below and mount it to /conf/targetallocator.yaml, otherwhise the pod wont start 
+
 targetAllocator:
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
@@ -86,7 +97,16 @@ affinity: {}
 tolerations: []
 nodeSelector: {}
 topologySpreadConstraints: []
-
-
+extraVolumes: []
+  # - name: custom-ta-configmap
+  #   configMap:
+  #     name: demo-configmap
+  #     items:
+  #       - key: demo-key
+  #         path: targetallocator.yaml
+  #     defaultMode: 420
+extraVolumeMounts: []
+  # - name: custom-ta-configmap
+  #   mountPath: /conf
 ## This will deploy arbitrary manifests as part of the helm relase
 extraObjects: []

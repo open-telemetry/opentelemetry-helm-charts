@@ -48,11 +48,16 @@ spec:
             - containerPort: 8080
               name: http-port
           volumeMounts:
-            - name: config-volume
-              mountPath: /conf/
+            {{- if or .Values.configMap.create .Values.configMap.existingName }}
+            - name: ta-config
+              mountPath: /conf
+            {{- end }}
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: serviceaccount-token
               readOnly: true
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: {{ .Values.targetAllocator.config.collector_namespace | default .Release.Namespace }}
@@ -69,9 +74,18 @@ spec:
             {{- toYaml .Values.targetAllocator.resources | nindent 12 }}
           {{- end }}
       volumes:
-        - name: config-volume
+        {{- if or .Values.configMap.create .Values.configMap.existingName }}
+        - name: ta-config
           configMap:
-            name: {{ template "helper.targetAllocatorConfigMapName" . }}
+            name: {{ include "helper.targetAllocatorConfigMapName" . }}
+            {{- $key := "targetallocator.yaml" -}}
+            {{- if and .Values.configMap.existingName .Values.configMap.existingKey -}}
+              {{- $key = .Values.configMap.existingKey -}}
+            {{- end }}
+            items:
+              - key: {{ $key }}
+                path: targetallocator.yaml
+        {{- end }}
         - name: serviceaccount-token
           projected:
             defaultMode: 0444
@@ -89,3 +103,6 @@ spec:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
