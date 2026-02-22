@@ -49,7 +49,7 @@ spec:
               name: http-port
           volumeMounts:
             {{- if or .Values.configMap.create .Values.configMap.existingName }}
-            - name: ta-config
+            - name: config-volume
               mountPath: /conf
             {{- end }}
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
@@ -75,7 +75,7 @@ spec:
           {{- end }}
       volumes:
         {{- if or .Values.configMap.create .Values.configMap.existingName }}
-        - name: ta-config
+        - name: config-volume
           configMap:
             name: {{ include "helper.targetAllocatorConfigMapName" . }}
             {{- $key := "targetallocator.yaml" -}}
