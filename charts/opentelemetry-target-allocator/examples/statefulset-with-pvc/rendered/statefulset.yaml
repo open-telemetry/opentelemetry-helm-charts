@@ -1,0 +1,99 @@
+---
+# Source: opentelemetry-target-allocator/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: default
+  name: example-opentelemetry-target-allocator-ta
+  labels:
+    helm.sh/chart: opentelemetry-target-allocator-0.126.10
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-target-allocator
+    app.kubernetes.io/version: "0.126.0"
+    app.kubernetes.io/name: opentelemetry-target-allocator
+    app.kubernetes.io/instance: example
+spec:
+  serviceName: example-opentelemetry-target-allocator-ta
+  podManagementPolicy: Parallel
+  replicas: 1
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-target-allocator
+      app.kubernetes.io/instance: example
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: effcf6ab9fb64e9250b1c8c5d0e220d5c4b73a1b61217ecfef8795a020d867b6
+      labels:
+        helm.sh/chart: opentelemetry-target-allocator-0.126.10
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: opentelemetry-target-allocator
+        app.kubernetes.io/version: "0.126.0"
+        app.kubernetes.io/name: opentelemetry-target-allocator
+        app.kubernetes.io/instance: example
+    spec:
+      serviceAccountName: example-opentelemetry-target-allocator-ta
+      automountServiceAccountToken: false
+      containers:
+        - name: targetallocator
+          image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:0.126.0
+          ports:
+            - containerPort: 8080
+              name: http-port
+          volumeMounts:
+            - name: config-volume
+              mountPath: /conf/
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: serviceaccount-token
+              readOnly: true
+          env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
+            - name: OTELCOL_NAMESPACE
+              value: default
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          
+      volumes:
+        - name: config-volume
+          configMap:
+            name: example-opentelemetry-target-allocator-ta-configmap
+        - name: serviceaccount-token
+          projected:
+            defaultMode: 0444
+            sources:
+              - serviceAccountToken:
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi

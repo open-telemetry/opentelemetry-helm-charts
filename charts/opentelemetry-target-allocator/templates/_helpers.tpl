@@ -99,3 +99,13 @@ Create ConfigMap checksum annotation
 {{- define "helper.configTemplateChecksumAnnotation" -}}
 checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 {{- end -}}
+
+{{/*
+Validate the mode value.
+*/}}
+{{- define "helper.validateMode" -}}
+{{- if and (ne .Values.mode "deployment") (ne .Values.mode "statefulset") -}}
+{{- fail "mode must be one of: deployment, statefulset" -}}
+{{- end -}}
+{{- end -}}
+

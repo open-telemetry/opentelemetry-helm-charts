@@ -1,16 +1,25 @@
-{{- if eq .Values.mode "deployment" -}}
+{{- if eq .Values.mode "statefulset" -}}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   namespace: {{ template "helper.namespace" . }}
   name: {{ template "helper.fullname" . }}-ta
   labels:
     {{- include "helper.commonLabels" . | nindent 4 }}
 spec:
+  serviceName: {{ template "helper.fullname" . }}-ta
+  podManagementPolicy: {{ .Values.statefulset.podManagementPolicy }}
   replicas: {{ .Values.replicaCount }}
+{{- if .Values.statefulset.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenScaled }}
+{{- end }}
   selector:
     matchLabels:
       {{- include "helper.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -90,4 +99,8 @@ spec:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
+{{- with .Values.statefulset.volumeClaimTemplates }}
+  volumeClaimTemplates:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}

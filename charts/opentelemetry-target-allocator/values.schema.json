@@ -15,6 +15,14 @@
     "nameOverride": {
       "type": "string"
     },
+    "mode": {
+      "description": "Valid values are 'deployment' and 'statefulset'.",
+      "type": "string",
+      "enum": ["deployment", "statefulset"]
+    },
+    "replicaCount": {
+      "type": "integer"
+    },
     "targetAllocator": {
       "type": "object",
       "properties": {
@@ -81,6 +89,32 @@
               "type": "boolean"
             },
             "name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "statefulset": {
+      "type": "object",
+      "description": "StatefulSet-specific configuration, only used when mode is 'statefulset'.",
+      "properties": {
+        "volumeClaimTemplates": {
+          "type": "array"
+        },
+        "podManagementPolicy": {
+          "type": "string"
+        },
+        "persistentVolumeClaimRetentionPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "whenDeleted": {
+              "type": "string"
+            },
+            "whenScaled": {
               "type": "string"
             }
           }

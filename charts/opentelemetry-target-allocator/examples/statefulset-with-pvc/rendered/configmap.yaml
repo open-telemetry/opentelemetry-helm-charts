@@ -1,0 +1,29 @@
+---
+# Source: opentelemetry-target-allocator/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-target-allocator-ta-configmap
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-target-allocator-0.126.10
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-target-allocator
+    app.kubernetes.io/version: "0.126.0"
+    app.kubernetes.io/name: opentelemetry-target-allocator
+    app.kubernetes.io/instance: example
+data:
+  targetallocator.yaml: |
+    allocation_strategy: consistent-hashing
+    collector_namespace: default
+    collector_selector:
+      matchlabels:
+        app.kubernetes.io/component: agent-standalone
+    config:
+      scrape_configs: []
+    filter_strategy: relabel-config
+    prometheus_cr:
+      enabled: true
+      pod_monitor_selector: {}
+      scrapeInterval: 30s
+      service_monitor_selector: {}
