@@ -3,6 +3,9 @@
 
 set -euo pipefail
 
+# Get the repository from environment or default
+REPO="${GITHUB_REPOSITORY:-open-telemetry/opentelemetry-helm-charts}"
+
 # Function to update release notes for a chart
 update_release_notes() {
     local chart_name="$1"
@@ -16,7 +19,7 @@ update_release_notes() {
     enhanced_notes=$(.github/scripts/generate-release-notes.sh "$chart_name" "$chart_version" "$app_version" "charts/$chart_name/")
 
     # Get the current release notes
-    current_notes=$(gh release view "$release_tag" --json body --jq '.body' 2>/dev/null || echo "")
+    current_notes=$(gh release view "$release_tag" --repo "$REPO" --json body --jq '.body' 2>/dev/null || echo "")
 
     if [[ -z "$current_notes" ]]; then
         echo "ERROR: No existing release notes found for ${release_tag}. This indicates a problem with the chart-releaser process."
@@ -32,7 +35,7 @@ update_release_notes() {
 $enhanced_notes"
 
     # Update the release notes
-    gh release edit "$release_tag" --notes "$combined_notes"
+    gh release edit "$release_tag" --repo "$REPO" --notes "$combined_notes"
 }
 
 # Main function to enhance release notes for recent releases
@@ -46,8 +49,8 @@ enhance_release_notes() {
             release_tag="${chart_name}-${chart_version}"
 
             # Check if this release was just created (within the last 5 minutes)
-            if gh release view "$release_tag" >/dev/null 2>&1; then
-                release_date=$(gh release view "$release_tag" --json publishedAt --jq '.publishedAt')
+            if gh release view "$release_tag" --repo "$REPO" >/dev/null 2>&1; then
+                release_date=$(gh release view "$release_tag" --repo "$REPO" --json publishedAt --jq '.publishedAt')
                 release_timestamp=$(date -d "$release_date" +%s)
                 current_timestamp=$(date +%s)
                 time_diff=$((current_timestamp - release_timestamp))
@@ -55,7 +58,7 @@ enhance_release_notes() {
                 # If release was created within the last 5 minutes (300 seconds), check if appVersion changed
                 if [[ $time_diff -lt 300 ]]; then
                     # Check if appVersion changed compared to the previous chart version
-                    previous_chart_version=$(git tag -l "${chart_name}-*" --sort=-version:refname | grep -v "^${release_tag}$" | head -1)
+                    previous_chart_version=$(git tag -l "${chart_name}-*" --sort=-version:refname | grep -v "^${release_tag}$" | head -1 || echo "")
 
                     if [[ -n "$previous_chart_version" ]]; then
                         # Get the previous appVersion from git
