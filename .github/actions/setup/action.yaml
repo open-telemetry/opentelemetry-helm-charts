@@ -29,7 +29,12 @@ runs:
       if: ${{ inputs.create-kind-cluster == 'true' }}
       with:
         config: ./.github/kind-1.29.yaml
-
+  
+    - name: Install VPA CRDs
+      if: ${{ inputs.create-kind-cluster == 'true' }}
+      shell: bash
+      run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
+      
     - name: Add Dependencies
       shell: bash
       run: |

@@ -136,6 +136,10 @@ containers:
         path: {{ .Values.startupProbe.httpGet.path }}
         port: {{ .Values.startupProbe.httpGet.port }}
     {{- end }}
+    {{- with .Values.resizePolicy }}
+    resizePolicy:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     {{- with .Values.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
