@@ -1,0 +1,31 @@
+mode: statefulset
+
+replicaCount: 1
+
+targetAllocator:
+  config:
+    allocation_strategy: consistent-hashing
+    collector_selector:
+      matchlabels:
+        app.kubernetes.io/component: agent-standalone
+    prometheus_cr:
+      enabled: true
+      scrapeInterval: 30s
+      service_monitor_selector: {}
+      pod_monitor_selector: {}
+    filter_strategy: relabel-config
+
+statefulset:
+  podManagementPolicy: "Parallel"
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
+  persistentVolumeClaimRetentionPolicy:
+    enabled: true
+    whenDeleted: Retain
+    whenScaled: Retain

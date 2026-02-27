@@ -1,7 +1,7 @@
 ---
-# Source: opentelemetry-target-allocator/templates/deployment.yaml
+# Source: opentelemetry-target-allocator/templates/statefulset.yaml
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   namespace: default
   name: example-opentelemetry-target-allocator-ta
@@ -13,15 +13,22 @@ metadata:
     app.kubernetes.io/name: opentelemetry-target-allocator
     app.kubernetes.io/instance: example
 spec:
+  serviceName: example-opentelemetry-target-allocator-ta
+  podManagementPolicy: Parallel
   replicas: 1
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-target-allocator
       app.kubernetes.io/instance: example
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: d5bfae591a2f8787bf17142e5ea363c353dd2d854e8bfbe9a36981baf053db04
+        checksum/config: 5e0258a58ea9227a41b4263cead4a3b6f3123d0a21c09af0ba7456bcc623acf7
       labels:
         helm.sh/chart: opentelemetry-target-allocator-0.127.11
         app.kubernetes.io/managed-by: Helm
@@ -80,3 +87,12 @@ spec:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
