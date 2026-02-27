@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 55aa3c557cb2a984a8cd66cc4fb2b44c8a7bfc7d7b95c03f3e9a050deff0ed39
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       labels:
         helm.sh/chart: opentelemetry-target-allocator-0.126.11
         app.kubernetes.io/managed-by: Helm
@@ -30,7 +30,7 @@ spec:
         app.kubernetes.io/name: opentelemetry-target-allocator
         app.kubernetes.io/instance: example
     spec:
-      serviceAccountName: my-service-account
+      serviceAccountName: example-opentelemetry-target-allocator-ta
       automountServiceAccountToken: false
       containers:
         - name: targetallocator
@@ -39,11 +39,11 @@ spec:
             - containerPort: 8080
               name: http-port
           volumeMounts:
-            - name: config-volume
-              mountPath: /conf
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: serviceaccount-token
               readOnly: true
+            - mountPath: /conf
+              name: custom-ta-configmap
           env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
             - name: OTELCOL_NAMESPACE
               value: default
@@ -61,12 +61,6 @@ spec:
             periodSeconds: 10
           
       volumes:
-        - name: config-volume
-          configMap:
-            name: example-opentelemetry-target-allocator-ta-configmap
-            items:
-              - key: targetallocator.yaml
-                path: targetallocator.yaml
         - name: serviceaccount-token
           projected:
             defaultMode: 0444
@@ -84,3 +78,10 @@ spec:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: demo-key
+              path: targetallocator.yaml
+            name: demo-configmap
+          name: custom-ta-configmap

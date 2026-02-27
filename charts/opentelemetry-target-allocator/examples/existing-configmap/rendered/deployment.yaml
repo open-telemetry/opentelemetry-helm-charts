@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 55aa3c557cb2a984a8cd66cc4fb2b44c8a7bfc7d7b95c03f3e9a050deff0ed39
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       labels:
         helm.sh/chart: opentelemetry-target-allocator-0.126.11
         app.kubernetes.io/managed-by: Helm
@@ -30,7 +30,7 @@ spec:
         app.kubernetes.io/name: opentelemetry-target-allocator
         app.kubernetes.io/instance: example
     spec:
-      serviceAccountName: my-service-account
+      serviceAccountName: example-opentelemetry-target-allocator-ta
       automountServiceAccountToken: false
       containers:
         - name: targetallocator
@@ -63,9 +63,9 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: example-opentelemetry-target-allocator-ta-configmap
+            name: demo-configmap
             items:
-              - key: targetallocator.yaml
+              - key: demo-key
                 path: targetallocator.yaml
         - name: serviceaccount-token
           projected:

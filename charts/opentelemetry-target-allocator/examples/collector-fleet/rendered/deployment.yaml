@@ -6,7 +6,7 @@ metadata:
   namespace: default
   name: example-opentelemetry-target-allocator-ta
   labels:
-    helm.sh/chart: opentelemetry-target-allocator-0.126.10
+    helm.sh/chart: opentelemetry-target-allocator-0.126.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-target-allocator
     app.kubernetes.io/version: "0.126.0"
@@ -21,9 +21,9 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 541624adb512c6ab5fdfea3b83a315423320bedecd651469228f9072117a0ebd
+        checksum/config: c5ff59154243292b03846e2d05acb25a960d75cf849ec2338af0df8d7de8e4ca
       labels:
-        helm.sh/chart: opentelemetry-target-allocator-0.126.10
+        helm.sh/chart: opentelemetry-target-allocator-0.126.11
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: opentelemetry-target-allocator
         app.kubernetes.io/version: "0.126.0"
@@ -40,7 +40,7 @@ spec:
               name: http-port
           volumeMounts:
             - name: config-volume
-              mountPath: /conf/
+              mountPath: /conf
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: serviceaccount-token
               readOnly: true
@@ -64,6 +64,9 @@ spec:
         - name: config-volume
           configMap:
             name: example-opentelemetry-target-allocator-ta-configmap
+            items:
+              - key: targetallocator.yaml
+                path: targetallocator.yaml
         - name: serviceaccount-token
           projected:
             defaultMode: 0444
