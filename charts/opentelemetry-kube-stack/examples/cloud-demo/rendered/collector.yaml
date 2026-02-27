@@ -6,8 +6,8 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.13.1
-    app.kubernetes.io/version: "0.141.0"
+    helm.sh/chart: opentelemetry-kube-stack-0.14.4
+    app.kubernetes.io/version: "0.144.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
     opentelemetry.io/opamp-reporting: "true"
@@ -514,7 +514,7 @@ spec:
         apiVersion: v1
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
-    value: "k8s.cluster.name=demo"
+    value: "k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),host.name=$(OTEL_K8S_NODE_NAME),k8s.node.ip=$(OTEL_K8S_NODE_IP),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.cluster.name=demo"
   
   - name: ACCESS_TOKEN
     valueFrom:

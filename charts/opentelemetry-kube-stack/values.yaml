@@ -3,8 +3,10 @@ fullnameOverride: ""
 # Top level field indicating an override for the namespace
 namespaceOverride: ""
 
-# Top level field specifying the name of the cluster
-clusterName: ""
+# Top level field specifying the name of the Kubernetes cluster.
+# When using a Managed Kubernetes Service, it's recommended to use the cluster name assigned by the service for
+# better integration.
+clusterName: "unknown_k8s_cluster"
 
 # Extra environment variables to add to each collector, bridge and instrumentation
 extraEnvs: []
@@ -148,6 +150,10 @@ defaultCRConfig:
   # Whether to use host network for the collector
   hostNetwork: false
 
+  # Enable sharing the host's PID namespace with the pod.
+  # WARNING: This grants visibility into all host processes and should only be enabled when required.
+  hostPID: false
+
   # Whether to share process namespace for the collector
   shareProcessNamespace: false
 
@@ -169,6 +175,14 @@ defaultCRConfig:
   # Node selector for the collector
   nodeSelector: {}
   #   nodeType: worker
+
+  # Command to override the collector's entrypoint
+  command: []
+  #   - /bin/sh
+  #   - -c
+  #   - |
+  #     . /node-env/env.sh
+  #     exec /otelcol-contrib --config=/conf/collector.yaml
 
   # Arguments for the collector
   args: {}
@@ -328,7 +342,8 @@ defaultCRConfig:
   #   type: RollingUpdate
 
   # Retention policy for the PersistentVolumeClaim https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention
-  persistentVolumeClaimRetentionPolicy: {}
+  persistentVolumeClaimRetentionPolicy:
+    {}
     # whenDeleted: Retain
     # whenScaled: Retain
 

@@ -6,25 +6,43 @@
 [WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1. Please migrate to use the `daemonSetUpdateStrategy` value.
 {{- end }}
 {{- end }}
-OpenTelemetry Kube Stack Helm Chart installation completed successfully!
 
+OpenTelemetry Kube Stack Helm Chart installation completed successfully!
 With the features you've enabled, you can:
-{{ range $_, $collector := $.Values.collectors -}}
+
+{{- if .Values.instrumentation.enabled }}
+
+* Auto-instrument and auto-configure applications:
+   Add this annotation to your pod specs to inject the OTel SDK and automatic configuration:
+      instrumentation.opentelemetry.io/inject-<language>: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+   Replace <language> with: dotnet, go, java, nodejs, python, etc.
+
+* Manually instrument and auto-configure applications:
+   Bundle the OTel SDK in your application containers, then add this annotation for auto-configuration
+   through environment variable injection:
+      instrumentation.opentelemetry.io/inject-sdk: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+
+{{ end -}}
+* Manually instrument and manually configure applications:
+   Bundle the OTel SDK in your application containers and manually configure them using:
+{{- range $_, $collector := $.Values.collectors -}}
 {{- if $.Values.defaultCRConfig.enabled }}
 {{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
 {{- end }}
 {{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)  "kubelet" $.Values.kubelet "clusterName" $.Values.clusterName) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
-{{ range $_, $protocol := list "grpc" "http" -}}
+{{- range $_, $protocol := list "grpc" "http" -}}
 {{ $endpoint := dig "receivers" "otlp" "protocols" $protocol "endpoint" "" $collector.config}}
 {{- if and $collector.enabled (ne $endpoint "") -}}
-{{- $port := regexFind ":[0-9]+$" $endpoint -}}
-* Send OTLP to '{{$fullname}}-collector.{{ include "opentelemetry-kube-stack.namespace" $ }}.svc.cluster.local{{$port}}' ({{$protocol}})
-{{ end -}}
+{{- $port := regexFind ":[0-9]+$" $endpoint }}
+   - {{ $protocol }}: {{ $fullname }}-collector.{{ include "opentelemetry-kube-stack.namespace" $ }}.svc.cluster.local{{ $port }}
 {{- end -}}
 {{- end -}}
-{{- if .Values.instrumentation.enabled -}}
-* Annotate your pods with: 'instrumentation.opentelemetry.io/inject-<<language>>: {{.Release.Namespace}}/{{ include "opentelemetry-kube-stack.instrumentation" . }}' to auto-instrument them
-{{ end }}
+{{- end -}}
 
+{{- if .Values.instrumentation.enabled }}
+
+For more details, visit:
+https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annotations-to-existing-deployments
+{{ end -}}
 Happy observing!
