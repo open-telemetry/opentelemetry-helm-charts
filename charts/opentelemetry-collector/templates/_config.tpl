@@ -300,7 +300,9 @@ receivers:
 extensions:
   k8s_observer:
     auth_type: serviceAccount
+    {{- if eq .Values.mode "daemonset" }}
     node: ${env:K8S_NODE_NAME}
+    {{- end }}
 
 receivers:
   {{- if .Values.presets.annotationDiscovery.logs.enabled }}
