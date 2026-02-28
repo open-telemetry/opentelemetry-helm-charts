@@ -1,0 +1,21 @@
+# Example configuration for collecting Kubernetes events using DaemonSet mode
+# with leader election to prevent duplication
+mode: daemonset
+
+image:
+  repository: otel/opentelemetry-collector-k8s
+
+presets:
+  kubernetesEvents:
+    enabled: true
+
+# Export events to your backend
+config:
+  exporters:
+    otlp:
+      endpoint: your-backend:4317
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlp

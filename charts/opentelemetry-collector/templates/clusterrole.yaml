@@ -15,10 +15,19 @@ rules:
 {{- $clusterMetricsEnabled := .Values.presets.clusterMetrics.enabled }}
 {{- $disableLeaderElectionForClusterMetrics := .Values.presets.clusterMetrics.disableLeaderElection}}
 {{- $useLeaderElectionForClusterMetrics := and (eq .Values.mode "daemonset") ( $clusterMetricsEnabled ) (not $disableLeaderElectionForClusterMetrics) }}
+{{- $kubernetesEventsEnabled := .Values.presets.kubernetesEvents.enabled }}
+{{- $disableLeaderElectionForKubernetesEvents := .Values.presets.kubernetesEvents.disableLeaderElection}}
+{{- $useLeaderElectionForKubernetesEvents := and (eq .Values.mode "daemonset") ( $kubernetesEventsEnabled ) (not $disableLeaderElectionForKubernetesEvents) }}
 {{- if $useLeaderElectionForClusterMetrics }}
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get","list","watch","create","update","patch","delete"]
+{{- end }}
+{{- if $useLeaderElectionForKubernetesEvents }}
+  # Rules required for k8s_leader_elector extension for kubernetesEvents preset in daemonset mode
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update"]
 {{- end }}
   {{- if .Values.clusterRole.rules -}}
   {{ toYaml .Values.clusterRole.rules | nindent 2 -}}
