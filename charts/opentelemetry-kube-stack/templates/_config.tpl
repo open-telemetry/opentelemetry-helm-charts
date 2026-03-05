@@ -45,7 +45,7 @@ the config is written as YAML.
 {{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector "namespace" .namespace) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- if .collector.presets.resourceDetection.enabled }}
+{{- if or .collector.presets.resourceDetection.eks.enabled .collector.presets.resourceDetection.aks.enabled .collector.presets.resourceDetection.gcp.enabled }}
 {{- $config = (include "opentelemetry-kube-stack.collector.applyResourceDetectionConfig" (dict "collector" $collector) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
@@ -432,34 +432,36 @@ extensions:
 
 {{- define "opentelemetry-kube-stack.collector.applyResourceDetectionConfig" -}}
 
-{{- if not .collector.presets.resourceDetection.detectors }}
-{{- fail "collector.presets.resourceDetection.detectors must be defined with a valid OTel Collector Resource Detection processor detectors (e.g., eks, aks, gcp...)" }}
-{{- end }}
-
 {{- $config := .collector.config }}
-{{- $presetDetectors := .collector.presets.resourceDetection.detectors -}}
 {{- $processors := get $config "processors" | default dict }}
 {{- $resourceDetectionProcessor := get $processors "resourcedetection/env" | default dict }}
 {{- $detectors := get $resourceDetectionProcessor "detectors" | default list }}
-{{- $newDetectors := $detectors }}
-{{- range $presetDetector := $presetDetectors }}
-{{- $newDetectors = append $newDetectors $presetDetector | uniq }}
-{{- end }}
-{{- $_ := set $resourceDetectionProcessor "detectors" $newDetectors  }}
 
-{{- $overwriteFunctionByDetector :=  dict "eks" "opentelemetry-kube-stack.collector.resourceDetectionEksConfigOverwrite" "aks" "opentelemetry-kube-stack.collector.resourceDetectionAksDetectorConfig" -}}
-{{- range $presetDetector := $presetDetectors }}
-{{- if hasKey $overwriteFunctionByDetector $presetDetector }}
-{{- $overwriteFunction := index $overwriteFunctionByDetector $presetDetector -}}
-{{- $resourceDetectionProcessorOverwrite := include $overwriteFunction . | fromYaml }}
-{{- $newResourceDetectionProcessor :=mergeOverwrite $resourceDetectionProcessor $resourceDetectionProcessorOverwrite -}}
-{{- $_ := set $config.processors "resourcedetection/env" $newResourceDetectionProcessor  }}
+{{- if .collector.presets.resourceDetection.aks.enabled }}
+{{- $aksResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionAksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $aksResourceDetectionProcessor }}
+{{- $detectors = append $detectors "aks" | uniq }}
 {{- end }}
-{{- end  }}
+
+{{- if .collector.presets.resourceDetection.eks.enabled }}
+{{- $eksResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionEksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $eksResourceDetectionProcessor }}
+{{- $detectors = append $detectors "eks" | uniq }}
+{{- end }}
+
+{{- if .collector.presets.resourceDetection.gcp.enabled }}
+{{- $gcpResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionGcpDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $gcpResourceDetectionProcessor }}
+{{- $detectors = append $detectors "gcp" | uniq }}
+{{- end }}
+{{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}
+
+{{- $_ := set $processors "resourcedetection/env" $resourceDetectionProcessor }}
+{{- $_ := set $config "processors" $processors }}
 {{- $config | toYaml }}
 {{- end }}
 
-{{- define "opentelemetry-kube-stack.collector.resourceDetectionEksConfigOverwrite" -}}
+{{- define "opentelemetry-kube-stack.collector.resourceDetectionEksDetectorConfig" -}}
 timeout: 15s
 eks:
   # K8S_NODE_NAME is configured by the collector deployment, no need to overwrite `node_from_env_var`
@@ -470,6 +472,13 @@ eks:
 
 {{- define "opentelemetry-kube-stack.collector.resourceDetectionAksDetectorConfig" -}}
 aks:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}
+
+{{- define "opentelemetry-kube-stack.collector.resourceDetectionGcpDetectorConfig" -}}
+gcp:
   resource_attributes:
     k8s.cluster.name:
       enabled: true

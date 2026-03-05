@@ -481,9 +481,14 @@ defaultCRConfig:
       metrics:
         enabled: false
     resourceDetection:
-      enabled: false
-      # Detectors to add to the preconfigured 'env' and 'k8snode' ones. Typically used to resolve the 'k8s.cluster.name' resource attribute like 'eks', 'aks', or 'gcp'.
-      # detectors: []
+      # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
+      # Typically used to resolve the 'k8s.cluster.name' resource attribute.
+      eks:
+        enabled: false
+      aks:
+        enabled: false
+      gcp:
+        enabled: false
 # Collectors is a map of collector configurations of the form:
 # collectors:
 #   collectorName:
@@ -528,8 +533,12 @@ collectors:
         metrics:
           enabled: false
       resourceDetection:
-        enabled: false
-        # detectors: []
+        aks:
+          enabled: false
+        gcp:
+          enabled: false
+        eks:
+          enabled: false
     config:
       receivers:
         otlp:
