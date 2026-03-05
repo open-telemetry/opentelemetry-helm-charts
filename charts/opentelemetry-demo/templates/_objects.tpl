@@ -74,6 +74,10 @@ spec:
           livenessProbe:
             {{- .livenessProbe | toYaml | nindent 12 }}
           {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- .readinessProbe | toYaml | nindent 12 }}
+          {{- end }}
           volumeMounts:
             {{- if .additionalVolumeMounts }}
             {{- tpl (toYaml .additionalVolumeMounts) . | nindent 12 }}
@@ -121,6 +125,10 @@ spec:
           {{- if .livenessProbe }}
           livenessProbe:
             {{- .livenessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- .readinessProbe | toYaml | nindent 12 }}
           {{- end }}
           {{- if .volumeMounts }}
           volumeMounts:
