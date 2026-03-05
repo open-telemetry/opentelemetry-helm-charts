@@ -40,6 +40,9 @@ spec:
   {{- if $collector.hostNetwork }}
   hostNetwork: {{ $collector.hostNetwork }}
   {{- end }}
+  {{- if $collector.hostPID }}
+  hostPID: {{ $collector.hostPID }}
+  {{- end }}
   {{- if $collector.shareProcessNamespace }}
   shareProcessNamespace: {{ $collector.shareProcessNamespace }}
   {{- end }}
@@ -53,6 +56,10 @@ spec:
   {{- end }}
   {{- with $collector.nodeSelector }}
   nodeSelector:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with $collector.command }}
+  command:
   {{- toYaml . | nindent 4}}
   {{- end }}
   {{- with $collector.args }}
