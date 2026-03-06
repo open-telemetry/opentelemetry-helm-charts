@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.130.0 / 2026-03-06
+
+- [Feat] Bump OpenTelemetry Collector image to v0.147.0.
+
 ### v0.129.9 / 2026-02-26
 
 - [Fix] Ensure `service.profilesSupport` is auto-injected for direct collector runs whenever `profilesCollection` or `ebpfProfiler` presets are enabled, including when fleet management is enabled without supervisor mode, while still avoiding duplicate gates when already provided in `command.extraArgs` or injected by supervisor.
