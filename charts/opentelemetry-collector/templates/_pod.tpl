@@ -207,6 +207,12 @@ containers:
       {{- end }}
     resources:
       {{- toYaml .Values.tenx.resources | nindent 6 }}
+    livenessProbe:
+      exec:
+        command: ["pgrep", "-f", "tenx run"]
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 3
     volumeMounts:
       - name: tenx-sockets
         mountPath: /tmp
