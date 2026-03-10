@@ -1390,42 +1390,44 @@
             }
           }
         },
-        "github": {
+        "gitToken": {
+          "type": "string",
+          "description": "Git access token for fetching config/symbols from private repositories"
+        },
+        "configFetcherImage": {
           "type": "object",
-          "description": "GitHub config fetcher settings",
+          "description": "Git config fetcher init container image",
           "additionalProperties": false,
           "properties": {
-            "image": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "repository": {
-                  "type": "string"
-                },
-                "tag": {
-                  "type": "string"
-                },
-                "pullPolicy": {
-                  "type": "string",
-                  "enum": [
-                    "IfNotPresent",
-                    "Always",
-                    "Never"
-                  ]
-                }
-              }
+            "repository": {
+              "type": "string"
             },
-            "config": {
+            "tag": {
+              "type": "string"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": [
+                "IfNotPresent",
+                "Always",
+                "Never"
+              ]
+            }
+          }
+        },
+        "config": {
+          "type": "object",
+          "description": "Configuration source settings (git or volume)",
+          "additionalProperties": false,
+          "properties": {
+            "git": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "enabled": {
                   "type": "boolean"
                 },
-                "token": {
-                  "type": "string"
-                },
-                "repo": {
+                "url": {
                   "type": "string"
                 },
                 "branch": {
@@ -1433,23 +1435,51 @@
                 }
               }
             },
-            "symbols": {
+            "volume": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "enabled": {
                   "type": "boolean"
                 },
-                "token": {
+                "claimName": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "symbols": {
+          "type": "object",
+          "description": "Symbols source settings (git or volume)",
+          "additionalProperties": false,
+          "properties": {
+            "git": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
                 },
-                "repo": {
+                "url": {
                   "type": "string"
                 },
                 "branch": {
                   "type": "string"
                 },
                 "path": {
+                  "type": "string"
+                }
+              }
+            },
+            "volume": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "claimName": {
                   "type": "string"
                 }
               }

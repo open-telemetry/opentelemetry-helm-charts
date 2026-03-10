@@ -192,18 +192,27 @@ containers:
       {{- end }}
     env:
       - name: TENX_API_KEY
-        value: {{ .Values.tenx.apiKey | quote }}
+        valueFrom:
+          secretKeyRef:
+            name: {{ include "opentelemetry-collector.fullname" . }}-tenx-api-key
+            key: api-key
       {{- if .Values.tenx.runtimeName }}
       - name: TENX_RUNTIME_NAME
         value: {{ .Values.tenx.runtimeName | quote }}
       {{- end }}
-      {{- if or .Values.tenx.github.config.enabled .Values.tenx.github.symbols.enabled }}
+      {{- if .Values.tenx.config.git.enabled }}
       - name: TENX_CONFIG
         value: "/etc/tenx/git/config"
+      {{- else if .Values.tenx.config.volume.enabled }}
+      - name: TENX_CONFIG
+        value: "/etc/tenx/config"
       {{- end }}
-      {{- if .Values.tenx.github.symbols.enabled }}
+      {{- if .Values.tenx.symbols.git.enabled }}
       - name: TENX_SYMBOLS_PATH
-        value: "/etc/tenx/git/symbols"
+        value: "/etc/tenx/git/config/data/shared/symbols"
+      {{- else if .Values.tenx.symbols.volume.enabled }}
+      - name: TENX_SYMBOLS_PATH
+        value: "/etc/tenx/symbols"
       {{- end }}
     resources:
       {{- toYaml .Values.tenx.resources | nindent 6 }}
@@ -216,52 +225,58 @@ containers:
     volumeMounts:
       - name: tenx-sockets
         mountPath: /tmp
-      {{- if or .Values.tenx.github.config.enabled .Values.tenx.github.symbols.enabled }}
+      {{- if or .Values.tenx.config.git.enabled .Values.tenx.symbols.git.enabled }}
       - name: tenx-git
         mountPath: /etc/tenx/git
       {{- end }}
+      {{- if .Values.tenx.config.volume.enabled }}
+      - name: tenx-config-volume
+        mountPath: /etc/tenx/config
+      {{- end }}
+      {{- if .Values.tenx.symbols.volume.enabled }}
+      - name: tenx-symbols-volume
+        mountPath: /etc/tenx/symbols
+      {{- end }}
 {{- end }}
-{{- if or .Values.initContainers (and .Values.tenx.enabled (or .Values.tenx.github.config.enabled .Values.tenx.github.symbols.enabled)) }}
+{{- if or .Values.initContainers (and .Values.tenx.enabled (or .Values.tenx.config.git.enabled .Values.tenx.symbols.git.enabled)) }}
 initContainers:
 {{- if .Values.initContainers }}
   {{- tpl (toYaml .Values.initContainers) . | nindent 2 }}
 {{- end }}
-{{- if and .Values.tenx.enabled (or .Values.tenx.github.config.enabled .Values.tenx.github.symbols.enabled) }}
-  - name: tenx-github-fetcher
-    image: "{{ .Values.tenx.github.image.repository }}:{{ .Values.tenx.github.image.tag }}"
-    imagePullPolicy: {{ .Values.tenx.github.image.pullPolicy }}
+{{- if and .Values.tenx.enabled (or .Values.tenx.config.git.enabled .Values.tenx.symbols.git.enabled) }}
+  - name: tenx-git-config
+    image: "{{ .Values.tenx.configFetcherImage.repository }}:{{ .Values.tenx.configFetcherImage.tag }}"
+    imagePullPolicy: {{ .Values.tenx.configFetcherImage.pullPolicy }}
     env:
-      {{- if .Values.tenx.github.config.enabled }}
-      - name: CONFIG_ENABLED
-        value: "true"
-      - name: CONFIG_TOKEN
-        value: {{ .Values.tenx.github.config.token | quote }}
-      - name: CONFIG_REPO
-        value: {{ .Values.tenx.github.config.repo | quote }}
-      {{- if .Values.tenx.github.config.branch }}
-      - name: CONFIG_BRANCH
-        value: {{ .Values.tenx.github.config.branch | quote }}
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: {{ include "opentelemetry-collector.fullname" . }}-tenx-git-token
+            key: token
+    args:
+      {{- if .Values.tenx.config.git.enabled }}
+      - "--config-repo"
+      - {{ .Values.tenx.config.git.url | quote }}
+      {{- if .Values.tenx.config.git.branch }}
+      - "--config-branch"
+      - {{ .Values.tenx.config.git.branch | quote }}
       {{- end }}
       {{- end }}
-      {{- if .Values.tenx.github.symbols.enabled }}
-      - name: SYMBOLS_ENABLED
-        value: "true"
-      - name: SYMBOLS_TOKEN
-        value: {{ .Values.tenx.github.symbols.token | quote }}
-      - name: SYMBOLS_REPO
-        value: {{ .Values.tenx.github.symbols.repo | quote }}
-      {{- if .Values.tenx.github.symbols.branch }}
-      - name: SYMBOLS_BRANCH
-        value: {{ .Values.tenx.github.symbols.branch | quote }}
+      {{- if .Values.tenx.symbols.git.enabled }}
+      - "--symbols-repo"
+      - {{ .Values.tenx.symbols.git.url | quote }}
+      {{- if .Values.tenx.symbols.git.branch }}
+      - "--symbols-branch"
+      - {{ .Values.tenx.symbols.git.branch | quote }}
       {{- end }}
-      {{- if .Values.tenx.github.symbols.path }}
-      - name: SYMBOLS_PATH
-        value: {{ .Values.tenx.github.symbols.path | quote }}
+      {{- if .Values.tenx.symbols.git.path }}
+      - "--symbols-path"
+      - {{ .Values.tenx.symbols.git.path | quote }}
       {{- end }}
       {{- end }}
     volumeMounts:
       - name: tenx-git
-        mountPath: /etc/tenx/git
+        mountPath: /data
 {{- end }}
 {{- end }}
 {{- if .Values.priorityClassName }}
@@ -301,9 +316,19 @@ volumes:
 {{- if .Values.tenx.enabled }}
   - name: tenx-sockets
     emptyDir: {}
-  {{- if or .Values.tenx.github.config.enabled .Values.tenx.github.symbols.enabled }}
+  {{- if or .Values.tenx.config.git.enabled .Values.tenx.symbols.git.enabled }}
   - name: tenx-git
     emptyDir: {}
+  {{- end }}
+  {{- if .Values.tenx.config.volume.enabled }}
+  - name: tenx-config-volume
+    persistentVolumeClaim:
+      claimName: {{ .Values.tenx.config.volume.claimName }}
+  {{- end }}
+  {{- if .Values.tenx.symbols.volume.enabled }}
+  - name: tenx-symbols-volume
+    persistentVolumeClaim:
+      claimName: {{ .Values.tenx.symbols.volume.claimName }}
   {{- end }}
 {{- end }}
   {{- if .Values.extraVolumes }}

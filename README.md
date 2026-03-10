@@ -24,7 +24,7 @@ Install directly from the OCI registry:
 helm install my-collector oci://ghcr.io/log-10x/opentelemetry-helm-charts/opentelemetry-collector
 
 # Install a specific version
-helm install my-collector oci://ghcr.io/log-10x/opentelemetry-helm-charts/opentelemetry-collector --version 0.9.6
+helm install my-collector oci://ghcr.io/log-10x/opentelemetry-helm-charts/opentelemetry-collector --version 0.9.7
 
 # Show chart info and available versions
 helm show all oci://ghcr.io/log-10x/opentelemetry-helm-charts/opentelemetry-collector

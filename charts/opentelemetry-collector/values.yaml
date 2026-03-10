@@ -264,7 +264,7 @@ tenx:
   # Log10x image configuration
   image:
     repository: "log10x/pipeline-10x"
-    tag: "0.9.6"
+    tag: "0.9.7"
     pullPolicy: "IfNotPresent"
 
   # Specify your Log10x API key
@@ -302,37 +302,55 @@ tenx:
     runAsUser: 10001
     runAsGroup: 10001
 
-  # Control fetching Log10x config and/or symbols from GitHub.
-  # If enabled, an init container will fetch config/symbols before the pod starts.
-  # To learn more, see: https://doc.log10x.com/architecture/gitops
-  github:
-    # GitHub config fetcher image
-    image:
-      repository: "log10x/github-config-fetcher"
-      tag: "latest"
-      pullPolicy: "IfNotPresent"
-
-    config:
-      # If enabled, fetch Log10x configuration from GitHub
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Configuration Repository
+  # ─────────────────────────────────────────────────────────────────────────────
+  # The Log10x engine reads its configuration from a directory containing pipeline
+  # definitions, module configs, and app settings. Use one of the methods below to
+  # load your configuration into the cluster.
+  #
+  # For more information, see: https://doc.log10x.com/config/
+  config:
+    # Method 1: Clone from a Git repository
+    # An init container clones the repository before the main container starts.
+    # Works with any Git provider (GitHub, GitLab, Bitbucket, self-hosted).
+    git:
       enabled: false
-      # GitHub personal access token
-      token: ""
-      # Repository in format "owner/repo"
-      repo: ""
-      # Optional branch (defaults to repo's default branch)
+      # Full HTTPS URL of the repository (e.g., https://github.com/your-org/config.git)
+      url: ""
+      # Optional: branch to clone (defaults to the repository's default branch)
       # branch: "main"
 
-    symbols:
-      # If enabled, fetch symbol libraries from GitHub
+    # Method 2: Mount an existing PersistentVolumeClaim
+    # For air-gapped environments or when config is managed outside of Git.
+    volume:
       enabled: false
-      # GitHub personal access token
-      token: ""
-      # Repository in format "owner/repo"
-      repo: ""
-      # Optional branch
+      # Name of an existing PVC containing the configuration directory
+      claimName: ""
+
+  # Symbol files (optional)
+  # Compiled symbol libraries used by the Log10x engine for log compaction.
+  symbols:
+    git:
+      enabled: false
+      url: ""
       # branch: "main"
-      # Optional path within repo
-      # path: "symbols"
+      # Optional: subdirectory within the repo where symbols reside
+      # path: "tenx/my-app/symbols"
+    volume:
+      enabled: false
+      claimName: ""
+
+  # Git access token for private repositories.
+  # Used by the init container when config.git or symbols.git is enabled.
+  # Works with any Git provider that supports HTTPS token authentication.
+  gitToken: ""
+
+  # Git config fetcher init container image
+  configFetcherImage:
+    repository: "log10x/git-config-fetcher"
+    tag: "0.9.7"
+    pullPolicy: "IfNotPresent"
 
 # OpenTelemetry Collector executable
 command:
