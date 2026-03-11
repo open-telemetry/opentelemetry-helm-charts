@@ -9,7 +9,11 @@ rules:
   resources:
   - namespaces
   - nodes
+{{- if semverCompare ">=1.33-0" .Capabilities.KubeVersion.Version }}
   - nodes/pods
+{{- else }}
+  - nodes/proxy
+{{- end }}
   - nodes/metrics
   - nodes/stats
   - services
