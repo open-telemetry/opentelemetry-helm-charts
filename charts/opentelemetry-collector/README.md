@@ -526,6 +526,21 @@ presets:
 
 The HTTP endpoint can be configured via `presets.pprof.endpoint`.
 
+### Configuration for eBPF profiler preset
+
+Set `presets.ebpfProfiler.enabled` to `true` to use the eBPF profiler distribution.
+You can optionally set `presets.ebpfProfiler.samplesPerSecond` to render
+`receivers.profiling.samples_per_second` in the generated collector config. When
+`presets.ebpfProfiler.samplesPerSecond` is not set, the chart omits
+`samples_per_second` so the receiver keeps its upstream default.
+
+```yaml
+presets:
+  ebpfProfiler:
+    enabled: true
+    samplesPerSecond: 77
+```
+
 ### Configuration for standalone distribution
 
 The standalone distribution is intended for Linux hosts where the collector runs without

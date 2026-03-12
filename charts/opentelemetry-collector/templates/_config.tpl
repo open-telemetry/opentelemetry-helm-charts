@@ -1462,6 +1462,9 @@ receivers:
     verbose_mode: {{ .Values.presets.ebpfProfiler.verboseMode }}
     off_cpu_threshold: {{ .Values.presets.ebpfProfiler.offCpuThreshold }}
     tracers: {{ .Values.presets.ebpfProfiler.tracers | quote }}
+    {{- with .Values.presets.ebpfProfiler.samplesPerSecond }}
+    samples_per_second: {{ . }}
+    {{- end }}
 service:
   pipelines:
     profiles:
