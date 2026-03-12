@@ -1,0 +1,81 @@
+name: Update OBI Chart
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: OBI release tag to apply. Defaults to the latest published release.
+        required: false
+        type: string
+  repository_dispatch:
+    types:
+      - obi-release-published
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-obi-chart
+  cancel-in-progress: false
+
+jobs:
+  update:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create OTelBot token
+        id: otelbot-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ vars.OTELBOT_APP_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ steps.otelbot-token.outputs.token }}
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "false"
+          helm-version: "v3.14.4"
+
+      - name: Update OBI chart
+        id: update
+        env:
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.event.client_payload.release_tag || '' }}
+        run: .github/scripts/update-obi-chart.sh
+
+      - name: Create pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+        run: |
+          git config user.name otelbot
+          git config user.email 197425009+otelbot@users.noreply.github.com
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+
+          git checkout -B "${{ steps.update.outputs.branch_name }}"
+          git add charts/opentelemetry-ebpf-instrumentation
+          git commit -m "${{ steps.update.outputs.commit_message }}"
+          git push --force-with-lease --set-upstream origin "${{ steps.update.outputs.branch_name }}"
+
+          pr_number="$(gh pr list --head "${{ steps.update.outputs.branch_name }}" --base main --json number --jq '.[0].number')"
+          if [[ -n "${pr_number}" ]]; then
+            gh pr edit "${pr_number}" \
+              --title "${{ steps.update.outputs.pr_title }}" \
+              --body "${{ steps.update.outputs.pr_body }}"
+          else
+            gh pr create \
+              --head "${{ steps.update.outputs.branch_name }}" \
+              --base main \
+              --title "${{ steps.update.outputs.pr_title }}" \
+              --body "${{ steps.update.outputs.pr_body }}"
+          fi
