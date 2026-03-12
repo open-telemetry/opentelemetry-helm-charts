@@ -55,6 +55,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to Helm OCI Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
+            --username ${{ github.actor }} \
+            --password-stdin
+
       - name: Push charts to GHCR
         run: |
           shopt -s nullglob
@@ -62,10 +68,17 @@ jobs:
             if [ -z "${pkg:-}" ]; then
               break
             fi
+            echo "Pushing ${pkg} to oci://ghcr.io/${GITHUB_REPOSITORY}"
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY}"
           done
+
+      - name: Fetch newly created tags
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git fetch --tags origin
 
       - name: Enhance release notes with OpenTelemetry links
         run: .github/scripts/enhance-release-notes.sh
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_REPOSITORY: "${{ github.repository }}"
