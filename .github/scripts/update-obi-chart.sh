@@ -119,6 +119,7 @@ main() {
   require_command make
   require_command awk
   require_command mktemp
+  require_command sed
   require_file "${CHART_PATH}"
 
   release_tag="$(resolve_release_tag)"
