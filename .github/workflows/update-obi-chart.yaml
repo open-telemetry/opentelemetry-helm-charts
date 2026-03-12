@@ -57,25 +57,29 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
+          COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
+          PR_TITLE: ${{ steps.update.outputs.pr_title }}
+          PR_BODY: ${{ steps.update.outputs.pr_body }}
         run: |
           git config user.name otelbot
           git config user.email 197425009+otelbot@users.noreply.github.com
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
 
-          git checkout -B "${{ steps.update.outputs.branch_name }}"
+          git checkout -B "${BRANCH_NAME}"
           git add charts/opentelemetry-ebpf-instrumentation
-          git commit -m "${{ steps.update.outputs.commit_message }}"
-          git push --force-with-lease --set-upstream origin "${{ steps.update.outputs.branch_name }}"
+          git commit -m "${COMMIT_MESSAGE}"
+          git push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
 
-          pr_number="$(gh pr list --head "${{ steps.update.outputs.branch_name }}" --base main --json number --jq '.[0].number')"
+          pr_number="$(gh pr list --head "${BRANCH_NAME}" --base main --json number --jq '.[0].number')"
           if [[ -n "${pr_number}" ]]; then
             gh pr edit "${pr_number}" \
-              --title "${{ steps.update.outputs.pr_title }}" \
-              --body "${{ steps.update.outputs.pr_body }}"
+              --title "${PR_TITLE}" \
+              --body "${PR_BODY}"
           else
             gh pr create \
-              --head "${{ steps.update.outputs.branch_name }}" \
+              --head "${BRANCH_NAME}" \
               --base main \
-              --title "${{ steps.update.outputs.pr_title }}" \
-              --body "${{ steps.update.outputs.pr_body }}"
+              --title "${PR_TITLE}" \
+              --body "${PR_BODY}"
           fi
