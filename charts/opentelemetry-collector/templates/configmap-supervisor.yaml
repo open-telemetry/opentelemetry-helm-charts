@@ -49,6 +49,9 @@ agent:
     {{- if and $profilesSupportEnabled (not $profilesGateAlreadySet) }}
       "--feature-gates=+service.profilesSupport",
     {{- end }}
+    {{- range .Values.command.extraArgs }}
+      {{ . | quote }},
+    {{- end }}
   ]
 
   # This adds env vars to the Collector process.

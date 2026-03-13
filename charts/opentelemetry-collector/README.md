@@ -668,6 +668,9 @@ configuration will not include any other enabled preset, processors, exporters, 
 To override this behavior and retain the Collector configuration according to the enabled presets, set the
 `presets.fleetManagement.supervisor.minimalCollectorConfig` to `false`.
 
+When supervisor mode is enabled, `command.extraArgs` is passed to the managed Collector via the supervisor
+configuration's `agent.args` field instead of being appended to the `opampsupervisor` container command.
+
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
