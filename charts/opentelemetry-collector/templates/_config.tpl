@@ -1767,6 +1767,7 @@ processors:
 {{- $containerAttrs := list "container.id" }}
 {{- $networkAttrs := list "net.host.name" "net.host.port" }}
 {{- $telemetryAttrs := list "telemetry.distro.name" "telemetry.distro.version" "telemetry.sdk.language" "telemetry.sdk.name" "telemetry.sdk.version" "cx.otel_integration.name" }}
+{{- $traceTelemetryAttrs := list "telemetry.distro.name" "telemetry.distro.version" "cx.otel_integration.name" }}
 {{- $processAttrs := list "process.command" "process.command_line" "process.command_args" "process.executable.name" "process.executable.path" "process.owner" "process.pid" "process.parent_pid" "process.runtime.description" "process.runtime.name" "process.runtime.version" }}
 
 {{/* Determine if this is a cloud provider */}}
@@ -1788,19 +1789,24 @@ processors:
 
 {{/* Build base attributes list */}}
 {{- $baseAttrs := list }}
+{{- $traceBaseAttrs := list }}
 {{- if $provider }}
   {{/* Provider-based mode: build smart attribute list based on environment */}}
   {{/* Start with common attrs for all providers */}}
   {{- $baseAttrs = concat $osAttrs $containerAttrs $telemetryAttrs }}
+  {{- $traceBaseAttrs = concat $osAttrs $containerAttrs $traceTelemetryAttrs }}
   {{/* Add cloud-specific attrs only for cloud providers */}}
   {{- if $isCloud }}
     {{- $baseAttrs = concat $baseAttrs $cloudAttrs $hostCloudAttrs $faasAttrs }}
+    {{- $traceBaseAttrs = concat $traceBaseAttrs $cloudAttrs $hostCloudAttrs $faasAttrs }}
   {{- end }}
   {{- if $isK8s }}
     {{- $baseAttrs = concat $baseAttrs $k8sAttrs }}
+    {{- $traceBaseAttrs = concat $traceBaseAttrs $k8sAttrs }}
   {{- end }}
   {{- if $isEcs }}
     {{- $baseAttrs = concat $baseAttrs $ecsAttrs }}
+    {{- $traceBaseAttrs = concat $traceBaseAttrs $ecsAttrs }}
   {{- end }}
   {{/* Note: Denylist is only applied when no provider is set */}}
 {{- end }}
@@ -1849,7 +1855,7 @@ processors:
         statements:
         {{- if $provider }}
         {{/* Provider-based mode: use computed attribute lists */}}
-        {{- range $attr := $baseAttrs | uniq }}
+        {{- range $attr := $traceBaseAttrs | uniq }}
         - delete_key(resource.attributes, "{{ $attr }}")
         {{- end }}
         {{/* Add process attrs without condition for traces */}}

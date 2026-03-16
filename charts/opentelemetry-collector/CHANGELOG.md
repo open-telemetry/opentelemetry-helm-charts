@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.130.3 / 2026-03-16
+
+- [Fix] Preserve `telemetry.sdk.*` resource attributes on traces when `reduceResourceAttributes` is enabled in provider-based mode, while continuing to remove them for logs and metrics.
+
 ### v0.130.2 / 2026-03-12
 
 - [Fix] Pass `command.extraArgs` to the managed Collector through the supervisor `agent.args` configuration instead of appending them to the `opampsupervisor` container command.
