@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.130.4 / 2026-03-16
+
+- [Feat] Use Coralogix' custom Supervised Collector image when `presets.fleetManagement.supervisor` is enabled. For now this custom image includes fallback configuration support (local file and S3).
+
 ### v0.130.3 / 2026-03-16
 
 - [Fix] Preserve `telemetry.sdk.*` resource attributes on traces when `reduceResourceAttributes` is enabled in provider-based mode, while continuing to remove them for logs and metrics.
