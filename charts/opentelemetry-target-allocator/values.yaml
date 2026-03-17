@@ -1,11 +1,14 @@
 ################################################################################
 # Target Allocator
 #
-# The Target Allocator is running as a deployment with a replica count of 1.
+# The Target Allocator can run as a deployment or a statefulset.
 # It discovers scraping configurations from ServiceMonitor and PodMonitor CRDs and
 # assigns them to collectors.
 # Related documentation: https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
 ################################################################################
+
+# Valid values are "deployment" and "statefulset".
+mode: "deployment"
 
 # nameOverride replaces the name of the chart, when this is used to construct
 # Kubernetes object names.
@@ -13,7 +16,7 @@ nameOverride: ""
 # fullnameOverride completely replaces the generated name.
 fullnameOverride: ""
 
-# Number of replicas for the target allocator deployment
+# Number of replicas for the target allocator
 replicaCount: 1
 
 targetAllocator:
@@ -86,6 +89,25 @@ affinity: {}
 tolerations: []
 nodeSelector: {}
 topologySpreadConstraints: []
+
+# statefulset specific configuration, only used when mode is "statefulset"
+statefulset:
+  # volumeClaimTemplates for the statefulset
+  volumeClaimTemplates: []
+  #  - metadata:
+  #      name: data
+  #    spec:
+  #      accessModes: [ "ReadWriteOnce" ]
+  #      resources:
+  #        requests:
+  #          storage: 1Gi
+  podManagementPolicy: "Parallel"
+  # Controls if and how PVCs created by the StatefulSet are deleted.
+  # Available in Kubernetes 1.23+.
+  persistentVolumeClaimRetentionPolicy:
+    enabled: false
+    whenDeleted: Retain
+    whenScaled: Retain
 
 
 ## This will deploy arbitrary manifests as part of the helm relase

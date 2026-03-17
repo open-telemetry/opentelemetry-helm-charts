@@ -1,3 +1,7 @@
+{{- if and (not (eq .Values.mode "deployment")) (not (eq .Values.mode "statefulset")) }}
+{{ fail "[ERROR] 'mode' must be set to one of: deployment, statefulset." }}
+{{ end }}
+
 {{- if not .Values.targetAllocator.resources }}
 [WARNING] No resource limits or requests were set. Consider setting resource requests and limits for your target allocator via the `targetAllocator.resources` field.
 {{ end }}
