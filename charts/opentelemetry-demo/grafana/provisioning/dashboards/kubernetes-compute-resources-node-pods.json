@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 0,
   "links": [
     {
       "asDropdown": true,
@@ -131,6 +131,49 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max allocatable"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "mode": "none"
+                }
+              },
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": true,
+                  "viz": false
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
           }
         ]
       },
@@ -158,15 +201,18 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_node_status_capacity{cluster=\"$cluster\", job=\"kube-state-metrics\", node=~\"$node\", resource=\"cpu\"})",
+          "editorMode": "builder",
+          "expr": "sum(k8s_node_cpu_capacity{k8s_node_name=~\"$node\"})",
+          "hide": false,
           "legendFormat": "max capacity",
+          "range": true,
           "refId": "A"
         },
         {
@@ -174,9 +220,24 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", node=~\"$node\", container!=\"\"}[5m]))) by (pod)",
-          "legendFormat": "{{pod}}",
+          "editorMode": "builder",
+          "expr": "sum(k8s_node_allocatable_cpu{k8s_node_name=~\"$node\"})",
+          "hide": false,
+          "legendFormat": "max allocatable",
+          "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{k8s_node_name=~\"$node\"}[5m]))",
+          "hide": false,
+          "legendFormat": "{{k8s_pod_name}}",
+          "range": true,
+          "refId": "C"
         }
       ],
       "title": "CPU Usage",
@@ -257,16 +318,18 @@
         "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", node=~\"$node\", container!=\"\"}[5m]))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{k8s_node_name=~\"$node\"}[5m]))",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "A"
         },
         {
@@ -274,9 +337,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_container_cpu_request{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "B"
         },
         {
@@ -284,9 +349,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", node=~\"$node\", container!=\"\"}[5m]))) by (pod) / sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{k8s_node_name=~\"$node\"}[5m])) / (sum by(k8s_pod_name) (k8s_container_cpu_request{k8s_node_name=~\"$node\"}))",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "C"
         },
         {
@@ -294,9 +361,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_container_cpu_limit{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "D"
         },
         {
@@ -304,9 +373,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", node=~\"$node\", container!=\"\"}[5m]))) by (pod) / sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{k8s_node_name=~\"$node\"}[5m])) / (sum by(k8s_pod_name) (k8s_container_cpu_limit{k8s_node_name=~\"$node\"}))",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "E"
         }
       ],
@@ -315,7 +386,7 @@
         {
           "id": "joinByField",
           "options": {
-            "byField": "pod",
+            "byField": "k8s_pod_name",
             "mode": "outer"
           }
         },
@@ -330,13 +401,16 @@
               "Time 4": true,
               "Time 5": true
             },
+            "includeByName": {},
+            "indexByName": {},
+            "orderByMode": "manual",
             "renameByName": {
               "Value #A": "CPU Usage",
               "Value #B": "CPU Requests",
               "Value #C": "CPU Requests %",
               "Value #D": "CPU Limits",
               "Value #E": "CPU Limits %",
-              "pod": "Pod"
+              "k8s_pod_name": "Pod"
             }
           }
         }
@@ -442,6 +516,49 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max allocatable"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "mode": "none"
+                }
+              },
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": true,
+                  "viz": false
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
           }
         ]
       },
@@ -469,15 +586,17 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_node_status_capacity{cluster=\"$cluster\", job=\"kube-state-metrics\", node=~\"$node\", resource=\"memory\"})",
+          "editorMode": "builder",
+          "expr": "sum(k8s_node_memory_capacity_bytes{k8s_node_name=~\"$node\"})",
           "legendFormat": "max capacity",
+          "range": true,
           "refId": "A"
         },
         {
@@ -485,12 +604,26 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod)",
-          "legendFormat": "{{pod}}",
+          "editorMode": "builder",
+          "expr": "sum(k8s_node_allocatable_memory_bytes{k8s_node_name=~\"$node\"})",
+          "legendFormat": "max allocatable",
+          "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_usage_bytes{k8s_node_name=~\"$node\"})",
+          "hide": false,
+          "legendFormat": "{{k8s_pod_name}}",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Memory Usage (w/cache)",
+      "title": "Memory Usage (total)",
       "type": "timeseries"
     },
     {
@@ -592,6 +725,49 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max allocatable"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "mode": "none"
+                }
+              },
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": true,
+                  "viz": false
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
           }
         ]
       },
@@ -619,15 +795,17 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_node_status_capacity{cluster=\"$cluster\", job=\"kube-state-metrics\", node=~\"$node\", resource=\"memory\"})",
+          "editorMode": "builder",
+          "expr": "sum(k8s_node_memory_capacity_bytes{k8s_node_name=~\"$node\"})",
           "legendFormat": "max capacity",
+          "range": true,
           "refId": "A"
         },
         {
@@ -635,12 +813,25 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_rss{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod)",
-          "legendFormat": "{{pod}}",
+          "editorMode": "builder",
+          "expr": "sum(k8s_node_allocatable_memory_bytes{k8s_node_name=~\"$node\"})",
+          "legendFormat": "max allocatable",
+          "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_working_set_bytes{k8s_node_name=~\"$node\"})",
+          "legendFormat": "{{k8s_pod_name}}",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Memory Usage (w/o cache)",
+      "title": "Memory Usage (working set)",
       "type": "timeseries"
     },
     {
@@ -650,6 +841,30 @@
       },
       "fieldConfig": {
         "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
           "unit": "bytes"
         },
         "overrides": [
@@ -691,17 +906,22 @@
         "y": 24
       },
       "id": 5,
-      "options": {},
-      "pluginVersion": "v11.4.0",
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_usage_bytes{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "A"
         },
         {
@@ -709,9 +929,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_container_memory_request_bytes{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "B"
         },
         {
@@ -719,9 +941,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod) / sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_usage_bytes{k8s_node_name=~\"$node\"}) / (sum by(k8s_pod_name) (k8s_container_memory_request_bytes{k8s_node_name=~\"$node\"}))",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "C"
         },
         {
@@ -729,9 +953,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_container_memory_limit_bytes{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "D"
         },
         {
@@ -739,9 +965,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod) / sum(max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"} * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (kube_pod_status_phase{phase=~\"Pending|Running\"} == 1))) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_usage_bytes{k8s_node_name=~\"$node\"}) / (sum by(k8s_pod_name) (k8s_container_memory_limit_bytes{k8s_node_name=~\"$node\"}))",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "E"
         },
         {
@@ -749,9 +977,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_rss{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_working_set_bytes{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "F"
         },
         {
@@ -759,9 +989,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_cache{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_rss_bytes{k8s_node_name=~\"$node\"})",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "G"
         },
         {
@@ -769,9 +1001,11 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_swap{cluster=\"$cluster\", node=~\"$node\", container!=\"\"})) by (pod)",
+          "editorMode": "builder",
+          "expr": "sum by(k8s_pod_name) (k8s_pod_memory_usage_bytes{k8s_node_name=~\"$node\"}) - (sum by(k8s_pod_name) (k8s_pod_memory_working_set_bytes{k8s_node_name=~\"$node\"}))",
           "format": "table",
           "instant": true,
+          "legendFormat": "{{k8s_pod_name}}",
           "refId": "H"
         }
       ],
@@ -780,7 +1014,7 @@
         {
           "id": "joinByField",
           "options": {
-            "byField": "pod",
+            "byField": "k8s_pod_name",
             "mode": "outer"
           }
         },
@@ -804,10 +1038,10 @@
               "Value #C": "Memory Requests %",
               "Value #D": "Memory Limits",
               "Value #E": "Memory Limits %",
-              "Value #F": "Memory Usage (RSS)",
-              "Value #G": "Memory Usage (Cache)",
-              "Value #H": "Memory Usage (Swap)",
-              "pod": "Pod"
+              "Value #F": "Memory Working Set",
+              "Value #G": "Memory RSS",
+              "Value #H": "Memory Reclaimable",
+              "k8s_pod_name": "Pod"
             }
           }
         }
@@ -819,66 +1053,43 @@
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
-    "otel"
+    "kubernetes-mixin"
   ],
   "templating": {
-    "list": [
-      {
+  "list": [
+    {
         "current": {
           "text": "default",
           "value": "default"
         },
-        "label": "Data source",
-        "name": "datasource",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
-        "type": "datasource"
+      "label": "Data source",
+      "name": "datasource",
+      "options": [],
+      "query": "prometheus",
+      "refresh": 1,
+      "regex": "",
+      "type": "datasource"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
-      {
-        "allValue": ".*",
-        "current": {
-          "text": "sltest",
-          "value": "sltest"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
-        },
-        "hide": 2,
-        "label": "cluster",
-        "name": "cluster",
-        "options": [],
-        "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
+      "definition": "label_values(k8s_pod_cpu_time_seconds_total,k8s_node_name)",
+      "label": "Node",
+      "multi": true,
+      "name": "node",
+      "options": [],
+      "query": {
+        "qryType": 1,
+        "query": "label_values(k8s_pod_cpu_time_seconds_total,k8s_node_name)",
+        "refId": "PrometheusVariableQueryEditor-VariableQuery"
       },
-      {
-        "current": {
-          "text": [
-            "sl-k8s-sltest-ai01.creativesoftware.com"
-          ],
-          "value": [
-            "sl-k8s-sltest-ai01.creativesoftware.com"
-          ]
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
-        },
-        "label": "node",
-        "multi": true,
-        "name": "node",
-        "options": [],
-        "query": "label_values(kube_node_info{cluster=\"$cluster\"}, node)",
-        "refresh": 2,
-        "type": "query"
-      }
-    ]
-  },
+      "refresh": 2,
+      "type": "query"
+    }
+  ]
+},
   "time": {
     "from": "now-1h",
     "to": "now"
@@ -886,6 +1097,6 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Kubernetes / Compute Resources / Node (Pods) - OTEL",
-  "uid": "200ac8fdbfbb74b39aff88118e4d1c2c-otel",
-  "version": 1
+  "uid": "200ac8fdbfbb74b39aff88118e4d1c2c2",
+  "version": 16
 }
