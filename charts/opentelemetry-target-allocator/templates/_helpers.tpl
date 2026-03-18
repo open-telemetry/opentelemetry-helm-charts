@@ -73,11 +73,15 @@ Create the name of the target allocator cluster role to use
 {{- end -}}
 
 {{/*
-Create the name of the target allocator cluster config map to use
+Get ConfigMap name if existingName is defined, otherwise use default name for generated config.
 */}}
 {{- define "helper.targetAllocatorConfigMapName" -}}
-{{- printf "%s-ta-configmap" ( include "helper.fullname" . ) | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
+  {{- if .Values.configMap.existingName -}}
+    {{- tpl (.Values.configMap.existingName | toYaml) . }}
+  {{- else }}
+    {{- printf "%s-ta-configmap" ( include "helper.fullname" . ) | trunc 63 | trimSuffix "-" -}}
+  {{- end -}}
+{{- end }}
 
 {{/*
 Create the name of the target allocator cluster role binding to use
