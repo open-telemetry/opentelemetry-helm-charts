@@ -25,7 +25,8 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "kubernetes-mixin"
+        "otel-native",
+        "kubernetes"
       ],
       "targetBlank": false,
       "title": "Kubernetes",
@@ -38,6 +39,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite using Prometheus-sanitized Kubernetes metrics from kubeletstats/k8sattributes. Workload grouping is inferred from enriched resource labels such as k8s_deployment_name, k8s_statefulset_name, k8s_daemonset_name, k8s_job_name, and k8s_cronjob_name. The original kube_pod_info and namespace_workload_pod:kube_pod_owner:relabel joins were removed. host_network filtering is omitted because it is not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -101,12 +103,14 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Current Rate of Bytes Received",
+      "title": "Current Rate of Bits Received",
       "type": "bargauge"
     },
     {
@@ -114,6 +118,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite using Prometheus-sanitized Kubernetes metrics from kubeletstats/k8sattributes. Workload grouping is inferred from enriched resource labels such as k8s_deployment_name, k8s_statefulset_name, k8s_daemonset_name, k8s_job_name, and k8s_cronjob_name. The original kube_pod_info and namespace_workload_pod:kube_pod_owner:relabel joins were removed. host_network filtering is omitted because it is not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -177,12 +182,14 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(sum(rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Current Rate of Bytes Transmitted",
+      "title": "Current Rate of Bits Transmitted",
       "type": "bargauge"
     },
     {
@@ -190,6 +197,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite. Dropped-packet panels are approximated with pod network error counters because the provided OTel config does not imply dedicated dropped-packet metrics. Workload grouping is inferred from OTel-enriched labels.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -221,7 +229,7 @@
           {
             "matcher": {
               "id": "byRegexp",
-              "options": "/Bytes/"
+              "options": "/Bits/"
             },
             "properties": [
               {
@@ -279,7 +287,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  sum by (workload, workload_type) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -289,7 +297,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  sum by (workload, workload_type) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -299,7 +307,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  avg by (workload, workload_type) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -309,7 +317,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  avg by (workload, workload_type) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -319,7 +327,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  sum by (workload, workload_type) (\n    rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "E"
@@ -329,7 +337,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  sum by (workload, workload_type) (\n    rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "F"
@@ -339,7 +347,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  sum by (workload, workload_type) (\n    rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "G"
@@ -349,7 +357,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(\n  sum by (workload, workload_type) (\n    rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n    * on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    * on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
           "format": "table",
           "instant": true,
           "refId": "H"
@@ -413,10 +421,10 @@
               "workload_type 8": 24
             },
             "renameByName": {
-              "Value #A": "Rx Bytes",
-              "Value #B": "Tx Bytes",
-              "Value #C": "Rx Bytes (Avg)",
-              "Value #D": "Tx Bytes (Avg)",
+              "Value #A": "Rx Bits",
+              "Value #B": "Tx Bits",
+              "Value #C": "Rx Bits (Avg)",
+              "Value #D": "Tx Bits (Avg)",
               "Value #E": "Rx Packets",
               "Value #F": "Tx Packets",
               "Value #G": "Rx Packets Dropped",
@@ -434,6 +442,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite using Prometheus-sanitized Kubernetes metrics from kubeletstats/k8sattributes. Workload grouping is inferred from enriched resource labels such as k8s_deployment_name, k8s_statefulset_name, k8s_daemonset_name, k8s_job_name, and k8s_cronjob_name. The original kube_pod_info and namespace_workload_pod:kube_pod_owner:relabel joins were removed. host_network filtering is omitted because it is not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -522,8 +531,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -535,6 +546,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite using Prometheus-sanitized Kubernetes metrics from kubeletstats/k8sattributes. Workload grouping is inferred from enriched resource labels such as k8s_deployment_name, k8s_statefulset_name, k8s_daemonset_name, k8s_job_name, and k8s_cronjob_name. The original kube_pod_info and namespace_workload_pod:kube_pod_owner:relabel joins were removed. host_network filtering is omitted because it is not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -623,8 +635,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(sum(rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -636,6 +650,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite using Prometheus-sanitized Kubernetes metrics from kubeletstats/k8sattributes. Workload grouping is inferred from enriched resource labels such as k8s_deployment_name, k8s_statefulset_name, k8s_daemonset_name, k8s_job_name, and k8s_cronjob_name. The original kube_pod_info and namespace_workload_pod:kube_pod_owner:relabel joins were removed. host_network filtering is omitted because it is not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -724,8 +739,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(avg(rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -737,6 +754,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite using Prometheus-sanitized Kubernetes metrics from kubeletstats/k8sattributes. Workload grouping is inferred from enriched resource labels such as k8s_deployment_name, k8s_statefulset_name, k8s_daemonset_name, k8s_job_name, and k8s_cronjob_name. The original kube_pod_info and namespace_workload_pod:kube_pod_owner:relabel joins were removed. host_network filtering is omitted because it is not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -825,8 +843,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(avg(rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -838,6 +858,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite. Uses k8s_pod_network_errors_total as the closest native equivalent because a dedicated dropped-packet metric is not implied by the provided OTel config. Workload grouping is inferred from OTel-enriched labels.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -900,208 +921,6 @@
         "w": 12,
         "x": 0,
         "y": 36
-      },
-      "id": 8,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sort_desc(sum(rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of Received Packets",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "pps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 36
-      },
-      "id": 9,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sort_desc(sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of Transmitted Packets",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "pps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 45
       },
       "id": 10,
       "interval": "1m",
@@ -1128,8 +947,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1141,6 +962,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "OTel-native rewrite. Uses k8s_pod_network_errors_total as the closest native equivalent because a dedicated dropped-packet metric is not implied by the provided OTel config. Workload grouping is inferred from OTel-enriched labels.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1202,7 +1024,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 45
+        "y": 36
       },
       "id": 11,
       "interval": "1m",
@@ -1229,8 +1051,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sort_desc(sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n* on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1242,15 +1066,14 @@
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
     "otel"
   ],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "Prometheus",
-          "value": "prometheus"
+          "text": "default",
+          "value": "default"
         },
         "label": "Data source",
         "name": "datasource",
@@ -1263,32 +1086,23 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "sltest",
-          "value": "sltest"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"},cluster)",
         "hide": 2,
         "label": "cluster",
         "name": "cluster",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"},cluster)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(k8s_pod_network_io_bytes_total, k8s_cluster_name)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
       },
       {
-        "current": {
-          "text": "argocd",
-          "value": "argocd"
-        },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
@@ -1296,28 +1110,48 @@
         "label": "namespace",
         "name": "namespace",
         "options": [],
-        "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
+        "query": "label_values(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\"}, k8s_namespace_name)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
       },
       {
         "current": {
-          "text": "All",
+          "text": "$__all",
           "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
         },
         "includeAll": true,
         "label": "workload_type",
         "name": "type",
-        "options": [],
-        "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\"}, workload_type)",
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
+        "options": [
+          {
+            "selected": false,
+            "text": "deployment",
+            "value": "deployment"
+          },
+          {
+            "selected": false,
+            "text": "statefulset",
+            "value": "statefulset"
+          },
+          {
+            "selected": false,
+            "text": "daemonset",
+            "value": "daemonset"
+          },
+          {
+            "selected": false,
+            "text": "job",
+            "value": "job"
+          },
+          {
+            "selected": false,
+            "text": "cronjob",
+            "value": "cronjob"
+          }
+        ],
+        "query": "deployment,statefulset,daemonset,job,cronjob",
+        "type": "custom"
       }
     ]
   },
@@ -1328,6 +1162,6 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Kubernetes / Networking / Namespace (Workload) - OTEL",
-  "uid": "c8e6d8c3d4b3f9e21cf31d5f3a7e291c-otel",
-  "version": 2
+  "uid": "bbb2a765a623ae38130206c7d94a160f2",
+  "version": 3
 }
