@@ -25,7 +25,8 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "kubernetes-mixin"
+        "otel-native",
+        "kubernetes"
       ],
       "targetBlank": false,
       "title": "Kubernetes",
@@ -124,12 +125,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "sum by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
-      "title": "Current Rate of Bytes Received",
+      "title": "Current Rate of Bits Received",
       "type": "timeseries"
     },
     {
@@ -223,12 +224,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "sum by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
-      "title": "Current Rate of Bytes Transmitted",
+      "title": "Current Rate of Bits Transmitted",
       "type": "timeseries"
     },
     {
@@ -267,7 +268,7 @@
           {
             "matcher": {
               "id": "byRegexp",
-              "options": "/Bytes/"
+              "options": "/Bits/"
             },
             "properties": [
               {
@@ -325,7 +326,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
+          "expr": "sum by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -335,7 +336,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
+          "expr": "sum by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -345,7 +346,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "avg by (namespace) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
+          "expr": "avg by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -355,7 +356,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "avg by (namespace) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
+          "expr": "avg by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -365,27 +366,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "format": "table",
-          "instant": true,
-          "refId": "E"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "format": "table",
-          "instant": true,
-          "refId": "F"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
+          "expr": "sum by (k8s_namespace_name) (rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "G"
@@ -395,7 +376,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
+          "expr": "sum by (k8s_namespace_name) (rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "H"
@@ -406,7 +387,7 @@
         {
           "id": "joinByField",
           "options": {
-            "byField": "namespace",
+            "byField": "k8s_namespace_name",
             "mode": "outer"
           }
         },
@@ -422,8 +403,11 @@
               "Time 5": true,
               "Time 6": true,
               "Time 7": true,
-              "Time 8": true
+              "Time 8": true,
+              "Value #G": true,
+              "Value #H": true
             },
+            "includeByName": {},
             "indexByName": {
               "Time 1": 0,
               "Time 2": 1,
@@ -441,18 +425,18 @@
               "Value #F": 14,
               "Value #G": 15,
               "Value #H": 16,
-              "namespace": 8
+              "k8s_namespace_name": 8
             },
             "renameByName": {
-              "Value #A": "Rx Bytes",
-              "Value #B": "Tx Bytes",
-              "Value #C": "Rx Bytes (Avg)",
-              "Value #D": "Tx Bytes (Avg)",
+              "Value #A": "Rx Bits",
+              "Value #B": "Tx Bits",
+              "Value #C": "Rx Bits (Avg)",
+              "Value #D": "Tx Bits (Avg)",
               "Value #E": "Rx Packets",
               "Value #F": "Tx Packets",
               "Value #G": "Rx Packets Dropped",
               "Value #H": "Tx Packets Dropped",
-              "namespace": "Namespace"
+              "k8s_namespace_name": "Namespace"
             }
           }
         }
@@ -550,12 +534,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "avg by (namespace) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "avg by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
-      "title": "Average Rate of Bytes Received",
+      "title": "Average Rate of Bits Received",
       "type": "timeseries"
     },
     {
@@ -649,12 +633,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "avg by (namespace) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "avg by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
-      "title": "Average Rate of Bytes Transmitted",
+      "title": "Average Rate of Bits Transmitted",
       "type": "timeseries"
     },
     {
@@ -748,8 +732,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "sum by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
@@ -847,8 +831,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "sum by (k8s_namespace_name) (8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
@@ -860,6 +844,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Approximation using native OTel pod network error counters because dedicated dropped-packet counters are not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -922,204 +907,6 @@
         "w": 12,
         "x": 0,
         "y": 36
-      },
-      "id": 8,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of Received Packets",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "pps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 36
-      },
-      "id": 9,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of Transmitted Packets",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "pps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 45
       },
       "id": 10,
       "interval": "1m",
@@ -1144,8 +931,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sum by (k8s_namespace_name) (rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"receive\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1157,6 +946,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Approximation using native OTel pod network error counters because dedicated dropped-packet counters are not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1218,7 +1008,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 45
+        "y": 36
       },
       "id": 11,
       "interval": "1m",
@@ -1243,8 +1033,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (namespace) (\n    rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  * on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod) (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n",
-          "legendFormat": "__auto",
+          "expr": "sum by (k8s_namespace_name) (rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\", k8s_namespace_name!=\"\", direction=\"transmit\"}[$__rate_interval]))",
+          "legendFormat": "{{k8s_namespace_name}}",
           "refId": "A"
         }
       ],
@@ -1256,107 +1046,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "Note: These metrics require node_netstat from node-exporter or equivalent. OTel hostmetrics receiver does not have direct equivalents.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 54
-      },
-      "id": 12,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (instance) (\n    rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$__rate_interval]) / rate(node_netstat_Tcp_OutSegs{cluster=\"$cluster\"}[$__rate_interval])\n)\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of TCP Retransmits out of all sent segments",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "description": "Note: These metrics require node_netstat from node-exporter or equivalent. OTel hostmetrics receiver does not have direct equivalents.",
+      "description": "Approximation using native OTel transmit error counters divided by all network error counters because TCP SYN retransmit counters are not implied by the provided OTel config.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1418,7 +1108,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 54
+        "y": 45
       },
       "id": 13,
       "interval": "1m",
@@ -1443,8 +1133,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (instance) (\n    rate(node_netstat_TcpExt_TCPSynRetrans{cluster=\"$cluster\"}[$__rate_interval]) / rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$__rate_interval])\n)\n",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sum(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\", direction=\"transmit\"}[$__rate_interval])) / clamp_min(sum(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\"}[$__rate_interval])), 1)",
+          "legendFormat": "cluster",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1456,15 +1148,14 @@
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
     "otel"
   ],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "Prometheus",
-          "value": "prometheus"
+          "text": "default",
+          "value": "default"
         },
         "label": "Data source",
         "name": "datasource",
@@ -1477,23 +1168,18 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "sltest",
-          "value": "sltest"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"},cluster)",
         "hide": 2,
         "label": "cluster",
         "name": "cluster",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"},cluster)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(k8s_pod_network_io_bytes_total, k8s_cluster_name)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
@@ -1507,6 +1193,6 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Kubernetes / Networking / Cluster - OTEL",
-  "uid": "ff635a025bcfea7bc3dd4f508990a3e9-otel",
-  "version": 2
+  "uid": "ff635a025bcfea7bc3dd4f508990a3e92",
+  "version": 5
 }
