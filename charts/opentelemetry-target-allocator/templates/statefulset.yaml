@@ -1,0 +1,41 @@
+{{- if eq .Values.mode "statefulset" -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: {{ template "helper.namespace" . }}
+  name: {{ template "helper.fullname" . }}-ta
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+spec:
+  serviceName: {{ template "helper.fullname" . }}-ta
+  podManagementPolicy: {{ .Values.statefulset.podManagementPolicy }}
+  replicas: {{ .Values.replicaCount }}
+{{- if .Values.statefulset.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.statefulset.persistentVolumeClaimRetentionPolicy.whenScaled }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "helper.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        {{- include "helper.configTemplateChecksumAnnotation" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podAnnotations }}
+          {{- toYaml .Values.targetAllocator.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "helper.commonLabels" . | nindent 8 }}
+        {{- if .Values.targetAllocator.podLabels }}
+        {{- toYaml .Values.targetAllocator.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "helper.pod" . | nindent 6 }}
+{{- with .Values.statefulset.volumeClaimTemplates }}
+  volumeClaimTemplates:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
