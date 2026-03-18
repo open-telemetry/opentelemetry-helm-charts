@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.147.0
+    helm.sh/chart: opentelemetry-collector-0.147.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.147.0"
@@ -26,7 +26,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 071153ea5d773d886b35d7b5db6361c0ff02207ab2a3a69321b99a1ea04ba0a3
+        checksum/config: 03b67144a5b184645025b07deaf6eb4e8256cfdd9bb51127a28c2b0044f44680
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -70,6 +70,29 @@ spec:
               protocol: TCP
           env:
             - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: OTEL_K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: OTEL_K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: OTEL_K8S_POD_IP
               valueFrom:
                 fieldRef:
                   apiVersion: v1
