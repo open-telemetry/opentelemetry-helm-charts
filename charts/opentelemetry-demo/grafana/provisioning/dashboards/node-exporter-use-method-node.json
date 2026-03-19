@@ -125,7 +125,7 @@
           },
           "editorMode": "code",
           "expr": "avg by (k8s_node_name) (\r\n  rate(k8s_node_cpu_time_seconds_total{k8s_node_name=~\"$instance\"}[5m])\r\n)",
-          "legendFormat": "{{k8s_node_name}}",
+          "legendFormat": "Utilisation",
           "range": true,
           "refId": "A"
         }
@@ -803,8 +803,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "1 - (\n  sum(k8s_node_filesystem_available_bytes{k8s_cluster_name=~\"$cluster\",k8s_node_name=~\"$instance\"})\n  /\n  sum(k8s_node_filesystem_capacity_bytes{k8s_cluster_name=~\"$cluster\",k8s_node_name=~\"$instance\"})\n)",
+          "editorMode": "code",
+          "expr": "avg by (k8s_node_name) (\n  rate(system_disk_io_time_seconds_total{\n    k8s_node_name=~\"$instance\"\n  }[5m])\n)",
           "legendFormat": "Utilisation",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1013,9 +1015,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "editorMode": "builder",
+          "editorMode": "code",
           "expr": "sort_desc(1 -\n  (\n    k8s_node_filesystem_available_bytes{k8s_node_name=~\"$instance\"}\n    /\n    k8s_node_filesystem_capacity_bytes{k8s_node_name=~\"$instance\"}\n  )\n)",
-          "legendFormat": "{{k8s_node_name}}",
+          "legendFormat": "Utilisation",
           "range": true,
           "refId": "A"
         }
@@ -1068,7 +1070,7 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "includeAll": true,
+        "includeAll": false,
         "name": "instance",
         "options": [],
         "query": "label_values(k8s_node_cpu_time_seconds_total{k8s_cluster_name=~\"$cluster\"}, k8s_node_name)",
@@ -1086,5 +1088,5 @@
   "timezone": "utc",
   "title": "Node Exporter / USE Method / Node - OTEL",
   "uid": "fac67cfbe174d3ef53eb473d73d9212f",
-  "version": 17
+  "version": 22
 }
