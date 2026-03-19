@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
+  "id": 0,
   "links": [],
   "panels": [
     {
@@ -38,6 +39,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -122,8 +124,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "(\n  sum by (host_name) (rate(system_cpu_time_seconds_total{state!=\"idle\"}[$__rate_interval]))\n  / sum by (host_name) (rate(system_cpu_time_seconds_total{}[$__rate_interval]))\n)\n/ scalar(count(count by (host_name) (system_cpu_time_seconds_total{})))\n",
-          "legendFormat": "{{ host_name }}",
+          "editorMode": "code",
+          "expr": "rate(k8s_node_cpu_time_seconds_total{}[5m])\r\n/\r\non(k8s_node_name)\r\nk8s_node_allocatable_cpu{}",
+          "legendFormat": "{{k8s_node_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -135,6 +139,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumption: requested/allocatable CPU as saturation proxy.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -219,8 +224,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_cpu_load_average_1m{}\n/ on(host_name) group_left()\ncount by (host_name) (count by (host_name, cpu) (system_cpu_time_seconds_total{}))\n",
-          "legendFormat": "{{ host_name }}",
+          "editorMode": "code",
+          "expr": "sum by (k8s_node_name) (\r\n  k8s_container_cpu_request{}\r\n)\r\n/\r\non(k8s_node_name)\r\nk8s_node_allocatable_cpu{}",
+          "legendFormat": "{{k8s_node_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -245,6 +252,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumption: usage divided by usage plus available.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -329,8 +337,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "(\n  sum by (host_name) (system_memory_usage_bytes{state=\"used\"})\n  / sum by (host_name) (system_memory_limit_bytes{})\n)\n/ scalar(count(system_memory_limit_bytes{}))\n",
-          "legendFormat": "{{ host_name }}",
+          "editorMode": "code",
+          "expr": "k8s_node_memory_usage_bytes{}\r\n/\r\non(k8s_node_name)\r\n(\r\n  k8s_node_memory_usage_bytes{}\r\n  +\r\n  k8s_node_memory_available_bytes{}\r\n)",
+          "legendFormat": "{{k8s_node_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -342,6 +352,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -395,7 +406,7 @@
               }
             ]
           },
-          "unit": "rds"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -426,12 +437,14 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_paging_faults_total{type=\"major\"}[$__rate_interval])",
-          "legendFormat": "{{ host_name }}",
+          "editorMode": "code",
+          "expr": "sum by (k8s_node_name) (\r\n  k8s_container_memory_request_bytes{}\r\n)\r\n/\r\non(k8s_node_name)\r\nk8s_node_allocatable_memory_bytes{}",
+          "legendFormat": "{{k8s_node_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Memory Saturation (Major Page Faults)",
+      "title": "Memory Request Saturation (per Node)",
       "type": "timeseries"
     },
     {
@@ -452,6 +465,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumption: summed node network bytes across cluster.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -549,8 +563,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum by (host_name) (rate(system_network_io_bytes_total{direction=\"receive\", device!=\"lo\"}[$__rate_interval])) != 0",
-          "legendFormat": "{{ host_name }} Receive",
+          "editorMode": "code",
+          "expr": "sum by (k8s_node_name) (\r\n  rate(system_network_io_bytes_total{\r\n    direction=\"receive\",\r\n  }[5m])\r\n)",
+          "legendFormat": "{{k8s_node_name}} Receive ",
+          "range": true,
           "refId": "A"
         },
         {
@@ -558,8 +574,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum by (host_name) (rate(system_network_io_bytes_total{direction=\"transmit\", device!=\"lo\"}[$__rate_interval])) != 0",
-          "legendFormat": "{{ host_name }} Transmit",
+          "editorMode": "code",
+          "expr": "sum by (k8s_node_name) (\r\n  rate(system_network_io_bytes_total{\r\n    direction=\"transmit\",\r\n  }[5m])\r\n)",
+          "legendFormat": "{{k8s_node_name}} Transmit ",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -571,6 +589,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumption: errors used because drop metrics are not implied.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -668,8 +687,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum by (host_name) (rate(system_network_dropped_total{direction=\"receive\", device!=\"lo\"}[$__rate_interval]))",
-          "legendFormat": "{{ host_name }} Receive",
+          "editorMode": "code",
+          "expr": "sum(rate(system_network_dropped_total{direction=\"receive\"}[5m]))",
+          "legendFormat": "Receive",
+          "range": true,
           "refId": "A"
         },
         {
@@ -677,12 +698,14 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum by (host_name) (rate(system_network_dropped_total{direction=\"transmit\", device!=\"lo\"}[$__rate_interval]))",
-          "legendFormat": "{{ host_name }} Transmit",
+          "editorMode": "code",
+          "expr": "sum(rate(system_network_dropped_total{direction=\"transmit\"}[5m]))",
+          "legendFormat": "Transmit",
+          "range": true,
           "refId": "B"
         }
       ],
-      "title": "Network Saturation (Drops Receive/Transmit)",
+      "title": "Network Saturation (Errors Receive/Transmit)",
       "type": "timeseries"
     },
     {
@@ -703,6 +726,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -787,8 +811,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_disk_io_time_seconds_total{}[$__rate_interval])\n/ scalar(count(system_disk_io_time_seconds_total{}))\n",
-          "legendFormat": "{{ host_name }} {{ device }}",
+          "editorMode": "code",
+          "expr": "avg by (k8s_node_name) (\r\n  rate(system_disk_io_time_seconds_total{}[5m])\r\n)",
+          "legendFormat": "{{k8s_node_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -800,6 +826,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumption: weighted disk IO time used for saturation.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -884,8 +911,10 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_disk_weighted_io_time_seconds_total{}[$__rate_interval])\n/ scalar(count(system_disk_weighted_io_time_seconds_total{}))\n",
-          "legendFormat": "{{ host_name }} {{ device }}",
+          "editorMode": "code",
+          "expr": "avg by (k8s_node_name) (\r\n  rate(system_disk_weighted_io_time_seconds_total{}[5m])\r\n)",
+          "legendFormat": "{{k8s_node_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -910,6 +939,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumption: filesystem usage from capacity and available.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -995,8 +1025,8 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "max by (host_name) (\n  system_filesystem_utilization{type!=\"\", mountpoint!=\"\"}\n)\n",
-          "legendFormat": "{{ host_name }}",
+          "expr": "sum by (k8s_node_name) (\r\n  k8s_node_filesystem_capacity_bytes{}\r\n  -\r\n  k8s_node_filesystem_available_bytes{}\r\n)\r\n/\r\non(k8s_node_name)\r\nsum by (k8s_node_name) (\r\n  k8s_node_filesystem_capacity_bytes{}\r\n)",
+          "legendFormat": "{{k8s_node_name}}",
           "range": true,
           "refId": "A"
         }
@@ -1009,7 +1039,6 @@
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
-    "node-exporter-mixin",
     "otel"
   ],
   "templating": {
@@ -1024,6 +1053,25 @@
         "query": "prometheus",
         "refresh": 1,
         "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(k8s_node_cpu_time_seconds_total, k8s_cluster_name)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
@@ -1034,6 +1082,6 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Node Exporter / USE Method / Cluster - OTEL",
-  "uid": "3e97d1d02672cdd0861f4c97c64f89b2-otel",
-  "version": 3
+  "uid": "otel-node-exporter-use-method-cluster",
+  "version": 34
 }
