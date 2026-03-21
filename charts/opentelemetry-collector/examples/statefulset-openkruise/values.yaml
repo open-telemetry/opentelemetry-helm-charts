@@ -1,4 +1,4 @@
-mode: daemonset
+mode: statefulset
 
 image:
   repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
@@ -6,7 +6,9 @@ image:
 command:
   name: "otelcol-k8s"
 
-apiVersion: apps.kruise.io/v1alpha1
+replicaCount: 2
+
+apiVersion: apps.kruise.io/v1beta1
 
 rollout:
   strategy: RollingUpdate
