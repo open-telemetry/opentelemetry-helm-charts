@@ -1,5 +1,5 @@
 {{- if eq .Values.mode "statefulset" -}}
-apiVersion: apps/v1
+apiVersion: {{ .Values.apiVersion | default "apps/v1" }}
 kind: StatefulSet
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
@@ -29,6 +29,12 @@ spec:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
       {{- include "opentelemetry-collector.component" . | nindent 6 }}
   updateStrategy:
+    {{- if eq .Values.rollout.strategy "RollingUpdate" }}
+    {{- with .Values.rollout.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
     type: {{ .Values.rollout.strategy }}
   template:
     metadata:
