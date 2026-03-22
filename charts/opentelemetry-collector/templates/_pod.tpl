@@ -192,10 +192,14 @@ containers:
       {{- end }}
     env:
       - name: TENX_API_KEY
+      {{- if .Values.tenx.apiKey }}
         valueFrom:
           secretKeyRef:
             name: {{ include "opentelemetry-collector.fullname" . }}-tenx-api-key
             key: api-key
+      {{- else }}
+        value: ""
+      {{- end }}
       {{- if .Values.tenx.runtimeName }}
       - name: TENX_RUNTIME_NAME
         value: {{ .Values.tenx.runtimeName | quote }}
