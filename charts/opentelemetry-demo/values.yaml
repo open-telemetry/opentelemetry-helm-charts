@@ -529,6 +529,23 @@ components:
     resources:
       limits:
         memory: 1500Mi
+    sidecarContainers:
+      - name: locust-exporter
+        imageOverride:
+          repository: containersol/locust_exporter
+          tag: v0.5.0
+        service:
+          port: 9646
+        env:
+          - name: LOCUST_EXPORTER_URI
+            value: "http://localhost:8089"
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
 
   payment:
     enabled: true
