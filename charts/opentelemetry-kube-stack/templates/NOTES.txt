@@ -6,6 +6,21 @@
 [WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1. Please migrate to use the `daemonSetUpdateStrategy` value.
 {{- end }}
 {{- end }}
+{{- $operatorValues := index .Values "opentelemetry-operator" }}
+{{- $operatorEnabled := dig "enabled" true $operatorValues }}
+{{- $certManagerEnabled := dig "admissionWebhooks" "certManager" "enabled" true $operatorValues }}
+{{- $autoGenerateCertEnabled := dig "admissionWebhooks" "autoGenerateCert" "enabled" true $operatorValues }}
+{{- $certPeriodDays := dig "admissionWebhooks" "autoGenerateCert" "certPeriodDays" 365 $operatorValues }}
+{{- $recreateCert := dig "admissionWebhooks" "autoGenerateCert" "recreate" true $operatorValues }}
+{{- if and $operatorEnabled (not $certManagerEnabled) $autoGenerateCertEnabled }}
+[WARNING] The OpenTelemetry Operator is using auto-generated certificates (valid for {{ $certPeriodDays }} days from installation).
+          After expiration, the Operator's admission webhooks will stop working and the Operator will become non-functional.
+          {{- if $recreateCert }}
+          Certificates can be renewed by running `helm upgrade`.
+          {{- end }}
+          For production environments, it is strongly recommended to use cert-manager instead of auto-generated certificates.
+          More details: https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/README.md#tls-certificate-requirement
+{{- end }}
 
 OpenTelemetry Kube Stack Helm Chart installation completed successfully!
 With the features you've enabled, you can:
