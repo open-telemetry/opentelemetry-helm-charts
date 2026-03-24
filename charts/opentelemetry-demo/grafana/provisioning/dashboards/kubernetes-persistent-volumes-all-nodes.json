@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 109,
+  "id": 0,
   "links": [
     {
       "asDropdown": true,
@@ -38,6 +38,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -96,8 +97,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 7,
+        "w": 18,
         "x": 0,
         "y": 0
       },
@@ -115,7 +116,7 @@
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -126,113 +127,25 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(\n  sum by(persistentvolumeclaim) (topk by(persistentvolumeclaim) (1, (kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})))\n  -\n  sum by(persistentvolumeclaim) (topk by(persistentvolumeclaim) (1, (kubelet_volume_stats_available_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})))\n)\n",
-          "legendFormat": "{{persistentvolumeclaim}} - Used",
+          "editorMode": "code",
+          "expr": "(\n  max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_capacity_bytes{k8s_namespace_name=~\"$namespace\"})\n  -\n  max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_available_bytes{k8s_namespace_name=~\"$namespace\"})\n)\n",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_persistentvolumeclaim_name}} Used Space",
+          "range": true,
           "refId": "A"
-        }
-      ],
-      "title": "Volume Space Used",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "bytes"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 5,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by(persistentvolumeclaim) (topk by(persistentvolumeclaim) (1, (kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})))",
-          "legendFormat": "{{persistentvolumeclaim}} - Capacity",
-          "refId": "A"
+          "editorMode": "code",
+          "expr": "max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_available_bytes{k8s_namespace_name=~\"$namespace\"})\n",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_persistentvolumeclaim_name}} Free Space",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Volume Capacity",
+      "title": "Volume Space Usage by Claim",
       "type": "timeseries"
     },
     {
@@ -240,6 +153,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -270,26 +184,17 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 8
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 0
       },
       "id": 2,
       "interval": "1m",
       "options": {
-        "displayMode": "basic",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -297,9 +202,9 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
       "pluginVersion": "12.3.1",
       "targets": [
@@ -308,20 +213,21 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(\n  topk by(persistentvolumeclaim) (1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})\n  -\n  topk by(persistentvolumeclaim) (1, kubelet_volume_stats_available_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})\n)\n/\ntopk by(persistentvolumeclaim) (1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})\n* 100",
+          "editorMode": "code",
+          "expr": "max(\n(\n  max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_capacity_bytes{k8s_namespace_name=~\"$namespace\"})\n  -\n  max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_available_bytes{k8s_namespace_name=~\"$namespace\"})\n)\n/\nmax by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_capacity_bytes{k8s_namespace_name=~\"$namespace\"})\n* 100\n)\n",
           "instant": true,
-          "legendFormat": "{{persistentvolumeclaim}}",
           "refId": "A"
         }
       ],
-      "title": "Volume Space Usage %",
-      "type": "bargauge"
+      "title": "Highest Volume Space Usage",
+      "type": "gauge"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -380,10 +286,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 7,
+        "w": 18,
         "x": 0,
-        "y": 16
+        "y": 7
       },
       "id": 3,
       "interval": "1m",
@@ -399,7 +305,7 @@
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -410,113 +316,27 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by(persistentvolumeclaim) (topk by(persistentvolumeclaim) (1, (kubelet_volume_stats_inodes_used{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})))",
-          "legendFormat": "{{persistentvolumeclaim}} - Used",
+          "editorMode": "code",
+          "expr": "max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_inodes_used_ratio{k8s_namespace_name=~\"$namespace\"})",
+          "hide": false,
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_persistentvolumeclaim_name}} Used inodes",
+          "range": true,
           "refId": "A"
-        }
-      ],
-      "title": "Volume Inodes Used",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "id": 6,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by(persistentvolumeclaim) (topk by(persistentvolumeclaim) (1, (kubelet_volume_stats_inodes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})))",
-          "legendFormat": "{{persistentvolumeclaim}} - Total",
-          "refId": "A"
+          "editorMode": "code",
+          "expr": "(\n  max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_inodes_ratio{k8s_namespace_name=~\"$namespace\"})\n  -\n  max by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_inodes_used_ratio{k8s_namespace_name=~\"$namespace\"})\n)\n",
+          "hide": false,
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_persistentvolumeclaim_name}} Free inodes",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Volume Inodes Total",
+      "title": "Volume Inodes Usage by Claim",
       "type": "timeseries"
     },
     {
@@ -524,6 +344,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -554,26 +375,17 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 24
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 7
       },
       "id": 4,
       "interval": "1m",
       "options": {
-        "displayMode": "basic",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -581,9 +393,9 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
       "pluginVersion": "12.3.1",
       "targets": [
@@ -592,232 +404,20 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "topk by(persistentvolumeclaim) (1, kubelet_volume_stats_inodes_used{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})\n/\ntopk by(persistentvolumeclaim) (1, kubelet_volume_stats_inodes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})\n* 100",
+          "editorMode": "code",
+          "expr": "max(\nmax by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_inodes_used_ratio{k8s_namespace_name=~\"$namespace\"})\n/\nmax by (k8s_namespace_name, k8s_persistentvolumeclaim_name) (k8s_volume_inodes_ratio{k8s_namespace_name=~\"$namespace\"})\n* 100\n)\n",
           "instant": true,
-          "legendFormat": "{{persistentvolumeclaim}}",
           "refId": "A"
         }
       ],
-      "title": "Volume Inodes Usage %",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "description": "Overview table of all selected volumes",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "footer": {
-              "reducers": []
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "orange",
-                "value": 80
-              },
-              {
-                "color": "red",
-                "value": 90
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Capacity"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Used"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Available"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Usage %"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "basic",
-                  "type": "gauge"
-                }
-              },
-              {
-                "id": "max",
-                "value": 100
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 32
-      },
-      "id": 7,
-      "interval": "1m",
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Usage %"
-          }
-        ]
-      },
-      "pluginVersion": "12.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "topk by(persistentvolumeclaim) (1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "refId": "Capacity"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "topk by(persistentvolumeclaim) (1, kubelet_volume_stats_available_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "legendFormat": "__auto",
-          "refId": "Available"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "topk by(persistentvolumeclaim) (1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"}) - topk by(persistentvolumeclaim) (1, kubelet_volume_stats_available_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "legendFormat": "__auto",
-          "refId": "Used"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "(topk by(persistentvolumeclaim) (1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"}) - topk by(persistentvolumeclaim) (1, kubelet_volume_stats_available_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"})) / topk by(persistentvolumeclaim) (1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\", persistentvolumeclaim=~\"$volume\"}) * 100",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "legendFormat": "__auto",
-          "refId": "UsagePercent"
-        }
-      ],
-      "title": "Volume Summary Table",
-      "transformations": [
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "cluster": true,
-              "endpoint": true,
-              "instance": true,
-              "job": true,
-              "metrics_path": true,
-              "namespace": true,
-              "node": true,
-              "service": true
-            },
-            "indexByName": {},
-            "renameByName": {
-              "Value #Available": "Available",
-              "Value #Capacity": "Capacity",
-              "Value #UsagePercent": "Usage %",
-              "Value #Used": "Used",
-              "persistentvolumeclaim": "PVC Name"
-            }
-          }
-        }
-      ],
-      "type": "table"
+      "title": "Highest Volume Inodes Usage",
+      "type": "gauge"
     }
   ],
   "preload": false,
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
     "otel"
   ],
   "templating": {
@@ -838,8 +438,8 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "sltest",
-          "value": "sltest"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
@@ -849,16 +449,12 @@
         "label": "cluster",
         "name": "cluster",
         "options": [],
-        "query": "label_values(kubelet_volume_stats_capacity_bytes, cluster)",
+        "query": "label_values(k8s_volume_capacity_bytes{}, k8s_cluster_name)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
       },
       {
-        "current": {
-          "text": "cr01",
-          "value": "cr01"
-        },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
@@ -866,31 +462,8 @@
         "label": "Namespace",
         "name": "namespace",
         "options": [],
-        "query": "label_values(kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\"}, namespace)",
+        "query": "label_values(k8s_volume_capacity_bytes{k8s_cluster_name=\"$cluster\"}, k8s_namespace_name)",
         "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": [
-            "$__all"
-          ]
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
-        },
-        "includeAll": true,
-        "label": "PersistentVolumeClaim",
-        "multi": true,
-        "name": "volume",
-        "options": [],
-        "query": "label_values(kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", namespace=\"$namespace\"}, persistentvolumeclaim)",
-        "refresh": 2,
-        "regex": "",
         "sort": 1,
         "type": "query"
       }
@@ -902,7 +475,6 @@
   },
   "timepicker": {},
   "timezone": "utc",
-  "title": "Kubernetes / Persistent Volumes(All Nodes) - OTEL",
-  "uid": "919b92a8e8041bd567af9edab12c840c-otel2",
-  "version": 2
+  "title": "Kubernetes / Persistent Volumes / All Nodes - OTEL",
+  "version": 10
 }
