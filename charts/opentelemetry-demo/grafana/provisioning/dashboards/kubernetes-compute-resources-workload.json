@@ -18,14 +18,14 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 0,
   "links": [
     {
       "asDropdown": true,
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "kubernetes-mixin"
+        "otel"
       ],
       "targetBlank": false,
       "title": "Kubernetes",
@@ -38,6 +38,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Workload derived from pod name prefix.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -118,19 +119,19 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\"}[5m]))\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "CPU Usage",
+      "title": "CPU Usage by Pod",
       "type": "timeseries"
     },
     {
@@ -138,6 +139,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Pod view replaces workload owner rule.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -208,14 +210,14 @@
         "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\"}[5m]))\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "min by (k8s_pod_name) (k8s_container_ready{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -225,7 +227,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -235,7 +237,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\"}[5m]))\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n/sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_container_cpu_request{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -245,7 +247,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_cpu_time_seconds_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"}[$__rate_interval])) / sum by (k8s_pod_name) (k8s_container_cpu_request{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -255,18 +257,18 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\"}[5m]))\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n/sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_container_cpu_limit{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "E"
         }
       ],
-      "title": "CPU Quota",
+      "title": "CPU by Pod",
       "transformations": [
         {
           "id": "joinByField",
           "options": {
-            "byField": "pod",
+            "byField": "k8s_pod_name",
             "mode": "outer"
           }
         },
@@ -279,28 +281,26 @@
               "Time 2": true,
               "Time 3": true,
               "Time 4": true,
-              "Time 5": true
+              "Time 5": true,
+              "Time 6": true
             },
             "indexByName": {
-              "Time 1": 0,
-              "Time 2": 1,
-              "Time 3": 2,
-              "Time 4": 3,
-              "Time 5": 4,
-              "Value #A": 6,
-              "Value #B": 7,
-              "Value #C": 8,
-              "Value #D": 9,
-              "Value #E": 10,
-              "pod": 5
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "Value #F": 6,
+              "k8s_pod_name": 0
             },
             "renameByName": {
-              "Value #A": "CPU Usage",
-              "Value #B": "CPU Requests",
-              "Value #C": "CPU Requests %",
-              "Value #D": "CPU Limits",
-              "Value #E": "CPU Limits %",
-              "pod": "Pod"
+              "Value #A": "Pod Ready",
+              "Value #B": "CPU Usage",
+              "Value #C": "CPU Requests",
+              "Value #D": "CPU Requests %",
+              "Value #E": "CPU Limits",
+              "Value #F": "CPU Limits %",
+              "k8s_pod_name": "Pod"
             }
           }
         }
@@ -312,6 +312,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Workload derived from pod name prefix.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -393,19 +394,19 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_pod_memory_working_set_bytes{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Memory Usage",
+      "title": "Memory Usage by Pod",
       "type": "timeseries"
     },
     {
@@ -413,6 +414,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Pod view replaces workload owner rule.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -484,14 +486,14 @@
         "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "12.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "min by (k8s_pod_name) (k8s_container_ready{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -501,7 +503,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_pod_memory_working_set_bytes{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -511,7 +513,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n/sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_container_memory_request{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -521,7 +523,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_pod_memory_working_set_bytes{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"}) / sum by (k8s_pod_name) (k8s_container_memory_request{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -531,18 +533,18 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(\n    max by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n/sum(\n    max by (cluster, namespace, pod, container)(kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})\n  * on(cluster, namespace, pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=~\"$type\"}\n) by (pod)\n",
+          "expr": "sum by (k8s_pod_name) (k8s_container_memory_limit{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\"})",
           "format": "table",
           "instant": true,
           "refId": "E"
         }
       ],
-      "title": "Memory Quota",
+      "title": "Memory by Pod",
       "transformations": [
         {
           "id": "joinByField",
           "options": {
-            "byField": "pod",
+            "byField": "k8s_pod_name",
             "mode": "outer"
           }
         },
@@ -555,28 +557,26 @@
               "Time 2": true,
               "Time 3": true,
               "Time 4": true,
-              "Time 5": true
+              "Time 5": true,
+              "Time 6": true
             },
             "indexByName": {
-              "Time 1": 0,
-              "Time 2": 1,
-              "Time 3": 2,
-              "Time 4": 3,
-              "Time 5": 4,
-              "Value #A": 9,
-              "Value #B": 10,
-              "Value #C": 11,
-              "Value #D": 12,
-              "Value #E": 13,
-              "pod": 8
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "Value #F": 6,
+              "k8s_pod_name": 0
             },
             "renameByName": {
-              "Value #A": "Memory Usage",
-              "Value #B": "Memory Requests",
-              "Value #C": "Memory Requests %",
-              "Value #D": "Memory Limits",
-              "Value #E": "Memory Limits %",
-              "pod": "Pod"
+              "Value #A": "Pod Ready",
+              "Value #B": "Memory Usage",
+              "Value #C": "Memory Requests",
+              "Value #D": "Memory Requests %",
+              "Value #E": "Memory Limits",
+              "Value #F": "Memory Limits %",
+              "k8s_pod_name": "Pod"
             }
           }
         }
@@ -588,8 +588,34 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Errors replace dropped packets.",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -641,15 +667,18 @@
         "y": 28
       },
       "id": 5,
-      "options": {},
-      "pluginVersion": "v11.4.0",
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (8 * rate(k8s_pod_network_io_bytes_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"receive\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -659,7 +688,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (8 * rate(k8s_pod_network_io_bytes_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"transmit\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -669,7 +698,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_network_packets_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"receive\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -679,7 +708,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_network_packets_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"transmit\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -689,7 +718,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_network_errors_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"receive\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "E"
@@ -699,18 +728,18 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_network_errors_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"transmit\"}[$__rate_interval]))",
           "format": "table",
           "instant": true,
           "refId": "F"
         }
       ],
-      "title": "Current Network Usage",
+      "title": "Current Network Usage by Pod",
       "transformations": [
         {
           "id": "joinByField",
           "options": {
-            "byField": "pod",
+            "byField": "k8s_pod_name",
             "mode": "outer"
           }
         },
@@ -727,28 +756,22 @@
               "Time 6": true
             },
             "indexByName": {
-              "Time 1": 0,
-              "Time 2": 1,
-              "Time 3": 2,
-              "Time 4": 3,
-              "Time 5": 4,
-              "Time 6": 5,
-              "Value #A": 7,
-              "Value #B": 8,
-              "Value #C": 9,
-              "Value #D": 10,
-              "Value #E": 11,
-              "Value #F": 12,
-              "pod": 6
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "Value #F": 6,
+              "k8s_pod_name": 0
             },
             "renameByName": {
               "Value #A": "Current Receive Bandwidth",
               "Value #B": "Current Transmit Bandwidth",
               "Value #C": "Rate of Received Packets",
               "Value #D": "Rate of Transmitted Packets",
-              "Value #E": "Rate of Received Packets Dropped",
-              "Value #F": "Rate of Transmitted Packets Dropped",
-              "pod": "Pod"
+              "Value #E": "Rate of Receive Errors",
+              "Value #F": "Rate of Transmit Errors",
+              "k8s_pod_name": "Pod"
             }
           }
         }
@@ -762,10 +785,56 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
-            "spanNulls": true
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
           "unit": "bps"
         },
@@ -790,22 +859,24 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "pluginVersion": "v11.4.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (8 * rate(k8s_pod_network_io_bytes_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"receive\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Receive Bandwidth",
+      "title": "Receive Bandwidth by Pod",
       "type": "timeseries"
     },
     {
@@ -815,10 +886,56 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
-            "spanNulls": true
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
           "unit": "bps"
         },
@@ -843,22 +960,24 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "pluginVersion": "v11.4.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (8 * rate(k8s_pod_network_io_bytes_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"transmit\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Transmit Bandwidth",
+      "title": "Transmit Bandwidth by Pod",
       "type": "timeseries"
     },
     {
@@ -866,12 +985,59 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Average across pod interfaces.",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
-            "spanNulls": true
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
           "unit": "bps"
         },
@@ -896,22 +1062,24 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "pluginVersion": "v11.4.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(avg(rate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "avg by (k8s_pod_name) (8 * rate(k8s_pod_network_io_bytes_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"receive\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Average Container Bandwidth by Pod: Received",
+      "title": "Average Interface Receive Bandwidth by Pod",
       "type": "timeseries"
     },
     {
@@ -919,12 +1087,59 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Average across pod interfaces.",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
-            "spanNulls": true
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
           "unit": "bps"
         },
@@ -949,22 +1164,24 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "pluginVersion": "v11.4.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(avg(rate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "avg by (k8s_pod_name) (8 * rate(k8s_pod_network_io_bytes_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"transmit\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Average Container Bandwidth by Pod: Transmitted",
+      "title": "Average Interface Transmit Bandwidth by Pod",
       "type": "timeseries"
     },
     {
@@ -972,12 +1189,59 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Uses network errors as closest metric.",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
-            "spanNulls": true
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
           "unit": "pps"
         },
@@ -988,112 +1252,6 @@
         "w": 12,
         "x": 0,
         "y": 49
-      },
-      "id": 10,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "(sum(rate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of Received Packets",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 10,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "unit": "pps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 49
-      },
-      "id": 11,
-      "interval": "1m",
-      "options": {
-        "legend": {
-          "asTable": true,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "(sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate of Transmitted Packets",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 10,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "unit": "pps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 56
       },
       "id": 12,
       "interval": "1m",
@@ -1108,22 +1266,24 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "pluginVersion": "v11.4.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_network_errors_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"receive\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Rate of Received Packets Dropped",
+      "title": "Rate of Receive Errors by Pod",
       "type": "timeseries"
     },
     {
@@ -1131,12 +1291,59 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Uses network errors as closest metric.",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
-            "spanNulls": true
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
           "unit": "pps"
         },
@@ -1146,7 +1353,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 56
+        "y": 49
       },
       "id": 13,
       "interval": "1m",
@@ -1161,22 +1368,24 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "pluginVersion": "v11.4.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n",
+          "expr": "sum by (k8s_pod_name) (rate(k8s_pod_network_errors_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\", k8s_pod_name=~\"${workload}.*\", direction=\"transmit\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Rate of Transmitted Packets Dropped",
+      "title": "Rate of Transmit Errors by Pod",
       "type": "timeseries"
     }
   ],
@@ -1184,7 +1393,6 @@
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
     "otel"
   ],
   "templating": {
@@ -1216,16 +1424,12 @@
         "label": "cluster",
         "name": "cluster",
         "options": [],
-        "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
+        "query": "label_values(k8s_pod_cpu_time_seconds_total, cluster)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
       },
       {
-        "current": {
-          "text": "",
-          "value": ""
-        },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
@@ -1233,12 +1437,33 @@
         "label": "namespace",
         "name": "namespace",
         "options": [],
-        "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\", cluster=\"$cluster\"}, namespace)",
+        "query": "label_values(k8s_pod_cpu_time_seconds_total{cluster=\"$cluster\"}, k8s_namespace_name)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
       },
       {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "workload_type",
+        "name": "type",
+        "options": [
+          {
+            "selected": false,
+            "text": "derived",
+            "value": "derived"
+          }
+        ],
+        "query": "derived",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
         "current": {
           "text": "All",
           "value": "$__all"
@@ -1248,28 +1473,12 @@
           "uid": "${datasource}"
         },
         "includeAll": true,
-        "label": "workload_type",
-        "name": "type",
-        "options": [],
-        "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}, workload_type)",
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "text": "",
-          "value": ""
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
-        },
         "label": "workload",
         "name": "workload",
         "options": [],
-        "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=~\"$type\"}, workload)",
+        "query": "label_values(k8s_pod_cpu_time_seconds_total{cluster=\"$cluster\", k8s_namespace_name=\"$namespace\"}, k8s_pod_name)",
         "refresh": 2,
+        "regex": "/^(.*?)(?:-[a-f0-9]{8,10}-[a-z0-9]{5}|-[a-z0-9]{5,})?$/",
         "sort": 1,
         "type": "query"
       }
@@ -1282,6 +1491,5 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Kubernetes / Compute Resources / Workload - OTEL",
-  "uid": "a164a7f0339f99e89cea5cb47e9be617-otel",
-  "version": 1
+  "version": 2
 }

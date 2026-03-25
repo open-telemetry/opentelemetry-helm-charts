@@ -18,14 +18,14 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 108,
+  "id": 0,
   "links": [
     {
       "asDropdown": true,
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "kubernetes-mixin"
+        "otel"
       ],
       "targetBlank": false,
       "title": "Kubernetes",
@@ -38,7 +38,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "OTEL: Uses system_cpu_time_seconds_total from hostmetrics receiver",
+      "description": "Assumes node CPU idle time is available.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -55,7 +55,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -91,7 +91,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "1 - avg(sum by (cpu, host_name) (rate(system_cpu_time_seconds_total{state=\"idle\"}[5m])) / sum by (cpu, host_name) (rate(system_cpu_time_seconds_total[5m])))",
+          "expr": "1 - (sum(rate(k8s_node_cpu_time_seconds_total{state=\"idle\"}[5m])) / sum(rate(k8s_node_cpu_time_seconds_total[5m])))",
           "instant": true,
           "refId": "A"
         }
@@ -104,6 +104,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Allocatable CPU not enabled; showing total requests.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -120,7 +121,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "cores"
         },
         "overrides": []
       },
@@ -156,12 +157,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", resource=\"cpu\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\", resource=\"cpu\"})",
+          "expr": "sum(k8s_container_cpu_request)",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "CPU Requests Commitment",
+      "title": "CPU Requests",
       "type": "stat"
     },
     {
@@ -169,6 +170,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Allocatable CPU not enabled; showing total limits.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -185,7 +187,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "cores"
         },
         "overrides": []
       },
@@ -221,12 +223,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", resource=\"cpu\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\", resource=\"cpu\"})",
+          "expr": "sum(k8s_container_cpu_limit)",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "CPU Limits Commitment",
+      "title": "CPU Limits",
       "type": "stat"
     },
     {
@@ -234,7 +236,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "OTEL: Uses system_memory_usage_bytes and system_memory_limit_bytes from hostmetrics receiver",
+      "description": "Assumes usage plus available approximates node memory total.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -287,7 +289,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(system_memory_usage_bytes{state=\"used\"}) / sum(system_memory_limit_bytes)",
+          "expr": "sum(k8s_node_memory_usage_bytes) / (sum(k8s_node_memory_usage_bytes) + sum(k8s_node_memory_available_bytes))",
           "instant": true,
           "refId": "A"
         }
@@ -300,6 +302,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Allocatable memory not enabled; showing total requests.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -316,7 +319,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -352,12 +355,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", resource=\"memory\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\", resource=\"memory\"})",
+          "expr": "sum(k8s_container_memory_request_bytes)",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Memory Requests Commitment",
+      "title": "Memory Requests",
       "type": "stat"
     },
     {
@@ -365,6 +368,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Allocatable memory not enabled; showing total limits.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -381,7 +385,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -417,12 +421,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", resource=\"memory\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\", resource=\"memory\"})",
+          "expr": "sum(k8s_container_memory_limit_bytes)",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Memory Limits Commitment",
+      "title": "Memory Limits",
       "type": "stat"
     },
     {
@@ -430,7 +434,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "OTEL: Replaced recording rule with direct container_cpu_usage_seconds_total query",
+      "description": "Uses OTel pod CPU time rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -516,8 +520,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{container!=\"\"}[5m]))) by (cluster)",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sum(rate(k8s_pod_cpu_time_seconds_total[5m])) by (k8s_cluster_name)",
+          "legendFormat": "{{k8s_cluster_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -529,7 +535,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "OTEL: Replaced recording rule with direct container_cpu_usage_seconds_total query",
+      "description": "Usage is pod CPU time rate; requests and limits are container gauges.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -607,7 +613,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{container!=\"\"}[5m]))) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(rate(k8s_pod_cpu_time_seconds_total[5m])) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -617,7 +624,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", resource=\"cpu\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_container_cpu_request) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -627,7 +635,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{container!=\"\"}[5m]))) by (cluster) / sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", resource=\"cpu\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(rate(k8s_pod_cpu_time_seconds_total[5m])) by (k8s_cluster_name) / sum(k8s_container_cpu_request) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -637,7 +646,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", resource=\"cpu\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_container_cpu_limit) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -647,7 +657,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(rate(container_cpu_usage_seconds_total{container!=\"\"}[5m]))) by (cluster) / sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", resource=\"cpu\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(rate(k8s_pod_cpu_time_seconds_total[5m])) by (k8s_cluster_name) / sum(k8s_container_cpu_limit) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "E"
@@ -704,7 +715,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "OTEL: Removed job/metrics_path filters from container_memory_rss",
+      "description": "RSS without cache unavailable; using pod memory usage.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -791,12 +802,14 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_rss{container!=\"\"})) by (cluster)",
-          "legendFormat": "__auto",
+          "editorMode": "code",
+          "expr": "sum(k8s_pod_memory_usage_bytes) by (k8s_cluster_name)",
+          "legendFormat": "{{k8s_cluster_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Memory Usage (w/o cache)",
+      "title": "Memory Usage",
       "type": "timeseries"
     },
     {
@@ -804,7 +817,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "OTEL: Removed job/metrics_path filters from container_memory_rss",
+      "description": "Usage is pod memory usage; requests and limits are container gauges.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -883,7 +896,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_rss{container!=\"\"})) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_pod_memory_usage_bytes) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -893,7 +907,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", resource=\"memory\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_container_memory_request_bytes) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -903,7 +918,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_rss{container!=\"\"})) by (cluster) / sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", resource=\"memory\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_pod_memory_usage_bytes) by (k8s_cluster_name) / sum(k8s_container_memory_request_bytes) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -913,7 +929,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", resource=\"memory\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_container_memory_limit_bytes) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -923,7 +940,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(max by (cluster, namespace, pod, container)(container_memory_rss{container!=\"\"})) by (cluster) / sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", resource=\"memory\"}) by (cluster)",
+          "editorMode": "code",
+          "expr": "sum(k8s_pod_memory_usage_bytes) by (k8s_cluster_name) / sum(k8s_container_memory_limit_bytes) by (k8s_cluster_name)",
           "format": "table",
           "instant": true,
           "refId": "E"
@@ -980,15 +998,14 @@
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
     "otel"
   ],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "Prometheus",
-          "value": "prometheus"
+          "text": "default",
+          "value": "default"
         },
         "label": "Data source",
         "name": "datasource",
@@ -1007,6 +1024,5 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Kubernetes / Compute Resources /  Multi-Cluster - OTEL",
-  "uid": "b59e6c9f2fcbe2e16d77fc492374cc4f-otel",
-  "version": 1
+  "version": 6
 }
