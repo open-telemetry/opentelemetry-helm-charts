@@ -212,6 +212,14 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      prometheus/kafka:
+        config:
+          scrape_configs:
+          - job_name: kafka-exporter
+            scrape_interval: 30s
+            static_configs:
+            - targets:
+              - prometheus-kafka-exporter:9308
       receiver_creator/metrics:
         discovery:
           enabled: true
@@ -250,6 +258,7 @@ data:
           receivers:
           - otlp
           - spanmetrics
+          - prometheus/kafka
           - receiver_creator/metrics
           - hostmetrics
           - kubeletstats
