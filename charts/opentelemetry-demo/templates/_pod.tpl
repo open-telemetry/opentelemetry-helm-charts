@@ -11,7 +11,7 @@ should be last.
 {{- $resourceAttributesEnv := dict }}
 {{- $allEnvs := list }}
 
-{{- if .useDefault.env  }}
+{{- if and .useDefault .useDefault.env }}
 {{-   $defaultEnvs := include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides) | mustFromJson }}
 {{-   range $defaultEnvs }}
 {{-     if eq .name "OTEL_RESOURCE_ATTRIBUTES" }}
