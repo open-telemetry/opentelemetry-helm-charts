@@ -175,7 +175,7 @@ containers:
 {{- end }}
 {{- if .Values.tenx.enabled }}
   - name: tenx
-    image: "{{ .Values.tenx.image.repository }}:{{ .Values.tenx.image.tag }}"
+    image: "{{ .Values.tenx.image.repository }}:{{ .Values.tenx.image.tag | default .Chart.Version }}"
     imagePullPolicy: {{ .Values.tenx.image.pullPolicy }}
     securityContext:
       runAsUser: {{ .Values.tenx.securityContext.runAsUser | default 10001 }}
