@@ -28,7 +28,11 @@ containers:
       - {{ . }}
       {{- end }}
     securityContext:
-      {{- if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
+      {{- if and (not (.Values.securityContext)) (.Values.presets.profiling.enabled) }}
+      runAsUser: 0
+      runAsGroup: 0
+      privileged: true
+      {{- else if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
       runAsUser: 0
       runAsGroup: 0
       {{- else -}}
@@ -190,6 +194,11 @@ containers:
         readOnly: true
         mountPropagation: HostToContainer
       {{- end }}
+      {{- if .Values.presets.profiling.enabled }}
+      - name: tracefs
+        mountPath: /sys/kernel/tracing
+        readOnly: true
+      {{- end }}
       {{- if .Values.extraVolumeMounts }}
       {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 6 }}
       {{- end }}
@@ -236,6 +245,11 @@ volumes:
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
+  {{- if .Values.presets.profiling.enabled }}
+  - name: tracefs
+    hostPath:
+      path: /sys/kernel/tracing
   {{- end }}
   {{- if .Values.extraVolumes }}
   {{- tpl (toYaml .Values.extraVolumes) . | nindent 2 }}
