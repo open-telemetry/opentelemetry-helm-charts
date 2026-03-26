@@ -381,7 +381,7 @@ exporters:
     {{- end }}
   {{- end }}
   {{- if not $hasContainerId }}
-    {{- $_ := set $config.processors.k8sattributes "pod_association" (append $podAssoc $containerIdSource) }}
+    {{- $_ := set $config.processors.k8sattributes "pod_association" (prepend $podAssoc $containerIdSource) }}
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
