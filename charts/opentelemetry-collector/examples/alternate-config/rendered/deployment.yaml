@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.147.2
+    helm.sh/chart: opentelemetry-collector-0.148.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.147.0"
+    app.kubernetes.io/version: "0.148.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: standalone-collector
@@ -26,15 +26,15 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 50182efa1f5911c8ab8b1a86081ca0b6d7394a995245fd384bbaaa9740356895
-        
+        checksum/config: 7ddcd758bd9a659a26ee8559a8d3a76730f21ecbde6ceb918634da145a14a4a4
+
       labels:
         app.kubernetes.io/name: opentelemetry-collector
         app.kubernetes.io/instance: example
         component: standalone-collector
-        
+
     spec:
-      
+
       serviceAccountName: example-opentelemetry-collector
       automountServiceAccountToken: true
       securityContext:
@@ -47,10 +47,10 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.147.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.148.0"
           imagePullPolicy: IfNotPresent
           ports:
-            
+
             - name: jaeger-compact
               containerPort: 6831
               protocol: UDP
