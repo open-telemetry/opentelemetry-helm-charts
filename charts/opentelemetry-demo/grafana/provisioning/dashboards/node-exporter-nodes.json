@@ -125,9 +125,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "(\n  (1 - sum without (state) (rate(system_cpu_time_seconds_total{state=~\"idle|wait\", host_name=\"$host_name\"}[$__rate_interval])))\n/ ignoring(cpu) group_left\n  count without (cpu, state) (system_cpu_time_seconds_total{state=\"idle\", host_name=\"$host_name\"})\n)\n",
+          "editorMode": "code",
+          "expr": "(\n  1 - (\n    sum without (state) (\n      rate(k8s_node_cpu_time_seconds_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", state=~\"idle|iowait|steal\"}[$__rate_interval])\n    )\n    /\n    ignoring(cpu) group_left\n    count without (cpu, state) (\n      k8s_node_cpu_time_seconds_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", state=\"idle\"}\n    )\n  )\n)",
           "intervalFactor": 5,
           "legendFormat": "{{cpu}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -139,6 +141,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Assumes kubeletstats node CPU time is available; load average unavailable.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -224,8 +227,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_cpu_load_average_1m{host_name=\"$host_name\"}",
-          "legendFormat": "1m load average",
+          "expr": "sum(rate(k8s_node_cpu_time_seconds_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", state!~\"idle|iowait|steal\"}[$__rate_interval]))",
+          "legendFormat": "used cores",
           "refId": "A"
         },
         {
@@ -233,8 +236,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_cpu_load_average_5m{host_name=\"$host_name\"}",
-          "legendFormat": "5m load average",
+          "expr": "sum(rate(k8s_node_cpu_time_seconds_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", state=~\"idle|iowait|steal\"}[$__rate_interval]))",
+          "legendFormat": "idle cores",
           "refId": "B"
         },
         {
@@ -242,21 +245,12 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_cpu_load_average_15m{host_name=\"$host_name\"}",
-          "legendFormat": "15m load average",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "count(system_cpu_time_seconds_total{host_name=\"$host_name\", state=\"idle\"})",
+          "expr": "count(count by (cpu) (k8s_node_cpu_time_seconds_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", state=\"idle\"}))",
           "legendFormat": "logical cores",
-          "refId": "D"
+          "refId": "C"
         }
       ],
-      "title": "Load Average",
+      "title": "CPU Core Usage",
       "type": "timeseries"
     },
     {
@@ -362,7 +356,7 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_memory_usage_bytes{state=\"used\", host_name=\"$host_name\"}",
+          "expr": "k8s_node_memory_usage_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"}",
           "legendFormat": "memory used",
           "refId": "A"
         },
@@ -371,8 +365,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_memory_usage_bytes{state=\"buffered\", host_name=\"$host_name\"}",
-          "legendFormat": "memory buffers",
+          "expr": "k8s_node_memory_available_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"}",
+          "legendFormat": "memory available",
           "refId": "B"
         },
         {
@@ -380,18 +374,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "system_memory_usage_bytes{state=\"cached\", host_name=\"$host_name\"}",
-          "legendFormat": "memory cached",
+          "expr": "(k8s_node_memory_usage_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"} + k8s_node_memory_available_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"})",
+          "legendFormat": "memory total",
           "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "system_memory_usage_bytes{state=\"free\", host_name=\"$host_name\"}",
-          "legendFormat": "memory free",
-          "refId": "D"
         }
       ],
       "title": "Memory Usage",
@@ -457,7 +442,7 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "100 *\n(\n  avg(system_memory_usage_bytes{state=\"used\", host_name=\"$host_name\"}) /\n  avg(system_memory_limit_bytes{host_name=\"$host_name\"})\n)\n",
+          "expr": "100 *\n(\n  k8s_node_memory_usage_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"}\n  /\n  (\n    k8s_node_memory_usage_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"}\n    +\n    k8s_node_memory_available_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"}\n  )\n)",
           "refId": "A"
         }
       ],
@@ -482,6 +467,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Uses kubeletstats volume gauges as closest node disk view.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -535,34 +521,10 @@
                 "value": 80
               }
             ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "/ read| written/"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "Bps"
-              }
-            ]
           },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "/ io time/"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percentunit"
-              }
-            ]
-          }
-        ]
+          "unit": "bytes"
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 7,
@@ -591,9 +553,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_disk_io_bytes_total{direction=\"read\", host_name=\"$host_name\", device=~\"(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\"}[$__rate_interval])",
+          "expr": "sum by (k8s_namespace_name, k8s_pod_name) ((k8s_volume_capacity_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"} - k8s_volume_available_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"}))",
           "intervalFactor": 1,
-          "legendFormat": "{{device}} read",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}} used",
           "refId": "A"
         },
         {
@@ -601,23 +563,13 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_disk_io_bytes_total{direction=\"write\", host_name=\"$host_name\", device=~\"(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\"}[$__rate_interval])",
+          "expr": "sum by (k8s_namespace_name, k8s_pod_name) (k8s_volume_available_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"})",
           "intervalFactor": 1,
-          "legendFormat": "{{device}} written",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}} available",
           "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "rate(system_disk_io_time_seconds_total{host_name=\"$host_name\", device=~\"(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\"}[$__rate_interval])",
-          "intervalFactor": 1,
-          "legendFormat": "{{device}} io time",
-          "refId": "C"
         }
       ],
-      "title": "Disk I/O",
+      "title": "Volume Usage",
       "type": "timeseries"
     },
     {
@@ -625,6 +577,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Uses kubeletstats volume gauges; mountpoint details unavailable.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -661,12 +614,24 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Mounted on"
+              "options": "Namespace"
             },
             "properties": [
               {
                 "id": "custom.width",
-                "value": 260
+                "value": 140
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
               }
             ]
           },
@@ -752,7 +717,7 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "max by (mountpoint) (system_filesystem_limit_bytes{host_name=\"$host_name\", type!=\"\", mountpoint!=\"\"})\n",
+          "expr": "max by (k8s_namespace_name, k8s_pod_name) (k8s_volume_capacity_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -763,14 +728,14 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "max by (mountpoint) (system_filesystem_usage_bytes{state=\"free\", host_name=\"$host_name\", type!=\"\", mountpoint!=\"\"})\n",
+          "expr": "max by (k8s_namespace_name, k8s_pod_name) (k8s_volume_available_bytes{k8s_node_name=\"$instance\", cluster=~\"$cluster\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "B"
         }
       ],
-      "title": "Disk Space Usage",
+      "title": "Volume Space Usage",
       "transformations": [
         {
           "id": "groupBy",
@@ -788,7 +753,11 @@
                 ],
                 "operation": "aggregate"
               },
-              "mountpoint": {
+              "k8s_namespace_name": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "k8s_pod_name": {
                 "aggregations": [],
                 "operation": "groupby"
               }
@@ -838,7 +807,8 @@
             "renameByName": {
               "Value #A (lastNotNull)": "Size",
               "Value #B (lastNotNull)": "Available",
-              "mountpoint": "Mounted on"
+              "k8s_namespace_name": "Namespace",
+              "k8s_pod_name": "Pod"
             }
           }
         },
@@ -848,7 +818,10 @@
             "fields": {},
             "sort": [
               {
-                "field": "Mounted on"
+                "field": "Namespace"
+              },
+              {
+                "field": "Pod"
               }
             ]
           }
@@ -960,9 +933,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_network_io_bytes_total{direction=\"receive\", host_name=\"$host_name\", device!=\"lo\"}[$__rate_interval]) * 8",
+          "expr": "rate(k8s_node_network_io_bytes_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", interface!=\"lo\", direction=\"receive\"}[$__rate_interval]) * 8",
           "intervalFactor": 1,
-          "legendFormat": "{{device}}",
+          "legendFormat": "{{interface}}",
           "refId": "A"
         }
       ],
@@ -1060,9 +1033,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "rate(system_network_io_bytes_total{direction=\"transmit\", host_name=\"$host_name\", device!=\"lo\"}[$__rate_interval]) * 8",
+          "expr": "rate(k8s_node_network_io_bytes_total{k8s_node_name=\"$instance\", cluster=~\"$cluster\", interface!=\"lo\", direction=\"transmit\"}[$__rate_interval]) * 8",
           "intervalFactor": 1,
-          "legendFormat": "{{device}}",
+          "legendFormat": "{{interface}}",
           "refId": "A"
         }
       ],
@@ -1092,58 +1065,46 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "sltest",
-          "value": "sltest"
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(up{job=\"kubelet\"},cluster)",
         "hide": 2,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Cluster",
         "name": "cluster",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(up{job=\"kubelet\"},cluster)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(k8s_node_cpu_time_seconds_total, cluster)",
         "refresh": 2,
         "type": "query"
       },
       {
         "current": {
-          "text": "otel-daemon-collector-agent-xjzwk",
-          "value": "otel-daemon-collector-agent-xjzwk"
+          "text": "sltest-worker-qmcsm-d4zn2",
+          "value": "sltest-worker-qmcsm-d4zn2"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(system_cpu_time_seconds_total,host_name)",
-        "includeAll": true,
-        "label": "Host",
-        "name": "host_name",
+        "label": "Node",
+        "name": "instance",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(system_cpu_time_seconds_total,host_name)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(k8s_node_cpu_time_seconds_total{cluster=~\"$cluster\"}, k8s_node_name)",
         "refresh": 2,
         "type": "query"
       }
     ]
   },
   "time": {
-    "from": "2026-01-20T03:15:13.146Z",
-    "to": "2026-01-20T05:15:13.146Z"
+    "from": "now-1h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "Node Exporter / Nodes - OTEL",
-  "uid": "7d57716318ee0dddbac5a7f451fb7753-otel",
-  "version": 7
+  "version": 2
 }

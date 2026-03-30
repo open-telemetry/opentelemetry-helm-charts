@@ -38,6 +38,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: count nodes from OTel node CPU series.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -90,12 +91,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kubelet_node_name{cluster=\"$cluster\"})",
+          "expr": "count(count by (k8s_node_name) (k8s_node_cpu_time_seconds_total{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}))",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Running Kubelets",
+      "title": "Running Nodes",
       "type": "stat"
     },
     {
@@ -103,6 +104,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: count pods from OTel pod memory series.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -155,7 +157,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kubelet_running_pods{cluster=\"$cluster\", instance=~\"$instance\"})",
+          "expr": "count(count by (k8s_namespace_name, k8s_pod_name) (k8s_pod_memory_usage_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}))",
           "instant": true,
           "refId": "A"
         }
@@ -168,6 +170,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: count containers from OTel container memory series.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -220,7 +223,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kubelet_running_containers{cluster=\"$cluster\", instance=~\"$instance\"})",
+          "expr": "count(count by (container_id) (k8s_container_memory_usage_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}))",
           "instant": true,
           "refId": "A"
         }
@@ -233,6 +236,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: count volumes from k8s.volume.capacity.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -285,12 +289,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(volume_manager_total_volumes{cluster=\"$cluster\", instance=~\"$instance\", state=\"actual_state_of_world\"})",
+          "expr": "count(k8s_volume_capacity_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"})",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Actual Volume Count",
+      "title": "Volumes with Capacity",
       "type": "stat"
     },
     {
@@ -298,6 +302,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: count volumes from k8s.volume.available.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -350,12 +355,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(volume_manager_total_volumes{cluster=\"$cluster\", instance=~\"$instance\",state=\"desired_state_of_world\"})",
+          "expr": "count(k8s_volume_available_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"})",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Desired Volume Count",
+      "title": "Volumes with Available Space",
       "type": "stat"
     },
     {
@@ -363,6 +368,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: using OTel container restarts gauge.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -415,12 +421,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(kubelet_node_config_error{cluster=\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
+          "expr": "sum(k8s_container_restarts{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"})",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Config Error Count",
+      "title": "Container Restarts",
       "type": "stat"
     },
     {
@@ -428,6 +434,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces kubelet runtime ops with node CPU time rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -516,12 +523,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(kubelet_runtime_operations_total{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (operation_type, instance)",
-          "legendFormat": "{{instance}} {{operation_type}}",
+          "expr": "sum(rate(k8s_node_cpu_time_seconds_total{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\", state!=\"idle\"}[$__rate_interval])) by (k8s_node_name)",
+          "legendFormat": "{{k8s_node_name}}",
           "refId": "A"
         }
       ],
-      "title": "Operation Rate",
+      "title": "Node CPU Usage Rate",
       "type": "timeseries"
     },
     {
@@ -529,6 +536,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces kubelet errors with node memory usage.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -582,7 +590,7 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -617,12 +625,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(kubelet_runtime_operations_errors_total{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type)",
-          "legendFormat": "{{instance}} {{operation_type}}",
+          "expr": "sum(k8s_node_memory_usage_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name)",
+          "legendFormat": "{{k8s_node_name}}",
           "refId": "A"
         }
       ],
-      "title": "Operation Error Rate",
+      "title": "Node Memory Usage",
       "type": "timeseries"
     },
     {
@@ -630,6 +638,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces kubelet duration with pod CPU time rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -683,7 +692,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -718,12 +727,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(kubelet_runtime_operations_duration_seconds_bucket{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type, le))",
-          "legendFormat": "{{instance}} {{operation_type}}",
+          "expr": "sum(rate(k8s_pod_cpu_time_seconds_total{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}[$__rate_interval])) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "Operation Duration 99th quantile",
+      "title": "Pod CPU Usage Rate",
       "type": "timeseries"
     },
     {
@@ -731,6 +740,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces pod start rate with container restarts per pod.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -784,7 +794,7 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -819,21 +829,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance)",
-          "legendFormat": "{{instance}} pod",
+          "expr": "sum(k8s_container_restarts{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum(rate(kubelet_pod_worker_duration_seconds_count{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance)",
-          "legendFormat": "{{instance}} worker",
-          "refId": "B"
         }
       ],
-      "title": "Pod Start Rate",
+      "title": "Pod Restart Count",
       "type": "timeseries"
     },
     {
@@ -841,6 +842,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces pod start duration with pod memory usage.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -894,7 +896,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -929,21 +931,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(kubelet_pod_start_duration_seconds_bucket{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
-          "legendFormat": "{{instance}} pod",
+          "expr": "sum(k8s_pod_memory_usage_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
-          "legendFormat": "{{instance}} worker",
-          "refId": "B"
         }
       ],
-      "title": "Pod Start Duration",
+      "title": "Pod Memory Usage",
       "type": "timeseries"
     },
     {
@@ -951,6 +944,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces storage rate with container CPU requests.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1004,7 +998,7 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1039,12 +1033,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(storage_operation_duration_seconds_count{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_name, volume_plugin)",
-          "legendFormat": "{{instance}} {{operation_name}} {{volume_plugin}}",
+          "expr": "sum(k8s_container_cpu_request{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "Storage Operation Rate",
+      "title": "Container CPU Requests",
       "type": "timeseries"
     },
     {
@@ -1052,6 +1046,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces storage errors with container CPU limits.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1105,7 +1100,7 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1140,12 +1135,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(storage_operation_errors_total{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_name, volume_plugin)",
-          "legendFormat": "{{instance}} {{operation_name}} {{volume_plugin}}",
+          "expr": "sum(k8s_container_cpu_limit{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "Storage Operation Error Rate",
+      "title": "Container CPU Limits",
       "type": "timeseries"
     },
     {
@@ -1153,6 +1148,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces storage duration with volume capacity.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1206,7 +1202,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -1241,12 +1237,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(storage_operation_duration_seconds_bucket{cluster=\"$cluster\", instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_name, volume_plugin, le))",
-          "legendFormat": "{{instance}} {{operation_name}} {{volume_plugin}}",
+          "expr": "sum(k8s_volume_capacity_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name, k8s_volume_type)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}} {{k8s_volume_type}}",
           "refId": "A"
         }
       ],
-      "title": "Storage Operation Duration 99th quantile",
+      "title": "Volume Capacity",
       "type": "timeseries"
     },
     {
@@ -1254,6 +1250,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces cgroup rate with container memory requests.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1307,7 +1304,7 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -1342,12 +1339,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(kubelet_cgroup_manager_duration_seconds_count{cluster=\"$cluster\", instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type)",
-          "legendFormat": "{{operation_type}}",
+          "expr": "sum(k8s_container_memory_request{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "Cgroup manager operation rate",
+      "title": "Container Memory Requests",
       "type": "timeseries"
     },
     {
@@ -1355,6 +1352,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces cgroup quantile with container memory limits.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1408,7 +1406,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -1443,12 +1441,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster=\"$cluster\", instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type, le))",
-          "legendFormat": "{{instance}} {{operation_type}}",
+          "expr": "sum(k8s_container_memory_limit{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "Cgroup manager 99th quantile",
+      "title": "Container Memory Limits",
       "type": "timeseries"
     },
     {
@@ -1456,6 +1454,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces PLEG rate with container CPU time rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1544,12 +1543,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(kubelet_pleg_relist_duration_seconds_count{cluster=\"$cluster\", instance=~\"$instance\"}[$__rate_interval])) by (instance)",
-          "legendFormat": "{{instance}}",
+          "expr": "sum(rate(k8s_container_cpu_time_seconds_total{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}[$__rate_interval])) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "PLEG relist rate",
+      "title": "Container CPU Usage Rate",
       "type": "timeseries"
     },
     {
@@ -1557,6 +1556,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces PLEG interval with volume available bytes.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1610,7 +1610,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -1645,12 +1645,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_interval_seconds_bucket{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
-          "legendFormat": "{{instance}}",
+          "expr": "sum(k8s_volume_available_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name, k8s_volume_type)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}} {{k8s_volume_type}}",
           "refId": "A"
         }
       ],
-      "title": "PLEG relist interval",
+      "title": "Volume Available",
       "type": "timeseries"
     },
     {
@@ -1658,6 +1658,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: derived as capacity minus available.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1711,7 +1712,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -1746,12 +1747,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
-          "legendFormat": "{{instance}}",
+          "expr": "sum((k8s_volume_capacity_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"} - k8s_volume_available_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"})) by (k8s_node_name, k8s_namespace_name, k8s_pod_name, k8s_volume_type)",
+          "legendFormat": "{{k8s_node_name}} {{k8s_namespace_name}}/{{k8s_pod_name}} {{k8s_volume_type}}",
           "refId": "A"
         }
       ],
-      "title": "PLEG relist duration",
+      "title": "Volume Used",
       "type": "timeseries"
     },
     {
@@ -1759,6 +1760,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces RPC rate with OTel container ready gauge.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1812,7 +1814,7 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1847,39 +1849,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))",
-          "legendFormat": "2xx",
+          "expr": "sum(k8s_container_ready{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}} ready",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))",
-          "legendFormat": "3xx",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))",
-          "legendFormat": "4xx",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))",
-          "legendFormat": "5xx",
-          "refId": "D"
         }
       ],
-      "title": "RPC rate",
+      "title": "Containers Ready",
       "type": "timeseries"
     },
     {
@@ -1887,6 +1862,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces request duration with container memory usage.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1940,7 +1916,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -1975,12 +1951,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", instance=~\"$instance\"}[$__rate_interval])) by (instance, verb, le))",
-          "legendFormat": "{{instance}} {{verb}}",
+          "expr": "sum(k8s_container_memory_usage_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name, k8s_namespace_name, k8s_pod_name)",
+          "legendFormat": "{{k8s_namespace_name}}/{{k8s_pod_name}}",
           "refId": "A"
         }
       ],
-      "title": "Request duration 99th quantile",
+      "title": "Container Memory Usage",
       "type": "timeseries"
     },
     {
@@ -1988,6 +1964,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces kubelet process memory with OTel node memory.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2076,12 +2053,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "process_resident_memory_bytes{cluster=\"$cluster\",instance=~\"$instance\"}",
-          "legendFormat": "{{instance}}",
+          "expr": "sum(k8s_node_memory_usage_bytes{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name)",
+          "legendFormat": "{{k8s_node_name}}",
           "refId": "A"
         }
       ],
-      "title": "Memory",
+      "title": "Node Memory Usage",
       "type": "timeseries"
     },
     {
@@ -2089,6 +2066,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces kubelet process CPU with OTel node CPU time rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2177,12 +2155,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\",instance=~\"$instance\"}[$__rate_interval])",
-          "legendFormat": "{{instance}}",
+          "expr": "sum(rate(k8s_node_cpu_time_seconds_total{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\", state!=\"idle\"}[$__rate_interval])) by (k8s_node_name)",
+          "legendFormat": "{{k8s_node_name}}",
           "refId": "A"
         }
       ],
-      "title": "CPU usage",
+      "title": "Node CPU Usage",
       "type": "timeseries"
     },
     {
@@ -2190,6 +2168,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Assumption: replaces goroutines with ready containers.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2278,12 +2257,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "go_goroutines{cluster=\"$cluster\",instance=~\"$instance\"}",
-          "legendFormat": "{{instance}}",
+          "expr": "sum(k8s_container_ready{k8s_cluster_name=\"$cluster\", k8s_node_name=~\"$instance\"}) by (k8s_node_name)",
+          "legendFormat": "{{k8s_node_name}}",
           "refId": "A"
         }
       ],
-      "title": "Goroutines",
+      "title": "Containers Ready",
       "type": "timeseries"
     }
   ],
@@ -2291,15 +2270,14 @@
   "refresh": "10s",
   "schemaVersion": 42,
   "tags": [
-    "kubernetes-mixin",
     "otel"
   ],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "Prometheus",
-          "value": "prometheus"
+          "text": "default",
+          "value": "default"
         },
         "label": "Data source",
         "name": "datasource",
@@ -2312,23 +2290,18 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "sltest",
-          "value": "sltest"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"},cluster)",
         "hide": 2,
         "label": "cluster",
         "name": "cluster",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"},cluster)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(k8s_node_cpu_time_seconds_total, k8s_cluster_name)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
@@ -2346,7 +2319,7 @@
         "label": "instance",
         "name": "instance",
         "options": [],
-        "query": "label_values(up{cluster=\"$cluster\"}, instance)",
+        "query": "label_values(k8s_node_cpu_time_seconds_total{k8s_cluster_name=\"$cluster\"}, k8s_node_name)",
         "refresh": 2,
         "type": "query"
       }
@@ -2359,6 +2332,5 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "Kubernetes / Kubelet - OTEL",
-  "uid": "3138fa155d5915769fbded898ac09fd9-otel",
   "version": 2
 }
