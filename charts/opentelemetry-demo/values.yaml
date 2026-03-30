@@ -939,14 +939,14 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
-      prometheus/kafka:
-        config:
-          scrape_configs:
-            - job_name: kafka-exporter
-              scrape_interval: 30s
-              static_configs:
-                - targets:
-                    - prometheus-kafka-exporter:9308
+      kafkametrics:
+        scrapers:
+          - brokers
+          - topics
+          - consumers
+        brokers:
+          - kafka:9092
+        collection_interval: 10s
     exporters:
       otlp/jaeger:
         endpoint: jaeger:4317
@@ -1012,7 +1012,7 @@ opentelemetry-collector:
           processors: [memory_limiter, resourcedetection, resource, transform, batch]
           exporters: [otlp/jaeger, debug, spanmetrics]
         metrics:
-          receivers: [otlp, spanmetrics, prometheus/kafka]
+          receivers: [otlp, spanmetrics, kafkametrics]
           processors: [memory_limiter, resourcedetection, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
@@ -1228,10 +1228,3 @@ opensearch:
   resources:
     limits:
       memory: 1100Mi
-
-prometheus-kafka-exporter:
-  enabled: true
-  fullnameOverride: prometheus-kafka-exporter
-  kafkaServer:
-    - kafka:9092
-  kafkaBrokerVersion: 2.0.0
