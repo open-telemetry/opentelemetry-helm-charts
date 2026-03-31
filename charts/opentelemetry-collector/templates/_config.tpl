@@ -3148,6 +3148,7 @@ exporters:
       - "aws.ecs.cluster.name"
       - "aws.ecs.task.definition.family"
       {{- else if or (eq $.Values.distribution "standalone") (eq $.Values.distribution "macos") }}
+      - "cx.application.name"
       - "service.namespace"
       {{- else }}
       - "k8s.namespace.name"
@@ -3159,6 +3160,7 @@ exporters:
       - "aws.ecs.docker.name"
       - "docker.name"
       {{- else if or (eq $.Values.distribution "standalone") (eq $.Values.distribution "macos") }}
+      - "cx.subsystem.name"
       - "service.name"
       {{- else }}
       - "k8s.deployment.name"
