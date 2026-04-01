@@ -10,6 +10,9 @@ metadata:
 data:
   targetallocator.yaml: |
     allocation_strategy: {{ .Values.targetAllocator.allocationStrategy }}
+    {{- if .Values.targetAllocator.allocationFallbackStrategy }}
+    allocation_fallback_strategy: {{ .Values.targetAllocator.allocationFallbackStrategy }}
+    {{- end }}
     filter_strategy: relabel-config
     collector_selector:
       matchlabels:
@@ -41,6 +44,18 @@ data:
         {{- include "opentelemetry-target-allocator.podMonitorNamespaceSelector" . | nindent 8 }}
       {{- else }}
       pod_monitor_namespace_selector: {}
+      {{- end }}
+      {{- if .Values.targetAllocator.prometheusCR.probeSelector }}
+      probe_selector:
+        {{- include "opentelemetry-target-allocator.probeSelector" . | nindent 8 }}
+      {{- else }}
+      probe_selector: {}
+      {{- end }}
+      {{- if .Values.targetAllocator.prometheusCR.probeNamespaceSelector }}
+      probe_namespace_selector:
+        {{- include "opentelemetry-target-allocator.probeNamespaceSelector" . | nindent 8 }}
+      {{- else }}
+      probe_namespace_selector: {}
       {{- end }}
     {{- end }}
     {{- if .Values.targetAllocator.scrapeConfigs }}

@@ -165,6 +165,18 @@ Create the name of the priorityClass to use
 {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-target-allocator.probeSelector" -}}
+{{- if .Values.targetAllocator.prometheusCR.probeSelector }}
+{{- tpl (.Values.targetAllocator.prometheusCR.probeSelector | toYaml) . }}
+{{- end }}
+{{- end }}
+
+{{- define "opentelemetry-target-allocator.probeNamespaceSelector" -}}
+{{- if .Values.targetAllocator.prometheusCR.probeNamespaceSelector }}
+{{- tpl (.Values.targetAllocator.prometheusCR.probeNamespaceSelector | toYaml) . }}
+{{- end }}
+{{- end }}
+
 {{- define "opentelemetry-collector.additionalLabels" -}}
 {{- if .Values.additionalLabels }}
 {{- tpl (.Values.additionalLabels | toYaml) . }}

@@ -6,6 +6,10 @@
 
 - [Feat] For `distribution` `standalone` and `macos`, prepend `cx.application.name` and `cx.subsystem.name` to Coralogix exporter `application_name_attributes` and `subsystem_name_attributes` (before `service.namespace` / `service.name`) so presets such as `filelogMulti` and `prometheusMulti` drive Application/Subsystem when set.
 
+### v0.130.6 / 2026-04-01
+
+- [Feat] Add target allocator `allocationFallbackStrategy`, `probeSelector`, and `probeNamespaceSelector` chart values for Prometheus CR rendering.
+
 ### v0.130.4 / 2026-03-16
 
 - [Feat] Use Coralogix' custom Supervised Collector image when `presets.fleetManagement.supervisor` is enabled. For now this custom image includes fallback configuration support (local file and S3).
