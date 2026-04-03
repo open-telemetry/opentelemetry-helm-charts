@@ -22,9 +22,7 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        {{- include "obi.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "obi.labels" . | nindent 8 }}
         app.kubernetes.io/component: workload

@@ -22,8 +22,15 @@ fullnameOverride: ""
 # -- Override the deployment namespace
 namespaceOverride: ""
 
-## DaemonSet annotations
-# annotations: {}
+# -- DaemonSet annotations to apply to all related resources
+annotations: {}
+
+# -- Init containers to run before the main eBPF instrumentation container
+initContainers: []
+  # - name: setup-config
+  #   image: busybox:latest
+  #   command: ["sh", "-c", "echo 'Initializing'"]
+  #   imagePullPolicy: IfNotPresent
 
 rbac:
   # -- Whether to create RBAC resources for Opentelemetry eBPF Instrumentation
@@ -101,6 +108,12 @@ service:
   portName: metrics
   # -- Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
   appProtocol: ""
+  # -- NodePort for the service when type is NodePort. Requires service.type: NodePort
+  nodePort: null
+  # -- External IPs to assign to the service
+  externalIPs: []
+  # -- External traffic policy (Local or Cluster)
+  externalTrafficPolicy: ""
   internalMetrics:
     # -- internal metrics service port
     port: 8080
@@ -111,6 +124,8 @@ service:
     portName: int-metrics
     # -- Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
     appProtocol: ""
+    # -- NodePort for internal metrics when type is NodePort. Requires service.type: NodePort
+    nodePort: null
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

@@ -20,6 +20,9 @@ spec:
       labels:
         {{- include "otel-demo.selectorLabels" . | nindent 8 }}
         {{- include "otel-demo.workloadLabels" . | nindent 8 }}
+        {{- if .podLabels }}
+        {{- toYaml .podLabels | nindent 8 }}
+        {{- end }}
       {{- if .podAnnotations }}
       annotations:
         {{- toYaml .podAnnotations | nindent 8 }}
@@ -71,6 +74,10 @@ spec:
           livenessProbe:
             {{- .livenessProbe | toYaml | nindent 12 }}
           {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- .readinessProbe | toYaml | nindent 12 }}
+          {{- end }}
           volumeMounts:
             {{- if .additionalVolumeMounts }}
             {{- tpl (toYaml .additionalVolumeMounts) . | nindent 12 }}
@@ -118,6 +125,10 @@ spec:
           {{- if .livenessProbe }}
           livenessProbe:
             {{- .livenessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- .readinessProbe | toYaml | nindent 12 }}
           {{- end }}
           {{- if .volumeMounts }}
           volumeMounts:
