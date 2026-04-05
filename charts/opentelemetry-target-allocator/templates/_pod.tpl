@@ -37,6 +37,9 @@ containers:
     env: # Workaround for https://github.com/open-telemetry/opentelemetry-operator/pull/3976
       - name: OTELCOL_NAMESPACE
         value: {{ .Values.targetAllocator.config.collector_namespace | default .Release.Namespace }}
+      {{- with .Values.targetAllocator.extraEnvs }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
     {{- with .Values.targetAllocator.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}
