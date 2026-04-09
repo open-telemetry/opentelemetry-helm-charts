@@ -122,7 +122,7 @@ jobs:
           git commit -m "${COMMIT_MESSAGE}"
           git push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
 
-          pr_number="$(gh pr list --head "${BRANCH_NAME}" --base main --json number --jq '.[0].number')"
+          pr_number="$(gh pr list --head "${BRANCH_NAME}" --base main --json number --jq '.[0].number // empty')"
           if [[ -n "${pr_number}" ]]; then
             gh pr edit "${pr_number}" \
               --title "${PR_TITLE}" \

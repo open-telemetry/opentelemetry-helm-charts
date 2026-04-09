@@ -284,8 +284,8 @@ main() {
   update_chart_metadata "${next_chart_version}" "${next_app_version}"
   run_post_update_action
 
-  if git diff --quiet -- "${CHART_ROOT}"; then
-    log "No chart changes were produced for ${RESOLVED_RELEASE_TAG}; nothing to do."
+  if git diff --quiet -- "${STAGE_PATH}"; then
+    log "No staged changes were produced for ${RESOLVED_RELEASE_TAG}; nothing to do."
     return 0
   fi
 
