@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-supervisor
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.130.6
+    helm.sh/chart: opentelemetry-collector-0.130.7
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.147.0"
@@ -35,6 +35,13 @@ data:
       # This passes config files to the Collector.
       config_files:
       - /conf/relay.yaml
+      # This adds fallback configs to the Collector in case the initial connection
+      # to the OpAMP server fails. The Supervisor will keep retrying to connect and
+      # will drop this fallback configuration in favor of the remote configuration
+      # when the connection is successful.
+      initial_fallback_configs:
+        - test_path
+        - http://some.randomtest/config.yaml
     
       # This adds CLI arguments to the Collector.
       args: [

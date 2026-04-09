@@ -2,13 +2,17 @@
 
 ## OpenTelemetry Collector
 
-### v0.130.5 / 2026-03-31
+### v0.130.7 / 2026-04-09
 
-- [Feat] For `distribution` `standalone` and `macos`, prepend `cx.application.name` and `cx.subsystem.name` to Coralogix exporter `application_name_attributes` and `subsystem_name_attributes` (before `service.namespace` / `service.name`) so presets such as `filelogMulti` and `prometheusMulti` drive Application/Subsystem when set.
+- [Feat] Add support for fallback configuration for the Supervisor.
 
 ### v0.130.6 / 2026-04-01
 
 - [Feat] Add target allocator `allocationFallbackStrategy`, `probeSelector`, and `probeNamespaceSelector` chart values for Prometheus CR rendering.
+
+### v0.130.5 / 2026-03-31
+
+- [Feat] For `distribution` `standalone` and `macos`, prepend `cx.application.name` and `cx.subsystem.name` to Coralogix exporter `application_name_attributes` and `subsystem_name_attributes` (before `service.namespace` / `service.name`) so presets such as `filelogMulti` and `prometheusMulti` drive Application/Subsystem when set.
 
 ### v0.130.4 / 2026-03-16
 
