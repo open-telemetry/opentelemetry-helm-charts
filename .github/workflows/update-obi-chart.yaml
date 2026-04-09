@@ -16,70 +16,25 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: update-obi-chart
-  cancel-in-progress: false
-
 jobs:
   update:
-    permissions:
-      contents: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create OTelBot token
-        id: otelbot-token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
-        with:
-          app-id: ${{ vars.OTELBOT_APP_ID }}
-          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+    uses: ./.github/workflows/update-chart-app-version.yaml
+    secrets: inherit
+    with:
+      chart_name: opentelemetry-ebpf-instrumentation
+      chart_root: charts/opentelemetry-ebpf-instrumentation
+      chart_yaml: charts/opentelemetry-ebpf-instrumentation/Chart.yaml
+      stage_path: charts/opentelemetry-ebpf-instrumentation
+      upstream_repository: open-telemetry/opentelemetry-ebpf-instrumentation
+      release_tag_prefix: v
+      app_version_prefix: v
+      branch_prefix: obi
+      version_policy: mirror-upstream-without-prefix
+      approvers: "@open-telemetry/ebpf-instrumentation-approvers"
+      pr_title_template: "Update OBI chart to use latest OBI version: {{ release_tag }}"
+      pr_body_template: |
+        {{ release_url }}
 
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
-          token: ${{ steps.otelbot-token.outputs.token }}
-
-      - name: Setup
-        uses: ./.github/actions/setup
-        with:
-          create-kind-cluster: "false"
-          helm-version: "v3.14.4"
-
-      - name: Update OBI chart
-        id: update
-        env:
-          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
-          RELEASE_TAG: ${{ inputs.release_tag || github.event.client_payload.release_tag || '' }}
-        run: .github/scripts/update-obi-chart.sh
-
-      - name: Create pull request
-        if: steps.update.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
-          BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
-          COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
-          PR_TITLE: ${{ steps.update.outputs.pr_title }}
-          PR_BODY: ${{ steps.update.outputs.pr_body }}
-        run: |
-          git config user.name otelbot
-          git config user.email 197425009+otelbot@users.noreply.github.com
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
-
-          git checkout -B "${BRANCH_NAME}"
-          git add charts/opentelemetry-ebpf-instrumentation
-          git commit -m "${COMMIT_MESSAGE}"
-          git push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
-
-          pr_number="$(gh pr list --head "${BRANCH_NAME}" --base main --json number --jq '.[0].number')"
-          if [[ -n "${pr_number}" ]]; then
-            gh pr edit "${pr_number}" \
-              --title "${PR_TITLE}" \
-              --body "${PR_BODY}"
-          else
-            gh pr create \
-              --head "${BRANCH_NAME}" \
-              --base main \
-              --title "${PR_TITLE}" \
-              --body "${PR_BODY}"
-          fi
+        cc {{ approvers }}
+      post_update_action: generate-examples
+      release_tag: ${{ inputs.release_tag || github.event.client_payload.release_tag || '' }}

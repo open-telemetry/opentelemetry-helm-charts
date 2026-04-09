@@ -1,0 +1,136 @@
+name: Update Chart App Version
+
+on:
+  workflow_call:
+    inputs:
+      chart_name:
+        required: true
+        type: string
+      chart_root:
+        required: true
+        type: string
+      chart_yaml:
+        required: true
+        type: string
+      stage_path:
+        required: true
+        type: string
+      upstream_repository:
+        required: true
+        type: string
+      release_tag_prefix:
+        required: true
+        type: string
+      app_version_prefix:
+        required: true
+        type: string
+      branch_prefix:
+        required: true
+        type: string
+      version_policy:
+        required: true
+        type: string
+      approvers:
+        required: true
+        type: string
+      pr_title_template:
+        required: true
+        type: string
+      pr_body_template:
+        required: true
+        type: string
+      post_update_action:
+        # `workflow_call` inputs do not support `choice`, so this remains a string
+        # and is validated against an allowlist in the updater script.
+        required: false
+        type: string
+        default: "none"
+      release_tag:
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-chart-app-version-${{ inputs.chart_name }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create OTelBot token
+        id: otelbot-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ vars.OTELBOT_APP_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ steps.otelbot-token.outputs.token }}
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "false"
+          helm-version: "v3.14.4"
+
+      - name: Update chart
+        id: update
+        env:
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          CHART_NAME: ${{ inputs.chart_name }}
+          CHART_ROOT: ${{ inputs.chart_root }}
+          CHART_YAML: ${{ inputs.chart_yaml }}
+          STAGE_PATH: ${{ inputs.stage_path }}
+          UPSTREAM_REPOSITORY: ${{ inputs.upstream_repository }}
+          RELEASE_TAG_PREFIX: ${{ inputs.release_tag_prefix }}
+          APP_VERSION_PREFIX: ${{ inputs.app_version_prefix }}
+          BRANCH_PREFIX: ${{ inputs.branch_prefix }}
+          VERSION_POLICY: ${{ inputs.version_policy }}
+          APPROVERS: ${{ inputs.approvers }}
+          PR_TITLE_TEMPLATE: ${{ inputs.pr_title_template }}
+          PR_BODY_TEMPLATE: ${{ inputs.pr_body_template }}
+          POST_UPDATE_ACTION: ${{ inputs.post_update_action }}
+        run: .github/scripts/update-chart-app-version.sh
+
+      - name: Create pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
+          COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
+          STAGE_PATH: ${{ steps.update.outputs.stage_path }}
+          PR_TITLE: ${{ steps.update.outputs.pr_title }}
+          PR_BODY: ${{ steps.update.outputs.pr_body }}
+        run: |
+          git config user.name otelbot
+          git config user.email 197425009+otelbot@users.noreply.github.com
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+
+          git checkout -B "${BRANCH_NAME}"
+          git add "${STAGE_PATH}"
+          git commit -m "${COMMIT_MESSAGE}"
+          git push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
+
+          pr_number="$(gh pr list --head "${BRANCH_NAME}" --base main --json number --jq '.[0].number')"
+          if [[ -n "${pr_number}" ]]; then
+            gh pr edit "${pr_number}" \
+              --title "${PR_TITLE}" \
+              --body "${PR_BODY}"
+          else
+            gh pr create \
+              --head "${BRANCH_NAME}" \
+              --base main \
+              --title "${PR_TITLE}" \
+              --body "${PR_BODY}"
+          fi
