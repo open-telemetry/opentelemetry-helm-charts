@@ -1,0 +1,40 @@
+name: Update OBI Chart
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: OBI release tag to apply. Defaults to the latest published release.
+        required: false
+        type: string
+  repository_dispatch:
+    types:
+      - obi-release-published
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    uses: ./.github/workflows/update-chart-app-version.yaml
+    secrets: inherit
+    with:
+      chart_name: opentelemetry-ebpf-instrumentation
+      chart_root: charts/opentelemetry-ebpf-instrumentation
+      chart_yaml: charts/opentelemetry-ebpf-instrumentation/Chart.yaml
+      stage_path: charts/opentelemetry-ebpf-instrumentation
+      upstream_repository: open-telemetry/opentelemetry-ebpf-instrumentation
+      release_tag_prefix: v
+      app_version_prefix: v
+      branch_prefix: obi
+      version_policy: mirror-upstream-without-prefix
+      approvers: "@open-telemetry/ebpf-instrumentation-approvers"
+      pr_title_template: "Update OBI chart to use latest OBI version: {{ release_tag }}"
+      pr_body_template: |
+        {{ release_url }}
+
+        cc {{ approvers }}
+      post_update_action: generate-examples
+      release_tag: ${{ github.event.inputs.release_tag || github.event.client_payload.release_tag || '' }}
