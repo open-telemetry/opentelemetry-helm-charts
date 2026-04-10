@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### Unreleased
+
+- [Fix] Add `IsMap()` guards to `transform/kube-events` processor to prevent `INVALID_ARGUMENT` when a Kubernetes event log body is a plain string (CDS-2869)
+
 ### v0.130.7 / 2026-04-09
 
 - [Feat] Add support for fallback configuration for the Supervisor.

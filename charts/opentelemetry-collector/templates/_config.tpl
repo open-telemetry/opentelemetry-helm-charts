@@ -3584,9 +3584,9 @@ processors:
     log_statements:
       - context: log
         statements:
-          - keep_keys(body["object"], ["type", "eventTime", "reason", "regarding", "note", "metadata", "deprecatedFirstTimestamp", "deprecatedLastTimestamp"])
-          - keep_keys(body["object"]["metadata"], ["creationTimestamp"])
-          - keep_keys(body["object"]["regarding"], ["kind", "name", "namespace"])
+          - keep_keys(body["object"], ["type", "eventTime", "reason", "regarding", "note", "metadata", "deprecatedFirstTimestamp", "deprecatedLastTimestamp"]) where IsMap(body["object"])
+          - keep_keys(body["object"]["metadata"], ["creationTimestamp"]) where IsMap(body["object"]["metadata"])
+          - keep_keys(body["object"]["regarding"], ["kind", "name", "namespace"]) where IsMap(body["object"]["regarding"])
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHeadSamplingConfig" -}}
