@@ -128,6 +128,14 @@ data:
             endpoint: ${env:MY_POD_IP}:6831
           thrift_http:
             endpoint: ${env:MY_POD_IP}:14268
+      kafkametrics:
+        brokers:
+        - kafka:9092
+        collection_interval: 10s
+        scrapers:
+        - brokers
+        - topics
+        - consumers
       otlp:
         protocols:
           grpc:
@@ -182,6 +190,7 @@ data:
           - batch
           receivers:
           - otlp
+          - kafkametrics
           - spanmetrics
           - receiver_creator/metrics
         traces:

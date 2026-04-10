@@ -52,7 +52,34 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
-      {{- if or .Values.presets.kubeletMetrics.enabled (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset")) }}
+      - name: OTEL_K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: OTEL_K8S_NODE_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+      - name: OTEL_K8S_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: OTEL_K8S_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: OTEL_K8S_POD_IP
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.podIP
+      {{- if or
+        .Values.presets.kubeletMetrics.enabled
+        (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset"))
+        (and (or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled) (eq .Values.mode "daemonset"))
+      }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:
