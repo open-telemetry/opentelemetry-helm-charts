@@ -2,6 +2,11 @@
 
 ## OpenTelemetry eBPF Instrumentation
 
+### v0.1.15 / 2026-04-09
+
+- [Chore] Bump version to v0.1.15.
+
+
 ### v0.1.14 / 2026-03-09
 - [Change] Bump OBI image to v0.7.1
 

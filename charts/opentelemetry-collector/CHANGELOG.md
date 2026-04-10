@@ -4,6 +4,10 @@
 
 ### v0.130.7 / 2026-04-09
 
+- [Fix] Fix `podSecurityContext` and `securityContext` indentation when `collectorCRD.generate` is true.
+
+### v0.130.5 / 2026-03-31
+
 - [Feat] Add support for fallback configuration for the Supervisor.
 
 ### v0.130.6 / 2026-04-01

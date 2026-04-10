@@ -60,7 +60,8 @@ spec:
     runAsGroup: 0
   {{- else -}}
     {{- if .Values.podSecurityContext }}
-    {{- toYaml .Values.podSecurityContext | nindent 6 }}
+  podSecurityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 4 }}
     {{- end }}
   {{- end }}
   {{- if and (not (.Values.securityContext)) (not (.Values.isWindows)) (or (.Values.presets.logsCollection.storeCheckpoints) (.Values.presets.hostMetrics.process.enabled) (.Values.presets.ebpfProfiler.enabled)) }}
@@ -68,7 +69,8 @@ spec:
     privileged: true
   {{- else -}}
     {{- if .Values.securityContext }}
-    {{- toYaml .Values.securityContext | nindent 6 }}
+  securityContext:
+    {{- toYaml .Values.securityContext | nindent 4 }}
     {{- end }}
   {{- end }}
   image: "{{ include "opentelemetry-collector.image" . }}"
