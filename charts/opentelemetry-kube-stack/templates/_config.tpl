@@ -12,10 +12,6 @@ the config is written as YAML.
 {{- $config = (include "opentelemetry-kube-stack.collector.appendPrometheusScrapeFile" . | fromYaml) }}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- if .collector.presets.kubernetesAttributes.enabled }}
-{{- $config = (include "opentelemetry-kube-stack.collector.applyKubernetesAttributesConfig" (dict "collector" $collector) | fromYaml) }}
-{{- $_ := set $collector "config" $config }}
-{{- end }}
 {{- if .collector.presets.logsCollection.enabled }}
 {{- $_ := set $collector "exclude" (list (printf "/var/log/pods/%s_%s*_*/otc-container/*.log" .namespace (include "opentelemetry-kube-stack.collectorFullname" .))) }}
 {{- $config = (include "opentelemetry-kube-stack.collector.applyLogsCollectionConfig" (dict "collector" $collector) | fromYaml) -}}
