@@ -206,6 +206,9 @@ priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- if .Values.runtimeClassName }}
 runtimeClassName: {{ .Values.runtimeClassName | quote }}
 {{- end }}
+{{- if .Values.terminationGracePeriodSeconds }}
+terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+{{- end }}
 volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}
   - name: {{ include "opentelemetry-collector.lowercase_chartname" . }}-configmap
