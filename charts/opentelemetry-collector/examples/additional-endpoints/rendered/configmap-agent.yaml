@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.130.8
+    helm.sh/chart: opentelemetry-collector-0.130.9
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.147.0"
@@ -183,6 +183,15 @@ data:
             X-Coralogix-Distribution: helm-otel-integration/1.0
             x-coralogix-ingress: metadata-as-otlp-logs/v1
         private_key: ${CORALOGIX_PRIVATE_KEY}
+        sending_queue:
+          batch:
+            flush_timeout: 250ms
+            max_size: 2097152
+            min_size: 1048576
+          enabled: true
+          num_consumers: 20
+          queue_size: 52428800
+          sizer: bytes
         subsystem_name: catalog
         timeout: 30s
       coralogix/resource_catalog_coralogixsg_com:
@@ -193,6 +202,15 @@ data:
             X-Coralogix-Distribution: helm-otel-integration/1.0
             x-coralogix-ingress: metadata-as-otlp-logs/v1
         private_key: ${env:CORALOGIX_PRIVATE_KEY_AP2}
+        sending_queue:
+          batch:
+            flush_timeout: 250ms
+            max_size: 2097152
+            min_size: 1048576
+          enabled: true
+          num_consumers: 20
+          queue_size: 52428800
+          sizer: bytes
         subsystem_name: catalog
         timeout: 30s
       coralogix/resource_catalog_myeu2:
@@ -203,6 +221,15 @@ data:
             X-Coralogix-Distribution: helm-otel-integration/1.0
             x-coralogix-ingress: metadata-as-otlp-logs/v1
         private_key: ${env:CORALOGIX_PRIVATE_KEY_EU2}
+        sending_queue:
+          batch:
+            flush_timeout: 250ms
+            max_size: 2097152
+            min_size: 1048576
+          enabled: true
+          num_consumers: 20
+          queue_size: 52428800
+          sizer: bytes
         subsystem_name: catalog
         timeout: 30s
       coralogix/resource_catalog_private_coralogix_com:
@@ -213,6 +240,15 @@ data:
             X-Coralogix-Distribution: helm-otel-integration/1.0
             x-coralogix-ingress: metadata-as-otlp-logs/v1
         private_key: ${env:CORALOGIX_PRIVATE_KEY_US2}
+        sending_queue:
+          batch:
+            flush_timeout: 250ms
+            max_size: 2097152
+            min_size: 1048576
+          enabled: true
+          num_consumers: 20
+          queue_size: 52428800
+          sizer: bytes
         subsystem_name: catalog
         timeout: 30s
       debug: {}
@@ -223,7 +259,7 @@ data:
         agent_description:
           include_resource_attributes: true
           non_identifying_attributes:
-            helm.chart.opentelemetry-collector.version: 0.130.8
+            helm.chart.opentelemetry-collector.version: 0.130.9
         server:
           http:
             endpoint: https://ingress.coralogix.com/opamp/v1
@@ -234,7 +270,7 @@ data:
         agent_description:
           include_resource_attributes: true
           non_identifying_attributes:
-            helm.chart.opentelemetry-collector.version: 0.130.8
+            helm.chart.opentelemetry-collector.version: 0.130.9
         server:
           http:
             endpoint: https://ingress.coralogixsg.com/opamp/v1
@@ -245,7 +281,7 @@ data:
         agent_description:
           include_resource_attributes: true
           non_identifying_attributes:
-            helm.chart.opentelemetry-collector.version: 0.130.8
+            helm.chart.opentelemetry-collector.version: 0.130.9
         server:
           http:
             endpoint: https://ingress.eu2.coralogix.com/opamp/v1
@@ -256,7 +292,7 @@ data:
         agent_description:
           include_resource_attributes: true
           non_identifying_attributes:
-            helm.chart.opentelemetry-collector.version: 0.130.8
+            helm.chart.opentelemetry-collector.version: 0.130.9
         server:
           http:
             endpoint: https://ingress.private.coralogix.com/opamp/v1

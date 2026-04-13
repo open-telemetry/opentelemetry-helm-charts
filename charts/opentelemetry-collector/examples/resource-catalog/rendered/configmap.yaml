@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.130.8
+    helm.sh/chart: opentelemetry-collector-0.130.9
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.147.0"
@@ -23,6 +23,15 @@ data:
             X-Coralogix-Distribution: helm-otel-integration/
             x-coralogix-ingress: metadata-as-otlp-logs/v1
         private_key: ${CORALOGIX_PRIVATE_KEY}
+        sending_queue:
+          batch:
+            flush_timeout: 250ms
+            max_size: 2097152
+            min_size: 1048576
+          enabled: true
+          num_consumers: 20
+          queue_size: 52428800
+          sizer: bytes
         subsystem_name: catalog
         timeout: 30s
       debug: {}
