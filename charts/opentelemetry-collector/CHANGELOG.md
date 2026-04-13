@@ -5,6 +5,7 @@
 ### v0.130.9 / 2026-04-13
 
 - [Fix] Enable byte-sized Coralogix resource catalog exporter queue batching by default.
+- [Fix] Bump queue size from 50mib to 200mib in batch queue for resource catalog exporter.
 
 ### v0.130.8 / 2026-04-10
 
