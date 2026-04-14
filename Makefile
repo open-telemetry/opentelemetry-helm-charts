@@ -5,11 +5,14 @@ MAX_PARALLEL_EXAMPLES ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/n
 # Reusable parallel execution with ordered logging utility
 define run_parallel_with_logging
 	RUNNING_JOBS=0; \
+	FAILED=0; \
 	EXAMPLE_ORDER=""; \
 	mkdir -p $(TMP_DIRECTORY)/logs; \
 	for example in $(1); do \
 		while [ $$RUNNING_JOBS -ge $(MAX_PARALLEL_EXAMPLES) ]; do \
-			wait -n 2>/dev/null || true; \
+			if ! wait -n 2>/dev/null; then \
+				FAILED=1; \
+			fi; \
 			RUNNING_JOBS=$$(($$RUNNING_JOBS - 1)); \
 		done; \
 		EXAMPLE_ORDER="$${EXAMPLE_ORDER} $${example}"; \
@@ -19,7 +22,12 @@ define run_parallel_with_logging
 		} & \
 		RUNNING_JOBS=$$(($$RUNNING_JOBS + 1)); \
 	done; \
-	wait; \
+	while [ $$RUNNING_JOBS -gt 0 ]; do \
+		if ! wait -n 2>/dev/null; then \
+			FAILED=1; \
+		fi; \
+		RUNNING_JOBS=$$(($$RUNNING_JOBS - 1)); \
+	done; \
 	for example in $${EXAMPLE_ORDER}; do \
 		LOG_FILE="$(TMP_DIRECTORY)/logs/$(2)-$${example}.log"; \
 		if [ -f "$${LOG_FILE}" ]; then \
@@ -28,7 +36,8 @@ define run_parallel_with_logging
 			rm -f "$${LOG_FILE}"; \
 		fi; \
 	done; \
-	rm -rf $(TMP_DIRECTORY)/logs
+	rm -rf $(TMP_DIRECTORY)/logs; \
+	test $$FAILED -eq 0
 endef
 
 .PHONY: generate-examples
@@ -68,7 +77,6 @@ check-examples:
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
 		EXAMPLES=$$(find $${EXAMPLES_DIR} -type d -maxdepth 1 -mindepth 1 -exec basename \{\} \;); \
 		helm dependency build charts/$${chart_name}; \
-		EXIT_CODE=0; \
 		$(call run_parallel_with_logging,$${EXAMPLES},$${chart_name}, \
 			echo "Checking example: $${example}"; \
 			EXAMPLE_TMP="${TMP_DIRECTORY}/check-$${chart_name}-$${example}"; \
@@ -88,14 +96,10 @@ check-examples:
 				printf "Passed $${example}\n"; \
 			else \
 				printf "Failed $${example}. run 'make generate-examples' to re-render the example with the latest $${example}/values.yaml\n"; \
-				EXIT_CODE=1; \
+				exit 1; \
 			fi; \
 			rm -rf "$${EXAMPLE_TMP}" \
 		); \
-		if [ $$EXIT_CODE -ne 0 ]; then \
-			echo "Some examples failed for chart: $${chart_name}"; \
-			exit 1; \
-		fi; \
 		echo "All examples passed for chart: $${chart_name}"; \
 	done
 

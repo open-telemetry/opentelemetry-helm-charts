@@ -2,7 +2,12 @@ name: Validate OpenTelemetry Collector Configurations
 
 on:
   pull_request:
+    branches:
+      - main
     paths:
+      - '.github/actions/setup/**'
+      - '.github/workflows/validate-collector.yaml'
+      - 'Makefile'
       - 'charts/opentelemetry-collector/**'
   workflow_dispatch:
 
@@ -15,6 +20,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          create-kind-cluster: "false"
+
       - name: Validate OpenTelemetry Collector configurations
         run: make validate-examples
-        working-directory: .
+
+      - name: Check rendered OpenTelemetry Collector examples
+        run: make check-examples CHARTS=opentelemetry-collector
