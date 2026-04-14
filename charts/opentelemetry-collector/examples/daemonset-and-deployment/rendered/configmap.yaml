@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/configmap-agent.yaml
+# Source: opentelemetry-collector/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.130.11
@@ -19,90 +19,29 @@ data:
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
+      k8s_observer:
+        auth_type: serviceAccount
+        observe_pods: true
     processors:
-      ecsattributes/container-logs:
-        container_id:
-          sources:
-          - log.file.path
-          - container.id
-      k8sattributes/profiles:
-        extract:
-          labels:
-          - from: pod
-            key: app.kubernetes.io/name
-            tag_name: k8s.label.name
-          - from: pod
-            key: app.kubernetes.io/instance
-            tag_name: k8s.label.instance
-          metadata:
-          - k8s.namespace.name
-          - k8s.replicaset.name
-          - k8s.statefulset.name
-          - k8s.daemonset.name
-          - k8s.deployment.name
-          - k8s.cronjob.name
-          - k8s.job.name
-          - k8s.pod.name
-          - k8s.node.name
-          - container.id
-          - k8s.container.name
-          - service.version
-          otel_annotations: true
-        filter:
-          node_from_env_var: K8S_NODE_NAME
-        passthrough: false
-        pod_association:
-        - sources:
-          - from: resource_attribute
-            name: container.id
+      filter/k8s_apiserver_metrics:
+        metrics:
+          metric:
+          - resource.attributes["service.name"] == "kubernetes-apiserver" and name !=
+            "kubernetes_build_info"
       memory_limiter:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      transform/profiles:
-        profile_statements:
-        - set(resource.attributes["service.name"], resource.attributes["k8s.label.instance"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.instance"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.label.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.label.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.deployment.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.deployment.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.replicaset.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.replicaset.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.statefulset.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.statefulset.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.daemonset.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.daemonset.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.cronjob.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.cronjob.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.job.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.job.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.pod.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.name"]
-          != nil
-        - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"])
-          where resource.attributes["service.name"] == nil and resource.attributes["k8s.container.name"]
-          != nil
-      transform/profiles-ecs-service-name:
-        profile_statements:
-        - context: resource
-          statements:
-          - set(resource.attributes["service.name"], resource.attributes["aws.ecs.task.definition.family"])
-            where (resource.attributes["service.name"] == nil or resource.attributes["service.name"]
-            == "") and resource.attributes["aws.ecs.task.definition.family"] != nil and
-            resource.attributes["aws.ecs.task.definition.family"] != ""
-          - set(resource.attributes["service.name"], resource.attributes["aws.ecs.container.name"])
-            where (resource.attributes["service.name"] == nil or resource.attributes["service.name"]
-            == "") and resource.attributes["aws.ecs.container.name"] != nil and resource.attributes["aws.ecs.container.name"]
-            != ""
+      resourcedetection/env:
+        detectors:
+        - system
+        - env
+        override: false
+        system:
+          resource_attributes:
+            host.id:
+              enabled: true
+        timeout: 2s
       transform/prometheus:
         error_mode: ignore
         metric_statements:
@@ -169,16 +108,35 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      prometheus/k8s_apiserver_metrics:
+        config:
+          scrape_configs:
+          - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            honor_timestamps: true
+            job_name: kubernetes-apiserver
+            kubernetes_sd_configs:
+            - role: endpoints
+            relabel_configs:
+            - action: keep
+              regex: default;kubernetes;https
+              source_labels:
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_service_name
+              - __meta_kubernetes_endpoint_port_name
+            scheme: https
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: true
     service:
       extensions:
       - health_check
+      - k8s_observer
       pipelines:
         logs:
           exporters:
           - debug
           processors:
           - memory_limiter
-          - ecsattributes/container-logs
           receivers:
           - otlp
         metrics:
@@ -186,31 +144,23 @@ data:
           - debug
           processors:
           - memory_limiter
+          - resourcedetection/env
+          - filter/k8s_apiserver_metrics
           - transform/prometheus
           receivers:
+          - prometheus/k8s_apiserver_metrics
           - prometheus
-          - otlp
-        profiles:
-          exporters:
-          - debug
-          processors:
-          - memory_limiter
-          - ecsattributes/container-logs
-          - transform/profiles-ecs-service-name
-          receivers:
           - otlp
         traces:
           exporters:
           - debug
           processors:
           - memory_limiter
-          - ecsattributes/container-logs
           receivers:
           - otlp
       telemetry:
         logs:
           encoding: json
-          level: info
         metrics:
           readers:
           - pull:

@@ -91,10 +91,11 @@ Determine the container image to use based on presets and user overrides.
 {{- define "opentelemetry-collector.image" }}
 {{- $imageRepository := "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib" }}
 {{- $imageTag := .Chart.AppVersion }}
-{{- if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) (not .Values.collectorCRD.generate)) }}
+{{- if (and (.Values.presets.ebpfProfiler.enabled) (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) (not .Values.collectorCRD.generate)) }}
+{{- $imageRepository = "cgx.jfrog.io/coralogix-docker-images/coralogix-otel-supervised-ebpf-profiler" }}
+{{- else if (and (.Values.presets.fleetManagement.enabled) (.Values.presets.fleetManagement.supervisor.enabled) (not .Values.collectorCRD.generate)) }}
 {{- $imageRepository = "cgx.jfrog.io/coralogix-docker-images/coralogix-otel-supervised-collector" }}
-{{- end }}
-{{- if .Values.presets.ebpfProfiler.enabled }}
+{{- else if .Values.presets.ebpfProfiler.enabled }}
 {{- $imageRepository = "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-ebpf-profiler" }}
 {{- end }}
 {{- if .Values.image.repository }}

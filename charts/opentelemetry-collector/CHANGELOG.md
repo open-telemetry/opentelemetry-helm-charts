@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.130.11 / 2026-04-13
+
+- [Fix] Use the dedicated supervised eBPF profiler image and managed collector executable when `presets.ebpfProfiler` and `presets.fleetManagement.supervisor` are both enabled.
+
 ### v0.130.9 / 2026-04-13
 
 - [Fix] Enable byte-sized Coralogix resource catalog exporter queue batching by default.

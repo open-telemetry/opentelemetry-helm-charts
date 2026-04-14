@@ -27,7 +27,7 @@ capabilities:
   reports_remote_config: true
 
 agent:
-  executable: /otelcol-contrib
+  executable: {{ if and .Values.presets.ebpfProfiler.enabled (not .Values.isWindows) }}/otelcol-ebpf-profiler{{ else }}/otelcol-contrib{{ end }}
   config_apply_timeout: 30s
   passthrough_logs: true
 
