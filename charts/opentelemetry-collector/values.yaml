@@ -94,8 +94,14 @@ presets:
     metrics:
       enabled: false
   # Configures the collector to collect profiling data.
-  # Adds profiles pipeline with the profiling receiver.
+  # Adds profiles pipeline with the profiling receiver,
   # and adds the necessary volumes, security context and host PID access.
+  #
+  # Warning: The profiling receiver requires privileged access and hostPID,
+  # so it should be used with a dedicated collector distribution (e.g. otelcol-ebpf-profiler)
+  # rather than the general-purpose k8s distribution. This avoids granting elevated privileges
+  # to the same collector that handles metrics, traces, and logs.
+  # See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler for more details.
   profiling:
     enabled: false
 
