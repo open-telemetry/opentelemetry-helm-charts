@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.102.0 to 0.103.0
+## 0.109.x to 0.110.0
 
 ### Migration from kube-rbac-proxy to controller-runtime metrics
 
@@ -70,9 +70,14 @@ manager:
       cpu: 100m
       memory: 64Mi
 
-  # Note: manager.metrics replaced kubeRBACProxy in version 0.103.0
-  metrics:
-    secure: true
+kubeRBACProxy:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 5m
+      memory: 64Mi
 ```
 
 ## 0.74.0 to 0.74.1
