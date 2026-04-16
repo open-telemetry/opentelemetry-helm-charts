@@ -1,3 +1,4 @@
+{{- if and (.Values.configMap.create) (not .Values.configMap.existingName) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,3 +12,4 @@ data:
       $defaultConfig := dict "collector_namespace" .Release.Namespace
     -}}
     {{- mergeOverwrite $defaultConfig .Values.targetAllocator.config | toYaml | nindent 4 }}
+{{- end }}

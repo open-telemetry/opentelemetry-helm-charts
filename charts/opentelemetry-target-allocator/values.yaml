@@ -1,11 +1,14 @@
 ################################################################################
 # Target Allocator
 #
-# The Target Allocator is running as a deployment with a replica count of 1.
+# The Target Allocator can run as a deployment or a statefulset.
 # It discovers scraping configurations from ServiceMonitor and PodMonitor CRDs and
 # assigns them to collectors.
 # Related documentation: https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
 ################################################################################
+
+# Valid values are "deployment" and "statefulset".
+mode: "deployment"
 
 # nameOverride replaces the name of the chart, when this is used to construct
 # Kubernetes object names.
@@ -13,8 +16,18 @@ nameOverride: ""
 # fullnameOverride completely replaces the generated name.
 fullnameOverride: ""
 
-# Number of replicas for the target allocator deployment
+# Number of replicas for the target allocator
 replicaCount: 1
+
+configMap:
+  # Specifies whether a configMap should be created (true by default)
+  create: true
+  # Specifies an existing ConfigMap to be mounted to the pod
+  # The ConfigMap MUST include the configuration via a key named 'targetallocator.yaml'. If not you can additionaly set existingKey to the desired one in the configmap
+  existingName: ""
+  # If the key in your provided configmap does not match 'targetallocator.yaml' you can set here the custom one
+  # existingKey: demo-key
+  # You can also set create: false and dont specify a existing one, but than you have to provide custom config volume mount via the mounts below and mount it to /conf/targetallocator.yaml, otherwhise the pod wont start
 
 targetAllocator:
   image:
@@ -82,11 +95,52 @@ targetAllocator:
   # Pod labels to add to the target allocator pod
   podLabels: {}
 
+  # Extra environment variables to set in the target allocator container.
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  extraEnvs: []
+  # extraEnvs:
+  #   - name: MY_VAR
+  #     value: "my-value"
+  #   - name: MY_SECRET_VAR
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: my-secret
+  #         key: my-key
+
 affinity: {}
 tolerations: []
 nodeSelector: {}
 topologySpreadConstraints: []
 
+# statefulset specific configuration, only used when mode is "statefulset"
+statefulset:
+  # volumeClaimTemplates for the statefulset
+  volumeClaimTemplates: []
+  #  - metadata:
+  #      name: data
+  #    spec:
+  #      accessModes: [ "ReadWriteOnce" ]
+  #      resources:
+  #        requests:
+  #          storage: 1Gi
+  podManagementPolicy: "Parallel"
+  # Controls if and how PVCs created by the StatefulSet are deleted.
+  # Available in Kubernetes 1.23+.
+  persistentVolumeClaimRetentionPolicy:
+    enabled: false
+    whenDeleted: Retain
+    whenScaled: Retain
 
+extraVolumes: []
+  # - name: custom-ta-configmap
+  #   configMap:
+  #     name: demo-configmap
+  #     items:
+  #       - key: demo-key
+  #         path: targetallocator.yaml
+  #     defaultMode: 420
+extraVolumeMounts: []
+  # - name: custom-ta-configmap
+  #   mountPath: /conf
 ## This will deploy arbitrary manifests as part of the helm relase
 extraObjects: []

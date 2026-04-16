@@ -6,10 +6,10 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.144.0
+    helm.sh/chart: opentelemetry-collector-0.149.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.144.0"
+    app.kubernetes.io/version: "0.149.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 31f30b6bc380749267b4fe875a3fd9b98a96ccbcb0860354e59016c8e7c37192
+        checksum/config: ad8304ee2d9aaf447a3e51e5574970a0a0ef5afeb4073f2db74f0edc6d539b6e
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -46,7 +46,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.144.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.149.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -76,6 +76,29 @@ spec:
               hostPort: 9411
           env:
             - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: OTEL_K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: OTEL_K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: OTEL_K8S_POD_IP
               valueFrom:
                 fieldRef:
                   apiVersion: v1

@@ -40,6 +40,10 @@
         ""
       ]
     },
+    "apiVersion": {
+      "type": "string",
+      "description": "Override the default apiVersion for custom controllers or testing new API versions. Applies to daemonset, deployment, and statefulset modes."
+    },
     "namespaceOverride": {
       "type": "string",
       "description": "Name of the namespace to deploy the resources into."
@@ -730,7 +734,9 @@
         "trafficDistribution": {
           "type": "string",
           "enum": [
-            "PreferClose"
+            "PreferClose",
+            "PreferSameZone",
+            "PreferSameNode"
           ]
         },
         "type": {
@@ -1281,6 +1287,7 @@
     }
   },
   "required": [
+    "apiVersion",
     "mode"
   ]
 }

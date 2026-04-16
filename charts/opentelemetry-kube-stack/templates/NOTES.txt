@@ -1,30 +1,66 @@
-{{- range $name, $collector := .Values.collectors }}
-{{- if $.Values.defaultCRConfig.enabled }}
-{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
-{{- end }}
-{{- if $collector.updateStrategy }}
-[WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1. Please migrate to use the `daemonSetUpdateStrategy` value.
-{{- end }}
-{{- end }}
 OpenTelemetry Kube Stack Helm Chart installation completed successfully!
 
 With the features you've enabled, you can:
-{{ range $_, $collector := $.Values.collectors -}}
+
+{{- if .Values.instrumentation.enabled }}
+
+* Auto-instrument and auto-configure applications:
+   Add this annotation to your pod specs to inject the OTel SDK and automatic configuration:
+      instrumentation.opentelemetry.io/inject-<language>: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+   Replace <language> with: dotnet, go, java, nodejs, python, etc.
+
+* Manually instrument and auto-configure applications:
+   Bundle the OTel SDK in your application containers, then add this annotation for auto-configuration
+   through environment variable injection:
+      instrumentation.opentelemetry.io/inject-sdk: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+
+{{ end -}}
+* Manually instrument and manually configure applications:
+   Bundle the OTel SDK in your application containers and manually configure them using:
+{{- range $_, $collector := $.Values.collectors -}}
 {{- if $.Values.defaultCRConfig.enabled }}
 {{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
 {{- end }}
 {{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)  "kubelet" $.Values.kubelet "clusterName" $.Values.clusterName) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
-{{ range $_, $protocol := list "grpc" "http" -}}
+{{- range $_, $protocol := list "grpc" "http" -}}
 {{ $endpoint := dig "receivers" "otlp" "protocols" $protocol "endpoint" "" $collector.config}}
 {{- if and $collector.enabled (ne $endpoint "") -}}
-{{- $port := regexFind ":[0-9]+$" $endpoint -}}
-* Send OTLP to '{{$fullname}}-collector.{{ include "opentelemetry-kube-stack.namespace" $ }}.svc.cluster.local{{$port}}' ({{$protocol}})
-{{ end -}}
+{{- $port := regexFind ":[0-9]+$" $endpoint }}
+   - {{ $protocol }}: {{ $fullname }}-collector.{{ include "opentelemetry-kube-stack.namespace" $ }}.svc.cluster.local{{ $port }}
 {{- end -}}
-{{- end -}}
-{{- if .Values.instrumentation.enabled -}}
-* Annotate your pods with: 'instrumentation.opentelemetry.io/inject-<<language>>: {{.Release.Namespace}}/{{ include "opentelemetry-kube-stack.instrumentation" . }}' to auto-instrument them
-{{ end }}
+{{- end }}
 
-Happy observing!
+Learn more about application automatic instrumentation:
+https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annotations-to-existing-deployments
+{{ end -}}
+
+{{- range $name, $collector := .Values.collectors }}
+{{- if $.Values.defaultCRConfig.enabled }}
+{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- end }}
+{{- if $collector.updateStrategy }}
+
+[WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1.
+          Please migrate to use the `daemonSetUpdateStrategy` value.
+{{- end }}
+{{- end }}
+
+{{- $operatorValues := index .Values "opentelemetry-operator" }}
+{{- $operatorEnabled := dig "enabled" true $operatorValues }}
+{{- $certManagerEnabled := dig "admissionWebhooks" "certManager" "enabled" true $operatorValues }}
+{{- $autoGenerateCertEnabled := dig "admissionWebhooks" "autoGenerateCert" "enabled" true $operatorValues }}
+{{- $certPeriodDays := dig "admissionWebhooks" "autoGenerateCert" "certPeriodDays" 365 $operatorValues }}
+{{- $recreateCert := dig "admissionWebhooks" "autoGenerateCert" "recreate" true $operatorValues }}
+{{- if and $operatorEnabled (not $certManagerEnabled) $autoGenerateCertEnabled }}
+
+[WARNING] The OpenTelemetry Operator is using auto-generated certificates (valid for {{ $certPeriodDays }} days from installation).
+          After expiration, the Operator's admission webhooks will stop working and the Operator will become non-functional.
+          {{- if $recreateCert }}
+          Certificates can be renewed by running `helm upgrade`.
+          {{- end }}
+          For production environments, it is strongly recommended to use cert-manager instead of auto-generated certificates.
+          More details: https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/README.md#tls-certificate-requirement
+{{- end }}
+
+ Happy observing!

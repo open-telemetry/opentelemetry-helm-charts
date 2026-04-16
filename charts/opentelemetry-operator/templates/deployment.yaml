@@ -45,16 +45,8 @@ spec:
       {{- end }}
       containers:
         - args:
-            - --metrics-addr=0.0.0.0:{{ if .Values.metricsServer.secure }}{{ .Values.metricsServer.port }}{{ else }}{{ .Values.manager.ports.metricsPort }}{{ end }}
-            {{- if .Values.metricsServer.secure }}
-            - --metrics-secure=true
-            {{- if .Values.metricsServer.tls.certFile }}
-            - --metrics-tls-cert-file={{ .Values.metricsServer.tls.certFile }}
-            {{- end }}
-            {{- if .Values.metricsServer.tls.keyFile }}
-            - --metrics-tls-key-file={{ .Values.metricsServer.tls.keyFile }}
-            {{- end }}
-            {{- end }}
+            - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
+            - --metrics-secure=false
             {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
             {{- end }}
@@ -91,6 +83,9 @@ spec:
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
             - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.nginx.repository .Values.manager.autoInstrumentationImage.nginx.tag }}
+            - --auto-instrumentation-nginx-image={{ .Values.manager.autoInstrumentationImage.nginx.repository }}:{{ .Values.manager.autoInstrumentationImage.nginx.tag }}
             {{- end }}
             {{- if .Values.manager.ignoreMissingCollectorCRDs }}
             - --ignore-missing-collector-crds=true

@@ -50,7 +50,7 @@ manager:
     imagePullPolicy: IfNotPresent
   collectorImage:
     repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
-    tag: 0.144.0
+    tag: 0.148.0
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -71,6 +71,9 @@ manager:
       repository: ""
       tag: ""
     apacheHttpd:
+      repository: ""
+      tag: ""
+    nginx:
       repository: ""
       tag: ""
     # To enable Go instrumentation, manager.autoInstrumentation.go.enabled must be set to true
@@ -400,3 +403,13 @@ testFramework:
   #   requests:
   #     cpu: 10m
   #     memory: 64Mi
+
+## Extra manifests to deploy as an array
+## Supports tpl syntax for templating
+extraObjects: []
+  # - apiVersion: v1
+  #   kind: ConfigMap
+  #   metadata:
+  #     name: '{{ include "opentelemetry-operator.fullname" . }}-extra'
+  #   data:
+  #     key: value

@@ -1474,6 +1474,43 @@
                   }
                 }
               }
+            },
+            "resourceDetection": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Configures resource detection processors. Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included.",
+              "properties": {
+                "eks": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Enables the EKS resource detector to detect k8s.cluster.name and AWS resource attributes.",
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "aks": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Enables the AKS resource detector to detect k8s.cluster.name and Azure resource attributes.",
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "gcp": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Enables the GCP resource detector to detect k8s.cluster.name and GCP resource attributes.",
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -1641,6 +1678,9 @@
           "$ref": "#/$defs/Ingress"
         },
         "hostNetwork": {
+          "type": "boolean"
+        },
+        "hostPID": {
           "type": "boolean"
         },
         "shareProcessNamespace": {
@@ -2232,15 +2272,13 @@
       ]
     },
     "Quantity": {
-      "properties": {
-        "Format": {
+      "oneOf": [
+        {
           "type": "string"
+        },
+        {
+          "type": "number"
         }
-      },
-      "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "Format"
       ]
     },
     "QuobyteVolumeSource": {
@@ -3509,6 +3547,9 @@
         "hostNetwork": {
           "type": "boolean"
         },
+        "hostPID": {
+          "type": "boolean"
+        },
         "priorityClassName": {
           "type": "string"
         },
@@ -3819,11 +3860,15 @@
         },
         "metricRelabelings": {
           "type": "array",
-          "items": {}
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
         },
         "relabelings": {
           "type": "array",
-          "items": {}
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
         },
         "additionalLabels": {
           "$ref": "#/$defs/AdditionalLabels"
@@ -3860,11 +3905,15 @@
         },
         "dnsmasqMetricRelabelings": {
           "type": "array",
-          "items": {}
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
         },
         "dnsmasqRelabelings": {
           "type": "array",
-          "items": {}
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
         },
         "scheme": {
           "type": "string"
@@ -3982,7 +4031,9 @@
         },
         "relabelings": {
           "type": "array",
-          "items": {}
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
         },
         "jobLabel": {
           "type": "string"
@@ -4022,13 +4073,20 @@
           "items": {
             "type": "string"
           }
+        },
+        "targetLabel": {
+          "type": "string"
+        },
+        "replacement": {
+          "type": "string"
+        },
+        "separator": {
+          "type": "string"
+        },
+        "modulus": {
+          "type": "integer"
         }
       },
-      "required": [
-        "action",
-        "regex",
-        "sourceLabels"
-      ],
       "title": "MetricRelabeling"
     },
     "Selector": {
