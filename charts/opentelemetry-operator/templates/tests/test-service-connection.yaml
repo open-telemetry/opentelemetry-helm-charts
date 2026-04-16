@@ -17,11 +17,7 @@ spec:
         - name: MANAGER_METRICS_SERVICE_CLUSTERIP
           value: "{{ include "opentelemetry-operator.fullname" . }}"
         - name: MANAGER_METRICS_SERVICE_PORT
-          {{- if .Values.metricsServer.secure }}
-          value: "{{ .Values.metricsServer.port }}"
-          {{- else }}
           value: "{{ .Values.manager.ports.metricsPort }}"
-          {{- end }}
       command:
         - sh
         - -c

@@ -6,13 +6,13 @@
 
 The OpenTelemetry Operator (v0.142.0+) has removed its dependency on kube-rbac-proxy. Metrics authentication is now handled by controller-runtime's built-in implementation.
 
-**Breaking Change:** The `kubeRBACProxy` configuration section has been removed and replaced with `metricsServer`.
+**Breaking Change:** The `kubeRBACProxy` configuration section has been removed. Metrics configuration is now under `manager.metrics` and `manager.ports.metricsPort`.
 
 **Migration Guide:**
 
-If you were using the default configuration (`kubeRBACProxy.enabled: true`), no action is required. The new default (`metricsServer.secure: false`) provides the same behavior with metrics exposed on port 8080 without authentication.
+If you were using the default configuration (`kubeRBACProxy.enabled: true`), no action is required. The new default (`manager.metrics.secure: true`) provides authenticated metrics on port 8443.
 
-If you need authenticated metrics access (equivalent to the old kube-rbac-proxy behavior), update your values.yaml:
+If you need unauthenticated metrics access, update your values.yaml:
 
 ```yaml
 # OLD (no longer supported)
@@ -22,19 +22,29 @@ kubeRBACProxy:
     proxyPort: 8443
 
 # NEW
-metricsServer:
-  secure: true
-  port: 8443
-  tls:
-    certFile: ""  # Optional: path to TLS cert
-    keyFile: ""   # Optional: path to TLS key
+manager:
+  ports:
+    metricsPort: 8080
+  metrics:
+    secure: false
+```
+
+If you also have the ServiceMonitor enabled, you will need to override the default `metricsEndpoints` to use plain HTTP:
+
+```yaml
+manager:
+  serviceMonitor:
+    enabled: true
+    metricsEndpoints:
+      - port: metrics
 ```
 
 **Key Changes:**
 - Deployment now has 1 container (manager only) instead of 2
-- Metrics port: 8080 (HTTP, default) or 8443 (HTTPS with `secure: true`)
-- RBAC: ClusterRole for `/metrics` access only created when `metricsServer.secure: true`
+- Metrics port configured via `manager.ports.metricsPort` (default: 8443)
+- RBAC: ClusterRole for `/metrics` access only created when `manager.metrics.secure: true`
 - TLS certificates: Auto-generated if not provided when secure mode is enabled
+- ServiceMonitor defaults to HTTPS scraping with bearer token auth to match the secure default
 
 For more details, see [upstream PR #4576](https://github.com/open-telemetry/opentelemetry-operator/pull/4576).
 
@@ -60,9 +70,9 @@ manager:
       cpu: 100m
       memory: 64Mi
 
-metricsServer:
-  # Note: metricsServer replaced kubeRBACProxy in version 0.103.0
-  secure: false
+  # Note: manager.metrics replaced kubeRBACProxy in version 0.103.0
+  metrics:
+    secure: true
 ```
 
 ## 0.74.0 to 0.74.1

@@ -12,7 +12,6 @@
     "clusterDomain",
     "pdb",
     "manager",
-    "metricsServer",
     "admissionWebhooks",
     "crds",
     "role",
@@ -174,7 +173,8 @@
         "rolling",
         "securityContext",
         "ignoreMissingCollectorCRDs",
-        "autoInstrumentation"
+        "autoInstrumentation",
+        "metrics"
       ],
       "additionalProperties": false,
       "properties": {
@@ -703,7 +703,7 @@
           },
           "examples": [
             {
-              "metricsPort": 8080,
+              "metricsPort": 8443,
               "webhookPort": 9443,
               "healthzPort": 8081
             }
@@ -1266,6 +1266,72 @@
               "additionalProperties": false
             }
           }
+        },
+        "metrics": {
+          "type": "object",
+          "default": {},
+          "title": "Metrics server configuration",
+          "required": [
+            "secure",
+            "tls"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "secure": {
+              "type": "boolean",
+              "default": true,
+              "title": "Enable authentication and authorization for metrics",
+              "description": "Corresponds to --metrics-secure flag in the operator",
+              "examples": [
+                true
+              ]
+            },
+            "tls": {
+              "type": "object",
+              "default": {},
+              "title": "TLS configuration for metrics server",
+              "required": [
+                "certFile",
+                "keyFile"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "certFile": {
+                  "type": "string",
+                  "default": "",
+                  "title": "Path to TLS certificate file",
+                  "description": "Corresponds to --metrics-tls-cert-file flag",
+                  "examples": [
+                    ""
+                  ]
+                },
+                "keyFile": {
+                  "type": "string",
+                  "default": "",
+                  "title": "Path to TLS private key file",
+                  "description": "Corresponds to --metrics-tls-key-file flag",
+                  "examples": [
+                    ""
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "certFile": "",
+                  "keyFile": ""
+                }
+              ]
+            }
+          },
+          "examples": [
+            {
+              "secure": true,
+              "tls": {
+                "certFile": "",
+                "keyFile": ""
+              }
+            }
+          ]
         }
       },
       "examples": [
@@ -1314,7 +1380,7 @@
           },
           "featureGates": "",
           "ports": {
-            "metricsPort": 8080,
+            "metricsPort": 8443,
             "webhookPort": 9443,
             "healthzPort": 8081
           },
@@ -1373,83 +1439,13 @@
             }
           },
           "rolling": false,
-          "securityContext": {}
-        }
-      ]
-    },
-    "metricsServer": {
-      "type": "object",
-      "default": {},
-      "title": "The metricsServer Schema",
-      "required": [
-        "secure",
-        "port",
-        "tls"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "secure": {
-          "type": "boolean",
-          "default": false,
-          "title": "Enable authentication and authorization for metrics",
-          "description": "Corresponds to --metrics-secure flag in the operator",
-          "examples": [
-            false
-          ]
-        },
-        "port": {
-          "type": "integer",
-          "default": 8443,
-          "title": "Port for the metrics server",
-          "description": "Use 8443 when secure is true, 8080 when false",
-          "examples": [
-            8443
-          ]
-        },
-        "tls": {
-          "type": "object",
-          "default": {},
-          "title": "TLS configuration for metrics server",
-          "required": [
-            "certFile",
-            "keyFile"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "certFile": {
-              "type": "string",
-              "default": "",
-              "title": "Path to TLS certificate file",
-              "description": "Corresponds to --metrics-tls-cert-file flag",
-              "examples": [
-                ""
-              ]
-            },
-            "keyFile": {
-              "type": "string",
-              "default": "",
-              "title": "Path to TLS private key file",
-              "description": "Corresponds to --metrics-tls-key-file flag",
-              "examples": [
-                ""
-              ]
-            }
-          },
-          "examples": [
-            {
+          "securityContext": {},
+          "metrics": {
+            "secure": true,
+            "tls": {
               "certFile": "",
               "keyFile": ""
             }
-          ]
-        }
-      },
-      "examples": [
-        {
-          "secure": false,
-          "port": 8443,
-          "tls": {
-            "certFile": "",
-            "keyFile": ""
           }
         }
       ]
@@ -2076,7 +2072,7 @@
         },
         "featureGates": "",
         "ports": {
-          "metricsPort": 8080,
+          "metricsPort": 8443,
           "webhookPort": 9443,
           "healthzPort": 8081
         },
@@ -2136,14 +2132,6 @@
         },
         "rolling": false,
         "securityContext": {}
-      },
-      "metricsServer": {
-        "secure": false,
-        "port": 8443,
-        "tls": {
-          "certFile": "",
-          "keyFile": ""
-        }
       },
       "admissionWebhooks": {
         "create": true,

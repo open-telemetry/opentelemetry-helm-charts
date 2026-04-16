@@ -37,8 +37,8 @@ spec:
       hostNetwork: false
       containers:
         - args:
-            - --metrics-addr=0.0.0.0:8080
-            - --metrics-secure=false
+            - --metrics-addr=0.0.0.0:8443
+            - --metrics-secure=true
             - --enable-leader-election
             - --health-probe-addr=:8081
             - --webhook-port=9443
@@ -57,7 +57,7 @@ spec:
           name: manager
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080
+            - containerPort: 8443
               name: metrics
               protocol: TCP
             - containerPort: 9443
