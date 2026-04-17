@@ -64,18 +64,11 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: Create OTelBot token
-        id: otelbot-token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
-        with:
-          app-id: ${{ vars.OTELBOT_APP_ID }}
-          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
-
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           fetch-depth: 0
-          token: ${{ steps.otelbot-token.outputs.token }}
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -86,7 +79,7 @@ jobs:
       - name: Update chart
         id: update
         env:
-          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.release_tag }}
           CHART_NAME: ${{ inputs.chart_name }}
           CHART_ROOT: ${{ inputs.chart_root }}
@@ -103,18 +96,20 @@ jobs:
           POST_UPDATE_ACTION: ${{ inputs.post_update_action }}
         run: .github/scripts/update-chart-app-version.sh
 
-      - name: Create pull request
+      - name: Use CLA approved github bot
         if: steps.update.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
-          BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
-          COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
-          STAGE_PATH: ${{ steps.update.outputs.stage_path }}
-          PR_TITLE: ${{ steps.update.outputs.pr_title }}
-          PR_BODY: ${{ steps.update.outputs.pr_body }}
         run: |
           git config user.name otelbot
           git config user.email 197425009+otelbot@users.noreply.github.com
+
+      - name: Push update branch if needed
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
+          COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
+          STAGE_PATH: ${{ steps.update.outputs.stage_path }}
+        run: |
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
 
           git checkout -B "${BRANCH_NAME}"
@@ -122,6 +117,26 @@ jobs:
           git commit -m "${COMMIT_MESSAGE}"
           git push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
 
+      - name: Create OTelBot token
+        if: steps.update.outputs.changed == 'true'
+        id: otelbot-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ vars.OTELBOT_APP_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-pull-requests: write
+
+      - name: Create pull request if needed
+        if: steps.update.outputs.changed == 'true'
+        env:
+          # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
+          PR_TITLE: ${{ steps.update.outputs.pr_title }}
+          PR_BODY: ${{ steps.update.outputs.pr_body }}
+        run: |
           pr_number="$(gh pr list --head "${BRANCH_NAME}" --base main --json number --jq '.[0].number // empty')"
           if [[ -n "${pr_number}" ]]; then
             gh pr edit "${pr_number}" \
