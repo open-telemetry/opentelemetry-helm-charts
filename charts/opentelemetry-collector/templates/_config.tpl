@@ -3169,6 +3169,11 @@ exporters:
     timeout: "30s"
     private_key: "{{ $endpoint.privateKey }}"
     domain: "{{ $endpoint.domain }}"
+    {{- with $.Values.presets.coralogixExporter.keepalive }}
+    domain_settings:
+      keepalive:
+{{ toYaml . | nindent 8 }}
+    {{- end }}
     logs:
       headers:
         X-Coralogix-Distribution: "{{ if eq $.Values.distribution "ecs" }}ecs-ec2-integration{{ else if eq $.Values.distribution "standalone" }}helm-otel-standalone{{ else if eq $.Values.distribution "macos" }}helm-otel-macos{{ else }}helm-otel-integration{{ end }}/{{ $endpoint.version }}"

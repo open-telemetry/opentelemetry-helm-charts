@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.130.12 / 2026-04-15
+
+- [Feat] Add optional `presets.coralogixExporter.keepalive` support so the chart only renders shared Coralogix exporter gRPC keepalive settings when explicitly configured.
+
 ### v0.130.11 / 2026-04-13
 
 - [Fix] Use the dedicated supervised eBPF profiler image and managed collector executable when `presets.ebpfProfiler` and `presets.fleetManagement.supervisor` are both enabled.

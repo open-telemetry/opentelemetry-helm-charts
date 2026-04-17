@@ -671,6 +671,21 @@ To override this behavior and retain the Collector configuration according to th
 When supervisor mode is enabled, `command.extraArgs` is passed to the managed Collector via the supervisor
 configuration's `agent.args` field instead of being appended to the `opampsupervisor` container command.
 
+### Configuration for Coralogix exporter keepalive
+
+The chart can pass shared gRPC keepalive settings to the Coralogix exporter by setting
+`presets.coralogixExporter.keepalive`. This block is omitted entirely unless configured, so existing
+deployments keep their current exporter configuration by default.
+
+```yaml
+presets:
+  coralogixExporter:
+    enabled: true
+    keepalive:
+      time: 30s
+      timeout: 10s
+```
+
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
