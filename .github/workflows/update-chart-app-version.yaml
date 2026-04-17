@@ -96,7 +96,7 @@ jobs:
           POST_UPDATE_ACTION: ${{ inputs.post_update_action }}
         run: .github/scripts/update-chart-app-version.sh
 
-      - name: Use CLA approved github bot
+      - name: Use CLA approved GitHub bot
         if: steps.update.outputs.changed == 'true'
         run: |
           git config user.name otelbot
@@ -110,12 +110,13 @@ jobs:
           COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
           STAGE_PATH: ${{ steps.update.outputs.stage_path }}
         run: |
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          auth_header="$(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 | tr -d '\n')"
 
           git checkout -B "${BRANCH_NAME}"
           git add "${STAGE_PATH}"
           git commit -m "${COMMIT_MESSAGE}"
-          git push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${auth_header}" \
+            push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
 
       - name: Create OTelBot token
         if: steps.update.outputs.changed == 'true'
