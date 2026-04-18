@@ -119,7 +119,7 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- $caCertEnc := "" }}
 {{- $certCrtEnc := "" }}
 {{- $certKeyEnc := "" }}
-{{- if .Values.admissionWebhooks.autoGenerateCert.enabled }}
+{{- if or (eq .Values.admissionWebhooks.certificateSource "helm-generated") (eq .Values.admissionWebhooks.certificateSource "prefer-cert-manager") }}
 {{- $prevSecret := (lookup "v1" "Secret" (include "opentelemetry-operator.namespace" .) (default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName )) }}
 {{- if and (not .Values.admissionWebhooks.autoGenerateCert.recreate) $prevSecret }}
 {{- $certCrtEnc = index $prevSecret "data" "tls.crt" }}
@@ -140,7 +140,10 @@ a cert is loaded from an existing secret or is provided via `.Values`
 {{- $certKeyEnc = b64enc $cert.Key }}
 {{- $caCertEnc = b64enc $ca.Cert }}
 {{- end }}
-{{- else }}
+{{- else if eq .Values.admissionWebhooks.certificateSource "self-signed" }}
+{{- if or (or (eq .Values.admissionWebhooks.certFile "") (eq .Values.admissionWebhooks.keyFile "")) (eq .Values.admissionWebhooks.caFile "")}}
+{{ fail "certFile, keyFile and caFile must be set when using self-signed as certificateSource" }}
+{{- end }}
 {{- $certCrtEnc = .Files.Get .Values.admissionWebhooks.certFile | b64enc }}
 {{- $certKeyEnc = .Files.Get .Values.admissionWebhooks.keyFile | b64enc }}
 {{- $caCertEnc = .Files.Get .Values.admissionWebhooks.caFile | b64enc }}
