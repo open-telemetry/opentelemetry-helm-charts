@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.152.1
+    helm.sh/chart: opentelemetry-collector-0.153.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.149.0"
@@ -55,10 +55,6 @@ data:
             name: k8s.pod.uid
         - sources:
           - from: connection
-      resourcedetection/env:
-        detectors:
-        - env
-        - k8snode
     receivers:
       k8s_cluster:
         collection_interval: 10s
@@ -75,7 +71,6 @@ data:
           exporters:
           - debug
           processors:
-          - resourcedetection/env
           - k8sattributes
           receivers:
           - k8sobjects
@@ -83,7 +78,6 @@ data:
           exporters:
           - debug
           processors:
-          - resourcedetection/env
           - k8sattributes
           receivers:
           - k8s_cluster
