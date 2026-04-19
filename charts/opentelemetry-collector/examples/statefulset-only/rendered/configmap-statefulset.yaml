@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-statefulset
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.151.1
+    helm.sh/chart: opentelemetry-collector-0.152.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.149.0"
@@ -26,6 +26,10 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resourcedetection/env:
+        detectors:
+        - env
+        - k8snode
     receivers:
       jaeger:
         protocols:
@@ -59,6 +63,7 @@ data:
           exporters:
           - debug
           processors:
+          - resourcedetection/env
           - memory_limiter
           - batch
           receivers:
@@ -67,6 +72,7 @@ data:
           exporters:
           - debug
           processors:
+          - resourcedetection/env
           - memory_limiter
           - batch
           receivers:
@@ -76,6 +82,7 @@ data:
           exporters:
           - debug
           processors:
+          - resourcedetection/env
           - memory_limiter
           - batch
           receivers:
