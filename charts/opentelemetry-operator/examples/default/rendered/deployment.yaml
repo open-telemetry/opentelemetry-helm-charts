@@ -4,9 +4,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.107.0
+    helm.sh/chart: opentelemetry-operator-0.110.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.146.0"
+    app.kubernetes.io/version: "0.148.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example
@@ -25,9 +25,9 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        helm.sh/chart: opentelemetry-operator-0.107.0
+        helm.sh/chart: opentelemetry-operator-0.110.0
         app.kubernetes.io/name: opentelemetry-operator
-        app.kubernetes.io/version: "0.146.0"
+        app.kubernetes.io/version: "0.148.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: opentelemetry-operator
         app.kubernetes.io/instance: example
@@ -37,12 +37,12 @@ spec:
       hostNetwork: false
       containers:
         - args:
-            - --metrics-addr=0.0.0.0:8080
-            - --metrics-secure=false
+            - --metrics-addr=0.0.0.0:8443
+            - --metrics-secure=true
             - --enable-leader-election
             - --health-probe-addr=:8081
             - --webhook-port=9443
-            - --collector-image=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.146.0
+            - --collector-image=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.148.0
           command:
             - /manager
           env:
@@ -52,11 +52,11 @@ spec:
                   fieldPath: spec.serviceAccountName
             - name: ENABLE_WEBHOOKS
               value: "true"
-          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.146.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.148.0"
           name: manager
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080
+            - containerPort: 8443
               name: metrics
               protocol: TCP
             - containerPort: 9443
@@ -80,25 +80,6 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
-          securityContext: 
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-        
-        - args:
-            - --secure-listen-address=0.0.0.0:8443
-            - --upstream=http://127.0.0.1:8080/
-            - --v=0
-          image: "quay.io/brancz/kube-rbac-proxy:v0.20.0"
-          name: kube-rbac-proxy
-          ports:
-            - containerPort: 8443
-              name: https
-              protocol: TCP
           securityContext: 
             allowPrivilegeEscalation: false
             capabilities:

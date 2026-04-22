@@ -1,5 +1,5 @@
 {{- if eq .Values.mode "deployment" -}}
-apiVersion: apps/v1
+apiVersion: {{ .Values.apiVersion }}
 kind: Deployment
 metadata:
   name: {{ include "opentelemetry-collector.fullname" . }}
@@ -13,7 +13,7 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-{{- if not .Values.autoscaling.enabled }}
+{{- if and (not .Values.autoscaling.enabled) (.Values.replicaCount) }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}

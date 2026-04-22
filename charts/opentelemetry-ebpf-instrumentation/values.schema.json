@@ -835,6 +835,48 @@
             "OnDelete"
           ],
           "example": "RollingUpdate"
+        },
+        "rollingUpdate": {
+          "type": "object",
+          "title": "Rolling Update Configuration",
+          "description": "Rolling update configuration for the DaemonSet. Only applies when type is 'RollingUpdate'.",
+          "additionalProperties": false,
+          "properties": {
+            "maxUnavailable": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "title": "Max Unavailable - Integer",
+                  "description": "The maximum number of DaemonSet pods that can be unavailable during the update as an absolute number",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "title": "Max Unavailable - Percentage",
+                  "description": "The maximum number of DaemonSet pods that can be unavailable during the update as a percentage (e.g., '10%')",
+                  "pattern": "^[0-9]+%$"
+                }
+              ],
+              "example": 1
+            },
+            "maxSurge": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "title": "Max Surge - Integer",
+                  "description": "The maximum number of DaemonSet pods that can be created over the desired number during the update as an absolute number",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "title": "Max Surge - Percentage",
+                  "description": "The maximum number of DaemonSet pods that can be created over the desired number during the update as a percentage (e.g., '10%')",
+                  "pattern": "^[0-9]+%$"
+                }
+              ],
+              "example": "10%"
+            }
+          }
         }
       }
     },

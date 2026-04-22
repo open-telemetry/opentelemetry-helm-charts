@@ -190,6 +190,14 @@ data:
       k8s_cluster:
         collection_interval: 10s
         k8s_leader_elector: k8s_leader_elector/k8s_cluster
+      kafkametrics:
+        brokers:
+        - kafka:9092
+        collection_interval: 10s
+        scrapers:
+        - brokers
+        - topics
+        - consumers
       kubeletstats:
         auth_type: serviceAccount
         collection_interval: 20s
@@ -249,6 +257,7 @@ data:
           - batch
           receivers:
           - otlp
+          - kafkametrics
           - spanmetrics
           - receiver_creator/metrics
           - hostmetrics
