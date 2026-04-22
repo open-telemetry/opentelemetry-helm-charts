@@ -2507,7 +2507,11 @@ processors:
 {{- else if eq $provider "gcp" }}
   {{- $catalogDetectors = (list "gcp") }}
 {{- else if eq $provider "on-prem" }}
-  {{- $catalogDetectors = (list) }}
+  {{- if $isK8s }}
+    {{- $catalogDetectors = (list "k8snode") }}
+  {{- else }}
+    {{- $catalogDetectors = (list) }}
+  {{- end }}
 {{- else }}
   {{/* Backward compatibility: no provider set = try all cloud providers (match resourcedetection/region) */}}
   {{- if $isK8s }}
@@ -2607,6 +2611,10 @@ processors:
           enabled: false
         k8s.cluster.name:
           enabled: false
+    {{- end }}
+    {{- if has "k8snode" $catalogDetectors }}
+    k8snode:
+      node_from_env_var: K8S_NODE_NAME
     {{- end }}
   {{- end }}
 exporters:
@@ -3415,7 +3423,11 @@ processors:
 {{- $isK8s := and (ne $distribution "standalone") (ne $distribution "ecs") (ne $distribution "macos") }}
 
 processors:
-  {{- $envDetectors := .Values.presets.resourceDetection.detectors.env | default (list "system" "env") }}
+  {{- $defaultEnvDetectors := list "system" "env" }}
+  {{- if and (eq $provider "on-prem") $isK8s }}
+    {{- $defaultEnvDetectors = list "env" "k8snode" "system" }}
+  {{- end }}
+  {{- $envDetectors := .Values.presets.resourceDetection.detectors.env | default $defaultEnvDetectors }}
   {{/* Determine cloud detectors based on provider */}}
   {{- $cloudDetectors := .Values.presets.resourceDetection.detectors.cloud }}
   {{- if not $cloudDetectors }}
@@ -3453,6 +3465,10 @@ processors:
     detectors: {{ $envDetectors | toJson }}
     timeout: 2s
     override: false
+    {{- if has "k8snode" $envDetectors }}
+    k8snode:
+      node_from_env_var: K8S_NODE_NAME
+    {{- end }}
     system:
       resource_attributes:
         host.id:

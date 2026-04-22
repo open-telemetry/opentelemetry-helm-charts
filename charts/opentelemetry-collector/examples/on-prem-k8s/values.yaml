@@ -1,0 +1,24 @@
+# On-prem Kubernetes (e.g. EKSA): empty distribution + provider on-prem should default
+# resourcedetection to k8snode for Infra Catalog and env pipelines.
+# kubernetesResources preset requires deployment or statefulset (not daemonset).
+mode: deployment
+
+replicaCount: 1
+
+distribution: ""
+provider: on-prem
+
+presets:
+  kubernetesResources:
+    enabled: true
+    periodicCollection:
+      enabled: false
+  kubernetesAttributes:
+    enabled: true
+  resourceDetection:
+    enabled: true
+
+config:
+  exporters:
+    coralogix:
+      domain: coralogix.com

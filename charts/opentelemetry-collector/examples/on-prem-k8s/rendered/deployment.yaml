@@ -1,0 +1,107 @@
+---
+# Source: opentelemetry-collector/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-opentelemetry-collector
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-collector-0.130.13
+    app.kubernetes.io/name: opentelemetry-collector
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.147.0"
+    app.kubernetes.io/managed-by: Helm
+    
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-collector
+      app.kubernetes.io/instance: example
+      component: standalone-collector
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: a1ac0713666f3a09045c74a742e089b4afebc9b49ec880770af1ea6c38a64537
+        
+      labels:
+        app.kubernetes.io/name: opentelemetry-collector
+        app.kubernetes.io/instance: example
+        component: standalone-collector
+        
+    spec:
+      
+      serviceAccountName: example-opentelemetry-collector
+      securityContext:
+        {}
+      containers:
+        - name: opentelemetry-collector
+          command:
+            - /otelcol-contrib
+            - --config=/conf/relay.yaml
+          securityContext:
+            {}
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.147.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: otlp
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "k8s.node.name=$(K8S_NODE_NAME)"
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          volumeMounts:
+            - mountPath: /conf
+              name: opentelemetry-collector-configmap
+            - mountPath: /etc/machine-id
+              mountPropagation: HostToContainer
+              name: etcmachineid
+              readOnly: true
+            - mountPath: /var/lib/dbus/machine-id
+              mountPropagation: HostToContainer
+              name: varlibdbusmachineid
+              readOnly: true
+      volumes:
+        - name: opentelemetry-collector-configmap
+          configMap:
+            name: example-opentelemetry-collector
+            items:
+              - key: relay
+                path: relay.yaml
+        - name: etcmachineid
+          hostPath:
+            path: /etc/machine-id
+        - name: varlibdbusmachineid
+          hostPath:
+            path: /var/lib/dbus/machine-id
+      nodeSelector:
+        kubernetes.io/os: linux
+      hostNetwork: false

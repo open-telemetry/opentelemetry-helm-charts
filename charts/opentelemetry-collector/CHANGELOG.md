@@ -2,6 +2,10 @@
 
 ## OpenTelemetry Collector
 
+### v0.130.13 / 2026-04-22
+
+- [Fix] On-prem Kubernetes (`provider: on-prem` with a K8s distribution) now defaults `resourcedetection/resource_catalog` detectors to `[k8snode]` and `resourcedetection/env` detectors to `[env, k8snode, system]`, restoring the Coralogix Infra Catalog node/pod relationships that broke after the provider-aware change in v0.129.2 (CDS-2925).
+
 ### v0.130.12 / 2026-04-15
 
 - [Feat] Add optional `presets.coralogixExporter.keepalive` support so the chart only renders shared Coralogix exporter gRPC keepalive settings when explicitly configured.
