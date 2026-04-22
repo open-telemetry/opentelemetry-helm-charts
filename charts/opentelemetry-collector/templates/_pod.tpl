@@ -182,8 +182,16 @@ containers:
       runAsGroup: {{ .Values.tenx.securityContext.runAsGroup | default 10001 }}
     args:
       - "run"
-      - "@run/input/forwarder/otel-collector/{{ .Values.tenx.kind }}"
-      - "@apps/edge/{{ if eq .Values.tenx.kind "report" }}reporter{{ else if eq .Values.tenx.kind "regulate" }}regulator{{ else }}optimizer{{ end }}"
+      {{- if eq .Values.tenx.kind "report" }}
+      - "@run/input/forwarder/otel-collector/report"
+      - "@apps/reporter"
+      {{- else }}
+      # kind=regulate or kind=optimize: both launch the flat apps/regulator
+      # module (1.0.7). apps/edge/optimizer was removed in 1.0.7 — optimize
+      # is now a regulator flag (regulatorOptimize env, below).
+      - "@run/input/forwarder/otel-collector/regulate"
+      - "@apps/regulator"
+      {{- end }}
       - "otelCollectorInputPath"
       - "{{ .Values.tenx.sockets.input }}"
       {{- if ne .Values.tenx.kind "report" }}
@@ -217,6 +225,13 @@ containers:
       {{- else if .Values.tenx.symbols.volume.enabled }}
       - name: TENX_SYMBOLS_PATH
         value: "/etc/tenx/symbols"
+      {{- end }}
+      {{- if eq .Values.tenx.kind "optimize" }}
+      # 1.0.7: optimize is a regulator flag, not a separate app.
+      # The regulator pipeline reads regulatorOptimize and flips
+      # encodeObjects on when true.
+      - name: regulatorOptimize
+        value: "true"
       {{- end }}
     resources:
       {{- toYaml .Values.tenx.resources | nindent 6 }}
