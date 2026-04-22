@@ -390,6 +390,14 @@ rules:
       - subjectaccessreviews
     verbs:
       - create
+{{ if .Values.manager.metrics.secure }}
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+{{- end }}
 
 {{ if .Values.manager.metrics.secure }}
 ---
