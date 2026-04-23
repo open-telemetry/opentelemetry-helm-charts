@@ -75,7 +75,11 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
-      {{- if or .Values.presets.kubeletMetrics.enabled (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset")) }}
+      {{- if or
+        .Values.presets.kubeletMetrics.enabled
+        (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset"))
+        (and (or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled) (eq .Values.mode "daemonset"))
+      }}
       - name: K8S_NODE_NAME
         valueFrom:
           fieldRef:
@@ -205,6 +209,9 @@ priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
 {{- if .Values.runtimeClassName }}
 runtimeClassName: {{ .Values.runtimeClassName | quote }}
+{{- end }}
+{{- if .Values.terminationGracePeriodSeconds }}
+terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
 {{- end }}
 volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}

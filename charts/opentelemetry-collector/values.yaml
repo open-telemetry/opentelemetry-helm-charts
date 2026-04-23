@@ -8,6 +8,9 @@ fullnameOverride: ""
 # Valid values are "daemonset", "deployment", and "statefulset".
 mode: ""
 
+# Override the default apiVersion for custom controllers or for testing new API versions.
+apiVersion: "apps/v1"
+
 # Specify which namespace should be used to deploy the resources into
 namespaceOverride: ""
 
@@ -323,6 +326,8 @@ priorityClassName: ""
 # Also useful for the pod security admissions plugins that rely on runtimeClassName
 runtimeClassName: ""
 
+terminationGracePeriodSeconds: 30
+
 extraEnvs: []
 extraEnvsFrom: []
 # This also supports template content, which will eventually be converted to yaml.
@@ -633,7 +638,7 @@ serviceMonitor:
   relabelings: []
   metricRelabelings: []
 
-# PodDisruptionBudget is used only if deployment enabled
+# PodDisruptionBudget is used only if mode is "deployment" or "statefulset"
 podDisruptionBudget:
   enabled: false
 #   minAvailable: 2
@@ -650,8 +655,12 @@ autoscaling:
   # Supply an array of custom metrics to be used for autoscaling. It includes externalMetrics, objectMetrics, and podsMetrics.
   additionalMetrics: []
 
-# Before enabling "verticalPodAutoscaler", please make sure the VerticalPodAutoscaler is installed in your cluster.
-# For more details, see https://kubernetes.io/docs/concepts/workloads/autoscaling/#vertical-pod-autoscaling
+# VerticalPodAutoscaler (VPA) is NOT part of the core Kubernetes API. Its CRDs and controller
+# components must be installed separately in the cluster before enabling this feature; this
+# chart does not install them. See the installation guide at
+# https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation
+# and https://kubernetes.io/docs/concepts/workloads/autoscaling/#vertical-pod-autoscaling
+# for more details.
 verticalPodAutoscaler:
   enabled: false
 

@@ -939,7 +939,14 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
-
+      kafkametrics:
+        scrapers:
+          - brokers
+          - topics
+          - consumers
+        brokers:
+          - kafka:9092
+        collection_interval: 10s
     exporters:
       otlp/jaeger:
         endpoint: jaeger:4317
@@ -1005,7 +1012,7 @@ opentelemetry-collector:
           processors: [memory_limiter, resourcedetection, resource, transform, batch]
           exporters: [otlp/jaeger, debug, spanmetrics]
         metrics:
-          receivers: [otlp, spanmetrics]
+          receivers: [otlp, kafkametrics, spanmetrics]
           processors: [memory_limiter, resourcedetection, resource, batch]
           exporters: [otlphttp/prometheus, debug]
         logs:
