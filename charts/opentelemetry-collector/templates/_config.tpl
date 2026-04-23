@@ -110,6 +110,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
+{{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -140,6 +143,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
+{{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -461,3 +467,75 @@ extensions:
     lease_name: {{ .leaseName }}
     lease_namespace: {{ .leaseNamespace }}
 {{- end }}
+
+{{- define "opentelemetry-collector.applyResourceDetectionConfig" -}}
+{{- $config := .config }}
+{{- $processors := get $config "processors" | default dict }}
+{{- $resourceDetectionProcessor := get $processors "resourcedetection/env" | default dict }}
+{{- $detectors := get $resourceDetectionProcessor "detectors" | default list }}
+{{- if .Values.Values.presets.resourceDetection.env.enabled }}
+{{- $detectors = append $detectors "env" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.k8snode.enabled }}
+{{- $detectors = append $detectors "k8snode" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.aks.enabled }}
+{{- $aksConfig := include "opentelemetry-collector.resourceDetectionAksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $aksConfig }}
+{{- $detectors = append $detectors "aks" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.eks.enabled }}
+{{- $eksConfig := include "opentelemetry-collector.resourceDetectionEksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $eksConfig }}
+{{- $detectors = append $detectors "eks" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.gcp.enabled }}
+{{- $gcpConfig := include "opentelemetry-collector.resourceDetectionGcpDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $gcpConfig }}
+{{- $detectors = append $detectors "gcp" | uniq }}
+{{- end }}
+{{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}
+{{- $_ := set $processors "resourcedetection/env" $resourceDetectionProcessor }}
+{{- $_ := set $config "processors" $processors }}
+{{- if $config.service.pipelines.logs }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
+  {{- if not (has "resourcedetection/env" $config.service.pipelines.logs.processors) }}
+    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/env" | uniq) }}
+  {{- end }}
+{{- end }}
+{{- if $config.service.pipelines.metrics }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
+  {{- if not (has "resourcedetection/env" $config.service.pipelines.metrics.processors) }}
+    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resourcedetection/env" | uniq) }}
+  {{- end }}
+{{- end }}
+{{- if $config.service.pipelines.traces }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
+  {{- if not (has "resourcedetection/env" $config.service.pipelines.traces.processors) }}
+    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/env" | uniq) }}
+  {{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.resourceDetectionEksDetectorConfig" -}}
+timeout: 15s
+eks:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}
+
+{{- define "opentelemetry-collector.resourceDetectionAksDetectorConfig" -}}
+aks:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}
+
+{{- define "opentelemetry-collector.resourceDetectionGcpDetectorConfig" -}}
+gcp:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}
