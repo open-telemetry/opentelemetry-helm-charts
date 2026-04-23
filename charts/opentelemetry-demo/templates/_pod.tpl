@@ -40,7 +40,7 @@ should be last.
 {{-   $allEnvs = append $allEnvs $resourceAttributesEnv }}
 {{- end }}
 
-{{- tpl (toYaml $allEnvs) . }}
+{{- toYaml $allEnvs }}
 {{- end }}
 
 
