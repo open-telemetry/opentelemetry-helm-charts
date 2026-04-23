@@ -75,7 +75,7 @@ Render a deduped list of environment variables and 'extraEnvs'
 {{- end }}
 {{- range $key, $value := $envMap }}
 - name: {{ $key }}
-  value: {{ $value }}
+  value: {{ $value | quote }}
 {{- end }}
 {{- range $key, $value := $valueFromMap }}
 - name: {{ $key }}
