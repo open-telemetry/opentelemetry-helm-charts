@@ -82,9 +82,8 @@ tenx:
 ## Documentation
 
 - [Log10x Documentation](https://doc.log10x.com)
-- [Edge Reporter Deployment](https://doc.log10x.com/apps/edge/reporter/deploy/)
-- [Edge Regulator Deployment](https://doc.log10x.com/apps/edge/regulator/deploy/)
-- [Edge Optimizer Deployment](https://doc.log10x.com/apps/edge/optimizer/deploy/)
+- [Reporter Deployment](https://doc.log10x.com/apps/reporter/deploy/)
+- [Reducer Deployment](https://doc.log10x.com/apps/reducer/deploy/)
 
 ## License
 
