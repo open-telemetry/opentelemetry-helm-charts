@@ -186,11 +186,12 @@ containers:
       - "@run/input/forwarder/otel-collector/report"
       - "@apps/reporter"
       {{- else }}
-      # kind=regulate or kind=optimize: both launch the flat apps/regulator
-      # module (1.0.7). apps/edge/optimizer was removed in 1.0.7 — optimize
-      # is now a regulator flag (regulatorOptimize env, below).
+      # kind=regulate or kind=optimize: both launch the flat apps/reducer
+      # module (1.0.7+, renamed from regulator in 2026-04). apps/edge/optimizer
+      # was removed in 1.0.7 — optimize is now a reducer flag (reducerOptimize
+      # env, below).
       - "@run/input/forwarder/otel-collector/regulate"
-      - "@apps/regulator"
+      - "@apps/reducer"
       {{- end }}
       - "otelCollectorInputPath"
       - "{{ .Values.tenx.sockets.input }}"
@@ -227,10 +228,10 @@ containers:
         value: "/etc/tenx/symbols"
       {{- end }}
       {{- if eq .Values.tenx.kind "optimize" }}
-      # 1.0.7: optimize is a regulator flag, not a separate app.
-      # The regulator pipeline reads regulatorOptimize and flips
+      # 1.0.7+: optimize is a reducer flag, not a separate app.
+      # The reducer pipeline reads reducerOptimize and flips
       # encodeObjects on when true.
-      - name: regulatorOptimize
+      - name: reducerOptimize
         value: "true"
       {{- end }}
     resources:
