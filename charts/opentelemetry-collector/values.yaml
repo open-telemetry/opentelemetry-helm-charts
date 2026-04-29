@@ -255,15 +255,14 @@ imagePullSecrets: []
 # Log10x Integration
 # =============================================================================
 # Log10x runs as a sidecar container alongside the OpenTelemetry Collector,
-# processing logs via Unix domain sockets for report, regulate, or optimize modes.
+# processing logs via Unix domain sockets.
 # For more information, see: https://doc.log10x.com/
 tenx:
   # Main switch to enable/disable Log10x sidecar
   enabled: false
 
-  # Log10x image configuration
   image:
-    repository: "log10x/pipeline-10x"
+    repository: "log10x/edge-10x"
     # Defaults to Chart version if empty
     tag: ""
     pullPolicy: "IfNotPresent"
@@ -271,11 +270,18 @@ tenx:
   # Specify your Log10x API key
   apiKey: ""
 
-  # Log10x mode - "report", "regulate", or "optimize"
-  # - report: Read-only metrics aggregation, logs pass through to final destination
-  # - regulate: Filter/drop logs based on rules, reduced logs sent to destination
-  # - optimize: 10x-encode logs for maximum compression
-  kind: "regulate"
+  # Enable optimization mode to encode emitted events for volume reduction.
+  # When false (default), the reducer filters events but emits them in their original form.
+  # When true, the reducer also losslessly compacts surviving events (50-65% volume reduction).
+  optimize: false
+
+  # Enable read-only mode (non-intervening reporter). When true, 10x reads,
+  # aggregates and publishes TenXSummary metrics to the Log10x backend, but
+  # does NOT write events back. Logs flow through OTel Collector unchanged
+  # to the configured exporters — no return loop, no fluentforward receiver,
+  # no logs/from-tenx pipeline.
+  # Mutually exclusive with `optimize` (read-only output is suppressed anyway).
+  readOnly: false
 
   # Specify name for the Log10x runtime
   # If empty, will use default from Log10x configuration
