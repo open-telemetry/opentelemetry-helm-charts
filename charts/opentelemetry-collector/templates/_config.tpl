@@ -101,6 +101,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.profiling.enabled }}
+{{- $config = (include "opentelemetry-collector.applyProfilingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.kubeletMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -128,6 +131,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.profiling.enabled }}
+{{- $config = (include "opentelemetry-collector.applyProfilingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubeletMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -323,6 +329,22 @@ receivers:
   {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.applyProfilingConfig" -}}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "receivers" list "exporters" list)))) (include "opentelemetry-collector.profilingConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.profiles "receivers" (append $config.service.pipelines.profiles.receivers "profiling" | uniq)  }}
+{{- if not $config.service.pipelines.profiles.exporters }}
+{{- $_ := set $config.service.pipelines.profiles "exporters" (list "debug") }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.profilingConfig" -}}
+receivers:
+  profiling: {}
+exporters:
+  debug: {}
+{{- end }}
+
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
 {{- if $config.service.pipelines.logs }}
@@ -341,6 +363,25 @@ receivers:
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
   {{- if not (has "k8sattributes" $config.service.pipelines.traces.processors) }}
     {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
+  {{- end }}
+{{- end }}
+{{- if $config.service.pipelines.profiles }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "processors" list)))) $config }}
+  {{- if not (has "k8sattributes" $config.service.pipelines.profiles.processors) }}
+    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "k8sattributes" | uniq)  }}
+  {{- end }}
+  {{- $podAssoc := $config.processors.k8sattributes.pod_association }}
+  {{- $containerIdSource := dict "sources" (list (dict "from" "resource_attribute" "name" "container.id")) }}
+  {{- $hasContainerId := false }}
+  {{- range $podAssoc }}
+    {{- range .sources }}
+      {{- if and (eq .from "resource_attribute") (eq .name "container.id") }}
+        {{- $hasContainerId = true }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if not $hasContainerId }}
+    {{- $_ := set $config.processors.k8sattributes "pod_association" (prepend $podAssoc $containerIdSource) }}
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
