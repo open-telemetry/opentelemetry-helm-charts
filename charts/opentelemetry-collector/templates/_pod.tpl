@@ -183,7 +183,7 @@ containers:
     args:
       - "run"
       - "@run/input/forwarder/otel-collector/regulate"
-      - "@apps/reducer"
+      - "@apps/receiver"
       - "otelCollectorInputPath"
       - "{{ .Values.tenx.sockets.input }}"
       - "otelCollectorOutputForwardAddress"
