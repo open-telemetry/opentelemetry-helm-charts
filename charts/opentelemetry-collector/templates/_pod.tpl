@@ -182,7 +182,7 @@ containers:
       runAsGroup: {{ .Values.tenx.securityContext.runAsGroup | default 10001 }}
     args:
       - "run"
-      - "@run/input/forwarder/otel-collector/regulate"
+      - "@run/input/forwarder/otel-collector/receive"
       - "@apps/receiver"
       - "otelCollectorInputPath"
       - "{{ .Values.tenx.sockets.input }}"
