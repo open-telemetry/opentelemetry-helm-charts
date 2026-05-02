@@ -175,7 +175,7 @@ containers:
 {{- end }}
 {{- if .Values.tenx.enabled }}
   - name: tenx
-    image: "{{ .Values.tenx.image.repository }}:{{ .Values.tenx.image.tag | default "1.0.17" }}"
+    image: "{{ .Values.tenx.image.repository }}:{{ .Values.tenx.image.tag | default "1.0.19" }}"
     imagePullPolicy: {{ .Values.tenx.image.pullPolicy }}
     securityContext:
       runAsUser: {{ .Values.tenx.securityContext.runAsUser | default 10001 }}
@@ -217,11 +217,11 @@ containers:
         value: "/etc/tenx/symbols"
       {{- end }}
       {{- if .Values.tenx.optimize }}
-      - name: reducerOptimize
+      - name: receiverOptimize
         value: "true"
       {{- end }}
       {{- if .Values.tenx.readOnly }}
-      - name: reducerReadOnly
+      - name: receiverReadOnly
         value: "true"
       {{- end }}
     resources:
