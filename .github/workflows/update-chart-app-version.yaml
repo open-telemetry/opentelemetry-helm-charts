@@ -102,10 +102,22 @@ jobs:
           git config user.name otelbot
           git config user.email 197425009+otelbot@users.noreply.github.com
 
+      - name: Create OTelBot token
+        if: steps.update.outputs.changed == 'true'
+        id: otelbot-token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        with:
+          app-id: ${{ vars.OTELBOT_APP_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
       - name: Push update branch if needed
         if: steps.update.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
           BRANCH_NAME: ${{ steps.update.outputs.branch_name }}
           COMMIT_MESSAGE: ${{ steps.update.outputs.commit_message }}
           STAGE_PATH: ${{ steps.update.outputs.stage_path }}
@@ -117,17 +129,6 @@ jobs:
           git commit -m "${COMMIT_MESSAGE}"
           git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${auth_header}" \
             push --force-with-lease --set-upstream origin "${BRANCH_NAME}"
-
-      - name: Create OTelBot token
-        if: steps.update.outputs.changed == 'true'
-        id: otelbot-token
-        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
-        with:
-          app-id: ${{ vars.OTELBOT_APP_ID }}
-          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-pull-requests: write
 
       - name: Create pull request if needed
         if: steps.update.outputs.changed == 'true'
