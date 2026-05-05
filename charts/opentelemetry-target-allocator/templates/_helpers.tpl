@@ -98,8 +98,12 @@ Create the target allocator docker image name.
 {{- end -}}
 
 {{/*
-Create ConfigMap checksum annotation
+Create ConfigMap checksum annotation if configMap.existingPath is defined, otherwise use default template
 */}}
 {{- define "helper.configTemplateChecksumAnnotation" -}}
-checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  {{- if .Values.configMap.existingPath -}}
+  checksum/config: {{ include (print $.Template.BasePath "/" .Values.configMap.existingPath) . | sha256sum }}
+  {{- else -}}
+  checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  {{- end }}
 {{- end -}}

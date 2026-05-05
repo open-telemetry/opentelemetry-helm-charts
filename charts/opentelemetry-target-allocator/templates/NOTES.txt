@@ -2,6 +2,10 @@
 {{ fail "[ERROR] 'mode' must be set to one of: deployment, statefulset." }}
 {{ end }}
 
+{{- if and .Values.configMap.create .Values.configMap.existingPath }}
+{{ fail "[ERROR] Cannot set configMap.existingPath when configMap.create is true" }}
+{{ end }}
+
 {{- if not .Values.targetAllocator.resources }}
 [WARNING] No resource limits or requests were set. Consider setting resource requests and limits for your target allocator via the `targetAllocator.resources` field.
 {{ end }}
