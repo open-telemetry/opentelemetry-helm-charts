@@ -151,6 +151,37 @@ increment_patch_version() {
   printf '%s.%s.%s\n' "${major}" "${minor}" "$((patch + 1))"
 }
 
+semver_gte() {
+  local left="$1"
+  local right="$2"
+  local left_major=""
+  local left_minor=""
+  local left_patch=""
+  local right_major=""
+  local right_minor=""
+  local right_patch=""
+
+  IFS='.' read -r left_major left_minor left_patch <<< "${left}"
+  IFS='.' read -r right_major right_minor right_patch <<< "${right}"
+
+  [[ -n "${left_major}" && -n "${left_minor}" && -n "${left_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${left}"
+  [[ -n "${right_major}" && -n "${right_minor}" && -n "${right_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${right}"
+
+  if (( left_major != right_major )); then
+    [[ ${left_major} -gt ${right_major} ]]
+    return $?
+  fi
+
+  if (( left_minor != right_minor )); then
+    [[ ${left_minor} -gt ${right_minor} ]]
+    return $?
+  fi
+
+  [[ ${left_patch} -ge ${right_patch} ]]
+}
+
 desired_app_version() {
   if [[ -n "${APP_VERSION_PREFIX}" ]]; then
     printf '%s%s\n' "${APP_VERSION_PREFIX}" "${NORMALIZED_RELEASE_VERSION}"
@@ -169,6 +200,11 @@ desired_chart_version() {
     mirror-upstream-without-prefix)
       if [[ "${current_app_version}" == "${next_app_version}" ]]; then
         printf '%s\n' "${current_chart_version}"
+        return 0
+      fi
+
+      if semver_gte "${current_chart_version}" "${NORMALIZED_RELEASE_VERSION}"; then
+        increment_patch_version "${current_chart_version}"
         return 0
       fi
 
