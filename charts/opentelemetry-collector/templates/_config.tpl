@@ -144,6 +144,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.kubernetesEvents.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.kubernetesObjects.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesObjectsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -493,6 +496,232 @@ receivers:
         group: "events.k8s.io"
         exclude_watch_type:
           - "DELETED"
+{{- end }}
+
+{{- define "opentelemetry-collector.applyKubernetesObjectsConfig" -}}
+{{- /* Generate the new objects list from preset configuration */}}
+{{- $objectsYaml := include "opentelemetry-collector.kubernetesObjectsConfig" .Values | fromYaml }}
+{{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
+{{- /* Save any existing k8sobjects objects (e.g., from kubernetesEvents preset or user config) */}}
+{{- $existingObjects := list }}
+{{- if .config.receivers }}
+{{- if index .config.receivers "k8sobjects" }}
+{{- if (index .config.receivers "k8sobjects").objects }}
+{{- $existingObjects = (index .config.receivers "k8sobjects").objects }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- /* Combine new and existing objects */}}
+{{- $allObjects := concat $newObjects $existingObjects }}
+{{- /* Merge configs (may overwrite objects list, which we fix below) */}}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .config }}
+{{- /* Force-set the combined objects list */}}
+{{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
+{{- /* Add k8sobjects to the logs pipeline */}}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.kubernetesObjectsConfig" -}}
+{{- $preset := .Values.presets.kubernetesObjects -}}
+{{- $mode := default "pull" $preset.mode -}}
+{{- $interval := $preset.pullInterval -}}
+{{- $pull := or (eq $mode "pull") (eq $mode "pullWatch") -}}
+{{- $watch := or (eq $mode "watch") (eq $mode "pullWatch") -}}
+receivers:
+  k8sobjects:
+    objects:
+{{- if $preset.core.enabled }}
+{{- /* Core API group resources */}}
+{{- range list "namespaces" "pods" "nodes" "services" "serviceaccounts" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+{{- end }}
+{{- end }}
+{{- /* apps group resources */}}
+{{- range list "deployments" "replicasets" "daemonsets" "statefulsets" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: apps
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+        group: apps
+{{- end }}
+{{- end }}
+{{- /* batch group resources */}}
+{{- range list "jobs" "cronjobs" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: batch
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+        group: batch
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.rbac.enabled }}
+{{- range list "roles" "rolebindings" "clusterroles" "clusterrolebindings" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: rbac.authorization.k8s.io
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+        group: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.storage.enabled }}
+{{- range list "storageclasses" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: storage.k8s.io
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+        group: storage.k8s.io
+{{- end }}
+{{- end }}
+{{- range list "persistentvolumes" "persistentvolumeclaims" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.networking.enabled }}
+{{- range list "ingresses" "networkpolicies" }}
+{{- if $pull }}
+      - name: {{ . }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: networking.k8s.io
+{{- end }}
+{{- if $watch }}
+      - name: {{ . }}
+        mode: watch
+        group: networking.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.autoscaling.enabled }}
+{{- if $pull }}
+      - name: horizontalpodautoscalers
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: autoscaling
+{{- end }}
+{{- if $watch }}
+      - name: horizontalpodautoscalers
+        mode: watch
+        group: autoscaling
+{{- end }}
+{{- if $pull }}
+      - name: verticalpodautoscalers
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: autoscaling.k8s.io
+{{- end }}
+{{- if $watch }}
+      - name: verticalpodautoscalers
+        mode: watch
+        group: autoscaling.k8s.io
+{{- end }}
+{{- end }}
+{{- if $preset.policy.enabled }}
+{{- if $pull }}
+      - name: poddisruptionbudgets
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: policy
+{{- end }}
+{{- if $watch }}
+      - name: poddisruptionbudgets
+        mode: watch
+        group: policy
+{{- end }}
+{{- end }}
+{{- if $preset.apiExtensions.enabled }}
+{{- if $pull }}
+      - name: customresourcedefinitions
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+        group: apiextensions.k8s.io
+{{- end }}
+{{- if $watch }}
+      - name: customresourcedefinitions
+        mode: watch
+        group: apiextensions.k8s.io
+{{- end }}
+{{- end }}
+{{- if $preset.extraResources }}
+{{- range $preset.extraResources }}
+{{- if $pull }}
+      - name: {{ .name }}
+        mode: pull
+{{- if $interval }}
+        interval: {{ $interval }}
+{{- end }}
+{{- if .group }}
+        group: {{ .group }}
+{{- end }}
+{{- end }}
+{{- if $watch }}
+      - name: {{ .name }}
+        mode: watch
+{{- if .group }}
+        group: {{ .group }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.leaderElectionConfig" -}}
