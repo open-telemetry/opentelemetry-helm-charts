@@ -95,6 +95,45 @@ podAnnotations:
 This requires bundling the `ConfigMap` definition in the Helm release for
 checksum evaluation.
 
+### Centralizing Kubernetes metadata with `k8s-cache`
+
+By default each OBI Pod opens its own `list`/`watch` connections to the
+Kubernetes API server to read Pod, Node, and Service metadata for the entire
+cluster (needed to enrich destination/peer attributes on traces, flows and
+metrics). On large clusters, or when many OBI replicas run side by side
+(`DaemonSet`, large `Deployment`, sidecars), this fan-out can put significant
+load on the API server.
+
+`k8s-cache` is an optional companion `Deployment` shipped with OBI. It runs
+the Kubernetes informers once on behalf of every OBI Pod and streams the
+metadata back over gRPC, so OBI Pods no longer hit the API server for
+informer traffic.
+
+> **Note:** Even when `k8s-cache` is enabled, OBI Pods still need their own
+> `ServiceAccount` and may perform limited direct Kubernetes API lookups for
+> node and cluster metadata. The cache eliminates the per-Pod informer
+> watch traffic, not all API access.
+
+The cache is disabled by default. To enable it, set `k8sCache.replicas` to a
+non-zero value:
+
+```yaml
+k8sCache:
+  replicas: 1
+```
+
+A single replica is usually enough. For high availability or very large
+clusters, increase the replica count — OBI Pods load-balance across them
+through the cache `Service` and reconnect to a healthy replica on failure.
+
+When `k8sCache.replicas > 0` the chart deploys the cache `Deployment` and
+`Service`, and automatically points the OBI `DaemonSet` at it by setting
+`OTEL_EBPF_KUBE_META_CACHE_ADDRESS` to `<k8sCache.service.name>:<k8sCache.service.port>`.
+See the `k8sCache` block in [values.yaml](./values.yaml) for image, resource,
+and metrics settings, and the
+[OBI Kubernetes setup guide](https://opentelemetry.io/docs/zero-code/obi/setup/kubernetes/#centralizing-kubernetes-metadata-with-k8s-cache)
+for background.
+
 ### Pod Annotations with Template Support
 
 The `podAnnotations` values support Helm templating, enabling dynamic values:
