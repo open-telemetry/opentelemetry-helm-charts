@@ -182,6 +182,32 @@ semver_gte() {
   [[ ${left_patch} -ge ${right_patch} ]]
 }
 
+semver_major_minor_gt() {
+  local left="$1"
+  local right="$2"
+  local left_major=""
+  local left_minor=""
+  local left_patch=""
+  local right_major=""
+  local right_minor=""
+  local right_patch=""
+
+  IFS='.' read -r left_major left_minor left_patch <<< "${left}"
+  IFS='.' read -r right_major right_minor right_patch <<< "${right}"
+
+  [[ -n "${left_major}" && -n "${left_minor}" && -n "${left_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${left}"
+  [[ -n "${right_major}" && -n "${right_minor}" && -n "${right_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${right}"
+
+  if (( left_major != right_major )); then
+    [[ ${left_major} -gt ${right_major} ]]
+    return $?
+  fi
+
+  [[ ${left_minor} -gt ${right_minor} ]]
+}
+
 desired_app_version() {
   if [[ -n "${APP_VERSION_PREFIX}" ]]; then
     printf '%s%s\n' "${APP_VERSION_PREFIX}" "${NORMALIZED_RELEASE_VERSION}"
@@ -213,6 +239,11 @@ desired_chart_version() {
     patch-bump)
       if [[ "${current_app_version}" == "${next_app_version}" ]]; then
         printf '%s\n' "${current_chart_version}"
+        return 0
+      fi
+
+      if semver_major_minor_gt "${NORMALIZED_RELEASE_VERSION}" "${current_chart_version}"; then
+        printf '%s\n' "${NORMALIZED_RELEASE_VERSION}"
         return 0
       fi
 
