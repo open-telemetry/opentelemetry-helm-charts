@@ -217,13 +217,17 @@ run_post_update_action() {
 set_default_outputs() {
   local pr_title=""
   local pr_body=""
+  local branch_name=""
 
   pr_title="$(render_template "${PR_TITLE_TEMPLATE}")"
   pr_body="$(render_template "${PR_BODY_TEMPLATE}")"
+  # Auto-update branches must live under otelbot/ to bypass the repo EasyCLA
+  # branch rule while still allowing the follow-up PR workflows to run.
+  branch_name="otelbot/${BRANCH_PREFIX}-${RESOLVED_RELEASE_TAG}"
 
   set_output "changed" "false"
   set_output "release_tag" "${RESOLVED_RELEASE_TAG}"
-  set_output "branch_name" "${BRANCH_PREFIX}-${RESOLVED_RELEASE_TAG}"
+  set_output "branch_name" "${branch_name}"
   set_output "commit_message" "${pr_title}"
   set_output "stage_path" "${STAGE_PATH}"
   set_output "pr_title" "${pr_title}"
