@@ -167,6 +167,11 @@ desired_chart_version() {
 
   case "${VERSION_POLICY}" in
     mirror-upstream-without-prefix)
+      if [[ "${current_app_version}" == "${next_app_version}" ]]; then
+        printf '%s\n' "${current_chart_version}"
+        return 0
+      fi
+
       printf '%s\n' "${NORMALIZED_RELEASE_VERSION}"
       ;;
     patch-bump)
