@@ -215,6 +215,7 @@ run_post_update_action() {
 }
 
 set_default_outputs() {
+  local next_chart_version="$1"
   local pr_title=""
   local pr_body=""
   local branch_name=""
@@ -222,8 +223,10 @@ set_default_outputs() {
   pr_title="$(render_template "${PR_TITLE_TEMPLATE}")"
   pr_body="$(render_template "${PR_BODY_TEMPLATE}")"
   # Auto-update branches must live under otelbot/ to bypass the repo EasyCLA
-  # branch rule while still allowing the follow-up PR workflows to run.
-  branch_name="otelbot/${BRANCH_PREFIX}-${RESOLVED_RELEASE_TAG}"
+  # branch rule while still allowing the follow-up PR workflows to run. Use
+  # the next chart version so branch identity tracks the chart revision rather
+  # than only the upstream app/image tag.
+  branch_name="otelbot/${BRANCH_PREFIX}-${next_chart_version}"
 
   set_output "changed" "false"
   set_output "release_tag" "${RESOLVED_RELEASE_TAG}"
@@ -278,7 +281,7 @@ main() {
   next_app_version="$(desired_app_version)"
   next_chart_version="$(desired_chart_version "${current_app_version}" "${current_chart_version}" "${next_app_version}")"
 
-  set_default_outputs
+  set_default_outputs "${next_chart_version}"
 
   if [[ "${current_chart_version}" == "${next_chart_version}" && "${current_app_version}" == "${next_app_version}" ]]; then
     log "Chart already points at ${RESOLVED_RELEASE_TAG}; nothing to do."
