@@ -300,3 +300,44 @@ EOF
 ```
 
 [v1beta1_migration]: https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1
+
+## Using with ArgoCD
+
+### Certificate Recreation on Every Sync
+
+When using this chart with ArgoCD, the webhook certificate secret may show
+a diff on every sync. This happens because ArgoCD uses `helm template`
+(dry-run mode) which does not support the Helm `lookup` function. As a
+result, a new certificate is generated on every render — even when
+`autoGenerateCert.recreate: false` is set.
+
+The recommended solution is to configure ArgoCD to ignore differences in
+the certificate secret fields using `ignoreDifferences` in your ArgoCD
+Application:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opentelemetry-operator
+spec:
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: <release-name>-controller-manager-service-cert
+      jsonPointers:
+        - /data/tls.crt
+        - /data/tls.key
+        - /data/ca.crt
+    - group: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    - group: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+```
+
+Replace `<release-name>` with your Helm release name
+(default: `opentelemetry-operator`).
