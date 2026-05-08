@@ -14,61 +14,63 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 data:
   user-config.yaml: |
-    |
-      service:
-        extensions: [jaeger_storage, jaeger_query, healthcheckv2]
-        pipelines:
-          traces:
-            receivers: [otlp]
-            processors: [batch]
-            exporters: [jaeger_storage_exporter]
-        telemetry:
-          resource:
-            service.name: jaeger
-          metrics:
-            level: detailed
-            readers:
-              - periodic:
-                  interval: 10000
-                  timeout: 5000
-                  exporter:
-                    otlp:
-                      protocol: http/protobuf
-                      endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
-                      insecure: true
-          logs:
-            level: info
+    exporters:
+      jaeger_storage_exporter:
+        trace_storage: memory_backend
+    extensions:
+      healthcheckv2:
+        http:
+          endpoint: 0.0.0.0:13133
+        use_v2: true
+      jaeger_query:
+        base_path: /jaeger/ui
+        storage:
+          metrics: metrics_backend
+          traces: memory_backend
+      jaeger_storage:
+        backends:
+          memory_backend:
+            memory:
+              max_traces: ${env:MEMORY_MAX_TRACES}
+        metric_backends:
+          metrics_backend:
+            prometheus:
+              endpoint: http://${env:PROMETHEUS_ADDR}
+              normalize_calls: true
+              normalize_duration: true
+    processors:
+      batch: {}
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:JAEGER_HOST}:${env:JAEGER_GRPC_PORT}
+    service:
       extensions:
-        healthcheckv2:
-          use_v2: true
-          http:
-            endpoint: 0.0.0.0:13133
-        jaeger_query:
-          storage:
-            traces: memory_backend
-            metrics: metrics_backend
-          base_path: /jaeger/ui
-        jaeger_storage:
-          backends:
-            memory_backend:
-              memory:
-                max_traces: ${env:MEMORY_MAX_TRACES}
-          metric_backends:
-            metrics_backend:
-              prometheus:
-                endpoint: "http://${env:PROMETHEUS_ADDR}"
-                normalize_calls: true
-                normalize_duration: true
-    
-      receivers:
-        otlp:
-          protocols:
-            grpc:
-              endpoint: ${env:JAEGER_HOST}:${env:JAEGER_GRPC_PORT}
-    
-      processors:
-        batch:
-    
-      exporters:
-        jaeger_storage_exporter:
-          trace_storage: memory_backend
+      - jaeger_storage
+      - jaeger_query
+      - healthcheckv2
+      pipelines:
+        traces:
+          exporters:
+          - jaeger_storage_exporter
+          processors:
+          - batch
+          receivers:
+          - otlp
+      telemetry:
+        logs:
+          level: info
+        metrics:
+          level: detailed
+          readers:
+          - periodic:
+              exporter:
+                otlp:
+                  endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
+                  insecure: true
+                  protocol: http/protobuf
+              interval: 10000
+              timeout: 5000
+        resource:
+          service.name: jaeger
