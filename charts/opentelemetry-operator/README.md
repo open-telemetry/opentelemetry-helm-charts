@@ -307,13 +307,26 @@ EOF
 
 When using this chart with ArgoCD, the webhook certificate secret may show
 a diff on every sync. This happens because ArgoCD uses `helm template`
-(dry-run mode) which does not support the Helm `lookup` function. As a
-result, a new certificate is generated on every render — even when
-`autoGenerateCert.recreate: false` is set.
+(dry-run mode) which does not support the Helm `lookup` function, and the
+default `secretAnnotations` include `helm.sh/hook-delete-policy: before-hook-creation`
+which causes ArgoCD to delete and recreate the cert on every sync.
 
-The recommended solution is to configure ArgoCD to ignore differences in
-the certificate secret fields using `ignoreDifferences` in your ArgoCD
-Application:
+The complete solution requires two steps:
+
+**Step 1 — Update your Helm values to prevent cert deletion and recreation:**
+
+```yaml
+admissionWebhooks:
+  autoGenerateCert:
+    enabled: true
+    recreate: false
+  secretAnnotations:
+    "helm.sh/hook": null
+    "helm.sh/hook-delete-policy": null
+    "helm.sh/resource-policy": keep
+```
+
+**Step 2 — Configure ArgoCD `ignoreDifferences` with `RespectIgnoreDifferences=true`:**
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -321,6 +334,9 @@ kind: Application
 metadata:
   name: opentelemetry-operator
 spec:
+  syncPolicy:
+    syncOptions:
+      - RespectIgnoreDifferences=true
   ignoreDifferences:
     - group: ""
       kind: Secret
@@ -341,3 +357,6 @@ spec:
 
 Replace `<release-name>` with your Helm release name
 (default: `opentelemetry-operator`).
+
+> **Note:** After applying these changes you may need to manually
+> resync the `caBundle` on CRDs and webhooks once.
