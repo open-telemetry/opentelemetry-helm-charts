@@ -68,7 +68,7 @@ bump even if it is only changed to the documentation.
 
 The chart `version` should follow [semver](https://semver.org/).
 
-All changes to a chart require a version bump, following semvar.
+All changes to a chart require a version bump, following semver.
 
 Any breaking (backwards incompatible) changes to a chart should:
 1. Bump the MINOR version
