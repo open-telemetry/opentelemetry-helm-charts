@@ -323,7 +323,6 @@ admissionWebhooks:
   secretAnnotations:
     "helm.sh/hook": null
     "helm.sh/hook-delete-policy": null
-    "helm.sh/resource-policy": keep
 ```
 
 **Step 2 — Configure ArgoCD `ignoreDifferences` with `RespectIgnoreDifferences=true`:**
@@ -355,8 +354,30 @@ spec:
         - /webhooks/0/clientConfig/caBundle
 ```
 
-Replace `<release-name>` with your Helm release name
-(default: `opentelemetry-operator`).
-
 > **Note:** After applying these changes you may need to manually
 > resync the `caBundle` on CRDs and webhooks once.
+
+**Optional: Resync caBundle script**
+
+If certs were regenerated after adding `ignoreDifferences`, run this
+script to patch the caBundle on webhooks and CRDs:
+
+```bash
+#!/bin/bash
+NS="opentelemetry-operator-system"
+SECRET_NAME="<release-name>-controller-manager-service-cert"
+MWC_NAME=$(kubectl get mutatingwebhookconfiguration -o name | grep "opentelemetry-operator-mutation" | head -n 1)
+VWC_NAME=$(kubectl get validatingwebhookconfiguration -o name | grep "opentelemetry-operator-validation" | head -n 1)
+CRD_NAME=$(kubectl get crd -o name | grep "opentelemetrycollectors.opentelemetry.io")
+
+CA=$(kubectl get secret $SECRET_NAME -n $NS -o jsonpath='{.data.ca\.crt}')
+
+kubectl patch $MWC_NAME --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/webhooks/0/clientConfig/caBundle\", \"value\":\"$CA\"}]"
+
+kubectl patch $VWC_NAME --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/webhooks/0/clientConfig/caBundle\", \"value\":\"$CA\"}]"
+
+kubectl patch $CRD_NAME --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/spec/conversion/webhook/clientConfig/caBundle\", \"value\":\"$CA\"}]"
+```
