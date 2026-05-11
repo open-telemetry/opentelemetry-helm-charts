@@ -42,7 +42,7 @@ spec:
       {{- $podData := dict "Values" $podValues "configmapSuffix" "-agent" "isAgent" true }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
       hostNetwork: {{ .Values.hostNetwork }}
-      hostPID: {{ .Values.hostPID }}
+      hostPID: {{ or .Values.hostPID .Values.presets.profiling.enabled }}
       {{- with .Values.dnsPolicy }}
       dnsPolicy: {{ . }}
       {{- end }}

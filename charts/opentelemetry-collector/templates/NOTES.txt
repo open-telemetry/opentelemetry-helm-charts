@@ -2,6 +2,22 @@
 {{ fail "[ERROR] 'image.repository' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
 {{ end }}
 
+{{- if .Values.presets.profiling.enabled }}
+{{- $repo := .Values.image.repository -}}
+{{- $unsupported := include "opentelemetry-collector.profilingUnsupportedImages" . | fromYamlArray -}}
+{{- range $distro := $unsupported }}
+  {{- if or (eq $repo $distro) (hasSuffix (printf "/%s" $distro) $repo) }}
+    {{ fail "[ERROR] presets.profiling is enabled but image.repository is a community distribution that does not include the profiling receiver. Use the opentelemetry-collector-ebpf-profiler distribution or a custom distribution that includes the receiver." }}
+  {{- end }}
+{{- end }}
+{{- if eq (toString .Values.podSecurityContext.runAsNonRoot) "true" }}
+{{ fail "[ERROR] presets.profiling is enabled but podSecurityContext.runAsNonRoot is true. The eBPF profiler requires runAsUser: 0 to run. Set podSecurityContext.runAsNonRoot to false or remove it." }}
+{{ end }}
+{{- if .Values.securityContext }}
+[WARNING] presets.profiling is enabled with a custom securityContext. The preset will NOT inject runAsUser: 0 and privileged: true automatically; required by the eBPF profiler to function. Ensure your securityContext sets runAsUser: 0 plus either privileged: true, or right capabilities otherwise.
+{{ end }}
+{{ end }}
+
 {{- if and (not (eq .Values.mode "daemonset")) (not (eq .Values.mode "deployment")) (not (eq .Values.mode "statefulset")) }}
 {{ fail "[ERROR] 'mode' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/UPGRADING.md for instructions." }}
 {{ end }}

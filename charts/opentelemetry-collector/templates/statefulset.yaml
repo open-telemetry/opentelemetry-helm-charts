@@ -59,7 +59,7 @@ spec:
       {{- $podData := dict "Values" $podValues "configmapSuffix" "-statefulset" "isAgent" false }}
       {{- include "opentelemetry-collector.pod" ($podData | mustMergeOverwrite (deepCopy .)) | nindent 6 }}
       hostNetwork: {{ .Values.hostNetwork }}
-      hostPID: {{ .Values.hostPID }}
+      hostPID: {{ or .Values.hostPID .Values.presets.profiling.enabled }}
   {{- with .Values.statefulset.volumeClaimTemplates }}
   volumeClaimTemplates:
   {{- toYaml . | nindent 2 }}
