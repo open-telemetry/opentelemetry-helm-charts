@@ -282,15 +282,15 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
-      {{- if .Values.manager.featureGatesMap }}
-      {{- range $k, $v := .Values.manager.featureGatesMap }}
-      {{- if and $v (eq $k "operator.clusterobservability") }}
+      {{- if or
+        (get .Values.manager.featureGatesMap "operator.clusterobservability")
+        (and
+          (ne .Values.manager.featureGates "")
+          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
+        )
+      }}
       - clusterobservabilities
-      {{- end }}
-      {{- end }}
-      {{- else if and (ne .Values.manager.featureGates "") (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates) }}
-      - clusterobservabilities
-      {{- end }}
+      {{- end}}
       - opampbridges
     verbs:
       - create
@@ -303,13 +303,13 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
-      {{- if .Values.manager.featureGatesMap }}
-      {{- range $k, $v := .Values.manager.featureGatesMap }}
-      {{- if and $v (eq $k "operator.clusterobservability") }}
-      - clusterobservabilities/finalizers
-      {{- end }}
-      {{- end }}
-      {{- else if and (ne .Values.manager.featureGates "") (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates) }}
+      {{- if or
+        (get .Values.manager.featureGatesMap "operator.clusterobservability")
+        (and
+          (ne .Values.manager.featureGates "")
+          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
+        )
+      }}
       - clusterobservabilities/finalizers
       {{- end}}
       - opampbridges/finalizers
@@ -318,13 +318,13 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
-      {{- if .Values.manager.featureGatesMap }}
-      {{- range $k, $v := .Values.manager.featureGatesMap }}
-      {{- if and $v (eq $k "operator.clusterobservability") }}
-      - clusterobservabilities/status
-      {{- end }}
-      {{- end }}
-      {{- else if and (ne .Values.manager.featureGates "") (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates) }}
+      {{- if or
+        (get .Values.manager.featureGatesMap "operator.clusterobservability")
+        (and
+          (ne .Values.manager.featureGates "")
+          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
+        )
+      }}
       - clusterobservabilities/status
       {{- end}}
       - opampbridges/status
