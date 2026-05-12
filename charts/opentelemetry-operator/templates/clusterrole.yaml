@@ -282,6 +282,15 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if .Values.manager.featureGatesMap }}
+      {{- range $k, $v := .Values.manager.featureGatesMap }}
+      {{- if and $v (eq $k "operator.clusterobservability") }}
+      - clusterobservabilities
+      {{- end }}
+      {{- end }}
+      {{- else if and (ne .Values.manager.featureGates "") (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates) }}
+      - clusterobservabilities
+      {{- end }}
       - opampbridges
     verbs:
       - create
@@ -294,12 +303,30 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if .Values.manager.featureGatesMap }}
+      {{- range $k, $v := .Values.manager.featureGatesMap }}
+      {{- if and $v (eq $k "operator.clusterobservability") }}
+      - clusterobservabilities/finalizers
+      {{- end }}
+      {{- end }}
+      {{- else if and (ne .Values.manager.featureGates "") (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates) }}
+      - clusterobservabilities/finalizers
+      {{- end}}
       - opampbridges/finalizers
     verbs:
       - update
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if .Values.manager.featureGatesMap }}
+      {{- range $k, $v := .Values.manager.featureGatesMap }}
+      {{- if and $v (eq $k "operator.clusterobservability") }}
+      - clusterobservabilities/status
+      {{- end }}
+      {{- end }}
+      {{- else if and (ne .Values.manager.featureGates "") (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates) }}
+      - clusterobservabilities/status
+      {{- end}}
       - opampbridges/status
     verbs:
       - get
