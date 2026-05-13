@@ -337,6 +337,15 @@ rules:
     resources:
       - opentelemetrycollectors
     verbs:
+      {{- if or
+        (get .Values.manager.featureGatesMap "operator.clusterobservability")
+        (and
+          (ne .Values.manager.featureGates "")
+          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
+        )
+      }}
+      - create
+      {{- end}}
       - get
       - list
       - patch
