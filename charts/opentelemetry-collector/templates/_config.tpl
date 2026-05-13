@@ -657,6 +657,7 @@ receivers:
         mode: watch
         group: autoscaling
 {{- end }}
+{{- if $preset.autoscaling.vpa.enabled }}
 {{- if $pull }}
       - name: verticalpodautoscalers
         mode: pull
@@ -669,6 +670,7 @@ receivers:
       - name: verticalpodautoscalers
         mode: watch
         group: autoscaling.k8s.io
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if $preset.policy.enabled }}

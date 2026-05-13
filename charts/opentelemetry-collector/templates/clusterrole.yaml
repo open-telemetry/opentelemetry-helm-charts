@@ -95,9 +95,11 @@ rules:
   - apiGroups: ["autoscaling"]
     resources: ["horizontalpodautoscalers"]
     verbs: ["get", "list", "watch"]
+  {{- if .Values.presets.kubernetesObjects.autoscaling.vpa.enabled }}
   - apiGroups: ["autoscaling.k8s.io"]
     resources: ["verticalpodautoscalers"]
     verbs: ["get", "list", "watch"]
+  {{- end }}
   {{- end }}
   {{- if .Values.presets.kubernetesObjects.policy.enabled }}
   - apiGroups: ["policy"]
