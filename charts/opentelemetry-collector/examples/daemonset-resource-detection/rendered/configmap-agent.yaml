@@ -26,6 +26,16 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      resourcedetection/env:
+        detectors:
+        - env
+        - k8snode
+        - eks
+        eks:
+          resource_attributes:
+            k8s.cluster.name:
+              enabled: true
+        timeout: 15s
     receivers:
       jaeger:
         protocols:
@@ -59,6 +69,7 @@ data:
           exporters:
           - debug
           processors:
+          - resourcedetection/env
           - memory_limiter
           - batch
           receivers:
@@ -67,6 +78,7 @@ data:
           exporters:
           - debug
           processors:
+          - resourcedetection/env
           - memory_limiter
           - batch
           receivers:
@@ -76,6 +88,7 @@ data:
           exporters:
           - debug
           processors:
+          - resourcedetection/env
           - memory_limiter
           - batch
           receivers:

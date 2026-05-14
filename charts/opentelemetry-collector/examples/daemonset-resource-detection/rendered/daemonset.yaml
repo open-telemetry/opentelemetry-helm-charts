@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 000fc60bf8a00c011a71091512a40e1e66c8153deb42f93b9a3c5e1d1c2beb77
+        checksum/config: 034877cb59ff46ff9cd777ca665c2fafac7f571563bd06cbf7e5d544dbf24dbe
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -114,10 +114,6 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap
-            - name: hostfs
-              mountPath: /hostfs
-              readOnly: true
-              mountPropagation: HostToContainer
       terminationGracePeriodSeconds: 30
       volumes:
         - name: opentelemetry-collector-configmap
@@ -126,8 +122,5 @@ spec:
             items:
               - key: relay
                 path: relay.yaml
-        - name: hostfs
-          hostPath:
-            path: /
       hostNetwork: false
       hostPID: false
