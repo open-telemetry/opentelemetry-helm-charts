@@ -72,50 +72,36 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
-  # Configures the collector to collect Kubernetes objects via the k8sobjects receiver.
-  # Adds the k8sobjects receiver to the logs pipeline
-  # and adds the necessary rules to ClusterRole.
+  # Collects Kubernetes objects via the k8sobjects receiver in pull (every 3m) and watch modes.
   # Best used with mode = deployment or statefulset.
-  # Compatible with kubernetesEvents preset - objects lists are merged when both are enabled.
+  # Compatible with kubernetesEvents preset. Extra resources can be added via
+  # config.receivers.k8sobjects.objects (merged automatically; ClusterRole rules must be added manually via clusterRole.rules).
   kubernetesObjects:
     enabled: false
-    # Collection mode: "pull", "watch", or "pullWatch"
-    mode: pull
-    # Interval for pull mode collection. If not set, the k8sobjects receiver default is used.
-    pullInterval: ""
-    # Core Kubernetes workload resources - enabled by default
-    # Includes: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
+    # Core Kubernetes workload resources: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
     core:
       enabled: true
     # RBAC resources: roles, rolebindings, clusterroles, clusterrolebindings
     rbac:
-      enabled: false
+      enabled: true
     # Storage resources: storageclasses, persistentvolumes, persistentvolumeclaims
     storage:
-      enabled: false
+      enabled: true
     # Networking resources: ingresses, networkpolicies
     networking:
-      enabled: false
+      enabled: true
     # Autoscaling resources: horizontalpodautoscalers
     autoscaling:
-      enabled: false
+      enabled: true
       # VPA resources: verticalpodautoscalers (requires VPA CRD to be installed)
       vpa:
         enabled: false
     # Policy resources: poddisruptionbudgets
     policy:
-      enabled: false
+      enabled: true
     # API extensions resources: customresourcedefinitions
     apiExtensions:
-      enabled: false
-    # Extra resources not covered by built-in groups.
-    # Each entry needs 'name' and optionally 'group'.
-    # Note: ClusterRole rules for extra resources must be added manually via clusterRole.rules.
-    # Example:
-    #   - name: serviceaccounts
-    #   - name: customresourcedefinitions
-    #     group: apiextensions.k8s.io
-    extraResources: []
+      enabled: true
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
