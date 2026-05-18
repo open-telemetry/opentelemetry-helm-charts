@@ -499,10 +499,8 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesObjectsConfig" -}}
-{{- /* Generate the new objects list from preset configuration */}}
 {{- $objectsYaml := include "opentelemetry-collector.kubernetesObjectsConfig" .Values | fromYaml }}
 {{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
-{{- /* Save any existing k8sobjects objects (e.g., from kubernetesEvents preset or user config) */}}
 {{- $existingObjects := list }}
 {{- if .config.receivers }}
 {{- if index .config.receivers "k8sobjects" }}
@@ -511,13 +509,9 @@ receivers:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- /* Combine new and existing objects */}}
 {{- $allObjects := concat $newObjects $existingObjects }}
-{{- /* Merge configs (may overwrite objects list, which we fix below) */}}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .config }}
-{{- /* Force-set the combined objects list */}}
 {{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
-{{- /* Add k8sobjects to the logs pipeline */}}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
 {{- $config | toYaml }}
 {{- end }}
@@ -528,29 +522,23 @@ receivers:
   k8sobjects:
     objects:
 {{- if $preset.core.enabled }}
-{{- /* Core API group resources */}}
 {{- range list "namespaces" "pods" "nodes" "services" "serviceaccounts" }}
       - name: {{ . }}
         mode: pull
-
       - name: {{ . }}
         mode: watch
 {{- end }}
-{{- /* apps group resources */}}
 {{- range list "deployments" "replicasets" "daemonsets" "statefulsets" }}
       - name: {{ . }}
         mode: pull
-
         group: apps
       - name: {{ . }}
         mode: watch
         group: apps
 {{- end }}
-{{- /* batch group resources */}}
 {{- range list "jobs" "cronjobs" }}
       - name: {{ . }}
         mode: pull
-
         group: batch
       - name: {{ . }}
         mode: watch
@@ -561,7 +549,6 @@ receivers:
 {{- range list "roles" "rolebindings" "clusterroles" "clusterrolebindings" }}
       - name: {{ . }}
         mode: pull
-
         group: rbac.authorization.k8s.io
       - name: {{ . }}
         mode: watch
@@ -572,7 +559,6 @@ receivers:
 {{- range list "storageclasses" }}
       - name: {{ . }}
         mode: pull
-
         group: storage.k8s.io
       - name: {{ . }}
         mode: watch
@@ -581,7 +567,6 @@ receivers:
 {{- range list "persistentvolumes" "persistentvolumeclaims" }}
       - name: {{ . }}
         mode: pull
-
       - name: {{ . }}
         mode: watch
 {{- end }}
@@ -590,7 +575,6 @@ receivers:
 {{- range list "ingresses" "networkpolicies" }}
       - name: {{ . }}
         mode: pull
-
         group: networking.k8s.io
       - name: {{ . }}
         mode: watch
@@ -600,7 +584,6 @@ receivers:
 {{- if $preset.autoscaling.enabled }}
       - name: horizontalpodautoscalers
         mode: pull
-
         group: autoscaling
       - name: horizontalpodautoscalers
         mode: watch
@@ -608,7 +591,6 @@ receivers:
 {{- if $preset.autoscaling.vpa.enabled }}
       - name: verticalpodautoscalers
         mode: pull
-
         group: autoscaling.k8s.io
       - name: verticalpodautoscalers
         mode: watch
@@ -618,7 +600,6 @@ receivers:
 {{- if $preset.policy.enabled }}
       - name: poddisruptionbudgets
         mode: pull
-
         group: policy
       - name: poddisruptionbudgets
         mode: watch
@@ -627,7 +608,6 @@ receivers:
 {{- if $preset.apiExtensions.enabled }}
       - name: customresourcedefinitions
         mode: pull
-
         group: apiextensions.k8s.io
       - name: customresourcedefinitions
         mode: watch
