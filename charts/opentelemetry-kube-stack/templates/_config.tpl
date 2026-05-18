@@ -104,6 +104,15 @@ receivers:
       - k8s_observer
     discovery:
       enabled: true
+    {{- if .presets.annotationDiscovery.metrics.prometheus.enabled }}
+    receivers:
+      prometheus_simple/prometheus_annotations:
+        rule: type == "pod" && annotations["prometheus.io/scrape"] == "true" && labels["app.kubernetes.io/component"] != "opentelemetry-collector"
+        config:
+          collection_interval: 30s
+          endpoint: '`endpoint`:`"prometheus.io/port" in annotations ? annotations["prometheus.io/port"] : 9090`'
+          metrics_path: '`"prometheus.io/path" in annotations ? annotations["prometheus.io/path"] : "/metrics"`'
+    {{- end }}
   {{- end }}
 {{- end }}
 

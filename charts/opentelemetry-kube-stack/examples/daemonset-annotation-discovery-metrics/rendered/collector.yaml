@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.14.13
+    helm.sh/chart: opentelemetry-kube-stack-0.14.14
     app.kubernetes.io/version: "0.144.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -46,6 +46,16 @@ spec:
       receiver_creator/metrics:
         discovery:
           enabled: true
+        receivers:
+          prometheus_simple/prometheus_annotations:
+            config:
+              collection_interval: 30s
+              endpoint: '`endpoint`:`"prometheus.io/port" in annotations ? annotations["prometheus.io/port"]
+                : 9090`'
+              metrics_path: '`"prometheus.io/path" in annotations ? annotations["prometheus.io/path"]
+                : "/metrics"`'
+            rule: type == "pod" && annotations["prometheus.io/scrape"] == "true" && labels["app.kubernetes.io/component"]
+              != "opentelemetry-collector"
         watch_observers:
         - k8s_observer
     service:

@@ -1471,9 +1471,24 @@
                   }
                 },
                 "metrics": {
-                  "enabled": {
-                    "description": "Specifies whether the collector should collect metrics.",
-                    "type": "boolean"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Specifies whether the collector should collect metrics.",
+                      "type": "boolean"
+                    },
+                    "prometheus": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "description": "When enabled, configures receiver_creator/metrics with a prometheus_simple receiver that scrapes pods annotated with prometheus.io/scrape=true. Requires presets.annotationDiscovery.metrics.enabled to be true.",
+                      "properties": {
+                        "enabled": {
+                          "description": "Enable discovery of pods carrying classic Prometheus annotations (prometheus.io/scrape, prometheus.io/port, prometheus.io/path).",
+                          "type": "boolean"
+                        }
+                      }
+                    }
                   }
                 }
               }
