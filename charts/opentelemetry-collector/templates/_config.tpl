@@ -524,7 +524,6 @@ receivers:
 
 {{- define "opentelemetry-collector.kubernetesObjectsConfig" -}}
 {{- $preset := .Values.presets.kubernetesObjects -}}
-{{- $pullInterval := "3m" -}}
 receivers:
   k8sobjects:
     objects:
@@ -533,7 +532,7 @@ receivers:
 {{- range list "namespaces" "pods" "nodes" "services" "serviceaccounts" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
       - name: {{ . }}
         mode: watch
 {{- end }}
@@ -541,7 +540,7 @@ receivers:
 {{- range list "deployments" "replicasets" "daemonsets" "statefulsets" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: apps
       - name: {{ . }}
         mode: watch
@@ -551,7 +550,7 @@ receivers:
 {{- range list "jobs" "cronjobs" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: batch
       - name: {{ . }}
         mode: watch
@@ -562,7 +561,7 @@ receivers:
 {{- range list "roles" "rolebindings" "clusterroles" "clusterrolebindings" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: rbac.authorization.k8s.io
       - name: {{ . }}
         mode: watch
@@ -573,7 +572,7 @@ receivers:
 {{- range list "storageclasses" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: storage.k8s.io
       - name: {{ . }}
         mode: watch
@@ -582,7 +581,7 @@ receivers:
 {{- range list "persistentvolumes" "persistentvolumeclaims" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
       - name: {{ . }}
         mode: watch
 {{- end }}
@@ -591,7 +590,7 @@ receivers:
 {{- range list "ingresses" "networkpolicies" }}
       - name: {{ . }}
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: networking.k8s.io
       - name: {{ . }}
         mode: watch
@@ -601,7 +600,7 @@ receivers:
 {{- if $preset.autoscaling.enabled }}
       - name: horizontalpodautoscalers
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: autoscaling
       - name: horizontalpodautoscalers
         mode: watch
@@ -609,7 +608,7 @@ receivers:
 {{- if $preset.autoscaling.vpa.enabled }}
       - name: verticalpodautoscalers
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: autoscaling.k8s.io
       - name: verticalpodautoscalers
         mode: watch
@@ -619,7 +618,7 @@ receivers:
 {{- if $preset.policy.enabled }}
       - name: poddisruptionbudgets
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: policy
       - name: poddisruptionbudgets
         mode: watch
@@ -628,7 +627,7 @@ receivers:
 {{- if $preset.apiExtensions.enabled }}
       - name: customresourcedefinitions
         mode: pull
-        interval: {{ $pullInterval }}
+
         group: apiextensions.k8s.io
       - name: customresourcedefinitions
         mode: watch
