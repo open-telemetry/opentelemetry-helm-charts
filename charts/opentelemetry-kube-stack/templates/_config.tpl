@@ -122,8 +122,10 @@ receivers:
             - role: pod
               selectors:
                 - role: pod
-                  # only scrape data from pods running on the same node as collector
+                  # Only scrape data from pods running on the same node as the collector,
+                  # and skip the OpenTelemetry collector's own pods to avoid self-scrape loops.
                   field: "spec.nodeName=${env:OTEL_K8S_NODE_NAME}"
+                  label: "app.kubernetes.io/component!=opentelemetry-collector"
           relabel_configs:
             - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
               action: keep
