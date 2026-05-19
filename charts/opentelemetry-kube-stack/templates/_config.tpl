@@ -78,6 +78,9 @@ OR helps them easily port prometheus to the otel-kube-stack chart with no change
 {{- end }}
 {{- if .collector.presets.annotationDiscovery.metrics.enabled }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "receiver_creator/metrics" | uniq) }}
+{{- if .collector.presets.annotationDiscovery.metrics.prometheus.enabled }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "prometheus/annotation_discovery" | uniq) }}
+{{- end }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
@@ -104,6 +107,65 @@ receivers:
       - k8s_observer
     discovery:
       enabled: true
+  {{- end }}
+  {{- if .presets.annotationDiscovery.metrics.prometheus.enabled }}
+  # Scrapes pods on the same node carrying classic Prometheus annotations:
+  # prometheus.io/scrape=true (required), prometheus.io/port, prometheus.io/path,
+  # prometheus.io/scheme. Uses Kubernetes service discovery + Prometheus relabel
+  # rules rather than the receiver_creator + prometheus_simple combination.
+  prometheus/annotation_discovery:
+    config:
+      scrape_configs:
+        - job_name: kubernetes-pods
+          scrape_interval: 30s
+          kubernetes_sd_configs:
+            - role: pod
+              selectors:
+                - role: pod
+                  # only scrape data from pods running on the same node as collector
+                  field: "spec.nodeName=${env:OTEL_K8S_NODE_NAME}"
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels:
+                [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+              action: drop
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+              action: replace
+              regex: (https?)
+              target_label: __scheme__
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels:
+                [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              # NOTE: otel collector uses env var replacement. $$ is used as a literal $.
+              replacement: $$1:$$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$$1
+            {{- if .presets.annotationDiscovery.metrics.prometheus.addPrometheusLabels }}
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            {{- end }}
+            - source_labels: [__meta_kubernetes_pod_phase]
+              regex: Pending|Succeeded|Failed|Completed
+              action: drop
+            - action: replace
+              source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              target_label: job
   {{- end }}
 {{- end }}
 

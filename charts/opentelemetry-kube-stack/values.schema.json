@@ -1474,6 +1474,21 @@
                   "enabled": {
                     "description": "Specifies whether the collector should collect metrics.",
                     "type": "boolean"
+                  },
+                  "prometheus": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "When enabled, adds a standalone prometheus/annotation_discovery receiver configured with Kubernetes service discovery + relabel rules to scrape pods on the same node carrying classic Prometheus annotations (prometheus.io/scrape=true, prometheus.io/port, prometheus.io/path, prometheus.io/scheme).",
+                    "properties": {
+                      "enabled": {
+                        "description": "Enable scraping of pods carrying classic Prometheus annotations via a standalone Prometheus receiver.",
+                        "type": "boolean"
+                      },
+                      "addPrometheusLabels": {
+                        "description": "When true, the scrape config emits Prometheus-style labels on scraped metrics (Kubernetes `namespace`, `pod`, and all pod labels mapped via __meta_kubernetes_pod_label_*). When false (default), only the standard Prometheus `job` and `instance` labels are produced, leaving the k8sattributes processor as the sole source of Kubernetes metadata.",
+                        "type": "boolean"
+                      }
+                    }
                   }
                 }
               }

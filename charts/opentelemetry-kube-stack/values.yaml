@@ -509,6 +509,20 @@ defaultCRConfig:
         enabled: false
       metrics:
         enabled: false
+        # When enabled (requires `metrics.enabled: true`), adds a standalone
+        # `prometheus/annotation_discovery` receiver to the metrics pipeline. It uses
+        # Kubernetes service discovery + Prometheus relabel rules to scrape pods on the same
+        # node carrying classic Prometheus annotations: prometheus.io/scrape=true (required),
+        # prometheus.io/port, prometheus.io/path, prometheus.io/scheme.
+        prometheus:
+          enabled: false
+          # When true, the prometheus/annotation_discovery scrape config emits Prometheus-style
+          # Kubernetes labels on scraped metrics: `namespace`, `pod`, and all pod labels mapped
+          # via `__meta_kubernetes_pod_label_*` (e.g. `app_kubernetes_io_name`).
+          # When false (default), only the standard Prometheus `job` and `instance` labels are
+          # produced, leaving the k8sattributes processor (presets.kubernetesAttributes.enabled)
+          # as the sole source of Kubernetes metadata.
+          addPrometheusLabels: true
     resourceDetection:
       # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
       # Typically used to resolve the 'k8s.cluster.name' resource attribute.
@@ -561,6 +575,9 @@ collectors:
           enabled: false
         metrics:
           enabled: false
+          prometheus:
+            enabled: false
+            addPrometheusLabels: false
       resourceDetection:
         aks:
           enabled: false
