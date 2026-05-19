@@ -51,7 +51,7 @@ See [CONTRIBUTING.md](https://github.com/open-telemetry/opentelemetry-helm-chart
 ### Maintainers
 
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Jacob Aronoff](https://github.com/jaronoff97), Lightstep
+- [Jacob Aronoff](https://github.com/jaronoff97), Tero
 - [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
