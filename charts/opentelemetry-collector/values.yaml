@@ -72,7 +72,7 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
-  # Collects Kubernetes objects via the k8sobjects receiver in pull (default interval: 1h) and watch modes.
+  # Collects Kubernetes objects via the k8sobjects receiver in pull mode (default interval: 1h).
   # Can be used with mode = deployment, statefulset, or daemonset.
   # Compatible with kubernetesEvents preset. Extra resources can be added via
   # config.receivers.k8sobjects.objects (ClusterRole rules must be added manually via clusterRole.rules).
@@ -80,6 +80,8 @@ presets:
     enabled: false
     # When enabled with mode = daemonset, leader election is setup to prevent telemetry duplication.
     # disableLeaderElection: false
+    # When enabled, watch mode is added alongside pull to stream real-time changes.
+    watch: false
     # Core Kubernetes workload resources: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
     core:
       enabled: true

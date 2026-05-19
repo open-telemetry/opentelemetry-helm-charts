@@ -552,24 +552,30 @@ receivers:
 {{- range list "namespaces" "pods" "nodes" "services" "serviceaccounts" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
+{{- end }}
 {{- end }}
 {{- range list "deployments" "replicasets" "daemonsets" "statefulsets" }}
       - name: {{ . }}
         mode: pull
         group: apps
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
         group: apps
+{{- end }}
 {{- end }}
 {{- range list "jobs" "cronjobs" }}
       - name: {{ . }}
         mode: pull
         group: batch
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
         group: batch
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if $preset.rbac.enabled }}
@@ -577,9 +583,11 @@ receivers:
       - name: {{ . }}
         mode: pull
         group: rbac.authorization.k8s.io
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
         group: rbac.authorization.k8s.io
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if $preset.storage.enabled }}
@@ -587,15 +595,19 @@ receivers:
       - name: {{ . }}
         mode: pull
         group: storage.k8s.io
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
         group: storage.k8s.io
 {{- end }}
+{{- end }}
 {{- range list "persistentvolumes" "persistentvolumeclaims" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if $preset.networking.enabled }}
@@ -603,42 +615,52 @@ receivers:
       - name: {{ . }}
         mode: pull
         group: networking.k8s.io
+{{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
         group: networking.k8s.io
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if $preset.autoscaling.enabled }}
       - name: horizontalpodautoscalers
         mode: pull
         group: autoscaling
+{{- if $preset.watch }}
       - name: horizontalpodautoscalers
         mode: watch
         group: autoscaling
+{{- end }}
 {{- if $preset.autoscaling.vpa.enabled }}
       - name: verticalpodautoscalers
         mode: pull
         group: autoscaling.k8s.io
+{{- if $preset.watch }}
       - name: verticalpodautoscalers
         mode: watch
         group: autoscaling.k8s.io
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if $preset.policy.enabled }}
       - name: poddisruptionbudgets
         mode: pull
         group: policy
+{{- if $preset.watch }}
       - name: poddisruptionbudgets
         mode: watch
         group: policy
+{{- end }}
 {{- end }}
 {{- if $preset.apiExtensions.enabled }}
       - name: customresourcedefinitions
         mode: pull
         group: apiextensions.k8s.io
+{{- if $preset.watch }}
       - name: customresourcedefinitions
         mode: watch
         group: apiextensions.k8s.io
+{{- end }}
 {{- end }}
 {{- end }}
 
