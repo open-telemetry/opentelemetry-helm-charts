@@ -73,11 +73,13 @@ presets:
   kubernetesEvents:
     enabled: false
   # Collects Kubernetes objects via the k8sobjects receiver in pull (default interval: 1h) and watch modes.
-  # Best used with mode = deployment or statefulset.
+  # Can be used with mode = deployment, statefulset, or daemonset.
   # Compatible with kubernetesEvents preset. Extra resources can be added via
   # config.receivers.k8sobjects.objects (ClusterRole rules must be added manually via clusterRole.rules).
   kubernetesObjects:
     enabled: false
+    # When enabled with mode = daemonset, leader election is setup to prevent telemetry duplication.
+    # disableLeaderElection: false
     # Core Kubernetes workload resources: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
     core:
       enabled: true

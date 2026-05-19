@@ -15,7 +15,10 @@ rules:
 {{- $clusterMetricsEnabled := .Values.presets.clusterMetrics.enabled }}
 {{- $disableLeaderElectionForClusterMetrics := .Values.presets.clusterMetrics.disableLeaderElection}}
 {{- $useLeaderElectionForClusterMetrics := and (eq .Values.mode "daemonset") ( $clusterMetricsEnabled ) (not $disableLeaderElectionForClusterMetrics) }}
-{{- if $useLeaderElectionForClusterMetrics }}
+{{- $kubernetesObjectsEnabled := .Values.presets.kubernetesObjects.enabled }}
+{{- $disableLeaderElectionForKubernetesObjects := .Values.presets.kubernetesObjects.disableLeaderElection }}
+{{- $useLeaderElectionForKubernetesObjects := and (eq .Values.mode "daemonset") ( $kubernetesObjectsEnabled ) (not $disableLeaderElectionForKubernetesObjects) }}
+{{- if or $useLeaderElectionForClusterMetrics $useLeaderElectionForKubernetesObjects }}
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get","list","watch","create","update","patch","delete"]
