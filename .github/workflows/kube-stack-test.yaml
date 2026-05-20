@@ -13,6 +13,11 @@ permissions:
 jobs:
   opentelemetry-kube-stack-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        helm-version:
+          - "v3.14.4"
+          - "v4.0.3"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -22,7 +27,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
-          helm-version: "v3.11.3"
+          helm-version: ${{ matrix.helm-version }}
 
       # We'll need this eventually, but for now leave it commented.
       - name: Install cert-manager
