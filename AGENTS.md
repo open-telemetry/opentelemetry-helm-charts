@@ -23,6 +23,7 @@ Non-exhaustively, the important points are:
 
 * When changing anything inside the charts folder always bump the chart's version and run `make generate-examples`.
 * Do not add new examples unless directed by a maintainer or approver
+* Do not add inline comments to helm template definitions.
 
 ## Commit formatting
 
