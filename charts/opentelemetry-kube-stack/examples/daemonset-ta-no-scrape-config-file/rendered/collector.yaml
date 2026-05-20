@@ -235,178 +235,7 @@ spec:
             endpoint: 0.0.0.0:4318
       prometheus:
         config:
-          scrape_configs:
-          - job_name: kubernetes-pods
-            kubernetes_sd_configs:
-            - role: pod
-              selectors:
-              - field: spec.nodeName=${env:OTEL_K8S_NODE_NAME}
-                role: pod
-            relabel_configs:
-            - action: keep
-              regex: true
-              source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_scrape
-            - action: drop
-              regex: true
-              source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_scrape_slow
-            - action: replace
-              regex: (https?)
-              source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_scheme
-              target_label: __scheme__
-            - action: replace
-              regex: (.+)
-              source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_path
-              target_label: __metrics_path__
-            - action: replace
-              regex: ([^:]+)(?::\d+)?;(\d+)
-              replacement: $$1:$$2
-              source_labels:
-              - __address__
-              - __meta_kubernetes_pod_annotation_prometheus_io_port
-              target_label: __address__
-            - action: labelmap
-              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
-              replacement: __param_$$1
-            - action: labelmap
-              regex: __meta_kubernetes_pod_label_(.+)
-            - action: replace
-              source_labels:
-              - __meta_kubernetes_namespace
-              target_label: namespace
-            - action: replace
-              source_labels:
-              - __meta_kubernetes_pod_name
-              target_label: pod
-            - action: drop
-              regex: Pending|Succeeded|Failed|Completed
-              source_labels:
-              - __meta_kubernetes_pod_phase
-            - action: replace
-              source_labels:
-              - __meta_kubernetes_pod_label_app_kubernetes_io_name
-              target_label: job
-            scrape_interval: 30s
-          - job_name: node-exporter
-            relabel_configs:
-            - action: labelmap
-              regex: __meta_kubernetes_node_label_(.+)
-            - action: replace
-              regex: (.*)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - job
-              target_label: __tmp_prometheus_job_name
-            scrape_interval: 30s
-            static_configs:
-            - targets:
-              - ${env:OTEL_K8S_NODE_IP}:9100
-          - authorization:
-              credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-              type: Bearer
-            follow_redirects: true
-            honor_labels: true
-            honor_timestamps: true
-            job_name: kubelet
-            kubernetes_sd_configs:
-            - follow_redirects: true
-              role: node
-              selectors:
-              - field: metadata.name=${env:OTEL_K8S_NODE_NAME}
-                role: node
-            metric_relabel_configs:
-            - action: drop
-              regex: container_cpu_(load_average_10s|system_seconds_total|user_seconds_total)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __name__
-            - action: drop
-              regex: container_fs_(io_current|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __name__
-            - action: drop
-              regex: container_memory_(mapped_file|swap)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __name__
-            - action: drop
-              regex: container_(file_descriptors|tasks_state|threads_max)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __name__
-            - action: drop
-              regex: container_spec.*
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __name__
-            - action: drop
-              regex: .+;
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - id
-              - pod
-            metrics_path: /metrics/cadvisor
-            relabel_configs:
-            - action: replace
-              regex: (.*)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - job
-              target_label: __tmp_prometheus_job_name
-            - action: replace
-              replacement: kubelet
-              target_label: job
-            - action: replace
-              regex: (.*)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __meta_kubernetes_node_name
-              target_label: node
-            - action: replace
-              regex: (.*)
-              replacement: https-metrics
-              separator: ;
-              target_label: endpoint
-            - action: replace
-              regex: (.*)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __metrics_path__
-              target_label: metrics_path
-            - action: hashmod
-              modulus: 1
-              regex: (.*)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __address__
-              target_label: __tmp_hash
-            - action: keep
-              regex: $(SHARD)
-              replacement: $$1
-              separator: ;
-              source_labels:
-              - __tmp_hash
-            scheme: https
-            scrape_interval: 15s
-            scrape_timeout: 10s
-            tls_config:
-              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-              insecure_skip_verify: true
+          scrape_configs: []
     service:
       extensions:
       - k8s_leader_elector/k8s_objects
@@ -433,8 +262,8 @@ spec:
           - resource/hostname
           - batch
           receivers:
-          - prometheus
           - otlp
+          - prometheus
           - hostmetrics
           - kubeletstats
           - k8s_cluster
@@ -460,6 +289,12 @@ spec:
       memory: 250Mi
   securityContext:
     {}
+  targetAllocator:
+    allocationStrategy: per-node
+    enabled: true
+    prometheusCR:
+      enabled: true
+      serviceMonitorSelector: {}
   volumeMounts:
   - name: varlogpods
     mountPath: /var/log/pods
@@ -500,7 +335,7 @@ spec:
         apiVersion: v1
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
-    value: "k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),host.name=$(OTEL_K8S_NODE_NAME),k8s.node.ip=$(OTEL_K8S_NODE_IP),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.cluster.name=demo"
+    value: "k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),host.name=$(OTEL_K8S_NODE_NAME),k8s.node.ip=$(OTEL_K8S_NODE_IP),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.cluster.name=unknown_k8s_cluster"
   
   volumes:
   - name: varlogpods
