@@ -17,12 +17,10 @@ target allocator has a receiver to populate.
 {{- $_ := set $collector "config" $config }}
 {{- else if (dig "targetAllocator" "enabled" false .collector) }}
 {{- $receivers := (dig "receivers" dict $config) }}
-{{- /* Inject a bare prometheus receiver (with an empty scrape_configs list) only if the user hasn't already defined one. The OpenTelemetry Operator requires a prometheus receiver to be present in the config so it can patch in the target_allocator endpoint */ -}}
 {{- if not (hasKey $receivers "prometheus") }}
 {{- $config = (mustMergeOverwrite $config (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" list))))) }}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- /* Ensure the prometheus receiver is wired into the metrics pipeline so the target allocator's scraped metrics actually flow through. Only modifies the pipeline when a metrics pipeline exists and prometheus is not already listed. */ -}}
 {{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "prometheus" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
 {{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "prometheus" | uniq) }}
 {{- end }}
