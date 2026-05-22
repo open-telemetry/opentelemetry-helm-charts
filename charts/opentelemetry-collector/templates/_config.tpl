@@ -162,15 +162,31 @@ Build config file for deployment OpenTelemetry Collector
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
+{{- define "opentelemetry-collector.presetComponentName" -}}
+{{- $useCanonical := .Values.Values.presets.useCanonicalNames -}}
+{{- $names := dict
+      "hostMetrics"           (dict "legacy" "hostmetrics"    "canonical" "host_metrics")
+      "kubeletMetrics"        (dict "legacy" "kubeletstats"   "canonical" "kubelet_stats")
+      "logsCollection"        (dict "legacy" "filelog"        "canonical" "file_log")
+      "kubernetesAttributes"  (dict "legacy" "k8sattributes"  "canonical" "k8s_attributes")
+      "kubernetesEvents"      (dict "legacy" "k8sobjects"     "canonical" "k8s_objects")
+      "kubernetesObjects"     (dict "legacy" "k8sobjects"     "canonical" "k8s_objects")
+-}}
+{{- $entry := index $names .preset -}}
+{{- if $useCanonical -}}{{ $entry.canonical }}{{- else -}}{{ $entry.legacy }}{{- end -}}
+{{- end }}
+
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
+{{- $name := include "opentelemetry-collector.presetComponentName" (dict "preset" "hostMetrics" "Values" .Values) }}
+{{- $ctx := mustMerge (dict "componentName" $name) .Values }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.hostMetricsConfig" $ctx | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers $name | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.hostMetricsConfig" -}}
 receivers:
-  hostmetrics:
+  {{ .componentName }}:
     root_path: /hostfs
     collection_interval: 10s
     scrapers:
@@ -249,22 +265,26 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
+{{- $name := include "opentelemetry-collector.presetComponentName" (dict "preset" "kubeletMetrics" "Values" .Values) }}
+{{- $ctx := mustMerge (dict "componentName" $name) .Values }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.kubeletMetricsConfig" $ctx | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers $name | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubeletMetricsConfig" -}}
 receivers:
-  kubeletstats:
+  {{ .componentName }}:
     collection_interval: 20s
     auth_type: "serviceAccount"
     endpoint: "${env:K8S_NODE_IP}:10250"
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
+{{- $name := include "opentelemetry-collector.presetComponentName" (dict "preset" "logsCollection" "Values" .Values) }}
+{{- $ctx := mustMerge (dict "componentName" $name) .Values }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.logsCollectionConfig" $ctx | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $name | uniq)  }}
 {{- if .Values.Values.presets.logsCollection.storeCheckpoints}}
 {{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions "file_storage" | uniq)  }}
@@ -279,7 +299,7 @@ extensions:
     directory: /var/lib/otelcol
 {{- end }}
 receivers:
-  filelog:
+  {{ .componentName }}:
     include: [ /var/log/pods/*/*/*.log ]
     {{- if .Values.presets.logsCollection.includeCollectorLogs }}
     exclude: []
@@ -358,31 +378,33 @@ exporters:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
+{{- $name := include "opentelemetry-collector.presetComponentName" (dict "preset" "kubernetesAttributes" "Values" .Values) }}
+{{- $ctx := mustMerge (dict "componentName" $name) .Values }}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" $ctx | fromYaml) .config }}
 {{- if $config.service.pipelines.logs }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.logs.processors) }}
-    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
+  {{- if not (has $name $config.service.pipelines.logs.processors) }}
+    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors $name | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if and $config.service.pipelines.metrics }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.metrics.processors) }}
-    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
+  {{- if not (has $name $config.service.pipelines.metrics.processors) }}
+    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors $name | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if and $config.service.pipelines.traces }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.traces.processors) }}
-    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
+  {{- if not (has $name $config.service.pipelines.traces.processors) }}
+    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors $name | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if $config.service.pipelines.profiles }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.profiles.processors) }}
-    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "k8sattributes" | uniq)  }}
+  {{- if not (has $name $config.service.pipelines.profiles.processors) }}
+    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors $name | uniq)  }}
   {{- end }}
-  {{- $podAssoc := $config.processors.k8sattributes.pod_association }}
+  {{- $podAssoc := (index $config.processors $name).pod_association }}
   {{- $containerIdSource := dict "sources" (list (dict "from" "resource_attribute" "name" "container.id")) }}
   {{- $hasContainerId := false }}
   {{- range $podAssoc }}
@@ -393,7 +415,7 @@ exporters:
     {{- end }}
   {{- end }}
   {{- if not $hasContainerId }}
-    {{- $_ := set $config.processors.k8sattributes "pod_association" (prepend $podAssoc $containerIdSource) }}
+    {{- $_ := set (index $config.processors $name) "pod_association" (prepend $podAssoc $containerIdSource) }}
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
@@ -401,7 +423,7 @@ exporters:
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
 processors:
-  k8sattributes:
+  {{ .componentName }}:
   {{- if eq .Values.mode "daemonset" }}
     filter:
       node_from_env_var: K8S_NODE_NAME
@@ -491,14 +513,16 @@ processors:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq)  }}
+{{- $name := include "opentelemetry-collector.presetComponentName" (dict "preset" "kubernetesEvents" "Values" .Values) }}
+{{- $ctx := mustMerge (dict "componentName" $name) .Values }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" $ctx | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $name | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesEventsConfig" -}}
 receivers:
-  k8sobjects:
+  {{ .componentName }}:
     objects:
       - name: events
         mode: "watch"
@@ -515,25 +539,26 @@ receivers:
 {{- end -}}
 {{- $useLeaderElection := and (eq $vals.mode "daemonset") (not $disableLeaderElection) -}}
 {{- $electorName := "k8s_objects" }}
-{{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
+{{- $name := include "opentelemetry-collector.presetComponentName" (dict "preset" "kubernetesObjects" "Values" .Values) }}
+{{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useLeaderElection" $useLeaderElection "electorName" $electorName "componentName" $name) .Values }}
 {{- $objectsYaml := include "opentelemetry-collector.kubernetesObjectsConfig" $ctx | fromYaml }}
-{{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
+{{- $newObjects := (index $objectsYaml.receivers $name).objects }}
 {{- $existingObjects := list }}
 {{- if .config.receivers }}
-{{- if index .config.receivers "k8sobjects" }}
-{{- if (index .config.receivers "k8sobjects").objects }}
-{{- $existingObjects = (index .config.receivers "k8sobjects").objects }}
+{{- if index .config.receivers $name }}
+{{- if (index .config.receivers $name).objects }}
+{{- $existingObjects = (index .config.receivers $name).objects }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- $allObjects := concat $newObjects $existingObjects }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .config }}
-{{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
+{{- $_ := set (index $config.receivers $name) "objects" $allObjects }}
 {{- if $useLeaderElection }}
 {{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq) }}
 {{- end }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $name | uniq) }}
 {{- $config | toYaml }}
 {{- end }}
 
@@ -543,7 +568,7 @@ receivers:
 {{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
 {{- end }}
 receivers:
-  k8sobjects:
+  {{ .componentName }}:
     {{- if .useLeaderElection }}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
     {{- end }}
