@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  demo-test:
+  demo-test-matrix:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,3 +36,17 @@ jobs:
           --chart-repos grafana=https://grafana-community.github.io/helm-charts
           --chart-repos jaeger=https://jaegertracing.github.io/helm-charts
           --chart-repos opensearch=https://opensearch-project.github.io/helm-charts"
+
+  demo-test:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [demo-test-matrix]
+    steps:
+      - name: Check matrix result
+        run: |
+          if [[ "${{ needs.demo-test-matrix.result }}" == "success" ]]; then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            exit 1
+          fi
