@@ -29,17 +29,14 @@ jobs:
           create-kind-cluster: "true"
           helm-version: ${{ matrix.helm-version }}
 
-      # We'll need this eventually, but for now leave it commented.
       - name: Install cert-manager
         run: |
           kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
           kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
           kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
 
-      - name: Run Helm Install
-        run: |
-          helm dep build charts/opentelemetry-kube-stack
-          helm install opentelemetry-kube-stack charts/opentelemetry-kube-stack
+      - name: Run chart-testing (install)
+        run: ct install --charts charts/opentelemetry-kube-stack --helm-extra-set-args "--set=opentelemetry-operator.fullnameOverride=otel-operator"
 
   opentelemetry-kube-stack-test:
     if: always()
