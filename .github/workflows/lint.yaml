@@ -9,8 +9,13 @@ permissions:
   contents: read
 
 jobs:
-  lint-test:
+  lint-test-matrix:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        helm-version:
+          - "v3.14.4"
+          - "v4.0.3"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -20,7 +25,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "false"
-          helm-version: "v3.14.4"
+          helm-version: ${{ matrix.helm-version }}
 
       - name: Run chart-testing (lint)
         run: "ct lint --target-branch main
@@ -32,3 +37,17 @@ jobs:
 
       - name: Run make check-examples
         run: make check-examples
+
+  lint-test:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [lint-test-matrix]
+    steps:
+      - name: Check matrix result
+        run: |
+          if [[ "${{ needs.lint-test-matrix.result }}" == "success" ]]; then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            exit 1
+          fi
