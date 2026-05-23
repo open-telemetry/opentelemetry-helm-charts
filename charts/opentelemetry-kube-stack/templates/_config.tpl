@@ -4,6 +4,10 @@ Constructs the final config for the given collector
 This allows a user to supply a scrape_configs_file. This file is templated and loaded as a yaml array.
 If a user has already supplied a prometheus receiver config, the file's config is appended. Finally,
 the config is written as YAML.
+
+When no scrape_configs_file is supplied but the targetAllocator is enabled, a minimal prometheus
+receiver (with an empty scrape_configs list) is injected if one isn't already defined, so the
+target allocator has a receiver to populate.
 */}}
 {{- define "opentelemetry-kube-stack.config" -}}
 {{- $collector := .collector }}
@@ -11,6 +15,15 @@ the config is written as YAML.
 {{- if .collector.scrape_configs_file }}
 {{- $config = (include "opentelemetry-kube-stack.collector.appendPrometheusScrapeFile" . | fromYaml) }}
 {{- $_ := set $collector "config" $config }}
+{{- else if (dig "targetAllocator" "enabled" false .collector) }}
+{{- $receivers := (dig "receivers" dict $config) }}
+{{- if not (hasKey $receivers "prometheus") }}
+{{- $config = (mustMergeOverwrite $config (dict "receivers" (dict "prometheus" (dict "config" (dict "scrape_configs" list))))) }}
+{{- $_ := set $collector "config" $config }}
+{{- end }}
+{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "prometheus" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "prometheus" | uniq) }}
+{{- end }}
 {{- end }}
 {{- if .collector.presets.logsCollection.enabled }}
 {{- $_ := set $collector "exclude" (list (printf "/var/log/pods/%s_%s*_*/otc-container/*.log" .namespace (include "opentelemetry-kube-stack.collectorFullname" .))) }}

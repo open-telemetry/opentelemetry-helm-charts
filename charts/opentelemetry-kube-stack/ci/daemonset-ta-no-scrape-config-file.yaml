@@ -1,0 +1,20 @@
+collectors:
+  daemon:
+    # no prometheus scrape config file
+    scrape_configs_file: ""
+    presets:
+      kubeletMetrics:
+        enabled: true
+      hostMetrics:
+        enabled: true
+      kubernetesAttributes:
+        enabled: true
+      clusterMetrics:
+        enabled: true
+    # target allocator configuration to discover ServiceMonitor resources and distribute scrape targets across the DaemonSet pods
+    targetAllocator:
+      enabled: true
+      allocationStrategy: per-node
+      prometheusCR:
+        enabled: true
+        serviceMonitorSelector: {}

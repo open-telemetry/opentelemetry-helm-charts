@@ -11,8 +11,13 @@ permissions:
   contents: read
 
 jobs:
-  ebpf-test:
+  ebpf-test-matrix:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        helm-version:
+          - "v3.9.4"
+          - "v4.0.3"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -22,6 +27,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
+          helm-version: ${{ matrix.helm-version }}
 
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-ebpf
@@ -38,3 +44,17 @@ jobs:
           kubectl rollout status deployment example-opentelemetry-ebpf-cloud-collector --timeout=30s
           kubectl rollout status deployment example-opentelemetry-ebpf-k8s-collector --timeout=30s
           kubectl rollout status deployment example-opentelemetry-ebpf-reducer --timeout=30s
+
+  ebpf-test:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [ebpf-test-matrix]
+    steps:
+      - name: Check matrix result
+        run: |
+          if [[ "${{ needs.ebpf-test-matrix.result }}" == "success" ]]; then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            exit 1
+          fi
