@@ -1,0 +1,38 @@
+---
+# Source: opentelemetry-auto-instrumentation/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: default
+  name: example-opentelemetry-auto-instrumentation-manager-clusterRole
+  labels:
+    helm.sh/chart: opentelemetry-auto-instrumentation-0.151.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-auto-instrumentation
+    app.kubernetes.io/version: "0.151.0"
+    app.kubernetes.io/name: opentelemetry-auto-instrumentation
+    app.kubernetes.io/instance: example
+rules:
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - apps
+      - extensions
+    resources:
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch

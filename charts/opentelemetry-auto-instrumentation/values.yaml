@@ -1,0 +1,140 @@
+################################################################################
+# OpenTelemetry auto-instrumentation
+#
+# The Auto Instrumentation runs as a pod mutating webhook.
+# Pods can be modified at deployment, with the injection of auto-instrumentation.
+#
+# Related documentation: https://github.com/open-telemetry/opentelemetry-operator/
+################################################################################
+
+# nameOverride replaces the name of the chart, when this is used to construct
+# Kubernetes object names.
+nameOverride: ""
+# fullnameOverride completely replaces the generated name.
+fullnameOverride: ""
+# Specify which namespace should be used to deploy the resources into.
+namespaceOverride: ""
+
+# Number of replicas for the mutating webhook
+replicaCount: 1
+
+configMap:
+  # Specifies whether a configMap should be created (true by default)
+  create: true
+  # Specifies an existing ConfigMap to be mounted to the pod
+  # The ConfigMap MUST include the configuration via a key named 'manager.yaml'. If not you can additionaly set existingKey to the desired one in the configmap
+  existingName: ""
+  # If the key in your provided configmap does not match 'manager.yaml' you can set here the custom one
+  # existingKey: demo-key
+
+manager:
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
+    # The tag of the manager image, default value is the chart appVersion
+    tag: "main"
+  # Secrets to attach to the respective serviceaccount to pull docker images
+  imagePullSecrets: []
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+    # Service account annotations
+    annotations: {}
+  config: {}
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 64Mi
+
+  # liveness probe configuration
+  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8082
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  # readiness probe configuration
+  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  readinessProbe:
+    httpGet:
+      path: /readyz
+      port: 8082
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  # Pod annotations to add to the manager pod
+  podAnnotations: {}
+
+  # Pod labels to add to the manager pod
+  podLabels: {}
+
+  # Extra environment variables to set in the manager container.
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  extraEnvs: []
+  # extraEnvs:
+  #   - name: MY_VAR
+  #     value: "my-value"
+  #   - name: MY_SECRET_VAR
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: my-secret
+  #         key: my-key
+
+cert:
+  # Specifies whether a cert should be created
+  create: true
+  recreate: false
+  certPeriodDays: 365
+  secretName: opentelemetry-auto-instrumentation
+  # Secret annotations
+  secretAnnotations: {}
+  # Secret labels
+  secretLabels: {}
+  ## The chart reads the contents of the file paths with the helm .Files.Get function.
+  ## Refer to this doc https://helm.sh/docs/chart_template_guide/accessing_files/ to understand
+  ## limitations of file paths accessible to the chart.
+  ## Path to your own PEM-encoded certificate.
+  certFile: ""
+  ## Path to your own PEM-encoded private key.
+  keyFile: ""
+  ## Path to the CA cert.
+  caFile: ""
+
+webhook:
+  # Adds a prefix to the mutating webhook name.
+  # This can be used to order this mutating webhook with all your cluster's mutating webhooks.
+  namePrefix: ""
+  timeoutSeconds: 30
+  servicePort: 9443
+  namespaceSelector: {}
+  objectSelector: {}
+  # Valid values: Fail or Ignore
+  failurePolicy: Ignore
+
+
+affinity: {}
+tolerations: []
+nodeSelector: {}
+topologySpreadConstraints: []
+
+extraVolumes: []
+  # - name: custom-manager-configmap
+  #   configMap:
+  #     name: demo-configmap
+  #     items:
+  #       - key: demo-key
+  #         path: manager.yaml
+  #     defaultMode: 420
+extraVolumeMounts: []
+  # - name: custom-manager-configmap
+  #   mountPath: /conf
+## This will deploy arbitrary manifests as part of the helm relase
+extraObjects: []

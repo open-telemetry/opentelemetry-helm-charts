@@ -1,0 +1,312 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/Welcome7",
+  "definitions": {
+    "Welcome7": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nameOverride": {
+          "type": "string"
+        },
+        "fullnameOverride": {
+          "type": "string"
+        },
+        "namespaceOverride": {
+          "type": "string"
+        },
+        "replicaCount": {
+          "type": "integer"
+        },
+        "configMap": {
+          "$ref": "#/definitions/ConfigMap"
+        },
+        "manager": {
+          "$ref": "#/definitions/Manager"
+        },
+        "cert": {
+          "$ref": "#/definitions/CERT"
+        },
+        "webhook": {
+          "$ref": "#/definitions/Webhook"
+        },
+        "affinity": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "tolerations": {
+          "type": "array",
+          "items": {}
+        },
+        "nodeSelector": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "topologySpreadConstraints": {
+          "type": "array",
+          "items": {}
+        },
+        "extraVolumes": {
+          "type": "array",
+          "items": {}
+        },
+        "extraVolumeMounts": {
+          "type": "array",
+          "items": {}
+        },
+        "extraObjects": {
+          "type": "array",
+          "items": {}
+        }
+      },
+      "required": [
+        "affinity",
+        "cert",
+        "configMap",
+        "extraObjects",
+        "extraVolumeMounts",
+        "extraVolumes",
+        "fullnameOverride",
+        "manager",
+        "nameOverride",
+        "namespaceOverride",
+        "nodeSelector",
+        "replicaCount",
+        "tolerations",
+        "topologySpreadConstraints",
+        "webhook"
+      ],
+      "title": "Welcome7"
+    },
+    "Affinity": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Affinity"
+    },
+    "Config": {
+      "type": "object",
+      "additionalProperties": true,
+      "title": "Config"
+    },
+    "CERT": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "recreate": {
+          "type": "boolean"
+        },
+        "certPeriodDays": {
+          "type": "integer"
+        },
+        "secretName": {
+          "type": "string"
+        },
+        "secretAnnotations": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "secretLabels": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "certFile": {
+          "type": "string"
+        },
+        "keyFile": {
+          "type": "string"
+        },
+        "caFile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "caFile",
+        "certFile",
+        "certPeriodDays",
+        "create",
+        "keyFile",
+        "recreate",
+        "secretAnnotations",
+        "secretLabels",
+        "secretName"
+      ],
+      "title": "CERT"
+    },
+    "ConfigMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "existingName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "create",
+        "existingName"
+      ],
+      "title": "ConfigMap"
+    },
+    "Manager": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "image": {
+          "$ref": "#/definitions/Image"
+        },
+        "imagePullSecrets": {
+          "type": "array",
+          "items": {}
+        },
+        "serviceAccount": {
+          "$ref": "#/definitions/ServiceAccount"
+        },
+        "config": {
+          "$ref": "#/definitions/Config"
+        },
+        "resources": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "livenessProbe": {
+          "$ref": "#/definitions/NessProbe"
+        },
+        "readinessProbe": {
+          "$ref": "#/definitions/NessProbe"
+        },
+        "podAnnotations": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "podLabels": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "extraEnvs": {
+          "type": "array",
+          "items": {}
+        }
+      },
+      "required": [
+        "config",
+        "extraEnvs",
+        "image",
+        "imagePullSecrets",
+        "livenessProbe",
+        "podAnnotations",
+        "podLabels",
+        "readinessProbe",
+        "resources",
+        "serviceAccount"
+      ],
+      "title": "Manager"
+    },
+    "Image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repository",
+        "tag"
+      ],
+      "title": "Image"
+    },
+    "NessProbe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "httpGet": {
+          "$ref": "#/definitions/HTTPGet"
+        },
+        "initialDelaySeconds": {
+          "type": "integer"
+        },
+        "periodSeconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "httpGet",
+        "initialDelaySeconds",
+        "periodSeconds"
+      ],
+      "title": "NessProbe"
+    },
+    "HTTPGet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "port"
+      ],
+      "title": "HTTPGet"
+    },
+    "ServiceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "annotations": {
+          "$ref": "#/definitions/Affinity"
+        }
+      },
+      "required": [
+        "annotations",
+        "create",
+        "name"
+      ],
+      "title": "ServiceAccount"
+    },
+    "Webhook": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "namePrefix": {
+          "type": "string"
+        },
+        "timeoutSeconds": {
+          "type": "integer"
+        },
+        "servicePort": {
+          "type": "integer"
+        },
+        "namespaceSelector": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "objectSelector": {
+          "$ref": "#/definitions/Affinity"
+        },
+        "failurePolicy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "failurePolicy",
+        "namePrefix",
+        "namespaceSelector",
+        "objectSelector",
+        "servicePort",
+        "timeoutSeconds"
+      ],
+      "title": "Webhook"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ template "helper.namespace" . }}
+  name: {{ template "helper.fullname" . }}-manager
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "helper.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- include "helper.configTemplateChecksumAnnotation" . | nindent 8 }}
+        {{- if .Values.manager.podAnnotations }}
+          {{- toYaml .Values.manager.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "helper.commonLabels" . | nindent 8 }}
+        {{- if .Values.manager.podLabels }}
+        {{- toYaml .Values.manager.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "helper.pod" . | nindent 6 }}

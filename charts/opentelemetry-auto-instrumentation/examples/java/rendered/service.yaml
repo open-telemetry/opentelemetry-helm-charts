@@ -1,0 +1,16 @@
+---
+# Source: opentelemetry-auto-instrumentation/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: example-opentelemetry-auto-instrumentation-webhook
+spec:
+  selector:
+    app.kubernetes.io/name: opentelemetry-auto-instrumentation
+    app.kubernetes.io/instance: example
+  ports:
+    - name: http-port
+      protocol: TCP
+      port: 9443
+      targetPort: webhook-server

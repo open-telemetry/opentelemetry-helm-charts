@@ -1,0 +1,16 @@
+{{- if and (.Values.configMap.create) (not .Values.configMap.existingName) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "helper.managerConfigMapName" . }}
+  namespace: {{ template "helper.namespace" . }}
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+data:
+  manager.yaml: |
+    ignore-missing-collector-crds: true
+    enable-instrumentation-crds: false
+    enable-multi-instrumentation: false
+    health-probe-addr: 0.0.0.0:{{ .Values.manager.livenessProbe.httpGet.port | default 8081 }}
+    {{- .Values.manager.config | toYaml | nindent 4 }}
+{{- end }}

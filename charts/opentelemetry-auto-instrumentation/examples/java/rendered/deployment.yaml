@@ -1,0 +1,97 @@
+---
+# Source: opentelemetry-auto-instrumentation/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: example-opentelemetry-auto-instrumentation-manager
+  labels:
+    helm.sh/chart: opentelemetry-auto-instrumentation-0.151.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-auto-instrumentation
+    app.kubernetes.io/version: "0.151.0"
+    app.kubernetes.io/name: opentelemetry-auto-instrumentation
+    app.kubernetes.io/instance: example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-auto-instrumentation
+      app.kubernetes.io/instance: example
+  template:
+    metadata:
+      annotations:
+        checksum/config: 5aceed8cab013d712ab2b9b130959b4b17c05a2a83f76ed15577476e92cb8aba
+      labels:
+        helm.sh/chart: opentelemetry-auto-instrumentation-0.151.0
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: opentelemetry-auto-instrumentation
+        app.kubernetes.io/version: "0.151.0"
+        app.kubernetes.io/name: opentelemetry-auto-instrumentation
+        app.kubernetes.io/instance: example
+    spec:
+      serviceAccountName: example-opentelemetry-auto-instrumentation-manager
+      automountServiceAccountToken: false
+      containers:
+        - name: manager
+          image: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:main
+          command:
+            - /manager
+            - --config-file
+            - /conf/manager.yaml
+            - --zap-log-level
+            - debug
+          ports:
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /conf/
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: serviceaccount-token
+              readOnly: true
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+          env:
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: config-volume
+          configMap:
+            name: example-opentelemetry-auto-instrumentation-manager-configmap
+            items:
+              - key: manager.yaml
+                path: manager.yaml
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: opentelemetry-auto-instrumentation
+        - name: serviceaccount-token
+          projected:
+            defaultMode: 0444
+            sources:
+              - serviceAccountToken:
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace

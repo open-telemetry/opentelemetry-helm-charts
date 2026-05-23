@@ -1,0 +1,42 @@
+---
+# Source: opentelemetry-auto-instrumentation/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-auto-instrumentation-manager-configmap
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-auto-instrumentation-0.151.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-auto-instrumentation
+    app.kubernetes.io/version: "0.151.0"
+    app.kubernetes.io/name: opentelemetry-auto-instrumentation
+    app.kubernetes.io/instance: example
+data:
+  manager.yaml: |
+    ignore-missing-collector-crds: true
+    enable-instrumentation-crds: false
+    enable-multi-instrumentation: false
+    health-probe-addr: 0.0.0.0:8082
+    enable-java-auto-instrumentation: true
+    instrumentations:
+      spec:
+        env:
+        - name: OTEL_TRACES_SAMPLER
+          value: always_on
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: http/protobuf
+        - name: OTEL_LOGS_EXPORTER
+          value: none
+        exporter:
+          endpoint: http://collector:4318
+        java:
+          env:
+          - name: OTEL_JAVAAGENT_DEBUG
+            value: "true"
+          - name: OTEL_INSTRUMENTATION_JDBC_ENABLED
+            value: "false"
+          image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:2.28.1
+        propagators:
+        - jaeger
+        - b3
