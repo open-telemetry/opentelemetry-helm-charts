@@ -60,9 +60,15 @@ rules:
     verbs: ["get", "watch", "list"]
   {{- end }}
   {{- if .Values.presets.kubernetesEvents.enabled }}
+  {{- if .Values.useK8sEventsReceiver }}
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+  {{- else }}
   - apiGroups: ["events.k8s.io"]
     resources: ["events"]
     verbs: ["watch", "list"]
+  {{- end }}
   {{- end }}
   {{- if .Values.presets.kubernetesObjects.enabled }}
   {{- if .Values.presets.kubernetesObjects.core.enabled }}
@@ -112,6 +118,11 @@ rules:
   {{- if .Values.presets.kubernetesObjects.apiExtensions.enabled }}
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  {{- end }}
+  {{- if .Values.presets.kubernetesObjects.events.enabled }}
+  - apiGroups: ["events.k8s.io"]
+    resources: ["events"]
     verbs: ["get", "list", "watch"]
   {{- end }}
   {{- end }}

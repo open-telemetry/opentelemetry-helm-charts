@@ -106,6 +106,9 @@ presets:
     # API extensions resources: customresourcedefinitions
     apiExtensions:
       enabled: true
+
+    events:
+      enabled: false
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
@@ -454,6 +457,11 @@ ports:
 # If no resources.limits.memory are defined then enabling does nothing.
 # It is HIGHLY recommend to enable this setting and set a value for resources.limits.memory.
 useGOMEMLIMIT: true
+
+# When enabled, the kubernetesEvents preset uses the dedicated k8s_events receiver
+# instead of the k8sobjects receiver. This flag defaults to false and will default
+# to true in a future release before being removed.
+useK8sEventsReceiver: false
 
 # Container resize policy for in-place resource resize (Kubernetes >= 1.27).
 # https://kubernetes.io/docs/concepts/workloads/autoscaling/#in-place-resizing
