@@ -24,12 +24,15 @@ containers:
       - /manager
       - --config-file
       - /conf/manager.yaml
-      - --zap-log-level
-      - debug
     ports:
       - containerPort: 9443
         name: webhook-server
         protocol: TCP
+      {{- if .Values.manager.pprofPort }}
+      - containerPort: {{ .Values.manager.pprofPort }}
+        name: pprof
+        protocol: TCP
+      {{- end }}
     volumeMounts:
       {{- if or .Values.configMap.create .Values.configMap.existingName }}
       - name: config-volume

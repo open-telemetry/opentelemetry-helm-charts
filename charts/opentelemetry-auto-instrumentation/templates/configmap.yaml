@@ -11,6 +11,9 @@ data:
     ignore-missing-collector-crds: true
     enable-instrumentation-crds: false
     enable-multi-instrumentation: false
+    {{- if .Values.manager.pprofPort }}
+    pprof-addr: ":{{ .Values.manager.pprofPort }}"
+    {{- end }}
     health-probe-addr: 0.0.0.0:{{ .Values.manager.livenessProbe.httpGet.port | default 8081 }}
     {{- .Values.manager.config | toYaml | nindent 4 }}
 {{- end }}
