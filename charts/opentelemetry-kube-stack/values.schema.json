@@ -1474,20 +1474,77 @@
                   "enabled": {
                     "description": "Specifies whether the collector should collect metrics.",
                     "type": "boolean"
-                  },
-                  "prometheus": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "description": "When enabled, adds a standalone prometheus/annotation_discovery receiver configured with Kubernetes service discovery + relabel rules to scrape pods on the same node carrying classic Prometheus annotations (prometheus.io/scrape=true, prometheus.io/port, prometheus.io/path, prometheus.io/scheme).",
-                    "properties": {
-                      "enabled": {
-                        "description": "Enable scraping of pods carrying classic Prometheus annotations via a standalone Prometheus receiver.",
-                        "type": "boolean"
-                      },
-                      "addPrometheusLabels": {
-                        "description": "When true, the scrape config emits Prometheus-style labels on scraped metrics (Kubernetes `namespace`, `pod`, and all pod labels mapped via __meta_kubernetes_pod_label_*). When false (default), only the standard Prometheus `job` and `instance` labels are produced, leaving the k8sattributes processor as the sole source of Kubernetes metadata.",
-                        "type": "boolean"
-                      }
+                  }
+                }
+              }
+            },
+            "prometheus": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Prometheus-based scraping presets. Each preset adds a named instance of the prometheus receiver (e.g. `prometheus/node_exporter`) to the metrics pipeline. Constraints (enforced at template render time): mutually exclusive with `scrape_configs_file` (the presets replace the scrape file), and require `mode: daemonset` (the scrape configs use ${OTEL_K8S_NODE_IP} / ${OTEL_K8S_NODE_NAME} and kubernetes_sd field selectors keyed on the local node).",
+              "properties": {
+                "nodeExporter": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Scrapes a Prometheus Node Exporter on the local node via a static_config targeting ${OTEL_K8S_NODE_IP}:<port>. Adds a `prometheus/node_exporter` receiver to the metrics pipeline.",
+                  "properties": {
+                    "enabled": {
+                      "description": "Enable scraping of the Prometheus Node Exporter on the local node.",
+                      "type": "boolean"
+                    },
+                    "port": {
+                      "description": "Port where the Prometheus Node Exporter is listening on each node. Defaults to 9100.",
+                      "type": "integer"
+                    },
+                    "scrapeInterval": {
+                      "description": "Scrape interval as a duration string accepted by Prometheus (e.g. \"30s\", \"1m\"). Defaults to 30s.",
+                      "type": "string"
+                    },
+                    "scrapeTimeout": {
+                      "description": "Scrape timeout as a duration string accepted by Prometheus (e.g. \"10s\"). Defaults to 10s.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "cadvisor": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Scrapes cAdvisor metrics from the local node's kubelet via a static_config targeting https://${OTEL_K8S_NODE_IP}:<port>/metrics/cadvisor with service-account bearer-token auth. Adds a `prometheus/cadvisor` receiver. Drops the highest-cardinality / lowest-value cAdvisor series by default.",
+                  "properties": {
+                    "enabled": {
+                      "description": "Enable scraping of cAdvisor metrics from the local node's kubelet.",
+                      "type": "boolean"
+                    },
+                    "port": {
+                      "description": "Port where the kubelet HTTPS endpoint serves /metrics/cadvisor. Defaults to 10250.",
+                      "type": "integer"
+                    },
+                    "scrapeInterval": {
+                      "description": "Scrape interval as a duration string accepted by Prometheus (e.g. \"30s\", \"1m\"). Defaults to 30s.",
+                      "type": "string"
+                    },
+                    "scrapeTimeout": {
+                      "description": "Scrape timeout as a duration string accepted by Prometheus (e.g. \"10s\"). Defaults to 10s.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "podAnnotations": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Scrapes pods on the local node carrying classic Prometheus annotations (prometheus.io/scrape=true, prometheus.io/port, prometheus.io/path, prometheus.io/scheme). Adds a `prometheus/pod_annotations` receiver to the metrics pipeline that uses Kubernetes pod service discovery + Prometheus relabel rules. Always emits namespace/pod/node and all pod labels via labelmap — matches the labels produced by the `kubernetes-pods` job in `daemon_scrape_configs.yaml`.",
+                  "properties": {
+                    "enabled": {
+                      "description": "Enable scraping of pods carrying classic Prometheus annotations via a standalone Prometheus receiver.",
+                      "type": "boolean"
+                    },
+                    "scrapeInterval": {
+                      "description": "Scrape interval as a duration string accepted by Prometheus (e.g. \"30s\", \"1m\"). Defaults to 30s.",
+                      "type": "string"
+                    },
+                    "scrapeTimeout": {
+                      "description": "Scrape timeout as a duration string accepted by Prometheus (e.g. \"10s\"). Defaults to 10s.",
+                      "type": "string"
                     }
                   }
                 }
@@ -1563,6 +1620,7 @@
           "type": "string"
         },
         "scrape_configs_file": {
+          "description": "Path to an external Prometheus scrape_configs file to load into the collector's prometheus receiver. Mutually exclusive with the `presets.prometheus.*` family of presets (enabling both fails the chart render). Set to \"\" when using `presets.prometheus.*`.",
           "type": "string",
           "default": ""
         },

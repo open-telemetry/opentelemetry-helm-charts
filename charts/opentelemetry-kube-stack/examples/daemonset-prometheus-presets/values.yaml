@@ -1,0 +1,45 @@
+# Demonstrates the `presets.prometheus.*` family of presets, which add named instances
+# of the prometheus receiver to the metrics pipeline of the daemonset collector:
+#
+#   * prometheus/node_exporter   — scrapes Prometheus Node Exporter on the same node
+#   * prometheus/cadvisor        — scrapes cAdvisor metrics from the local kubelet
+#   * prometheus/pod_annotations — scrapes pods carrying classic prometheus.io/* annotations
+#
+# Each preset uses ${OTEL_K8S_NODE_IP} / ${OTEL_K8S_NODE_NAME} to scope scraping to the
+# local node, so the load is naturally sharded across daemonset collector pods.
+#
+# This example disables the default `scrape_configs_file` so node-exporter and cAdvisor
+# are only scraped once. The default daemon_scrape_configs.yaml already has its own
+# node-exporter, kubelet/cadvisor and pod-annotation scrape jobs — enabling these presets
+# alongside it would cause duplicate scrapes.
+collectors:
+  daemon:
+    scrape_configs_file: ""
+    presets:
+      logsCollection:
+        enabled: false
+      kubeletMetrics:
+        enabled: false
+      hostMetrics:
+        enabled: false
+      kubernetesAttributes:
+        enabled: false
+      kubernetesEvents:
+        enabled: false
+      clusterMetrics:
+        enabled: false
+      prometheus:
+        nodeExporter:
+          enabled: true
+          port: 9100
+          scrapeInterval: 30s
+          scrapeTimeout: 10s
+        cadvisor:
+          enabled: true
+          port: 10250
+          scrapeInterval: 30s
+          scrapeTimeout: 10s
+        podAnnotations:
+          enabled: true
+          scrapeInterval: 30s
+          scrapeTimeout: 10s

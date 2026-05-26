@@ -34,6 +34,89 @@ This chart provides functionality to port an existing scrape configuration from 
 > [!NOTE]
 > This chart aims to provide compatibility for scrape targets from the kube-prometheus-stack chart. This chart is not responsible for applying Prometheus Rules, Alertmanager, or a Prometheus instance.
 
+#### `presets.prometheus.*` vs. kube-prometheus-stack ServiceMonitors
+
+The `presets.prometheus.*` family (`nodeExporter`, `cadvisor`, `podAnnotations`) adds named instances of the prometheus receiver to the daemonset collector's metrics pipeline. They are a DaemonSet-local alternative to the kube-prometheus-stack (KPS) `ServiceMonitor`-based approach and a **replacement** for the `daemon_scrape_configs.yaml` scrape file. The two approaches produce **similar but not identical** time series.
+
+##### Constraints (chart-enforced)
+
+The presets are gated by template-render assertions; chart rendering fails if these are violated:
+
+* **Mutually exclusive with `scrape_configs_file`**. The presets replace the scrape file (which by default already has node-exporter, kubelet/cAdvisor, and pod-annotation jobs). Enabling any preset while `scrape_configs_file` is non-empty fails with a clear error. Set `scrape_configs_file: ""` to migrate.
+* **Require `mode: daemonset`**. The scrape configs reference `${OTEL_K8S_NODE_IP}` / `${OTEL_K8S_NODE_NAME}`, which the OpenTelemetry Operator only injects on daemonset collector pods.
+
+##### Discovery model
+
+|                  | kube-prometheus-stack                                              | `presets.prometheus.*`                                                                                           |
+|------------------|--------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| Mechanism        | `ServiceMonitor` CRD → Prometheus Operator generates scrape config | Inline Prometheus scrape config inside each daemonset collector                                                  |
+| Discovery        | Kubernetes Endpoints / Pod service discovery                       | `static_configs` (nodeExporter, cadvisor) or `kubernetes_sd_configs` filtered to the local node (podAnnotations) |
+| Who scrapes whom | One central Prometheus scrapes every target cluster-wide           | Each daemonset collector scrapes only its own node — sharded by design, no central bottleneck                    |
+
+##### Label set
+
+The exact labels attached vary per preset; the table below shows what each `presets.prometheus.*` emits today versus a KPS ServiceMonitor on the equivalent target.
+
+| Label                          | KPS ServiceMonitor                                               | `nodeExporter`                | `cadvisor`                                     | `podAnnotations`                                            |
+|--------------------------------|------------------------------------------------------------------|-------------------------------|------------------------------------------------|-------------------------------------------------------------|
+| `job`                          | From `ServiceMonitor.jobLabel` (e.g. `node-exporter`, `kubelet`) | `node-exporter`               | `kubelet`                                      | `kubernetes-pods`, overridable per pod via the `__meta_kubernetes_pod_label_app_kubernetes_io_name` label |
+| `instance`                     | `<pod_ip>:<port>` from Endpoints SD                              | `<node_ip>:<port>`            | `<node_ip>:<port>`                             | `<pod_ip>:<port>` from pod SD                               |
+| `node`                         | `<node_name>` from `__meta_kubernetes_pod_node_name`             | from `${OTEL_K8S_NODE_NAME}`  | from `${OTEL_K8S_NODE_NAME}`                   | from `__meta_kubernetes_pod_node_name`                      |
+| `namespace`                    | from Endpoints SD                                                | —                             | intrinsic (emitted by cAdvisor)                | from `__meta_kubernetes_namespace`                          |
+| `pod`                          | from Endpoints SD                                                | —                             | intrinsic                                      | from `__meta_kubernetes_pod_name`                           |
+| `container`, `image`           | `container` from Endpoints SD                                    | —                             | intrinsic (`container`, `image` from cAdvisor) | —                                                           |
+| Pod labels (`labelmap`)        | via `ServiceMonitor.podTargetLabels`                             | —                             | —                                              | all pod labels mapped via `__meta_kubernetes_pod_label_*`   |
+| `service`, `endpoint`          | from Endpoints SD                                                | —                             | —                                              | —                                                           |
+
+For OTel-aware backends, any missing Kubernetes context is supplied downstream by the `k8sattributes` processor (`presets.kubernetesAttributes.enabled`) as resource attributes rather than Prometheus labels.
+
+###### Why `nodeExporter` emits fewer labels
+
+node-exporter metrics are **host-scoped** — `node_cpu_seconds_total` describes the kernel of the underlying node, not any specific pod. When kube-prometheus-stack scrapes node-exporter via Endpoints SD, it attaches `namespace`/`pod`/`container` labels that describe the *exporter's own deployment* (`monitoring/prometheus-node-exporter-xyz/node-exporter`). Those labels carry no information about the metric and are easy to misuse (e.g. `sum by (namespace) (node_cpu_seconds_total)` returns one number for whichever namespace node-exporter is deployed in, not per-workload usage).
+
+The `nodeExporter` preset drops them deliberately; this is a feature, not a parity gap. `cadvisor` and `podAnnotations` series, by contrast, *are* per-workload and so emit `namespace`/`pod`/`container` meaningfully.
+
+##### Backward compatibility with `daemon_scrape_configs.yaml`
+
+Each preset replaces a specific scrape job in `daemon_scrape_configs.yaml`. All three are drop-in compatible — `job` / `instance` / Kubernetes label set are preserved, so existing queries, dashboards, alerts, and recording rules keep working. The remaining differences are either additive (a new `node` label) or default-value tweaks called out per preset below.
+
+###### `nodeExporter` ↔ `node-exporter` job
+
+**Drop-in compatible.** Same scrape target (`${OTEL_K8S_NODE_IP}:9100`), same `job=node-exporter` label, same `scrape_interval: 30s`. The preset additionally emits a `node` label (the legacy job didn't) — purely additive, won't break queries.
+
+###### `cadvisor` ↔ `kubelet` job
+
+**Drop-in compatible.** The preset uses `job_name: kubelet` for label parity with both `daemon_scrape_configs.yaml` (which force-relabels every series to `job=kubelet`) and kube-prometheus-stack (which derives `job=kubelet` from the kubelet Service's `k8s-app` label). Queries / dashboards / alerts filtering `{job="kubelet"}` keep working unchanged.
+
+Minor differences (all additive — no broken queries):
+
+* **Scrape interval**: the preset defaults to `30s`, the legacy job uses `15s`. Set `presets.prometheus.cadvisor.scrapeInterval: 15s` to match exactly (affects `rate()` resolution).
+* **Dropped helper labels**: the legacy job attaches `endpoint=https-metrics` and `metrics_path=/metrics/cadvisor`; the preset does not. Rarely referenced in queries.
+* **Intrinsic cAdvisor labels** (`namespace`, `pod`, `container`, `image`, `id`, ...) are identical in both — these come from cAdvisor itself, not from relabel rules.
+* **`metric_relabel_configs`**: identical drop list (container_cpu_load_average_10s, container_spec_*, container_fs_io_current, container_memory_mapped_file/swap, container_file_descriptors/tasks_state/threads_max, plus non-pod cgroup rows).
+
+###### `podAnnotations` ↔ `kubernetes-pods` job
+
+**Drop-in compatible.** Same `job_name: kubernetes-pods` (overridable per pod via the `app.kubernetes.io/name` pod label, in both cases), same label set (`namespace`, `pod`, all pod labels via `labelmap`), same `scrape_interval: 30s`, same annotation-driven scheme/path/port/param handling.
+
+Differences from the legacy job (both additive — no broken queries):
+
+* **`node` label** added by the preset (sourced from `__meta_kubernetes_pod_node_name`).
+* **Self-scrape filter**: the preset's pod selector excludes pods with `app.kubernetes.io/component=opentelemetry-collector` to prevent the collector from scraping itself. The legacy job has no such filter, so it would scrape any collector pod carrying `prometheus.io/scrape: "true"`.
+
+##### Customization
+
+KPS exposes `relabelings` and `metricRelabelings` on each `ServiceMonitor`. The presets expose `enabled`, `scrapeInterval`, `scrapeTimeout`, and — for `nodeExporter` / `cadvisor` only — `port`. (`podAnnotations` discovers the port per pod from the `prometheus.io/port` annotation, so a chart-level `port` knob doesn't apply.) For richer relabeling, drop the preset and use `scrape_configs_file` instead — see [scrape_configs_file Details](#scrape_configs_file-details).
+
+##### Other duplicate-scrape risks
+
+* **`prometheus-node-exporter` subchart**: when installed via the top-level `nodeExporter.enabled: true` flag, the subchart creates its own `ServiceMonitor` by default. If a target allocator picks it up, node-exporter is scraped twice — once locally by every daemonset collector and once via the ServiceMonitor through the cluster collector.
+
+##### When to use which
+
+* **Use the presets** if you want a sharded, DaemonSet-native pipeline with no central Prometheus bottleneck and your dashboards rely primarily on `job` / `instance` / `node` (and, for `podAnnotations`, the standard Kubernetes label set).
+* **Use the target allocator + ServiceMonitors** (set `targetAllocator.enabled: true` instead) if you need full KPS label parity (including `service` / `endpoint` / `container`), want CRD-driven dynamic configuration, or are porting existing KPS dashboards/recording rules unchanged.
+
 ### Image versioning
 
 The appVersion of the chart is aligned to the latest image version of the operator. Images are upgraded within the chart manually by setting the image tag to the latest release of each image used. This will be the latest patch release for the chart's appVersion. example:
