@@ -24,6 +24,10 @@ resources:
 # does not ship). The profiling and kubernetesAttributes presets inject the
 # remaining components needed for the profiles pipeline.
 alternateConfig:
+  receivers:
+    profiling: {}
+  exporters:
+    debug: {}
   extensions:
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
@@ -32,5 +36,7 @@ alternateConfig:
       - health_check
     pipelines:
       profiles:
+        receivers:
+          - profiling
         exporters:
           - debug
