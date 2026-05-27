@@ -6,6 +6,12 @@ image:
 command:
   name: "otelcol-k8s"
 
+config:
+  extensions:
+    health_check:
+      endpoint: ${env:MY_POD_IP}:8989
+      path: /healthz
+
 livenessProbe:
   initialDelaySeconds: 10
   periodSeconds: 5
