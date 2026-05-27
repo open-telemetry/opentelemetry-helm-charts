@@ -39,6 +39,13 @@ jobs:
           helm repo add jaeger https://jaegertracing.github.io/helm-charts
           helm repo add opensearch https://opensearch-project.github.io/helm-charts
 
+      # Fetch GPG key and create file
+      - name: Prepare GPG keyring
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --dearmor > ${{ runner.temp }}/secring.gpg
+          echo "${{ secrets.GPG_PASSPHRASE }}" > ${{ runner.temp }}/passphrase.txt
+
+     # Update: Chart Releaser to Signing In
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
@@ -47,6 +54,10 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_GENERATE_RELEASE_NOTES: true
+          CR_SIGN: true
+          CR_KEY: "${{ secrets.GPG_KEY_NAME }}"
+          CR_KEYRING: "${{ runner.temp }}/secring.gpg"
+          CR_PASSPHRASE_FILE: "${{ runner.temp }}/passphrase.txt"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
@@ -64,7 +75,7 @@ jobs:
       - name: Push charts to GHCR
         run: |
           shopt -s nullglob
-          for pkg in .cr-release-packages/*; do
+          for pkg in .cr-release-packages/*.tgz; do
             if [ -z "${pkg:-}" ]; then
               break
             fi
