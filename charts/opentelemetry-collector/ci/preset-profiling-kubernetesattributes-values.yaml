@@ -17,3 +17,21 @@ resources:
   limits:
     cpu: 100m
     memory: 200M
+
+alternateConfig:
+  receivers:
+    profiling: {}
+  exporters:
+    debug: {}
+  extensions:
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      profiles:
+        receivers:
+          - profiling
+        exporters:
+          - debug
