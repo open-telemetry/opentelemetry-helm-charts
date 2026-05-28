@@ -4,6 +4,12 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.157.0 to 0.157.1
+
+The OpenTelemetry Collector renamed the `k8sattributes` processor to `k8s_attributes` in v0.146.0. The old name still works as an alias but is deprecated.
+
+If your `values.yaml` references `k8sattributes` in `config.processors` or in any pipeline processor list, you will see a deprecation warning during `helm install` / `helm upgrade`. Please rename all occurrences of `k8sattributes` to `k8s_attributes` in your `values.yaml`. Support for the old name will be removed in a future chart release.
+
 ## 0.121.0 to 0.122.0
 
 In the v0.123.1 Collector release we stopped pushing images to Dockerhub due to how their new rate limit changes affected our CI. If you're using `otel/opentelemetry-collector-k8s` for the image you should switch to `ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s`. See https://github.com/open-telemetry/community/issues/2641 for more details.
