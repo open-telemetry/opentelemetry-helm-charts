@@ -53,7 +53,7 @@ By default, the daemonset collector will load in the daemon_scrape_configs.yaml 
 ## Prerequisites
 
 - Kubernetes 1.24+ is required for OpenTelemetry Operator installation
-- Helm 3.9+
+- Helm 4.0+
 
 ### TLS Certificate Requirement
 
