@@ -80,3 +80,8 @@
 {{- if and .Values.presets.logsCollection.enabled .Values.presets.annotationDiscovery.logs.enabled }}
 {{- fail "[ERROR] logsCollection and annotationDiscovery.logs are mutually exclusive" }}
 {{- end }}
+
+{{- $deprecations := include "opentelemetry-collector.deprecations" . -}}
+{{- if $deprecations }}
+{{ $deprecations }}
+{{ end }}
