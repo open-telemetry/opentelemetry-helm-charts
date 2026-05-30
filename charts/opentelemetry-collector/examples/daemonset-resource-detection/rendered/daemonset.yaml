@@ -3,13 +3,13 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.157.2
+    helm.sh/chart: opentelemetry-collector-0.158.0
     app.kubernetes.io/name: opentelemetry-collector
-    app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.152.0"
+    app.kubernetes.io/instance: opentelemetry-collector
+    app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
@@ -18,23 +18,23 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
-      app.kubernetes.io/instance: example
+      app.kubernetes.io/instance: opentelemetry-collector
       component: agent-collector
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: 2b8b3731a27c493a8f1ff8753d032631660d6fcd29f90bee2b556e4fa6877751
+        checksum/config: 7b1eb02b4f649ee7a96afc28af9137b7135bdde4668c58ea1292740d008269df
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
-        app.kubernetes.io/instance: example
+        app.kubernetes.io/instance: opentelemetry-collector
         component: agent-collector
         
     spec:
       
-      serviceAccountName: example-opentelemetry-collector
+      serviceAccountName: opentelemetry-collector
       automountServiceAccountToken: true
       securityContext:
         {}
@@ -46,7 +46,7 @@ spec:
             - --config=/conf/relay.yaml
           securityContext:
             {}
-          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.152.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.153.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -126,7 +126,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: example-opentelemetry-collector-agent
+            name: opentelemetry-collector-agent
             items:
               - key: relay
                 path: relay.yaml
