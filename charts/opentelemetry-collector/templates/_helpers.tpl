@@ -253,6 +253,7 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
 {{- $warnings := list -}}
 {{- $renames := list
   (dict "old" "k8sattributes" "new" "k8s_attributes")
+  (dict "old" "filelog" "new" "file_log")
 -}}
 {{- range $rename := $renames }}
   {{- $oldName := index $rename "old" -}}
@@ -260,9 +261,15 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
   {{- if index $.Values.config.processors $oldName }}
     {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Update your values.yaml. See UPGRADING.md." $oldName $newName) -}}
   {{- end }}
+  {{- if index $.Values.config.receivers $oldName }}
+    {{- $warnings = append $warnings (printf "[DEPRECATION] Receiver '%s' has been renamed to '%s'. Update your values.yaml. See UPGRADING.md." $oldName $newName) -}}
+  {{- end }}
   {{- range $signal, $pipeline := $.Values.config.service.pipelines }}
     {{- if and $pipeline $pipeline.processors (has $oldName $pipeline.processors) }}
       {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Use '%s' in your values.yaml. See UPGRADING.md." $signal $oldName $newName) -}}
+    {{- end }}
+    {{- if and $pipeline $pipeline.receivers (has $oldName $pipeline.receivers) }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed receiver '%s'. Use '%s' in your values.yaml. See UPGRADING.md." $signal $oldName $newName) -}}
     {{- end }}
   {{- end }}
 {{- end }}
