@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.158.1
+    helm.sh/chart: opentelemetry-collector-0.159.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.153.0"
@@ -22,7 +22,7 @@ data:
         endpoint: ${env:MY_POD_IP}:13133
     processors:
       batch: {}
-      k8sattributes:
+      k8s_attributes:
         extract:
           metadata:
           - k8s.namespace.name
@@ -96,7 +96,7 @@ data:
           exporters:
           - debug
           processors:
-          - k8sattributes
+          - k8s_attributes
           - memory_limiter
           - batch
           receivers:
@@ -105,7 +105,7 @@ data:
           exporters:
           - debug
           processors:
-          - k8sattributes
+          - k8s_attributes
           - memory_limiter
           - batch
           receivers:
@@ -116,7 +116,7 @@ data:
           - debug
           processors:
           - resource
-          - k8sattributes
+          - k8s_attributes
           - batch
           receivers:
           - otlp
