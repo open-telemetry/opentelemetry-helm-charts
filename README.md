@@ -59,7 +59,6 @@ For more information about the maintainer role, see the [community repository](h
 ### Approvers
 
 - [Alex Birca](https://github.com/Allex1), Adobe
-- [Jared Tan](https://github.com/JaredTan95), DaoCloud
 - [Juliano Costa](https://github.com/julianocosta89), Datadog
 - [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
@@ -68,6 +67,7 @@ For more information about the approver role, see the [community repository](htt
 
 ### Emeritus
 
+- [Jared Tan](https://github.com/JaredTan95), Approver
 - [Josh Voravong](https://github.com/jvoravong), Approver
 - [Naseem K. Ullah](https://github.com/naseemkullah), Approver
 - [Tigran Najaryan](https://github.com/tigrannajaryan), Maintainer
