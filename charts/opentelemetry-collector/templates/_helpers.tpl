@@ -249,6 +249,26 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
   {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.deprecations" -}}
+{{- $warnings := list -}}
+{{- $renames := list
+  (dict "old" "k8sattributes" "new" "k8s_attributes")
+-}}
+{{- range $rename := $renames }}
+  {{- $oldName := index $rename "old" -}}
+  {{- $newName := index $rename "new" -}}
+  {{- if index $.Values.config.processors $oldName }}
+    {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Update your values.yaml. See UPGRADING.md." $oldName $newName) -}}
+  {{- end }}
+  {{- range $signal, $pipeline := $.Values.config.service.pipelines }}
+    {{- if and $pipeline $pipeline.processors (has $oldName $pipeline.processors) }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Use '%s' in your values.yaml. See UPGRADING.md." $signal $oldName $newName) -}}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- join "\n" $warnings -}}
+{{- end -}}
+
 {{/*
 List of upstream community OpenTelemetry Collector distributions that do NOT include
 the profiling receiver. Among community images only `opentelemetry-collector-ebpf-profiler`

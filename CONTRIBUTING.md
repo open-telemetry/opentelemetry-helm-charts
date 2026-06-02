@@ -12,7 +12,7 @@ We'd love your help!
 
 To work with this repository, ensure you have:
 
-- Helm 3.8+
+- Helm 4.0+
 
 - chart-testing (ct) 3.7+
 
