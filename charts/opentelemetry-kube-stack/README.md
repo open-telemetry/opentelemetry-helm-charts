@@ -37,11 +37,12 @@ This chart provides functionality to port an existing scrape configuration from 
 #### `presets.prometheus.*` presets
 
 The `presets.prometheus.*` family (`nodeExporter`, `cadvisor`, `podAnnotations`) configure the OpenTelemetry Collectors to scrape popular Prometheus Kubernetes metrics:
-Kubernetes node metrics exposed with [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter),
-[cAdvisor](https://github.com/google/cadvisor) metrics exposed with the [Kube State Metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) (aka KSM)
-and custom pod metrics exposed using the `prometheus.io/scrape=true` Kubernetes annotation. They are a **replacement** for the `daemon_scrape_configs.yaml` scrape file.
 
-The `prometheus.*` presets are implemented adding named instances of the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) to the daemonset collector's metrics pipeline.
+* `presets.prometheus.nodeExporter`: Kubernetes node metrics exposed with the [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter),
+* `presets.prometheus.cadvisor`: [cAdvisor](https://github.com/google/cadvisor) metrics exposed with the [Kube State Metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) (aka KSM)
+* `presets.prometheus.podAnnotations`: custom pod metrics exposed using the `prometheus.io/scrape=true` Kubernetes annotation.
+
+The `prometheus.*` presets are implemented adding named instances of the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) to the daemonset collector's metrics pipeline, They are a **replacement** for the `daemon_scrape_configs.yaml` scrape file.
 
 <details>
 <summary>Constraints (chart-enforced)</summary>
@@ -55,7 +56,7 @@ The `prometheus.*` presets are gated; chart rendering fails if these are violate
 
 #### Prometheus metrics label set
 
-The `presets.prometheus.*` presets emit the same Prometheus labels as the Kube-Prometheus-Stack.
+The `presets.prometheus.*` presets produces the same Prometheus labels as the Kube-Prometheus-Stack.
 
 <details>
 <summary>Details</summary>
@@ -72,7 +73,8 @@ The exact labels attached vary per preset:
 | `container`, `image`    | —                            | intrinsic (`container`, `image` from cAdvisor) | —                                                           |
 | Pod labels (`labelmap`) | —                            | —                                              | all pod labels mapped via `__meta_kubernetes_pod_label_*`   |
 
-Kubernetes context is supplied downstream by the `k8sattributes` processor (`presets.kubernetesAttributes.enabled`) as resource attributes following OpenTelemetry Semantic Conventions for Kubernetes.
+Kubernetes resource attributes (`k8s.*`) are supplied downstream by the `k8sattributes` processor (`presets.kubernetesAttributes.enabled=true`, recommended).
+
 </details>
 
 ##### Differences between `presets.prometheus.*` and `daemon_scrape_configs.yaml` metrics
