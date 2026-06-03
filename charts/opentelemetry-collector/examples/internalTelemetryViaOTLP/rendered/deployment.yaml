@@ -3,12 +3,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opentelemetry-collector
+  name: example-opentelemetry-collector
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.158.1
     app.kubernetes.io/name: opentelemetry-collector
-    app.kubernetes.io/instance: opentelemetry-collector
+    app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
@@ -19,23 +19,23 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: opentelemetry-collector
-      app.kubernetes.io/instance: opentelemetry-collector
+      app.kubernetes.io/instance: example
       component: standalone-collector
   strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
-        checksum/config: b763da08cb10a7e39344d9fbfc24357ca8b42b4f87e10b71293f0d7dd5109c01
+        checksum/config: b2172583577de88cb2a796a66163eebf699cc56415d9d0fc77c1feefac35cd9c
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
-        app.kubernetes.io/instance: opentelemetry-collector
+        app.kubernetes.io/instance: example
         component: standalone-collector
         
     spec:
       
-      serviceAccountName: opentelemetry-collector
+      serviceAccountName: example-opentelemetry-collector
       automountServiceAccountToken: true
       securityContext:
         {}
@@ -117,7 +117,7 @@ spec:
       volumes:
         - name: opentelemetry-collector-configmap
           configMap:
-            name: opentelemetry-collector
+            name: example-opentelemetry-collector
             items:
               - key: relay
                 path: relay.yaml
