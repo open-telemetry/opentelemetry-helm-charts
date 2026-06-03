@@ -34,22 +34,35 @@ This chart provides functionality to port an existing scrape configuration from 
 > [!NOTE]
 > This chart aims to provide compatibility for scrape targets from the kube-prometheus-stack chart. This chart is not responsible for applying Prometheus Rules, Alertmanager, or a Prometheus instance.
 
-#### `presets.prometheus.*`
+#### `presets.prometheus.*` presets
 
-The `presets.prometheus.*` family (`nodeExporter`, `cadvisor`, `podAnnotations`) adds named instances of the prometheus receiver to the daemonset collector's metrics pipeline. They are a **replacement** for the `daemon_scrape_configs.yaml` scrape file.
+The `presets.prometheus.*` family (`nodeExporter`, `cadvisor`, `podAnnotations`) configure the OpenTelemetry Collectors to scrape popular Prometheus Kubernetes metrics:
+Kubernetes node metrics exposed with [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter),
+[cAdvisor](https://github.com/google/cadvisor) metrics exposed with the [Kube State Metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) (aka KSM)
+and custom pod metrics exposed using the `prometheus.io/scrape=true` Kubernetes annotation. They are a **replacement** for the `daemon_scrape_configs.yaml` scrape file.
 
-##### Constraints (chart-enforced)
+The `prometheus.*` presets are implemented adding named instances of the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) to the daemonset collector's metrics pipeline.
 
-The presets are gated by template-render assertions; chart rendering fails if these are violated:
+<details>
+<summary>Constraints (chart-enforced)</summary>
+
+The `prometheus.*` presets are gated; chart rendering fails if these are violated:
 
 * **Mutually exclusive with `scrape_configs_file`**. The presets replace the scrape file (which by default already has node-exporter, kubelet/cAdvisor, and pod-annotation jobs). Enabling any preset while `scrape_configs_file` is non-empty fails with a clear error. Set `scrape_configs_file: ""` to migrate.
 * **Require `mode: daemonset`**. The scrape configs reference `${OTEL_K8S_NODE_IP}` / `${OTEL_K8S_NODE_NAME}`, which the OpenTelemetry Operator only injects on daemonset collector pods.
 
-##### Label set
+</details>
+
+#### Prometheus metrics label set
+
+The `presets.prometheus.*` presets emit the same Prometheus labels as the Kube-Prometheus-Stack.
+
+<details>
+<summary>Details</summary>
 
 The exact labels attached vary per preset:
 
-| Label                   | `nodeExporter`               | `cadvisor`                                     | `podAnnotations`                                            |
+| Prometheus label        | `nodeExporter`               | `cadvisor`                                     | `podAnnotations`                                            |
 |-------------------------|------------------------------|------------------------------------------------|-------------------------------------------------------------|
 | `job`                   | `node-exporter`              | `kubelet`                                      | `kubernetes-pods`, overridable per pod via the `app.kubernetes.io/name` pod label |
 | `instance`              | `<node_ip>:<port>`           | `<node_ip>:<port>`                             | `<pod_ip>:<port>` from pod SD                               |
@@ -59,48 +72,54 @@ The exact labels attached vary per preset:
 | `container`, `image`    | —                            | intrinsic (`container`, `image` from cAdvisor) | —                                                           |
 | Pod labels (`labelmap`) | —                            | —                                              | all pod labels mapped via `__meta_kubernetes_pod_label_*`   |
 
-For OTel-aware backends, any missing Kubernetes context is supplied downstream by the `k8sattributes` processor (`presets.kubernetesAttributes.enabled`) as resource attributes rather than Prometheus labels.
+Kubernetes context is supplied downstream by the `k8sattributes` processor (`presets.kubernetesAttributes.enabled`) as resource attributes following OpenTelemetry Semantic Conventions for Kubernetes.
+</details>
 
-##### Backward compatibility with `daemon_scrape_configs.yaml`
+##### Differences between `presets.prometheus.*` and `daemon_scrape_configs.yaml` metrics
 
-Each preset replaces a specific scrape job in `daemon_scrape_configs.yaml`. All three are drop-in compatible — `job` / `instance` / Kubernetes label set are preserved, so existing queries, dashboards, alerts, and recording rules keep working. The remaining differences are either additive (a new `node` label) or default-value tweaks called out per preset below.
+Each preset replaces a specific scrape job in `daemon_scrape_configs.yaml`. All three preserve the same labels — `job` / `instance` / Kubernetes labels.
+The remaining differences are new labels (e.g. a `node` label) or default-value tweaks called out per preset below.
 
-###### `nodeExporter` ↔ `node-exporter` job
+<details>
+<summary>Details</summary>
 
-**Drop-in compatible.** Same scrape target (`${OTEL_K8S_NODE_IP}:9100`), same `job=node-exporter` label, same `scrape_interval: 30s`. The preset additionally emits a `node` label (the legacy job didn't) — purely additive, won't break queries.
+###### `presets.prometheus.nodeExporter` ↔ `daemon_scrape_configs.yaml`'s `node-exporter` job
 
-###### `cadvisor` ↔ `kubelet` job
+Same scrape target (`${OTEL_K8S_NODE_IP}:9100`), same `job=node-exporter` label, same `scrape_interval: 30s`. The preset additionally emits a `node` label (the legacy job didn't).
 
-**Drop-in compatible.** The preset uses `job_name: kubelet` for label parity with `daemon_scrape_configs.yaml` (which force-relabels every series to `job=kubelet`). Queries / dashboards / alerts filtering `{job="kubelet"}` keep working unchanged.
+###### `presets.prometheus.cadvisor` ↔ `daemon_scrape_configs.yaml`'s `kubelet` job
 
-Minor differences (all additive — no broken queries):
+Same `job=kubelet` label as `daemon_scrape_configs.yaml` (which force-relabels every series to `job=kubelet`).
 
-* **Scrape interval**: the preset defaults to `30s`, the legacy job uses `15s`. Set `presets.prometheus.cadvisor.scrapeInterval: 15s` to match exactly (affects `rate()` resolution).
-* **Dropped helper labels**: the legacy job attaches `endpoint=https-metrics` and `metrics_path=/metrics/cadvisor`; the preset does not. Rarely referenced in queries.
+Minor differences:
+
+* **Scrape interval**: the preset defaults to `30s`, the `daemon_scrape_configs.yaml` job uses `15s`. Set `presets.prometheus.cadvisor.scrapeInterval: 15s` to match exactly (affects `rate()` resolution).
+* **Dropped helper labels**: the `daemon_scrape_configs.yaml` job attaches `endpoint=https-metrics` and `metrics_path=/metrics/cadvisor`; the preset does not.
 * **Intrinsic cAdvisor labels** (`namespace`, `pod`, `container`, `image`, `id`, ...) are identical in both — these come from cAdvisor itself, not from relabel rules.
-* **`metric_relabel_configs`**: identical drop list (container_cpu_load_average_10s, container_spec_*, container_fs_io_current, container_memory_mapped_file/swap, container_file_descriptors/tasks_state/threads_max, plus non-pod cgroup rows).
+* **`metric_relabel_configs`**: identical drop list (`container_cpu_load_average_10s`, `container_spec_*`, `container_fs_io_current`, `container_memory_mapped_file/swap`, `container_file_descriptors/tasks_state/threads_max`, plus non-pod cgroup rows).
 
-###### `podAnnotations` ↔ `kubernetes-pods` job
+###### `presets.prometheus.podAnnotations` ↔ `daemon_scrape_configs.yaml`'s `kubernetes-pods` job
 
-**Drop-in compatible.** Same `job_name: kubernetes-pods` (overridable per pod via the `app.kubernetes.io/name` pod label, in both cases), same label set (`namespace`, `pod`, all pod labels via `labelmap`), same `scrape_interval: 30s`, same annotation-driven scheme/path/port/param handling.
+Same `job=kubernetes-pods` (overridable per pod via the `app.kubernetes.io/name` pod label, in both cases), same label set (`namespace`, `pod`, all pod labels via `labelmap`), same `scrape_interval: 30s`, same annotation-driven scheme/path/port/param handling.
 
-Differences from the legacy job (both additive — no broken queries):
+Differences from the `daemon_scrape_configs.yaml` job:
 
 * **`node` label** added by the preset (sourced from `__meta_kubernetes_pod_node_name`).
-* **Self-scrape filter**: the preset's pod selector excludes pods with `app.kubernetes.io/component=opentelemetry-collector` to prevent the collector from scraping itself. The legacy job has no such filter, so it would scrape any collector pod carrying `prometheus.io/scrape: "true"`.
+* **Self-scrape filter**: the preset's pod selector excludes pods with `app.kubernetes.io/component=opentelemetry-collector` to prevent the collector from scraping itself. The `daemon_scrape_configs.yaml` job has no such filter, so it would scrape any collector pod carrying `prometheus.io/scrape: "true"`.
 
-##### Customization
+</details>
 
-The presets expose `enabled`, `scrapeInterval`, `scrapeTimeout`, and — for `nodeExporter` / `cadvisor` only — `port`. (`podAnnotations` discovers the port per pod from the `prometheus.io/port` annotation, so a chart-level `port` knob doesn't apply.) For richer relabeling, drop the preset and use `scrape_configs_file` instead — see [scrape_configs_file Details](#scrape_configs_file-details).
+#### `scrape_configs_file=daemon_scrape_configs.yaml`
 
-##### Other duplicate-scrape risks
+> [!NOTE]
+> This parameter only works when running the helm chart locally. When installing the helm chart using the remote repository it is not possible to include "external" scrape config files into the helm structure. This is also true when the chart is used as a subchart, and the scrape config files exists in the parent chart. Ref. [helm docs](https://helm.sh/docs/chart_template_guide/accessing_files/)
 
-* **`prometheus-node-exporter` subchart**: when installed via the top-level `nodeExporter.enabled: true` flag, the subchart creates its own `ServiceMonitor` by default. If a target allocator picks it up, node-exporter is scraped twice — once locally by every daemonset collector and once via the ServiceMonitor through the cluster collector.
+By default, the daemonset collector will load in the daemon_scrape_configs.yaml file which collects Prometheus metrics from applications on the same node that have the `prometheus.io/scrape=true` annotation, kubernetes node metrics, and cadvisor metrics. Users can disable this by settings collectors.daemon.scrape_configs_file: "" OR they can provide their own promethues scrape config file for the daemonset by supplying collectors.daemon.scrape_configs_file: "<your-file>.yaml"
 
-##### When to use which
+#### Duplicate-scrape risks
 
-* **Use the presets** if you want a sharded, DaemonSet-native pipeline with no central Prometheus bottleneck and your dashboards rely primarily on `job` / `instance` / `node` (and, for `podAnnotations`, the standard Kubernetes label set).
-* **Use the target allocator + ServiceMonitors** (set `targetAllocator.enabled: true` instead) if you need CRD-driven dynamic configuration or want to scrape targets across the cluster rather than per-node.
+**`prometheus-node-exporter` subchart**: when installed via the top-level `nodeExporter.enabled: true` flag, the subchart creates its own `ServiceMonitor` by default.
+If a target allocator picks it up and `presets.prometheus.nodeExporter.enabled=true` or `scrape_configs_file=daemon_scrape_configs.yaml`, then node-exporter metrics are scraped twice.
 
 ### Image versioning
 
@@ -111,12 +130,6 @@ collector.image.tag: 0.103.1
 bridge.image.tag: 0.103.0
 ```
 
-### scrape_configs_file Details
-
-> [!NOTE]
-> This parameter only works when running the helm chart locally. When installing the helm chart using the remote repository it is not possible to include "external" scrape config files into the helm structure. This is also true when the chart is used as a subchart, and the scrape config files exists in the parent chart. Ref. [helm docs](https://helm.sh/docs/chart_template_guide/accessing_files/)
-
-By default, the daemonset collector will load in the daemon_scrape_configs.yaml file which collects prometheus metrics from applications on the same node that have the prometheus.io/scrape=true annotation, kubernetes node metrics, and cadvisor metrics. Users can disable this by settings collectors.daemon.scrape_configs_file: "" OR they can provide their own promethues scrape config file for the daemonset by supplying collectors.daemon.scrape_configs_file: "<your-file>.yaml"
 
 ## Prerequisites
 
