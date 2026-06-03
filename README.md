@@ -51,7 +51,7 @@ See [CONTRIBUTING.md](https://github.com/open-telemetry/opentelemetry-helm-chart
 ### Maintainers
 
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Jacob Aronoff](https://github.com/jaronoff97), Lightstep
+- [Jacob Aronoff](https://github.com/jaronoff97), Tero
 - [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
@@ -60,7 +60,6 @@ For more information about the maintainer role, see the [community repository](h
 
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
-- [Josh Voravong](https://github.com/jvoravong), Splunk
 - [Juliano Costa](https://github.com/julianocosta89), Datadog
 - [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
@@ -69,6 +68,7 @@ For more information about the approver role, see the [community repository](htt
 
 ### Emeritus
 
+- [Josh Voravong](https://github.com/jvoravong), Approver
 - [Naseem K. Ullah](https://github.com/naseemkullah), Approver
 - [Tigran Najaryan](https://github.com/tigrannajaryan), Maintainer
 

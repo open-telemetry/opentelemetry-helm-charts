@@ -8,6 +8,9 @@ fullnameOverride: ""
 # Valid values are "daemonset", "deployment", and "statefulset".
 mode: ""
 
+# Override the default apiVersion for custom controllers or for testing new API versions.
+apiVersion: "apps/v1"
+
 # Specify which namespace should be used to deploy the resources into
 namespaceOverride: ""
 
@@ -69,6 +72,40 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
+  # Collects Kubernetes objects via the k8sobjects receiver in pull mode (default interval: 1h).
+  # Can be used with mode = deployment, statefulset, or daemonset.
+  # Compatible with kubernetesEvents preset. Extra resources can be added via
+  # config.receivers.k8sobjects.objects (ClusterRole rules must be added manually via clusterRole.rules).
+  kubernetesObjects:
+    enabled: false
+    # When enabled with mode = daemonset, leader election is setup to prevent telemetry duplication.
+    # disableLeaderElection: false
+    # When enabled, watch mode is added alongside pull to stream real-time changes.
+    watch: false
+    # Core Kubernetes workload resources: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
+    core:
+      enabled: true
+    # RBAC resources: roles, rolebindings, clusterroles, clusterrolebindings
+    rbac:
+      enabled: true
+    # Storage resources: storageclasses, persistentvolumes, persistentvolumeclaims
+    storage:
+      enabled: true
+    # Networking resources: ingresses, networkpolicies
+    networking:
+      enabled: true
+    # Autoscaling resources: horizontalpodautoscalers
+    autoscaling:
+      enabled: true
+      # VPA resources: verticalpodautoscalers (requires VPA CRD to be installed)
+      vpa:
+        enabled: false
+    # Policy resources: poddisruptionbudgets
+    policy:
+      enabled: true
+    # API extensions resources: customresourcedefinitions
+    apiExtensions:
+      enabled: true
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
@@ -79,7 +116,6 @@ presets:
     enabled: false
     # When enabled with mode = daemonset, leader election is setup to prevent telemetry duplication.
     # disableLeaderElection: false
-
   # Configures the collector to collect logs and metrics from pods with specific annotations.
   # This preset can not be used together with the `logsCollection` preset.
   # Adds the receiver_creator receiver to the logs and metrics pipelines
@@ -90,6 +126,35 @@ presets:
     logs:
       enabled: false
     metrics:
+      enabled: false
+  # Configures the collector to collect profiling data.
+  # Adds profiles pipeline with the profiling receiver,
+  # and adds the necessary volumes, security context and host PID access.
+  #
+  # Warning: The profiling receiver requires privileged access and hostPID,
+  # so it should be used with a dedicated collector distribution (e.g. otelcol-ebpf-profiler)
+  # rather than the general-purpose k8s distribution. This avoids granting elevated privileges
+  # to the same collector that handles metrics, traces, and logs.
+  # See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler for more details.
+  profiling:
+    enabled: false
+
+  # Configures the collector to detect resource attributes using the resourcedetection processor.
+  # Adds the resourcedetection/env processor to all pipelines.
+  # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
+  # Typically used to resolve the 'k8s.cluster.name' resource attribute.
+  # See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor for details.
+  resourceDetection:
+    enabled: false
+    env:
+      enabled: true
+    k8snode:
+      enabled: true
+    eks:
+      enabled: false
+    aks:
+      enabled: false
+    gcp:
       enabled: false
 
 configMap:
@@ -323,6 +388,8 @@ priorityClassName: ""
 # Also useful for the pod security admissions plugins that rely on runtimeClassName
 runtimeClassName: ""
 
+terminationGracePeriodSeconds: 30
+
 extraEnvs: []
 extraEnvsFrom: []
 # This also supports template content, which will eventually be converted to yaml.
@@ -387,6 +454,15 @@ ports:
 # If no resources.limits.memory are defined then enabling does nothing.
 # It is HIGHLY recommend to enable this setting and set a value for resources.limits.memory.
 useGOMEMLIMIT: true
+
+# Container resize policy for in-place resource resize (Kubernetes >= 1.27).
+# https://kubernetes.io/docs/concepts/workloads/autoscaling/#in-place-resizing
+resizePolicy: []
+# resizePolicy:
+#   - resourceName: cpu
+#     restartPolicy: NotRequired
+#   - resourceName: memory
+#     restartPolicy: RestartContainer
 
 # Resource limits & requests.
 # It is HIGHLY recommended to set resource limits.
@@ -623,8 +699,10 @@ serviceMonitor:
   # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
   relabelings: []
   metricRelabelings: []
+  # Sets a sample limit on the ServiceMonitor
+  sampleLimit: 0
 
-# PodDisruptionBudget is used only if deployment enabled
+# PodDisruptionBudget is used only if mode is "deployment" or "statefulset"
 podDisruptionBudget:
   enabled: false
 #   minAvailable: 2

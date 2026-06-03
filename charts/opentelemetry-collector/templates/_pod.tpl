@@ -28,7 +28,11 @@ containers:
       - {{ . }}
       {{- end }}
     securityContext:
-      {{- if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
+      {{- if and (not (.Values.securityContext)) (.Values.presets.profiling.enabled) }}
+      runAsUser: 0
+      runAsGroup: 0
+      privileged: true
+      {{- else if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
       runAsUser: 0
       runAsGroup: 0
       {{- else -}}
@@ -79,6 +83,7 @@ containers:
         .Values.presets.kubeletMetrics.enabled
         (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset"))
         (and (or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled) (eq .Values.mode "daemonset"))
+        (and .Values.presets.resourceDetection.enabled .Values.presets.resourceDetection.k8snode.enabled)
       }}
       - name: K8S_NODE_NAME
         valueFrom:
@@ -163,6 +168,10 @@ containers:
         path: {{ .Values.startupProbe.httpGet.path }}
         port: {{ .Values.startupProbe.httpGet.port }}
     {{- end }}
+    {{- with .Values.resizePolicy }}
+    resizePolicy:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     {{- with .Values.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
@@ -190,6 +199,11 @@ containers:
         readOnly: true
         mountPropagation: HostToContainer
       {{- end }}
+      {{- if .Values.presets.profiling.enabled }}
+      - name: tracefs
+        mountPath: /sys/kernel/tracing
+        readOnly: true
+      {{- end }}
       {{- if .Values.extraVolumeMounts }}
       {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 6 }}
       {{- end }}
@@ -205,6 +219,9 @@ priorityClassName: {{ .Values.priorityClassName | quote }}
 {{- end }}
 {{- if .Values.runtimeClassName }}
 runtimeClassName: {{ .Values.runtimeClassName | quote }}
+{{- end }}
+{{- if .Values.terminationGracePeriodSeconds }}
+terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
 {{- end }}
 volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}
@@ -233,6 +250,11 @@ volumes:
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
+  {{- if .Values.presets.profiling.enabled }}
+  - name: tracefs
+    hostPath:
+      path: /sys/kernel/tracing
   {{- end }}
   {{- if .Values.extraVolumes }}
   {{- tpl (toYaml .Values.extraVolumes) . | nindent 2 }}

@@ -14,6 +14,9 @@ metadata:
 spec:
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- if .Values.minReadySeconds }}
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
@@ -46,11 +49,14 @@ spec:
       containers:
         - args:
             - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
-            - --metrics-secure=false
+            - --metrics-secure={{ .Values.manager.metrics.secure }}
             {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
             {{- end }}
             - --health-probe-addr=:{{ .Values.manager.ports.healthzPort }}
+            {{- if .Values.manager.ports.pprofPort }}
+            - --pprof-addr=:{{ .Values.manager.ports.pprofPort }}
+            {{- end }}
             {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
             {{- end }}
@@ -118,6 +124,11 @@ spec:
           name: manager
           imagePullPolicy: {{ .Values.manager.image.imagePullPolicy }}
           ports:
+            {{- if .Values.manager.ports.pprofPort }}
+            - containerPort: {{ .Values.manager.ports.pprofPort }}
+              name: pprof
+              protocol: TCP
+            {{- end }}
             - containerPort: {{ .Values.manager.ports.metricsPort }}
               name: metrics
               protocol: TCP
@@ -155,33 +166,6 @@ spec:
           {{- with .Values.manager.securityContext }}
           securityContext: {{ toYaml . | nindent 12 }}
           {{- end }}
-        {{ if .Values.kubeRBACProxy.enabled }}
-        - args:
-            - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
-            - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
-            - --v=0
-            {{-  if .Values.kubeRBACProxy.extraArgs  }}
-            {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
-            {{-  end  }}
-          image: "{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
-          name: kube-rbac-proxy
-          ports:
-            - containerPort: {{ .Values.kubeRBACProxy.ports.proxyPort }}
-              name: https
-              protocol: TCP
-          {{- with .Values.kubeRBACProxy.resources }}
-          resources: {{ toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.kubeRBACProxy.securityContext }}
-          securityContext: {{ toYaml . | nindent 12 }}
-          {{- end }}
-          {{- if $explicitMount }}
-          volumeMounts:
-            - name: access-token
-              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-              readOnly: true
-          {{- end }}
-        {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

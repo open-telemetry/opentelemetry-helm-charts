@@ -1,0 +1,40 @@
+name: Update Target Allocator Chart
+
+on:
+  schedule:
+    - cron: "27 9 * * *"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Operator release tag to apply. Defaults to the latest published release.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/update-chart-app-version.yaml
+    secrets: inherit
+    with:
+      chart_name: opentelemetry-target-allocator
+      chart_root: charts/opentelemetry-target-allocator
+      chart_yaml: charts/opentelemetry-target-allocator/Chart.yaml
+      stage_path: charts/opentelemetry-target-allocator
+      upstream_repository: open-telemetry/opentelemetry-operator
+      release_tag_prefix: v
+      app_version_prefix: ""
+      branch_prefix: ta
+      version_policy: patch-bump
+      approvers: "@atoulme"
+      pr_title_template: "Update target allocator chart to use latest target allocator version: {{ release_tag }}"
+      pr_body_template: |
+        {{ release_url }}
+
+        cc {{ approvers }}
+      post_update_action: generate-examples
+      release_tag: ${{ github.event.inputs.release_tag || '' }}

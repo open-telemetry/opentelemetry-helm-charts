@@ -6,10 +6,10 @@ metadata:
   name: grafana
   namespace: default
   labels:
-    helm.sh/chart: grafana-10.5.8
+    helm.sh/chart: grafana-12.3.0
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "12.3.1"
+    app.kubernetes.io/version: "13.0.1"
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -22,12 +22,12 @@ spec:
   template:
     metadata:
       labels:
-        helm.sh/chart: grafana-10.5.8
+        helm.sh/chart: grafana-12.3.0
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: example
-        app.kubernetes.io/version: "12.3.1"
+        app.kubernetes.io/version: "13.0.1"
       annotations:
-        checksum/config: 4bc37edad15da2620fa7b48cb4d0af4ca30f6d344ac238d6aa702abb2d92c6ba
+        checksum/config: e30f2a2d3b08516a19231e9e993baac3b014e72d908283c5a560fbdbcf4f265a
         checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
         checksum/secret: bed677784356b2af7fb0d87455db21f077853059b594101a4f6532bfbd962a7f
         kubectl.kubernetes.io/default-container: grafana
@@ -44,7 +44,7 @@ spec:
       enableServiceLinks: true
       containers:
         - name: grafana-sc-alerts
-          image: "quay.io/kiwigrid/k8s-sidecar:2.2.1"
+          image: "quay.io/kiwigrid/k8s-sidecar:2.7.1"
           imagePullPolicy: IfNotPresent
           env:
             - name: METHOD
@@ -71,8 +71,8 @@ spec:
               value: POST
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 150m
+              memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -84,7 +84,7 @@ spec:
             - name: sc-alerts-volume
               mountPath: "/etc/grafana/provisioning/alerting"
         - name: grafana-sc-dashboard
-          image: "quay.io/kiwigrid/k8s-sidecar:2.2.1"
+          image: "quay.io/kiwigrid/k8s-sidecar:2.7.1"
           imagePullPolicy: IfNotPresent
           env:
             - name: METHOD
@@ -111,8 +111,8 @@ spec:
               value: POST
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 150m
+              memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -124,7 +124,7 @@ spec:
             - name: sc-dashboard-volume
               mountPath: "/tmp/dashboards"
         - name: grafana-sc-datasources
-          image: "quay.io/kiwigrid/k8s-sidecar:2.2.1"
+          image: "quay.io/kiwigrid/k8s-sidecar:2.7.1"
           imagePullPolicy: IfNotPresent
           env:
             - name: METHOD
@@ -151,8 +151,8 @@ spec:
               value: POST
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 150m
+              memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -164,13 +164,14 @@ spec:
             - name: sc-datasources-volume
               mountPath: "/etc/grafana/provisioning/datasources"
         - name: grafana
-          image: "docker.io/grafana/grafana:12.3.1"
+          image: "docker.io/grafana/grafana:13.0.1"
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
               - ALL
+            privileged: false
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -218,7 +219,7 @@ spec:
                 secretKeyRef:
                   name: grafana
                   key: admin-password
-            - name: GF_INSTALL_PLUGINS
+            - name: GF_PLUGINS_PREINSTALL_SYNC
               valueFrom:
                 configMapKeyRef:
                   name: grafana
@@ -251,7 +252,7 @@ spec:
               port: grafana
           resources:
             limits:
-              memory: 175Mi
+              memory: 300Mi
       volumes:
         - name: config
           configMap:

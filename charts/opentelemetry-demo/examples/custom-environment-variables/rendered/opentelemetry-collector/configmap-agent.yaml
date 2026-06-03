@@ -6,10 +6,10 @@ metadata:
   name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.142.2
+    helm.sh/chart: opentelemetry-collector-0.153.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.142.0"
+    app.kubernetes.io/version: "0.151.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
@@ -29,13 +29,13 @@ data:
       otlp/jaeger:
         endpoint: jaeger:4317
         sending_queue:
-          batch: null
+          batch: {}
         tls:
           insecure: true
       otlphttp/prometheus:
         endpoint: http://prometheus:9090/api/v1/otlp
         sending_queue:
-          batch: null
+          batch: {}
         tls:
           insecure: true
     extensions:
@@ -190,6 +190,14 @@ data:
       k8s_cluster:
         collection_interval: 10s
         k8s_leader_elector: k8s_leader_elector/k8s_cluster
+      kafkametrics:
+        brokers:
+        - kafka:9092
+        collection_interval: 10s
+        scrapers:
+        - brokers
+        - topics
+        - consumers
       kubeletstats:
         auth_type: serviceAccount
         collection_interval: 20s
@@ -249,6 +257,7 @@ data:
           - batch
           receivers:
           - otlp
+          - kafkametrics
           - spanmetrics
           - receiver_creator/metrics
           - hostmetrics
@@ -281,3 +290,10 @@ data:
                   protocol: http/protobuf
               interval: 10000
               timeout: 5000
+        resource:
+          host.name: ${env:OTEL_K8S_NODE_NAME}
+          k8s.namespace.name: ${env:OTEL_K8S_NAMESPACE}
+          k8s.node.ip: ${env:OTEL_K8S_NODE_IP}
+          k8s.node.name: ${env:OTEL_K8S_NODE_NAME}
+          k8s.pod.ip: ${env:OTEL_K8S_POD_IP}
+          k8s.pod.name: ${env:OTEL_K8S_POD_NAME}

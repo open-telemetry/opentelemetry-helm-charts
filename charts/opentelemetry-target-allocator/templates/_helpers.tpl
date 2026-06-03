@@ -36,7 +36,7 @@ Helper used to define a namspace.
 - If namespaceOverride value is filled in it will replace the namespace
 */}}
 {{- define "helper.namespace" -}}
-  {{- default .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+  {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*

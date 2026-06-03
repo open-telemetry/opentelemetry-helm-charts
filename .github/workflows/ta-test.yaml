@@ -11,8 +11,12 @@ permissions:
   contents: read
 
 jobs:
-  ta-test:
+  ta-test-matrix:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        helm-version:
+          - "v4.0.5"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -22,6 +26,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
+          helm-version: ${{ matrix.helm-version }}
 
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-target-allocator
@@ -30,3 +35,17 @@ jobs:
         run: |
           kubectl apply -f ./charts/opentelemetry-target-allocator/examples/consistent-hashing/rendered
           kubectl rollout status deployment example-opentelemetry-target-allocator-ta --timeout=30s
+
+  ta-test:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [ta-test-matrix]
+    steps:
+      - name: Check matrix result
+        run: |
+          if [[ "${{ needs.ta-test-matrix.result }}" == "success" ]]; then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            exit 1
+          fi

@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/component: server
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: v3.9.0
-    helm.sh/chart: prometheus-28.2.0
+    app.kubernetes.io/version: v3.11.3
+    helm.sh/chart: prometheus-29.6.0
     app.kubernetes.io/part-of: prometheus
   name: prometheus
   namespace: default
@@ -57,14 +57,14 @@ data:
     - job_name: kubernetes-api-servers
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       kubernetes_sd_configs:
-      - role: endpoints
+      - role: endpointslice
       relabel_configs:
       - action: keep
         regex: default;kubernetes;https
         source_labels:
         - __meta_kubernetes_namespace
         - __meta_kubernetes_service_name
-        - __meta_kubernetes_endpoint_port_name
+        - __meta_kubernetes_endpointslice_port_name
       scheme: https
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -75,33 +75,25 @@ data:
       relabel_configs:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
-      - replacement: kubernetes.default.svc:443
-        target_label: __address__
-      - regex: (.+)
-        replacement: /api/v1/nodes/$1/proxy/metrics
-        source_labels:
-        - __meta_kubernetes_node_name
-        target_label: __metrics_path__
       scheme: https
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
     - job_name: kubernetes-nodes-cadvisor
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       kubernetes_sd_configs:
       - role: node
+      metrics_path: /metrics/cadvisor
       relabel_configs:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
-      - replacement: kubernetes.default.svc:443
-        target_label: __address__
-      - regex: (.+)
-        replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
-        source_labels:
-        - __meta_kubernetes_node_name
-        target_label: __metrics_path__
+      - source_labels:
+        - __metrics_path__
+        target_label: metrics_path
       scheme: https
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
     - job_name: kubernetes-pods
       honor_labels: true
       kubernetes_sd_configs:
@@ -219,7 +211,7 @@ data:
     - job_name: kubernetes-service-endpoints
       honor_labels: true
       kubernetes_sd_configs:
-      - role: endpoints
+      - role: endpointslice
       relabel_configs:
       - action: keep
         regex: true
@@ -266,7 +258,7 @@ data:
     - job_name: kubernetes-service-endpoints-slow
       honor_labels: true
       kubernetes_sd_configs:
-      - role: endpoints
+      - role: endpointslice
       relabel_configs:
       - action: keep
         regex: true

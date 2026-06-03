@@ -248,3 +248,38 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
     {{- end -}}
   {{- end }}
 {{- end }}
+
+{{- define "opentelemetry-collector.deprecations" -}}
+{{- $warnings := list -}}
+{{- $renames := list
+  (dict "old" "k8sattributes" "new" "k8s_attributes")
+-}}
+{{- range $rename := $renames }}
+  {{- $oldName := index $rename "old" -}}
+  {{- $newName := index $rename "new" -}}
+  {{- if index $.Values.config.processors $oldName }}
+    {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Update your values.yaml. See UPGRADING.md." $oldName $newName) -}}
+  {{- end }}
+  {{- range $signal, $pipeline := $.Values.config.service.pipelines }}
+    {{- if and $pipeline $pipeline.processors (has $oldName $pipeline.processors) }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Use '%s' in your values.yaml. See UPGRADING.md." $signal $oldName $newName) -}}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- join "\n" $warnings -}}
+{{- end -}}
+
+{{/*
+List of upstream community OpenTelemetry Collector distributions that do NOT include
+the profiling receiver. Among community images only `opentelemetry-collector-ebpf-profiler`
+ships the receiver; custom/vendor distributions pass through.
+Consumed by NOTES.txt to fail-fast when the profiling preset
+is enabled with an incompatible community image.
+See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions
+*/}}
+{{- define "opentelemetry-collector.profilingUnsupportedImages" -}}
+- opentelemetry-collector
+- opentelemetry-collector-contrib
+- opentelemetry-collector-k8s
+- opentelemetry-collector-otlp
+{{- end }}

@@ -101,14 +101,23 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.profiling.enabled }}
+{{- $config = (include "opentelemetry-collector.applyProfilingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.kubeletMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.kubernetesObjects.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesObjectsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
+{{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -129,6 +138,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.hostMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyHostMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.profiling.enabled }}
+{{- $config = (include "opentelemetry-collector.applyProfilingConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.kubeletMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -138,8 +150,14 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.kubernetesEvents.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.kubernetesObjects.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesObjectsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
+{{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -323,6 +341,22 @@ receivers:
   {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.applyProfilingConfig" -}}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "receivers" list "exporters" list)))) (include "opentelemetry-collector.profilingConfig" .Values | fromYaml) .config }}
+{{- $_ := set $config.service.pipelines.profiles "receivers" (append $config.service.pipelines.profiles.receivers "profiling" | uniq)  }}
+{{- if not $config.service.pipelines.profiles.exporters }}
+{{- $_ := set $config.service.pipelines.profiles "exporters" (list "debug") }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.profilingConfig" -}}
+receivers:
+  profiling: {}
+exporters:
+  debug: {}
+{{- end }}
+
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
 {{- if $config.service.pipelines.logs }}
@@ -341,6 +375,25 @@ receivers:
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
   {{- if not (has "k8sattributes" $config.service.pipelines.traces.processors) }}
     {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
+  {{- end }}
+{{- end }}
+{{- if $config.service.pipelines.profiles }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "processors" list)))) $config }}
+  {{- if not (has "k8sattributes" $config.service.pipelines.profiles.processors) }}
+    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "k8sattributes" | uniq)  }}
+  {{- end }}
+  {{- $podAssoc := $config.processors.k8sattributes.pod_association }}
+  {{- $containerIdSource := dict "sources" (list (dict "from" "resource_attribute" "name" "container.id")) }}
+  {{- $hasContainerId := false }}
+  {{- range $podAssoc }}
+    {{- range .sources }}
+      {{- if and (eq .from "resource_attribute") (eq .name "container.id") }}
+        {{- $hasContainerId = true }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if not $hasContainerId }}
+    {{- $_ := set $config.processors.k8sattributes "pod_association" (prepend $podAssoc $containerIdSource) }}
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
@@ -454,6 +507,163 @@ receivers:
           - "DELETED"
 {{- end }}
 
+{{- define "opentelemetry-collector.applyKubernetesObjectsConfig" -}}
+{{- $vals := .Values.Values -}}
+{{- $disableLeaderElection := false -}}
+{{- if and (hasKey $vals "presets") (hasKey $vals.presets "kubernetesObjects") -}}
+  {{- $disableLeaderElection = $vals.presets.kubernetesObjects.disableLeaderElection -}}
+{{- end -}}
+{{- $useLeaderElection := and (eq $vals.mode "daemonset") (not $disableLeaderElection) -}}
+{{- $electorName := "k8s_objects" }}
+{{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
+{{- $objectsYaml := include "opentelemetry-collector.kubernetesObjectsConfig" $ctx | fromYaml }}
+{{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
+{{- $existingObjects := list }}
+{{- if .config.receivers }}
+{{- if index .config.receivers "k8sobjects" }}
+{{- if (index .config.receivers "k8sobjects").objects }}
+{{- $existingObjects = (index .config.receivers "k8sobjects").objects }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $allObjects := concat $newObjects $existingObjects }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .config }}
+{{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
+{{- if $useLeaderElection }}
+{{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
+{{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq) }}
+{{- end }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.kubernetesObjectsConfig" -}}
+{{- $preset := .Values.presets.kubernetesObjects -}}
+{{- if .useLeaderElection }}
+{{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
+{{- end }}
+receivers:
+  k8sobjects:
+    {{- if .useLeaderElection }}
+    k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
+    {{- end }}
+    objects:
+{{- if $preset.core.enabled }}
+{{- range list "namespaces" "pods" "nodes" "services" "serviceaccounts" }}
+      - name: {{ . }}
+        mode: pull
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+{{- end }}
+{{- end }}
+{{- range list "deployments" "replicasets" "daemonsets" "statefulsets" }}
+      - name: {{ . }}
+        mode: pull
+        group: apps
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+        group: apps
+{{- end }}
+{{- end }}
+{{- range list "jobs" "cronjobs" }}
+      - name: {{ . }}
+        mode: pull
+        group: batch
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+        group: batch
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.rbac.enabled }}
+{{- range list "roles" "rolebindings" "clusterroles" "clusterrolebindings" }}
+      - name: {{ . }}
+        mode: pull
+        group: rbac.authorization.k8s.io
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+        group: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.storage.enabled }}
+{{- range list "storageclasses" }}
+      - name: {{ . }}
+        mode: pull
+        group: storage.k8s.io
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+        group: storage.k8s.io
+{{- end }}
+{{- end }}
+{{- range list "persistentvolumes" "persistentvolumeclaims" }}
+      - name: {{ . }}
+        mode: pull
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.networking.enabled }}
+{{- range list "ingresses" "networkpolicies" }}
+      - name: {{ . }}
+        mode: pull
+        group: networking.k8s.io
+{{- if $preset.watch }}
+      - name: {{ . }}
+        mode: watch
+        group: networking.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.autoscaling.enabled }}
+      - name: horizontalpodautoscalers
+        mode: pull
+        group: autoscaling
+{{- if $preset.watch }}
+      - name: horizontalpodautoscalers
+        mode: watch
+        group: autoscaling
+{{- end }}
+{{- if $preset.autoscaling.vpa.enabled }}
+      - name: verticalpodautoscalers
+        mode: pull
+        group: autoscaling.k8s.io
+{{- if $preset.watch }}
+      - name: verticalpodautoscalers
+        mode: watch
+        group: autoscaling.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $preset.policy.enabled }}
+      - name: poddisruptionbudgets
+        mode: pull
+        group: policy
+{{- if $preset.watch }}
+      - name: poddisruptionbudgets
+        mode: watch
+        group: policy
+{{- end }}
+{{- end }}
+{{- if $preset.apiExtensions.enabled }}
+      - name: customresourcedefinitions
+        mode: pull
+        group: apiextensions.k8s.io
+{{- if $preset.watch }}
+      - name: customresourcedefinitions
+        mode: watch
+        group: apiextensions.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "opentelemetry-collector.leaderElectionConfig" -}}
 extensions:
   k8s_leader_elector/{{ .name }}:
@@ -461,3 +671,75 @@ extensions:
     lease_name: {{ .leaseName }}
     lease_namespace: {{ .leaseNamespace }}
 {{- end }}
+
+{{- define "opentelemetry-collector.applyResourceDetectionConfig" -}}
+{{- $config := .config }}
+{{- $processors := get $config "processors" | default dict }}
+{{- $resourceDetectionProcessor := get $processors "resourcedetection/env" | default dict }}
+{{- $detectors := get $resourceDetectionProcessor "detectors" | default list }}
+{{- if .Values.Values.presets.resourceDetection.env.enabled }}
+{{- $detectors = append $detectors "env" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.k8snode.enabled }}
+{{- $detectors = append $detectors "k8snode" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.aks.enabled }}
+{{- $aksConfig := include "opentelemetry-collector.resourceDetectionAksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $aksConfig }}
+{{- $detectors = append $detectors "aks" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.eks.enabled }}
+{{- $eksConfig := include "opentelemetry-collector.resourceDetectionEksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $eksConfig }}
+{{- $detectors = append $detectors "eks" | uniq }}
+{{- end }}
+{{- if .Values.Values.presets.resourceDetection.gcp.enabled }}
+{{- $gcpConfig := include "opentelemetry-collector.resourceDetectionGcpDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $gcpConfig }}
+{{- $detectors = append $detectors "gcp" | uniq }}
+{{- end }}
+{{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}
+{{- $_ := set $processors "resourcedetection/env" $resourceDetectionProcessor }}
+{{- $_ := set $config "processors" $processors }}
+{{- if $config.service.pipelines.logs }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
+  {{- if not (has "resourcedetection/env" $config.service.pipelines.logs.processors) }}
+    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "resourcedetection/env" | uniq) }}
+  {{- end }}
+{{- end }}
+{{- if $config.service.pipelines.metrics }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
+  {{- if not (has "resourcedetection/env" $config.service.pipelines.metrics.processors) }}
+    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "resourcedetection/env" | uniq) }}
+  {{- end }}
+{{- end }}
+{{- if $config.service.pipelines.traces }}
+  {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
+  {{- if not (has "resourcedetection/env" $config.service.pipelines.traces.processors) }}
+    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "resourcedetection/env" | uniq) }}
+  {{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.resourceDetectionEksDetectorConfig" -}}
+timeout: 15s
+eks:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}
+
+{{- define "opentelemetry-collector.resourceDetectionAksDetectorConfig" -}}
+aks:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}
+
+{{- define "opentelemetry-collector.resourceDetectionGcpDetectorConfig" -}}
+gcp:
+  resource_attributes:
+    k8s.cluster.name:
+      enabled: true
+{{- end -}}

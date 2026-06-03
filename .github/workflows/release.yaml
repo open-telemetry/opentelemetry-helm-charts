@@ -29,13 +29,13 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
         with:
-          version: v3.9.0
+          version: v4.0.5
 
       - name: Add dependent repositories
         run: |
           helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
           helm repo add prometheus https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add grafana https://grafana-community.github.io/helm-charts
           helm repo add jaeger https://jaegertracing.github.io/helm-charts
           helm repo add opensearch https://opensearch-project.github.io/helm-charts
 
@@ -49,7 +49,7 @@ jobs:
           CR_GENERATE_RELEASE_NOTES: true
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

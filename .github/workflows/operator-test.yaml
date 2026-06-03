@@ -11,8 +11,12 @@ permissions:
   contents: read
 
 jobs:
-  operator-test:
+  operator-test-matrix:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        helm-version:
+          - "v4.0.5"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -22,6 +26,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
+          helm-version: ${{ matrix.helm-version }}
 
       - name: Check CRDs
         run: make check-operator-crds
@@ -33,6 +38,9 @@ jobs:
         run: |
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+
+      - name: Install Gateway API CRDs
+        run: kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
 
       - name: Install cert-manager
         run: |
@@ -49,7 +57,7 @@ jobs:
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
 
       - name: Install chainsaw
-        uses: kyverno/action-install-chainsaw@06560d18422209e9c1e08e931d477d04bf2674c1 # v0.2.14
+        uses: kyverno/action-install-chainsaw@1223ef75bedeb59c4e7b5455463d4316e76dff01 # v0.2.15
 
       - name: Install metrics-server
         run: |
@@ -64,9 +72,7 @@ jobs:
             --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
             --set "manager.podLabels.control-plane=controller-manager" \
             --set "manager.extraEnvs[0].name=NAMESPACE" \
-            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace" \
-            --set "kubeRBACProxy.enabled=false" \
-            --set "manager.ports.metricsPort=8443"
+            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace"
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
@@ -76,8 +82,26 @@ jobs:
           mkdir -p ./.testresults/e2e
           chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config" --exclude-test-regex "chainsaw/operator-metrics"
 
-  operator-test-no-certmanager:
+  operator-test:
+    if: always()
     runs-on: ubuntu-latest
+    needs: [operator-test-matrix]
+    steps:
+      - name: Check matrix result
+        run: |
+          if [[ "${{ needs.operator-test-matrix.result }}" == "success" ]]; then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            exit 1
+          fi
+
+  operator-test-no-certmanager-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        helm-version:
+          - "v4.0.5"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -87,6 +111,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           create-kind-cluster: "true"
+          helm-version: ${{ matrix.helm-version }}
 
       - name: Check CRDs
         run: make check-operator-crds
@@ -99,6 +124,9 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
 
+      - name: Install Gateway API CRDs
+        run: kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+
       - name: Run chart-testing (install)
         run: ct install --charts charts/opentelemetry-operator --helm-extra-set-args "--set=admissionWebhooks.certManager.enabled=false"
 
@@ -108,7 +136,7 @@ jobs:
           git clone -b v"$appVersion" --single-branch https://github.com/open-telemetry/opentelemetry-operator.git ./opentelemetry-operator
 
       - name: Install chainsaw
-        uses: kyverno/action-install-chainsaw@06560d18422209e9c1e08e931d477d04bf2674c1 # v0.2.14
+        uses: kyverno/action-install-chainsaw@1223ef75bedeb59c4e7b5455463d4316e76dff01 # v0.2.15
 
       - name: Install metrics-server
         run: |
@@ -124,9 +152,7 @@ jobs:
             --set "manager.podLabels.control-plane=controller-manager" \
             --set "admissionWebhooks.certManager.enabled=false" \
             --set "manager.extraEnvs[0].name=NAMESPACE" \
-            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace" \
-            --set "kubeRBACProxy.enabled=false" \
-            --set "manager.ports.metricsPort=8443"
+            --set "manager.extraEnvs[0].valueFrom.fieldRef.fieldPath=metadata.namespace"
           kubectl wait --timeout=5m --for=condition=available deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 
       - name: Run e2e tests
@@ -135,3 +161,17 @@ jobs:
         run: |
           mkdir -p ./.testresults/e2e
           chainsaw test --test-dir ./tests/e2e --exclude-test-regex "chainsaw/multiple-configmaps" --exclude-test-regex "chainsaw/smoke-pod-dns-config" --exclude-test-regex "chainsaw/operator-metrics"
+
+  operator-test-no-certmanager:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [operator-test-no-certmanager-matrix]
+    steps:
+      - name: Check matrix result
+        run: |
+          if [[ "${{ needs.operator-test-no-certmanager-matrix.result }}" == "success" ]]; then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            exit 1
+          fi
