@@ -42,7 +42,8 @@ The `presets.prometheus.*` family (`nodeExporter`, `cadvisor`, `podAnnotations`)
 * `presets.prometheus.cadvisor`: [cAdvisor](https://github.com/google/cadvisor) metrics exposed with the [Kube State Metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) (aka KSM)
 * `presets.prometheus.podAnnotations`: custom pod metrics exposed using the `prometheus.io/scrape=true` Kubernetes annotation.
 
-The `prometheus.*` presets are implemented adding named instances of the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) to the daemonset collector's metrics pipeline, They are a **replacement** for the `daemon_scrape_configs.yaml` scrape file.
+The `prometheus.*` presets are implemented adding named instances of the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) to the daemonset collector's metrics pipeline (`prometheus/node_exporter`, `prometheus/cadvisor`, and `prometheus/pod_annotations`).
+They are a **replacement** for the `daemon_scrape_configs.yaml` scrape file.
 
 <details>
 <summary>Constraints (chart-enforced)</summary>
@@ -56,7 +57,7 @@ The `prometheus.*` presets are gated; chart rendering fails if these are violate
 
 #### Prometheus metrics label set
 
-The `presets.prometheus.*` presets produces the same Prometheus labels as the Kube-Prometheus-Stack.
+The `presets.prometheus.*` presets produce the same Prometheus labels as the Kube-Prometheus-Stack.
 
 <details>
 <summary>Details</summary>
@@ -73,14 +74,15 @@ The exact labels attached vary per preset:
 | `container`, `image`    | —                            | intrinsic (`container`, `image` from cAdvisor) | —                                                           |
 | Pod labels (`labelmap`) | —                            | —                                              | all pod labels mapped via `__meta_kubernetes_pod_label_*`   |
 
-Kubernetes resource attributes (`k8s.*`) are supplied downstream by the `k8sattributes` processor (`presets.kubernetesAttributes.enabled=true`, recommended).
+Prometheus labels are mapped to OpenTelemetry metrics data points and resource attributes according to the `prometheus` receiver [Resource Attribute Mapping](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/prometheusreceiver/resource_attribute_mapping.md)
+
+Kubernetes resource attributes (`k8s.*`) are eventually supplied downstream by the `k8sattributes` processor when `presets.kubernetesAttributes.enabled=true` (recommended).
 
 </details>
 
 ##### Differences between `presets.prometheus.*` and `daemon_scrape_configs.yaml` metrics
 
-Each preset replaces a specific scrape job in `daemon_scrape_configs.yaml`. All three preserve the same labels — `job` / `instance` / Kubernetes labels.
-The remaining differences are new labels (e.g. a `node` label) or default-value tweaks called out per preset below.
+`presets.prometheus.*` are designed to replace `daemon_scrape_configs.yaml`, with each preset mapping to a specific scrape job in that file. All three presets retain the same labels — `job`, `instance`, and Kubernetes labels. Notable differences include additional labels (e.g. `node`) and default-value adjustments for improved consistency, as described per preset below.
 
 <details>
 <summary>Details</summary>
