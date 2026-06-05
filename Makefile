@@ -26,6 +26,7 @@ generate-examples:
 				fi; \
 				rm -rf $${EXAMPLES_DIR}/$${example}/rendered/$${chart_name}; \
 			done; \
+			find "$${EXAMPLES_DIR}/$${example}/rendered" -type f -exec perl -i -0777 -pe 's/[ \t\n]+(?=\n---\n)//g; s/[ \t\n]+\z/\n/' {} +; \
 		done; \
 	done
 
@@ -47,6 +48,7 @@ check-examples:
 					mv ${TMP_DIRECTORY}/$${example}/$${chart_name}/charts/$${subchart}/templates/* "${TMP_DIRECTORY}/$${example}/$${chart_name}/templates/$${subchart}"; \
 				done; \
 			done; \
+			find "${TMP_DIRECTORY}/$${example}/$${chart_name}/templates" -type f -exec perl -i -0777 -pe 's/[ \t\n]+(?=\n---\n)//g; s/[ \t\n]+\z/\n/' {} +; \
 			if diff -r -I 'checksum/config' -I 'helm\.sh/chart' "$${EXAMPLES_DIR}/$${example}/rendered" "${TMP_DIRECTORY}/$${example}/$${chart_name}/templates" > /dev/null; then \
 				echo "Passed $${example}"; \
 			else \
