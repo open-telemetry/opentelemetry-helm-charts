@@ -1,31 +1,37 @@
 name: Release Charts
+
 on:
   push:
     branches:
       - main
+
 permissions:
   contents: read
+
 jobs:
   release:
     permissions:
       contents: write # to push chart release and create a release (helm/chart-releaser-action)
       packages: write # needed for ghcr access
+
     runs-on: ubuntu-latest
-    #`release` environment are available to this job.
     environment: release
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
       - name: Install Helm
-        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
         with:
           version: v4.0.5
+
       - name: Add dependent repositories
         run: |
           helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -33,28 +39,32 @@ jobs:
           helm repo add grafana https://grafana-community.github.io/helm-charts
           helm repo add jaeger https://jaegertracing.github.io/helm-charts
           helm repo add opensearch https://opensearch-project.github.io/helm-charts
-      # Import the GPG key into an isolated GnuPG home, then export only the
-      # requested key into a binary keyring file for chart-releaser to be used.
-      - name: Prepare GPG keyring
+
+      - name: GPG configuration
+        run: |-
+          echo "$GPG_KEY" > "$GPG_KEY_PATH"
+          mkdir -p "$HOME/.gnupg"
+          chmod 0700 "$HOME/.gnupg"
+          echo "use-agent" > "$HOME/.gnupg/gpg.conf"
+          echo "pinentry-mode loopback" >> "$HOME/.gnupg/gpg.conf"
+          echo "allow-loopback-pinentry" > "$HOME/.gnupg/gpg-agent.conf"
+          echo "max-cache-ttl 86400" >> "$HOME/.gnupg/gpg-agent.conf"
+          echo "default-cache-ttl 86400" >> "$HOME/.gnupg/gpg-agent.conf"
+          gpgconf --kill gpg-agent
+          gpgconf --launch gpg-agent
+          gpg --batch --yes --passphrase-fd 0 --import "$GPG_KEY_PATH" <<< "$GPG_PASSPHRASE"
+          gpg --batch --yes --export "$GPG_KEY_ID" > ~/.gnupg/pubring.gpg
+          gpg --batch --yes --passphrase-fd 0 --export-secret-keys "$GPG_KEY_ID" > ~/.gnupg/secring.gpg <<< "$GPG_PASSPHRASE"
+          cat > "$GPG_PASSPHRASE_FILE" <<< "$GPG_PASSPHRASE"
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-        run: |
-          set -euo pipefail
-          keyring="${RUNNER_TEMP}/secring.gpg"
-          passphrase_file="${RUNNER_TEMP}/passphrase.txt"
+          GPG_KEY_ID: "${{ secrets.GPG_KEY_ID }}"
+          GPG_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+          GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"
+          GPG_PASSPHRASE_FILE: "${{ runner.temp }}/gpg-passphrase"
+          GPG_KEY_PATH: "${{ runner.temp }}/private.key"
 
-          export GNUPGHOME="${RUNNER_TEMP}/gnupg"
-          mkdir -p -m 700 "${GNUPGHOME}"
-
-          printf '%s\n' "${GPG_PRIVATE_KEY}" | gpg --batch --import
-          gpg --batch --export-secret-keys "${GPG_KEY_ID}" > "${keyring}"
-          printf '%s' "${GPG_PASSPHRASE}" > "${passphrase_file}"
-
-          chmod 600 "${keyring}" "${passphrase_file}"
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f
+        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
           charts_dir: charts
           config: .github/cr.yaml
@@ -62,20 +72,23 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_GENERATE_RELEASE_NOTES: true
           CR_SIGN: true
-          CR_KEY: "${{ secrets.GPG_KEY_ID }}"
-          CR_KEYRING: "${{ runner.temp }}/secring.gpg"
-          CR_PASSPHRASE_FILE: "${{ runner.temp }}/passphrase.txt"
+          CR_KEY: "${{ secrets.GPG_KEY_NAME }}"
+          CR_KEYRING: "~/.gnupg/secring.gpg"
+          CR_PASSPHRASE_FILE: "${{ runner.temp }}/gpg-passphrase"
+
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Login to Helm OCI Registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
             --username ${{ github.actor }} \
             --password-stdin
+
       - name: Push charts to GHCR
         run: |
           shopt -s nullglob
@@ -86,10 +99,12 @@ jobs:
             echo "Pushing ${pkg} to oci://ghcr.io/${GITHUB_REPOSITORY}"
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY}"
           done
+
       - name: Fetch newly created tags
         run: |
           git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git fetch --tags origin
+
       - name: Enhance release notes with OpenTelemetry links
         run: .github/scripts/enhance-release-notes.sh
         env:
