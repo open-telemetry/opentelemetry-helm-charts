@@ -1,0 +1,33 @@
+suite: rbac
+templates:
+  - templates/clusterrole.yaml
+  - templates/clusterrolebinding.yaml
+  - templates/serviceaccount.yaml
+tests:
+  - it: renders cluster role by default
+    template: templates/clusterrole.yaml
+    asserts:
+      - isKind:
+          of: ClusterRole
+
+  - it: renders cluster role binding by default
+    template: templates/clusterrolebinding.yaml
+    asserts:
+      - isKind:
+          of: ClusterRoleBinding
+
+  - it: renders service account by default
+    template: templates/serviceaccount.yaml
+    asserts:
+      - isKind:
+          of: ServiceAccount
+
+  - it: skips rbac resources when disabled
+    set:
+      rbac:
+        create: false
+      serviceAccount:
+        create: false
+    asserts:
+      - hasDocuments:
+          count: 0
