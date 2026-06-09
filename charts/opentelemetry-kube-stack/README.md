@@ -39,7 +39,7 @@ This chart provides functionality to port an existing scrape configuration from 
 The `presets.prometheus.*` family (`nodeExporter`, `cadvisor`, `podAnnotations`) configure the OpenTelemetry Collectors to scrape popular Prometheus Kubernetes metrics:
 
 * `presets.prometheus.nodeExporter`: Kubernetes node metrics exposed with the [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter),
-* `presets.prometheus.cadvisor`: [cAdvisor](https://github.com/google/cadvisor) metrics exposed with the [Kube State Metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) (aka KSM)
+* `presets.prometheus.cadvisor`: [cAdvisor](https://github.com/google/cadvisor) metrics scraped from the kubelet,
 * `presets.prometheus.podAnnotations`: custom pod metrics exposed using the `prometheus.io/scrape=true` Kubernetes annotation.
 
 The `prometheus.*` presets are implemented adding named instances of the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) to the daemonset collector's metrics pipeline (`prometheus/node_exporter`, `prometheus/cadvisor`, and `prometheus/pod_annotations`).
