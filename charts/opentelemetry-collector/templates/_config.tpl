@@ -181,13 +181,13 @@ receivers:
         filesystem:
           exclude_mount_points:
             mount_points:
-              - /dev/*
-              - /proc/*
-              - /sys/*
-              - /run/k3s/containerd/*
-              - /var/lib/docker/*
-              - /var/lib/kubelet/*
-              - /snap/*
+              - '^/dev($|/)'
+              - '^/proc($|/)'
+              - '^/sys($|/)'
+              - '^/run/k3s/containerd($|/)'
+              - '^/var/lib/docker($|/)'
+              - '^/var/lib/kubelet($|/)'
+              - '^/snap($|/)'
             match_type: regexp
           exclude_fs_types:
             fs_types:
@@ -331,7 +331,7 @@ receivers:
       enabled: true
       default_annotations:
         io.opentelemetry.discovery.logs/enabled: "true"
- {{- end }}
+  {{- end }}
   {{- if .Values.presets.annotationDiscovery.metrics.enabled }}
   receiver_creator/metrics:
     watch_observers:
