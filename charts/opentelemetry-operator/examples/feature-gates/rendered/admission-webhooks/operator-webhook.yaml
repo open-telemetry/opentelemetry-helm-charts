@@ -3025,6 +3025,8 @@ spec:
                 - consistent-hashing
                 - per-node
                 type: string
+              allowInsecureAuthSecrets:
+                type: boolean
               args:
                 additionalProperties:
                   type: string
@@ -4117,6 +4119,14 @@ spec:
                 - managed
                 - unmanaged
                 type: string
+              mtls:
+                properties:
+                  enabled:
+                    type: boolean
+                  useCertManager:
+                    default: true
+                    type: boolean
+                type: object
               networkPolicy:
                 properties:
                   enabled:
@@ -11773,6 +11783,12 @@ spec:
                     minimum: 1
                     type: integer
                 type: object
+              command:
+                items:
+                  type: string
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: atomic
               config:
                 properties:
                   connectors:
@@ -13773,6 +13789,8 @@ spec:
                     - consistent-hashing
                     - per-node
                     type: string
+                  allowInsecureAuthSecrets:
+                    type: boolean
                   collectorNotReadyGracePeriod:
                     default: 30s
                     format: duration
@@ -13874,6 +13892,14 @@ spec:
                     type: string
                   image:
                     type: string
+                  mtls:
+                    properties:
+                      enabled:
+                        type: boolean
+                      useCertManager:
+                        default: true
+                        type: boolean
+                    type: object
                   nodeSelector:
                     additionalProperties:
                       type: string
