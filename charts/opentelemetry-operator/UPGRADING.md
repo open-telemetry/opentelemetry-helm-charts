@@ -1,5 +1,23 @@
 # Upgrade guidelines
 
+## 0.114.x to 0.115.0
+
+### Removal of graduated feature gates
+
+The `operator.collector.targetallocatorcr` and `operator.collector.default.config` feature gates have graduated to stable in the operator and were then removed, so they can no longer be configured. The operator now applies both behaviors by default.
+
+If you set either gate under `manager.featureGatesMap`, remove it before upgrading, otherwise the chart will fail schema validation:
+
+```yaml
+# No longer valid, remove these entries
+manager:
+  featureGatesMap:
+    operator.collector.targetallocatorcr: true
+    operator.collector.default.config: true
+```
+
+This release also exposes the `operator.networkpolicy`, `operand.networkpolicy`, `operator.clusterobservability` and `operator.collector.usedefaulttelemetryshape` gates that the operator added but the chart did not yet support.
+
 ## 0.109.x to 0.110.0
 
 ### Migration from kube-rbac-proxy to controller-runtime metrics

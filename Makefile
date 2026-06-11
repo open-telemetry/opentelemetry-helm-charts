@@ -85,6 +85,10 @@ check-operator-crds:
 		exit 1; \
 	fi; \
 
+.PHONY: check-operator-feature-gates
+check-operator-feature-gates:
+	.github/scripts/check-operator-feature-gates.sh
+
 define get-crd
 @curl -s -o $(1) $(2)
 @sed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
