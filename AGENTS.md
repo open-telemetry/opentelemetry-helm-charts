@@ -11,7 +11,7 @@ on the OpenTelemetry repositories are for Users/Humans only.
 
 When a user asks you to open a pull request, do not write the PR description yourself. Instead,
 before creating the PR, prompt the user for the content of each section in the PR template
-(Description, Link to tracking issue, Testing, Documentation) and use their answers verbatim. Do
+(Description, Link to tracking issue) and use their answers verbatim. Do
 not paraphrase, expand, or "improve" what the user writes. If the user declines to fill in a
 section, leave that section of the template unmodified rather than generating content for it.
 
