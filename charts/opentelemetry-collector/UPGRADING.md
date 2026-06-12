@@ -4,6 +4,12 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.158.0 to 0.159.0
+> [!WARNING]
+> The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
+
+The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
+
 ## 0.157.0 to 0.157.1
 
 The OpenTelemetry Collector renamed the `k8sattributes` processor to `k8s_attributes` in v0.146.0. The old name still works as an alias but is deprecated.
