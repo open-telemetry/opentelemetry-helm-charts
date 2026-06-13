@@ -13,8 +13,10 @@ jobs:
     permissions:
       contents: write # to push chart release and create a release (helm/chart-releaser-action)
       packages: write # needed for ghcr access
+      id-token: write # needed for keyless signing
 
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -39,6 +41,29 @@ jobs:
           helm repo add jaeger https://jaegertracing.github.io/helm-charts
           helm repo add opensearch https://opensearch-project.github.io/helm-charts
 
+      - name: GPG configuration
+        run: |-
+          echo "$GPG_KEY" > "$GPG_KEY_PATH"
+          mkdir -p "$HOME/.gnupg"
+          chmod 0700 "$HOME/.gnupg"
+          echo "use-agent" > "$HOME/.gnupg/gpg.conf"
+          echo "pinentry-mode loopback" >> "$HOME/.gnupg/gpg.conf"
+          echo "allow-loopback-pinentry" > "$HOME/.gnupg/gpg-agent.conf"
+          echo "max-cache-ttl 86400" >> "$HOME/.gnupg/gpg-agent.conf"
+          echo "default-cache-ttl 86400" >> "$HOME/.gnupg/gpg-agent.conf"
+          gpgconf --kill gpg-agent
+          gpgconf --launch gpg-agent
+          gpg --batch --yes --passphrase-fd 0 --import "$GPG_KEY_PATH" <<< "$GPG_PASSPHRASE"
+          gpg --batch --yes --export "$GPG_KEY_ID" > ~/.gnupg/pubring.gpg
+          gpg --batch --yes --passphrase-fd 0 --export-secret-keys "$GPG_KEY_ID" > ~/.gnupg/secring.gpg <<< "$GPG_PASSPHRASE"
+          cat > "$GPG_PASSPHRASE_FILE" <<< "$GPG_PASSPHRASE"
+        env:
+          GPG_KEY_ID: "${{ vars.GPG_KEY_ID }}"
+          GPG_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+          GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"
+          GPG_PASSPHRASE_FILE: "${{ runner.temp }}/gpg-passphrase"
+          GPG_KEY_PATH: "${{ runner.temp }}/private.key"
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
@@ -47,6 +72,10 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_GENERATE_RELEASE_NOTES: true
+          CR_SIGN: true
+          CR_KEY: "${{ vars.GPG_KEY_NAME }}"
+          CR_KEYRING: "~/.gnupg/secring.gpg"
+          CR_PASSPHRASE_FILE: "${{ runner.temp }}/gpg-passphrase"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
@@ -64,7 +93,7 @@ jobs:
       - name: Push charts to GHCR
         run: |
           shopt -s nullglob
-          for pkg in .cr-release-packages/*; do
+          for pkg in .cr-release-packages/*.tgz; do
             if [ -z "${pkg:-}" ]; then
               break
             fi
