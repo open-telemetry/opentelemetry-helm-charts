@@ -94,6 +94,10 @@ defaultCRConfig:
   # the collector's prometheus scrape_configs. This is added to assist users
   # coming from the prometheus ecosystem by allowing users to simply copy and paste
   # directly from prometheus into this file to use the same config.
+  #
+  # Mutually exclusive with the `presets.prometheus.*` family of presets — the
+  # presets are a replacement for the scrape file, not an addition. Enabling both
+  # fails the chart render.
   scrape_configs_file: ""
 
   # Management state of the collector
@@ -509,6 +513,63 @@ defaultCRConfig:
         enabled: false
       metrics:
         enabled: false
+    # Configures Prometheus-based scraping presets. Each preset adds a named instance of the
+    # prometheus receiver (e.g. `prometheus/node_exporter`) to the metrics pipeline.
+    #
+    # Constraints (enforced at template render time — invalid configurations fail with a
+    # clear error message):
+    #   * Mutually exclusive with `scrape_configs_file` — the presets are a replacement
+    #     for the scrape file (the chart default is `daemon_scrape_configs.yaml`, which
+    #     already covers the same targets). Enable the presets and set
+    #     `scrape_configs_file: ""`, or keep `scrape_configs_file` and disable the presets.
+    #   * Require `mode: daemonset` — the scrape configs reference `${OTEL_K8S_NODE_IP}` /
+    #     `${OTEL_K8S_NODE_NAME}` (only injected on daemonset collectors) and use field
+    #     selectors keyed on the local node.
+    #
+    # Distinct from the top-level `nodeExporter.enabled` flag, which controls whether the
+    # prometheus-node-exporter subchart is installed.
+    #
+    prometheus:
+      # Scrapes a Prometheus Node Exporter on the local node via a static_config targeting
+      # `${OTEL_K8S_NODE_IP}:<port>`. Adds a `prometheus/node_exporter` receiver.
+      nodeExporter:
+        enabled: false
+        # Port where the Prometheus Node Exporter is listening on each node.
+        port: 9100
+        # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+        scrapeInterval: 30s
+        # Scrape timeout, as a duration string accepted by Prometheus.
+        scrapeTimeout: 10s
+      # Scrapes cAdvisor metrics from the local node's kubelet via a static_config targeting
+      # `https://${OTEL_K8S_NODE_IP}:<port>/metrics/cadvisor` with bearer-token auth from the
+      # collector's service account. Adds a `prometheus/cadvisor` receiver.
+      #
+      # Drops the highest-cardinality / lowest-value cAdvisor series by default
+      # (container_cpu_load_average_10s, container_spec_*, container_fs_io_current, ...).
+      cadvisor:
+        enabled: false
+        # Port where the kubelet HTTPS endpoint serves /metrics/cadvisor.
+        port: 10250
+        # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+        scrapeInterval: 30s
+        # Scrape timeout, as a duration string accepted by Prometheus.
+        scrapeTimeout: 10s
+      # Scrapes pods on the local node carrying classic Prometheus annotations:
+      # prometheus.io/scrape=true (required), prometheus.io/port, prometheus.io/path,
+      # prometheus.io/scheme. Adds a `prometheus/pod_annotations` receiver that uses
+      # Kubernetes pod service discovery + Prometheus relabel rules.
+      #
+      # The scrape config always emits Prometheus-style Kubernetes labels — `namespace`,
+      # `pod`, `node`, and all pod labels mapped via `__meta_kubernetes_pod_label_*`. This
+      # matches the labels produced by the `kubernetes-pods` job in
+      # `daemon_scrape_configs.yaml`, so existing dashboards, alerts and recording rules
+      # built on those labels keep working when migrating from `scrape_configs_file`.
+      podAnnotations:
+        enabled: false
+        # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+        scrapeInterval: 30s
+        # Scrape timeout, as a duration string accepted by Prometheus.
+        scrapeTimeout: 10s
     resourceDetection:
       # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
       # Typically used to resolve the 'k8s.cluster.name' resource attribute.
@@ -539,9 +600,12 @@ collectors:
       requests:
         cpu: 100m
         memory: 250Mi
-    # A scrape config file to instruct the daemon collector to pull metrics from any matching targets on the same node with
-    # prometheus.io/scrape=true
-    # This config also scrapes a running node exporter and the kubelet CAdvisor metrics which aren't currently supported.
+    # A scrape config file loaded into the daemon collector's prometheus receiver. The
+    # default `daemon_scrape_configs.yaml` scrapes node-exporter on the same host, kubelet
+    # cAdvisor metrics, and pods on the same node carrying `prometheus.io/scrape=true`.
+    #
+    # Mutually exclusive with `presets.prometheus.*` (set `scrape_configs_file: ""` to
+    # use those presets instead).
     scrape_configs_file: "daemon_scrape_configs.yaml"
     presets:
       logsCollection:
@@ -560,6 +624,15 @@ collectors:
         logs:
           enabled: false
         metrics:
+          enabled: false
+      # NOTE: "prometheus.*" presets are mutually exclusive with "scrape_configs_file",
+      # they are a replacement for the scrape config file, not an addition. Enabling both fails the chart render.
+      prometheus:
+        nodeExporter:
+          enabled: false
+        cadvisor:
+          enabled: false
+        podAnnotations:
           enabled: false
       resourceDetection:
         aks:

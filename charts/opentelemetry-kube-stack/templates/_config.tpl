@@ -10,6 +10,7 @@ receiver (with an empty scrape_configs list) is injected if one isn't already de
 target allocator has a receiver to populate.
 */}}
 {{- define "opentelemetry-kube-stack.config" -}}
+{{- include "opentelemetry-kube-stack.assertPrometheusPresets" . }}
 {{- $collector := .collector }}
 {{- $config := .collector.config }}
 {{- if .collector.scrape_configs_file }}
@@ -44,6 +45,18 @@ target allocator has a receiver to populate.
 {{- end }}
 {{- if .collector.presets.kubeletMetrics.enabled }}
 {{- $config = (include "opentelemetry-kube-stack.collector.applyKubeletMetricsConfig" (dict "collector" $collector) | fromYaml) -}}
+{{- $_ := set $collector "config" $config }}
+{{- end }}
+{{- if .collector.presets.prometheus.nodeExporter.enabled }}
+{{- $config = (include "opentelemetry-kube-stack.collector.applyPrometheusScrapeConfig" (dict "collector" $collector "configTemplate" "opentelemetry-kube-stack.collector.prometheusNodeExporterConfig" "receiverName" "prometheus/node_exporter") | fromYaml) -}}
+{{- $_ := set $collector "config" $config }}
+{{- end }}
+{{- if .collector.presets.prometheus.cadvisor.enabled }}
+{{- $config = (include "opentelemetry-kube-stack.collector.applyPrometheusScrapeConfig" (dict "collector" $collector "configTemplate" "opentelemetry-kube-stack.collector.prometheusCadvisorConfig" "receiverName" "prometheus/cadvisor") | fromYaml) -}}
+{{- $_ := set $collector "config" $config }}
+{{- end }}
+{{- if .collector.presets.prometheus.podAnnotations.enabled }}
+{{- $config = (include "opentelemetry-kube-stack.collector.applyPrometheusScrapeConfig" (dict "collector" $collector "configTemplate" "opentelemetry-kube-stack.collector.prometheusPodAnnotationsConfig" "receiverName" "prometheus/pod_annotations") | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- if .collector.presets.kubernetesEvents.enabled }}
@@ -492,3 +505,178 @@ gcp:
     k8s.cluster.name:
       enabled: true
 {{- end -}}
+
+{{/*
+Validates the `presets.prometheus.*` family of presets:
+  * mutually exclusive with `scrape_configs_file` — they are a replacement, not
+    an addition. Enabling both would cause duplicate scrapes (the default
+    daemon_scrape_configs.yaml already has node-exporter / kubelet-cadvisor /
+    kubernetes-pods jobs).
+  * require the collector to run in `daemonset` mode — the scrape configs use
+    the OTEL_K8S_NODE_IP / OTEL_K8S_NODE_NAME env vars and kubernetes_sd
+    field selectors keyed on the local node, which are only meaningful when
+    a collector pod is scheduled per node.
+*/}}
+{{- define "opentelemetry-kube-stack.assertPrometheusPresets" -}}
+{{- $prom := .collector.presets.prometheus }}
+{{- $enabled := list }}
+{{- if $prom.nodeExporter.enabled }}{{- $enabled = append $enabled "nodeExporter" }}{{- end }}
+{{- if $prom.cadvisor.enabled }}{{- $enabled = append $enabled "cadvisor" }}{{- end }}
+{{- if $prom.podAnnotations.enabled }}{{- $enabled = append $enabled "podAnnotations" }}{{- end }}
+{{- if $enabled }}
+{{- $collectorName := .collector.suffix | default "unnamed" }}
+{{- $enabledList := join ", " $enabled }}
+{{- if .collector.scrape_configs_file }}
+{{- fail (printf "collector %q: presets.prometheus.{%s} are a replacement for `scrape_configs_file` (the chart default is `daemon_scrape_configs.yaml`). Both are configured: scrape_configs_file=%q. Choose one — either keep `scrape_configs_file` and disable the listed presets, or keep the presets and set `scrape_configs_file: \"\"`." $collectorName $enabledList .collector.scrape_configs_file) }}
+{{- end }}
+{{- $mode := .collector.mode | default "deployment" }}
+{{- if ne $mode "daemonset" }}
+{{- fail (printf "collector %q: presets.prometheus.{%s} require `mode: daemonset` (current mode: %q). The scrape targets reference ${OTEL_K8S_NODE_IP} / ${OTEL_K8S_NODE_NAME}, which the OpenTelemetry Operator only injects on daemonset collector pods." $collectorName $enabledList $mode) }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Shared apply helper for the `presets.prometheus.*` family. Merges the named
+scrape-config template into the collector config and appends the receiver to
+the metrics pipeline. Args:
+  collector     - the collector dict
+  configTemplate - full name of the scrape-config template to include
+  receiverName  - receiver key to append to service.pipelines.metrics.receivers
+*/}}
+{{- define "opentelemetry-kube-stack.collector.applyPrometheusScrapeConfig" -}}
+{{- $config := mustMergeOverwrite (include .configTemplate .collector | fromYaml) .collector.config }}
+{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has .receiverName (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) .receiverName | uniq)  }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.collector.prometheusNodeExporterConfig" -}}
+{{- $cfg := .presets.prometheus.nodeExporter }}
+receivers:
+  prometheus/node_exporter:
+    config:
+      scrape_configs:
+        - job_name: node-exporter
+          scrape_interval: {{ $cfg.scrapeInterval }}
+          scrape_timeout: {{ $cfg.scrapeTimeout }}
+          static_configs:
+            - targets:
+                - ${env:OTEL_K8S_NODE_IP}:{{ $cfg.port }}
+          relabel_configs:
+            - target_label: node
+              replacement: ${env:OTEL_K8S_NODE_NAME}
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.collector.prometheusCadvisorConfig" -}}
+{{- $cfg := .presets.prometheus.cadvisor }}
+receivers:
+  prometheus/cadvisor:
+    config:
+      scrape_configs:
+        - job_name: kubelet
+          scheme: https
+          metrics_path: /metrics/cadvisor
+          scrape_interval: {{ $cfg.scrapeInterval }}
+          scrape_timeout: {{ $cfg.scrapeTimeout }}
+          authorization:
+            type: Bearer
+            credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          static_configs:
+            - targets:
+                - ${env:OTEL_K8S_NODE_IP}:{{ $cfg.port }}
+          relabel_configs:
+            - target_label: node
+              replacement: ${env:OTEL_K8S_NODE_NAME}
+          metric_relabel_configs:
+            # Drop the highest-cardinality / lowest-value cAdvisor series. Mirrors the
+            # `metric_relabel_configs` used by the kubelet job in daemon_scrape_configs.yaml.
+            - source_labels: [__name__]
+              regex: container_cpu_(load_average_10s|system_seconds_total|user_seconds_total)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_fs_(io_current|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_memory_(mapped_file|swap)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_(file_descriptors|tasks_state|threads_max)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_spec.*
+              action: drop
+            # Drop series where the cgroup id is set but the pod label is empty
+            # (non-pod cgroups like system.slice and the kubelet's own resources).
+            - source_labels: [id, pod]
+              regex: .+;
+              action: drop
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.collector.prometheusPodAnnotationsConfig" -}}
+{{- $cfg := .presets.prometheus.podAnnotations }}
+receivers:
+  prometheus/pod_annotations:
+    config:
+      scrape_configs:
+        - job_name: kubernetes-pods
+          scrape_interval: {{ $cfg.scrapeInterval }}
+          scrape_timeout: {{ $cfg.scrapeTimeout }}
+          kubernetes_sd_configs:
+            - role: pod
+              selectors:
+                - role: pod
+                  # Only scrape data from pods running on the same node as the collector,
+                  # and skip the OpenTelemetry collector's own pods to avoid self-scrape loops.
+                  field: "spec.nodeName=${env:OTEL_K8S_NODE_NAME}"
+                  label: "app.kubernetes.io/component!=opentelemetry-collector"
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels:
+                [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+              action: drop
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+              action: replace
+              regex: (https?)
+              target_label: __scheme__
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels:
+                [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              # NOTE: otel collector uses env var replacement. $$ is used as a literal $.
+              replacement: $$1:$$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$$1
+            # Emit Prometheus-style Kubernetes labels: namespace, pod, node, and all pod labels
+            # mapped via __meta_kubernetes_pod_label_*.
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_node_name]
+              action: replace
+              target_label: node
+            - source_labels: [__meta_kubernetes_pod_phase]
+              regex: Pending|Succeeded|Failed|Completed
+              action: drop
+            - action: replace
+              source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              target_label: job
+{{- end }}
