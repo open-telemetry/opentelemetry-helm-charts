@@ -10,6 +10,8 @@ Just upgrade and enjoy.
 
 The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
 
+If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name.
+
 The `resourceDetection` preset now defaults to the `k8s_api` detector instead of the deprecated `k8snode` detector. This requires a collector image >= 0.154.0. If you are pinning your image to an older version, revert to the old detector in your `values.yaml`:
 
 ```yaml
