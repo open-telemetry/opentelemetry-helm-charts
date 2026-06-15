@@ -27,6 +27,9 @@ spec:
         {{- if .Values.manager.rolling }}
         rollme: {{ randAlphaNum 5 | quote }}
         {{- end }}
+        {{- if .Values.manager.config }}
+        checksum/manager-config: {{ tpl (toYaml .Values.manager.config) . | sha256sum }}
+        {{- end }}
         kubectl.kubernetes.io/default-container: manager
         {{- if .Values.manager.podAnnotations }}
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
@@ -59,6 +62,9 @@ spec:
             {{- end }}
             {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
+            {{- end }}
+            {{- if .Values.manager.config }}
+            - --config-file=/etc/opentelemetry-operator/config.yaml
             {{- end }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
@@ -150,7 +156,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{ toYaml .Values.manager.resources | nindent 12 }}
-          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount }}
+          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount .Values.manager.config }}
           volumeMounts:
             {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - mountPath: /tmp/k8s-webhook-server/serving-certs
@@ -161,6 +167,12 @@ spec:
             - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               name: access-token
               readOnly: true
+            {{- end }}
+            {{- if .Values.manager.config }}
+            - mountPath: /etc/opentelemetry-operator/config.yaml
+              name: manager-config
+              readOnly: true
+              subPath: config.yaml
             {{- end }}
           {{- end }}
           {{- with .Values.manager.securityContext }}
@@ -184,7 +196,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
-      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount }}
+      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount .Values.manager.config }}
       volumes:
         {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
         - name: cert
@@ -210,6 +222,11 @@ spec:
                     - path: namespace
                       fieldRef:
                         fieldPath: metadata.namespace
+        {{- end }}
+        {{- if .Values.manager.config }}
+        - name: manager-config
+          configMap:
+            name: {{ include "opentelemetry-operator.fullname" . }}-manager-config
         {{- end }}
       {{- end }}
       securityContext:
