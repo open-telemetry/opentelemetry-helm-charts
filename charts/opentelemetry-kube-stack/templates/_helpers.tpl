@@ -167,6 +167,15 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- end }}
 {{- $clusterMetricsEnabled := false }}
 {{- $eventsEnabled := false }}
+{{- $kubernetesObjectsEnabled := false }}
+{{- $kubernetesObjectsCoreEnabled := false }}
+{{- $kubernetesObjectsRbacEnabled := false }}
+{{- $kubernetesObjectsStorageEnabled := false }}
+{{- $kubernetesObjectsNetworkingEnabled := false }}
+{{- $kubernetesObjectsAutoscalingEnabled := false }}
+{{- $kubernetesObjectsAutoscalingVpaEnabled := false }}
+{{- $kubernetesObjectsPolicyEnabled := false }}
+{{- $kubernetesObjectsApiExtensionsEnabled := false }}
 {{- $useLeaderElection := false }}
 {{ range $_, $collector := $.Values.collectors -}}
 {{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
@@ -178,6 +187,18 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
 {{- $eventsEnabled = true }}
 {{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "kubernetesEvents" "disableLeaderElection" false $collector))) }}
+{{- end }}
+{{- if (dig "presets" "kubernetesObjects" "enabled" false $collector) }}
+{{- $kubernetesObjectsEnabled = true }}
+{{- $kubernetesObjectsCoreEnabled = (any $kubernetesObjectsCoreEnabled (dig "presets" "kubernetesObjects" "core" "enabled" true $collector)) }}
+{{- $kubernetesObjectsRbacEnabled = (any $kubernetesObjectsRbacEnabled (dig "presets" "kubernetesObjects" "rbac" "enabled" true $collector)) }}
+{{- $kubernetesObjectsStorageEnabled = (any $kubernetesObjectsStorageEnabled (dig "presets" "kubernetesObjects" "storage" "enabled" true $collector)) }}
+{{- $kubernetesObjectsNetworkingEnabled = (any $kubernetesObjectsNetworkingEnabled (dig "presets" "kubernetesObjects" "networking" "enabled" true $collector)) }}
+{{- $kubernetesObjectsAutoscalingEnabled = (any $kubernetesObjectsAutoscalingEnabled (dig "presets" "kubernetesObjects" "autoscaling" "enabled" true $collector)) }}
+{{- $kubernetesObjectsAutoscalingVpaEnabled = (any $kubernetesObjectsAutoscalingVpaEnabled (dig "presets" "kubernetesObjects" "autoscaling" "vpa" "enabled" false $collector)) }}
+{{- $kubernetesObjectsPolicyEnabled = (any $kubernetesObjectsPolicyEnabled (dig "presets" "kubernetesObjects" "policy" "enabled" true $collector)) }}
+{{- $kubernetesObjectsApiExtensionsEnabled = (any $kubernetesObjectsApiExtensionsEnabled (dig "presets" "kubernetesObjects" "apiExtensions" "enabled" true $collector)) }}
+{{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "kubernetesObjects" "disableLeaderElection" false $collector))) }}
 {{- end }}
 {{- end }}
 {{- if $useLeaderElection }}
@@ -256,6 +277,57 @@ Optionally include the RBAC for the k8sCluster receiver
 - apiGroups: ["events.k8s.io"]
   resources: ["events"]
   verbs: ["watch", "list"]
+{{- end }}
+{{- if $kubernetesObjectsEnabled }}
+{{- if $kubernetesObjectsCoreEnabled }}
+- apiGroups: [""]
+  resources: ["namespaces", "pods", "nodes", "services", "serviceaccounts"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsRbacEnabled }}
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsStorageEnabled }}
+- apiGroups: [""]
+  resources: ["persistentvolumes", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsNetworkingEnabled }}
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "networkpolicies"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsAutoscalingEnabled }}
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+{{- if $kubernetesObjectsAutoscalingVpaEnabled }}
+- apiGroups: ["autoscaling.k8s.io"]
+  resources: ["verticalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- end }}
+{{- if $kubernetesObjectsPolicyEnabled }}
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsApiExtensionsEnabled }}
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
 {{- end }}
 {{- end }}
 

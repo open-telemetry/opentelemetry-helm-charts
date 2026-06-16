@@ -17,9 +17,10 @@ spec:
     exporters:
       debug: {}
     extensions:
-      k8s_observer:
+      k8s_leader_elector/k8s_objects:
         auth_type: serviceAccount
-        node: ${env:K8S_NODE_NAME}
+        lease_name: k8s.objects.receiver.opentelemetry.io
+        lease_namespace: default
     processors:
       batch:
         send_batch_max_size: 1500
@@ -37,27 +38,80 @@ spec:
         override: false
         timeout: 2s
     receivers:
+      k8sobjects:
+        k8s_leader_elector: k8s_leader_elector/k8s_objects
+        objects:
+        - mode: pull
+          name: namespaces
+        - mode: pull
+          name: pods
+        - mode: pull
+          name: nodes
+        - mode: pull
+          name: services
+        - mode: pull
+          name: serviceaccounts
+        - group: apps
+          mode: pull
+          name: deployments
+        - group: apps
+          mode: pull
+          name: replicasets
+        - group: apps
+          mode: pull
+          name: daemonsets
+        - group: apps
+          mode: pull
+          name: statefulsets
+        - group: batch
+          mode: pull
+          name: jobs
+        - group: batch
+          mode: pull
+          name: cronjobs
+        - group: rbac.authorization.k8s.io
+          mode: pull
+          name: roles
+        - group: rbac.authorization.k8s.io
+          mode: pull
+          name: rolebindings
+        - group: rbac.authorization.k8s.io
+          mode: pull
+          name: clusterroles
+        - group: rbac.authorization.k8s.io
+          mode: pull
+          name: clusterrolebindings
+        - group: storage.k8s.io
+          mode: pull
+          name: storageclasses
+        - mode: pull
+          name: persistentvolumes
+        - mode: pull
+          name: persistentvolumeclaims
+        - group: networking.k8s.io
+          mode: pull
+          name: ingresses
+        - group: networking.k8s.io
+          mode: pull
+          name: networkpolicies
+        - group: autoscaling
+          mode: pull
+          name: horizontalpodautoscalers
+        - group: policy
+          mode: pull
+          name: poddisruptionbudgets
+        - group: apiextensions.k8s.io
+          mode: pull
+          name: customresourcedefinitions
       otlp:
         protocols:
           grpc:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-      receiver_creator/logs:
-        discovery:
-          default_annotations:
-            io.opentelemetry.discovery.logs/enabled: "true"
-          enabled: true
-        watch_observers:
-        - k8s_observer
-      receiver_creator/metrics:
-        discovery:
-          enabled: true
-        watch_observers:
-        - k8s_observer
     service:
       extensions:
-      - k8s_observer
+      - k8s_leader_elector/k8s_objects
       pipelines:
         logs:
           exporters:
@@ -67,8 +121,7 @@ spec:
           - resource/hostname
           - batch
           receivers:
-          - otlp
-          - receiver_creator/logs
+          - k8sobjects
         metrics:
           exporters:
           - debug
@@ -78,7 +131,6 @@ spec:
           - batch
           receivers:
           - otlp
-          - receiver_creator/metrics
         traces:
           exporters:
           - debug
