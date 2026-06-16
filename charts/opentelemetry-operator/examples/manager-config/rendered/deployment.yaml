@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/manager-config: 0da985a5e8e6c8d2ffbbcdbd02b166f0c8b47a193418632712111fcc71a431d5
+        checksum/config: 0da985a5e8e6c8d2ffbbcdbd02b166f0c8b47a193418632712111fcc71a431d5
         kubectl.kubernetes.io/default-container: manager
       labels:
         helm.sh/chart: opentelemetry-operator-0.115.1
@@ -84,7 +84,7 @@ spec:
               name: cert
               readOnly: true
             - mountPath: /etc/opentelemetry-operator
-              name: manager-config
+              name: config
               readOnly: true
           securityContext: 
             allowPrivilegeEscalation: false
@@ -103,9 +103,9 @@ spec:
           secret:
             defaultMode: 420
             secretName: example-opentelemetry-operator-controller-manager-service-cert
-        - name: manager-config
+        - name: config
           configMap:
-            name: example-opentelemetry-operator-manager-config
+            name: example-opentelemetry-operator-config
       securityContext:
         fsGroup: 65532
         runAsGroup: 65532

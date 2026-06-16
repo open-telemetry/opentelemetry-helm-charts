@@ -28,7 +28,7 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
         {{- end }}
         {{- if .Values.manager.config }}
-        checksum/manager-config: {{ tpl (toYaml .Values.manager.config) . | sha256sum }}
+        checksum/config: {{ tpl (toYaml .Values.manager.config) . | sha256sum }}
         {{- end }}
         kubectl.kubernetes.io/default-container: manager
         {{- if .Values.manager.podAnnotations }}
@@ -170,7 +170,7 @@ spec:
             {{- end }}
             {{- if .Values.manager.config }}
             - mountPath: /etc/opentelemetry-operator
-              name: manager-config
+              name: config
               readOnly: true
             {{- end }}
           {{- end }}
@@ -223,9 +223,9 @@ spec:
                         fieldPath: metadata.namespace
         {{- end }}
         {{- if .Values.manager.config }}
-        - name: manager-config
+        - name: config
           configMap:
-            name: {{ include "opentelemetry-operator.fullname" . }}-manager-config
+            name: {{ include "opentelemetry-operator.fullname" . }}-config
         {{- end }}
       {{- end }}
       securityContext:
