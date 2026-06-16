@@ -131,6 +131,17 @@ The chart renders this value as a ConfigMap, mounts it into the manager containe
 manager:
   config:
     enable-instrumentation-crds: false
+    enable-multi-instrumentation: false
+    instrumentations:
+      spec:
+        exporter:
+          endpoint: http://collector.default.svc:4318
+        propagators:
+          - tracecontext
+          - baggage
+          - b3
+        java:
+          image: java-autoinstrumentation:dev
 ```
 
 ## Install OpenTelemetry Collector
