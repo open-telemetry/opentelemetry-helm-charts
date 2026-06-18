@@ -168,6 +168,7 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- $clusterMetricsEnabled := false }}
 {{- $eventsEnabled := false }}
 {{- $useLeaderElection := false }}
+{{- $k8sApiEnabled := false }}
 {{ range $_, $collector := $.Values.collectors -}}
 {{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
@@ -178,6 +179,9 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
 {{- $eventsEnabled = true }}
 {{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "kubernetesEvents" "disableLeaderElection" false $collector))) }}
+{{- end }}
+{{- if (dig "presets" "resourceDetection" "k8sApi" "enabled" false $collector) }}
+{{- $k8sApiEnabled = true }}
 {{- end }}
 {{- end }}
 {{- if $useLeaderElection }}
@@ -256,6 +260,15 @@ Optionally include the RBAC for the k8sCluster receiver
 - apiGroups: ["events.k8s.io"]
   resources: ["events"]
   verbs: ["watch", "list"]
+{{- end }}
+{{- if $k8sApiEnabled }}
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  resourceNames: ["kube-system"]
+  verbs: ["get"]
 {{- end }}
 {{- end }}
 
