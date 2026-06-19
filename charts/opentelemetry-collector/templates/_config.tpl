@@ -86,6 +86,24 @@ logs:
 {{- end }}
 
 {{/*
+Serialize the collector config to YAML, forcing service.telemetry.resource
+attribute values to be strings. This prevents the collector from coercing
+numeric-looking values (such as an all-digit node name) to integers, which
+would fail validation for string-typed attributes like host.name.
+*/}}
+{{- define "opentelemetry-collector.serializedConfig" -}}
+{{- $config := .config }}
+{{- $resource := dig "service" "telemetry" "resource" dict $config }}
+{{- range $key, $value := $resource }}
+{{- if and (kindIs "string" $value) (ne $value "") }}
+{{- $_ := set $resource $key (printf "!!str %s" $value) }}
+{{- end }}
+{{- end }}
+{{- $rendered := tpl (toYaml $config) .ctx }}
+{{- regexReplaceAll "'(!!str [^']*)'" $rendered "${1}" }}
+{{- end }}
+
+{{/*
 Build config file for daemonset OpenTelemetry Collector
 */}}
 {{- define "opentelemetry-collector.daemonsetConfig" -}}
@@ -119,7 +137,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- tpl (toYaml $config) . }}
+{{- include "opentelemetry-collector.serializedConfig" (dict "config" $config "ctx" .) }}
 {{- end }}
 
 {{/*
@@ -159,7 +177,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- tpl (toYaml $config) . }}
+{{- include "opentelemetry-collector.serializedConfig" (dict "config" $config "ctx" .) }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
