@@ -571,8 +571,7 @@ defaultCRConfig:
         # Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
     resourceDetection:
-      # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
-      # Typically used to resolve the 'k8s.cluster.name' resource attribute.
+      # Each detector can be enabled individually. Base detector 'env' is always enabled.
       eks:
         enabled: false
       aks:
@@ -655,7 +654,7 @@ collectors:
               endpoint: 0.0.0.0:4318
       processors:
         resourcedetection/env:
-          detectors: [env, k8snode]
+          detectors: [env]
           timeout: 2s
           override: false
         resource/hostname:
