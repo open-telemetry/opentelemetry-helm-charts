@@ -571,7 +571,9 @@ defaultCRConfig:
         # Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
     resourceDetection:
-      # Each detector can be enabled individually. Base detector 'env' is always enabled.
+      # Each detector can be enabled individually.
+      env:
+        enabled: true
       eks:
         enabled: false
       aks:
@@ -636,6 +638,8 @@ collectors:
         podAnnotations:
           enabled: false
       resourceDetection:
+        env:
+          enabled: true
         aks:
           enabled: false
         gcp:
@@ -654,7 +658,6 @@ collectors:
               endpoint: 0.0.0.0:4318
       processors:
         resourcedetection/env:
-          detectors: [env]
           timeout: 2s
           override: false
         resource/hostname:
