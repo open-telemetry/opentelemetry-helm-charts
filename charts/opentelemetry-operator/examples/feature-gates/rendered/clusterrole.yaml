@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.115.1
+    helm.sh/chart: opentelemetry-operator-0.116.0
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
@@ -251,6 +251,7 @@ rules:
     resources:
       - instrumentations
     verbs:
+      - create
       - get
       - list
       - patch
@@ -259,6 +260,7 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      - clusterobservabilities
       - opampbridges
     verbs:
       - create
@@ -271,12 +273,14 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      - clusterobservabilities/finalizers
       - opampbridges/finalizers
     verbs:
       - update
   - apiGroups:
       - opentelemetry.io
     resources:
+      - clusterobservabilities/status
       - opampbridges/status
     verbs:
       - get
@@ -287,6 +291,7 @@ rules:
     resources:
       - opentelemetrycollectors
     verbs:
+      - create
       - get
       - list
       - patch
@@ -393,7 +398,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.115.1
+    helm.sh/chart: opentelemetry-operator-0.116.0
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
