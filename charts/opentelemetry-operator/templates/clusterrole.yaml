@@ -274,13 +274,7 @@ rules:
     resources:
       - instrumentations
     verbs:
-      {{- if or
-        (get .Values.manager.featureGatesMap "operator.clusterobservability")
-        (and
-          (ne .Values.manager.featureGates "")
-          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
-        )
-      }}
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
       - create
       {{- end}}
       - get
@@ -291,13 +285,7 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
-      {{- if or
-        (get .Values.manager.featureGatesMap "operator.clusterobservability")
-        (and
-          (ne .Values.manager.featureGates "")
-          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
-        )
-      }}
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
       - clusterobservabilities
       {{- end}}
       - opampbridges
@@ -312,13 +300,7 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
-      {{- if or
-        (get .Values.manager.featureGatesMap "operator.clusterobservability")
-        (and
-          (ne .Values.manager.featureGates "")
-          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
-        )
-      }}
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
       - clusterobservabilities/finalizers
       {{- end}}
       - opampbridges/finalizers
@@ -327,13 +309,7 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
-      {{- if or
-        (get .Values.manager.featureGatesMap "operator.clusterobservability")
-        (and
-          (ne .Values.manager.featureGates "")
-          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
-        )
-      }}
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
       - clusterobservabilities/status
       {{- end}}
       - opampbridges/status
@@ -346,13 +322,7 @@ rules:
     resources:
       - opentelemetrycollectors
     verbs:
-      {{- if or
-        (get .Values.manager.featureGatesMap "operator.clusterobservability")
-        (and
-          (ne .Values.manager.featureGates "")
-          (regexMatch "\\+?operator\\.clusterobservability" .Values.manager.featureGates)
-        )
-      }}
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
       - create
       {{- end}}
       - get

@@ -103,12 +103,6 @@ endef
 define get-clusterobservability-crd
 @curl -s -o $(1) $(2)
 @sed -i '1s/^---/{{- if .Values.crds.create }}/' $(1)
-@sed -i '1a{{- if or' $(1)
-@sed -i '2a\  (get .Values.manager.featureGatesMap "operator.clusterobservability")' $(1)
-@sed -i '3a\  (and' $(1)
-@sed -i '4a\    (ne .Values.manager.featureGates "")' $(1)
-@sed -i '5a\    (regexMatch "\\\\+?operator\\\\.clusterobservability" .Values.manager.featureGates)' $(1)
-@sed -i '6a\  )' $(1)
-@sed -i '7a}}' $(1)
+@sed -i '1a{{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}' $(1)
 @echo '{{- end }}\n{{- end }}' >> $(1)
 endef
