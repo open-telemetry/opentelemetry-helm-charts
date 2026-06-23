@@ -33,9 +33,7 @@ spec:
       {{- if eq .Values.preset "application" }}
       hostPID: true
       {{- end }}
-      {{- $netFeats := dig "metrics" "features" (list) .Values.config.data }}
-      {{- if not (kindIs "slice" $netFeats) }}{{- fail "config.data.metrics.features must be a YAML list (sequence), not a scalar" }}{{- end }}
-      {{- $networkEnabled := or (eq .Values.preset "network") (has "network" $netFeats) (has "network_flow_packets" $netFeats) (has "network_inter_zone" $netFeats) .Values.config.data.network }}
+      {{- $networkEnabled := or (eq .Values.preset "network") .Values.config.data.network }}
       {{- if $networkEnabled }}
       hostNetwork: true
       dnsPolicy: {{ .Values.dnsPolicy }}
