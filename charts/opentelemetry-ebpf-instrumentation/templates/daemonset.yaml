@@ -33,7 +33,10 @@ spec:
       {{- if eq .Values.preset "application" }}
       hostPID: true
       {{- end }}
-      {{- if or (eq .Values.preset "network") .Values.config.data.network }}
+      {{- $netFeats := dig "metrics" "features" (list) .Values.config.data }}
+      {{- if not (kindIs "slice" $netFeats) }}{{- fail "config.data.metrics.features must be a YAML list (sequence), not a scalar" }}{{- end }}
+      {{- $networkEnabled := or (eq .Values.preset "network") (has "network" $netFeats) (has "network_flow_packets" $netFeats) (has "network_inter_zone" $netFeats) .Values.config.data.network }}
+      {{- if $networkEnabled }}
       hostNetwork: true
       dnsPolicy: {{ .Values.dnsPolicy }}
       {{- end }}
@@ -61,6 +64,9 @@ spec:
                 - BPF
                 - SYS_PTRACE
                 - NET_RAW
+                {{- if $networkEnabled }}
+                - NET_ADMIN
+                {{- end }}
                 - CHECKPOINT_RESTORE
                 - DAC_READ_SEARCH
                 - PERFMON
@@ -118,6 +124,11 @@ spec:
           volumeMounts:
             - mountPath: /etc/ebpf-instrument/config
               name: ebpf-instrument-config
+            {{- if $networkEnabled }}
+            - mountPath: /sys/fs/cgroup
+              name: cgroup
+              readOnly: true
+            {{- end }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -141,6 +152,12 @@ spec:
         - name: ebpf-instrument-config
           configMap:
             name: {{ default (include "obi.fullname" .) .Values.config.name }}
+        {{- if $networkEnabled }}
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+            type: Directory
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

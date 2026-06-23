@@ -175,7 +175,7 @@ podLabels: {}
 
 ## https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
 # -- Determines how DNS resolution is handled for that pod.
-# If `.Values.preset` is set to `network` or `.Values.config.data.network` is enabled, Opentelemetry eBPF Instrumentation requires `hostNetwork` access, causing cluster service DNS resolution to fail.
+# If `.Values.preset` is set to `network` or `.Values.config.data.metrics.features` includes a network feature, Opentelemetry eBPF Instrumentation requires `hostNetwork` access, causing cluster service DNS resolution to fail.
 # It is recommended not to change this if Opentelemetry eBPF Instrumentation sends traces and metrics to Grafana components via k8s service.
 dnsPolicy: ClusterFirstWithHostNet
 
@@ -195,6 +195,10 @@ config:
   ## If empty, default configuration below is used.
   name: ""
   # -- default value of Opentelemetry eBPF Instrumentation configuration
+  # Supports Go template expressions (e.g. {{ .Release.Name }}). BREAKING: values that contain
+  # literal {{ }} are now interpreted as template expressions. Escape them as {{` {{ }} `}}.
+  # Do not use non-idempotent functions (e.g. randAlphaNum) — config.data is rendered
+  # separately for the ConfigMap and the DaemonSet checksum/config annotation.
   data:
     # profile_port: 6060
     # open_port: 8443
@@ -221,8 +225,9 @@ config:
         k8s_src_owner_name:
           not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
     ## to enable network metrics
-    # network:
-    #   enable: true
+    # metrics:
+    #   features:
+    #     - network
     prometheus_export:
       port: 9090
       path: /metrics

@@ -145,9 +145,12 @@ Generate the configmap data based on preset and configuration values
 */}}
 {{- define "obi.configData" -}}
 {{- $config := deepCopy .Values.config.data }}
-{{- if eq .Values.preset "network" }}
-{{- if not .Values.config.data.network }}
-{{- $_ := set $config "network" (dict "enable" true) }}
+{{- if or (eq .Values.preset "network") .Values.config.data.network }}
+{{- $configMetrics := $config.metrics | default dict }}
+{{- $features := $configMetrics.features | default list }}
+{{- if not (has "network" $features) }}
+{{- $_ := set $configMetrics "features" (append $features "network") }}
+{{- $_ = set $config "metrics" $configMetrics }}
 {{- end }}
 {{- end }}
 {{- if eq .Values.preset "application" }}
@@ -156,5 +159,5 @@ Generate the configmap data based on preset and configuration values
 {{- $_ := set $config "discovery" $discovery }}
 {{- end }}
 {{- end }}
-{{- toYaml $config }}
+{{- tpl (toYaml $config) . }}
 {{- end }}
