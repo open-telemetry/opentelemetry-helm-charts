@@ -457,8 +457,11 @@ extensions:
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesObjectsConfig" -}}
+{{- $disableLeaderElection := .collector.presets.kubernetesObjects.disableLeaderElection }}
+{{- $useLeaderElection := and (eq .collector.mode "daemonset") (not $disableLeaderElection) }}
 {{- $electorName := "k8s_objects" }}
-{{- $objectsYaml := include "opentelemetry-kube-stack.collector.kubernetesObjectsConfig" (dict "collector" .collector "namespace" .namespace "electorName" $electorName) | fromYaml }}
+{{- $ctx := mustMerge (dict "namespace" .namespace "useLeaderElection" $useLeaderElection "electorName" $electorName) (dict "collector" .collector) }}
+{{- $objectsYaml := include "opentelemetry-kube-stack.collector.kubernetesObjectsConfig" $ctx | fromYaml }}
 {{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
 {{- $existingObjects := list }}
 {{- if .collector.config.receivers }}
@@ -471,25 +474,22 @@ extensions:
 {{- $allObjects := concat $newObjects $existingObjects }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .collector.config }}
 {{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sobjects" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "k8sobjects" | uniq)  }}
-{{- end }}
-{{- $disableLeaderElection := .collector.presets.kubernetesObjects.disableLeaderElection }}
-{{- if and (not $disableLeaderElection) (not (has (printf "k8s_leader_elector/%s" $electorName) (dig "service" "extensions" list $config))) }}
-{{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) (printf "k8s_leader_elector/%s" $electorName) | uniq)  }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
+{{- if $useLeaderElection }}
+{{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
+{{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq) }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesObjectsConfig" -}}
 {{- $preset := .collector.presets.kubernetesObjects -}}
-{{- $disableLeaderElection := $preset.disableLeaderElection -}}
-{{- if not $disableLeaderElection }}
+{{- if .useLeaderElection }}
 {{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
 {{- end }}
 receivers:
   k8sobjects:
-    {{- if not $disableLeaderElection }}
+    {{- if .useLeaderElection }}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
     {{- end }}
     objects:
