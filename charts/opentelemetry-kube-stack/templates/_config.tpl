@@ -457,38 +457,39 @@ extensions:
 {{- $config := .collector.config }}
 {{- $processors := get $config "processors" | default dict }}
 {{- $resourceDetectionProcessor := get $processors "resourcedetection/env" | default dict }}
-{{- $detectors := get $resourceDetectionProcessor "detectors" | default list }}
+{{- $detectorNames := get $resourceDetectionProcessor "detectors" | default list }}
 
 {{- if .collector.presets.resourceDetection.env.enabled }}
-{{- $detectors = append $detectors "env" | uniq }}
+{{- $detectorNames = append $detectorNames "env" | uniq }}
 {{- end }}
 
 {{- if .collector.presets.resourceDetection.aks.enabled }}
-{{- $aksResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionAksDetectorConfig" . | fromYaml }}
-{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $aksResourceDetectionProcessor }}
-{{- $detectors = append $detectors "aks" | uniq }}
+{{- $aksDetectorConfig := include "opentelemetry-kube-stack.collector.resourceDetectionAksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $aksDetectorConfig }}
+{{- $detectorNames = append $detectorNames "aks" | uniq }}
 {{- end }}
 
 {{- if .collector.presets.resourceDetection.eks.enabled }}
-{{- $eksResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionEksDetectorConfig" . | fromYaml }}
-{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $eksResourceDetectionProcessor }}
-{{- $detectors = append $detectors "eks" | uniq }}
+{{- $eksDetectorConfig := include "opentelemetry-kube-stack.collector.resourceDetectionEksDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $eksDetectorConfig }}
+{{- $detectorNames = append $detectorNames "eks" | uniq }}
 {{- end }}
 
 {{- if .collector.presets.resourceDetection.gcp.enabled }}
-{{- $gcpResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionGcpDetectorConfig" . | fromYaml }}
-{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $gcpResourceDetectionProcessor }}
-{{- $detectors = append $detectors "gcp" | uniq }}
+{{- $gcpDetectorConfig := include "opentelemetry-kube-stack.collector.resourceDetectionGcpDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $gcpDetectorConfig }}
+{{- $detectorNames = append $detectorNames "gcp" | uniq }}
 {{- end }}
 
 {{- if .collector.presets.resourceDetection.k8sApi.enabled }}
-{{- $k8sApiResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionK8sApiDetectorConfig" . | fromYaml }}
-{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $k8sApiResourceDetectionProcessor }}
-{{- $detectors = append $detectors "k8s_api" | uniq }}
+{{- $k8sApiDetectorConfig := include "opentelemetry-kube-stack.collector.resourceDetectionK8sApiDetectorConfig" . | fromYaml }}
+{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $k8sApiDetectorConfig }}
+{{- $detectorNames = append $detectorNames "k8s_api" | uniq }}
 {{- end }}
-{{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}
 
+{{- $_ := set $resourceDetectionProcessor "detectors" $detectorNames }}
 {{- $_ := set $processors "resourcedetection/env" $resourceDetectionProcessor }}
+
 {{- $_ := set $config "processors" $processors }}
 {{- $config | toYaml }}
 {{- end }}
