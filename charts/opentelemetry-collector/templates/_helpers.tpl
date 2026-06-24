@@ -266,6 +266,9 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
     {{- end }}
   {{- end }}
 {{- end }}
+{{- if (($.Values.presets.resourceDetection.k8snode).enabled) }}
+  {{- $warnings = append $warnings "[DEPRECATION] presets.resourceDetection.k8snode is deprecated and will be removed in a future release. Use presets.resourceDetection.k8s_api instead. See UPGRADING.md." -}}
+{{- end }}
 {{- join "\n" $warnings -}}
 {{- end -}}
 
