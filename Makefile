@@ -67,6 +67,7 @@ update-operator-crds:
 	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_instrumentations.yaml)
 	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_opampbridges.yaml)
 	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetry.io_targetallocators.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_targetallocators.yaml)
+	$(call get-clusterobservability-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetry.io_clusterobservabilities.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_clusterobservabilities.yaml)
 
 .PHONY: check-operator-crds
 check-operator-crds:
@@ -75,6 +76,7 @@ check-operator-crds:
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetryinstrumentation.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_instrumentations.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_opampbridges.yaml)
 	$(call get-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_targetallocators.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_targetallocators.yaml)
+	$(call get-clusterobservability-crd,${TMP_DIRECTORY}/crds/crd-opentelemetry.io_clusterobservabilities.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_clusterobservabilities.yaml)
 
 	if diff ${TMP_DIRECTORY}/crds ./charts/opentelemetry-operator/conf/crds > /dev/null; then \
 		echo "Passed"; \
@@ -96,4 +98,11 @@ define get-crd
 @sed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
 @sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
 @echo '{{- end }}' >> $(1)
+endef
+
+define get-clusterobservability-crd
+@curl -s -o $(1) $(2)
+@sed -i '1s/^---/{{- if .Values.crds.create }}/' $(1)
+@sed -i '1a{{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}' $(1)
+@echo '{{- end }}\n{{- end }}' >> $(1)
 endef
