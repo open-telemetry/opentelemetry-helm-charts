@@ -16,6 +16,30 @@ Once Helm is set up properly, add the repo as follows:
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 ```
 
+## Helm Provenance and Integrity
+
+All charts in this repository are signed. More information about how to verify
+charts can be found in the official
+[Helm documentation](https://helm.sh/docs/topics/provenance/).
+
+A local running gpg agent is mandatory.
+
+To import the signing key for this repository run the following command:
+
+```console
+curl https://open-telemetry.github.io/opentelemetry-helm-charts/pubkey.gpg | gpg --import
+```
+
+Helm reads a legacy GnuPG keyring, which modern GnuPG (2.1+) does not create on
+import. Depending on your GnuPG version, you may need to export the imported key so that Helm can find it:
+
+```console
+gpg --export > ~/.gnupg/pubring.gpg
+```
+
+You can now use the `--verify` flag during `helm install`
+to enable chart signature validation.
+
 ## Helm Charts
 
 You can then run `helm search repo open-telemetry` to see the charts.
