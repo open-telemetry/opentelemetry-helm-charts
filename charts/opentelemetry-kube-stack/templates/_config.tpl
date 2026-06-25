@@ -1,5 +1,55 @@
 {{/*
+Normalizes user-supplied collector.config component names before applying
+presets. Old component keys and pipeline references are rewritten to the new
+names. Rendering fails when old and new names for the same component are both
+configured, because the chart cannot safely choose which config should win.
+*/}}
+{{- define "opentelemetry-kube-stack.collector.normalizeComponentNames" -}}
+{{- $collectorName := .collector.suffix | default "unnamed" }}
+{{- $config := deepCopy (.collector.config | default dict) }}
+{{- $renames := include "opentelemetry-kube-stack.collector.componentRenames" . | fromYamlArray }}
+{{- range $rename := $renames }}
+{{- $oldName := $rename.old }}
+{{- $newName := $rename.new }}
+{{- $sectionName := $rename.section }}
+{{- $pipelineName := $rename.pipeline }}
+{{- $components := get $config $sectionName | default dict }}
+{{- if and (hasKey $components $oldName) (hasKey $components $newName) }}
+{{- fail (printf "collector %q: config.%s contains both renamed component names %q and %q. Configure only %q." $collectorName $sectionName $oldName $newName $newName) }}
+{{- end }}
+{{- if hasKey $components $oldName }}
+{{- $_ := set $components $newName (get $components $oldName) }}
+{{- $_ := unset $components $oldName }}
+{{- $_ := set $config $sectionName $components }}
+{{- end }}
+{{- $pipelines := dig "service" "pipelines" dict $config }}
+{{- range $signal, $pipeline := $pipelines }}
+{{- if $pipeline }}
+{{- $items := get $pipeline $pipelineName | default list }}
+{{- if and (has $oldName $items) (has $newName $items) }}
+{{- fail (printf "collector %q: config.service.pipelines.%s.%s contains both renamed component names %q and %q. Configure only %q." $collectorName $signal $pipelineName $oldName $newName $newName) }}
+{{- end }}
+{{- if has $oldName $items }}
+{{- $updated := list }}
+{{- range $item := $items }}
+{{- if eq $item $oldName }}
+{{- $updated = append $updated $newName }}
+{{- else }}
+{{- $updated = append $updated $item }}
+{{- end }}
+{{- end }}
+{{- $_ := set $pipeline $pipelineName ($updated | uniq) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{/*
 Constructs the final config for the given collector
+
+User-supplied component names are normalized before presets are merged.
 
 This allows a user to supply a scrape_configs_file. This file is templated and loaded as a yaml array.
 If a user has already supplied a prometheus receiver config, the file's config is appended. Finally,
@@ -12,7 +62,8 @@ target allocator has a receiver to populate.
 {{- define "opentelemetry-kube-stack.config" -}}
 {{- include "opentelemetry-kube-stack.assertPrometheusPresets" . }}
 {{- $collector := .collector }}
-{{- $config := .collector.config }}
+{{- $config := include "opentelemetry-kube-stack.collector.normalizeComponentNames" (dict "collector" $collector) | fromYaml }}
+{{- $_ := set $collector "config" $config }}
 {{- if .collector.scrape_configs_file }}
 {{- $config = (include "opentelemetry-kube-stack.collector.appendPrometheusScrapeFile" . | fromYaml) }}
 {{- $_ := set $collector "config" $config }}
@@ -139,21 +190,21 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesAttributesConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesAttributesConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sattributes" (dig "service" "pipelines" "logs" "processors" list $config))) }}
-{{- $_ := set $config.service.pipelines.logs "processors" (prepend ($config.service.pipelines.logs.processors | default list) "k8sattributes" | uniq)  }}
+{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8s_attributes" (dig "service" "pipelines" "logs" "processors" list $config))) }}
+{{- $_ := set $config.service.pipelines.logs "processors" (prepend ($config.service.pipelines.logs.processors | default list) "k8s_attributes" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "k8sattributes" (dig "service" "pipelines" "metrics" "processors" list $config))) }}
-{{- $_ := set $config.service.pipelines.metrics "processors" (prepend ($config.service.pipelines.metrics.processors | default list) "k8sattributes" | uniq)  }}
+{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "k8s_attributes" (dig "service" "pipelines" "metrics" "processors" list $config))) }}
+{{- $_ := set $config.service.pipelines.metrics "processors" (prepend ($config.service.pipelines.metrics.processors | default list) "k8s_attributes" | uniq)  }}
 {{- end }}
-{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "k8sattributes" (dig "service" "pipelines" "traces" "processors" list $config))) }}
-{{- $_ := set $config.service.pipelines.traces "processors" (prepend ($config.service.pipelines.traces.processors | default list) "k8sattributes" | uniq)  }}
+{{- if and (dig "service" "pipelines" "traces" false $config) (not (has "k8s_attributes" (dig "service" "pipelines" "traces" "processors" list $config))) }}
+{{- $_ := set $config.service.pipelines.traces "processors" (prepend ($config.service.pipelines.traces.processors | default list) "k8s_attributes" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubernetesAttributesConfig" -}}
 processors:
-  k8sattributes:
+  k8s_attributes:
   {{- if eq .mode "daemonset" }}
     filter:
       node_from_env_var: OTEL_K8S_NODE_NAME
@@ -228,15 +279,15 @@ processors:
 
 {{- define "opentelemetry-kube-stack.collector.applyHostMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.hostMetricsConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "hostmetrics" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "hostmetrics" | uniq)  }}
+{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "host_metrics" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "host_metrics" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.hostMetricsConfig" -}}
 receivers:
-  hostmetrics:
+  host_metrics:
     root_path: /hostfs
     collection_interval: 10s
     scrapers:
@@ -336,15 +387,15 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyKubeletMetricsConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubeletMetricsConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "kubeletstats" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "kubeletstats" | uniq)  }}
+{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has "kubelet_stats" (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) "kubelet_stats" | uniq)  }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.collector.kubeletMetricsConfig" -}}
 receivers:
-  kubeletstats:
+  kubelet_stats:
     collection_interval: "15s"
     auth_type: "serviceAccount"
     insecure_skip_verify: true
@@ -376,8 +427,8 @@ receivers:
 
 {{- define "opentelemetry-kube-stack.collector.applyLogsCollectionConfig" -}}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.logsCollectionConfig" .collector | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "filelog" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "filelog" | uniq)  }}
+{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "file_log" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "file_log" | uniq)  }}
 {{- end }}
 {{- if .collector.presets.logsCollection.storeCheckpoints}}
 {{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) "file_storage" | uniq)  }}
@@ -392,7 +443,7 @@ extensions:
     directory: /var/lib/otelcol
 {{- end }}
 receivers:
-  filelog:
+  file_log:
     include:
       - /var/log/pods/*/*/*.log
     {{- if .presets.logsCollection.includeCollectorLogs }}
@@ -420,8 +471,8 @@ receivers:
 {{- define "opentelemetry-kube-stack.collector.applyKubernetesEventsConfig" -}}
 {{- $electorName := "k8s_objects" }}
 {{- $config := mustMergeOverwrite (include "opentelemetry-kube-stack.collector.kubernetesEventsConfig" (dict "collector" .collector "namespace" .namespace "electorName" $electorName) | fromYaml) .collector.config }}
-{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8sobjects" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "k8sobjects" | uniq)  }}
+{{- if and (dig "service" "pipelines" "logs" false $config) (not (has "k8s_objects" (dig "service" "pipelines" "logs" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append ($config.service.pipelines.logs.receivers | default list) "k8s_objects" | uniq)  }}
 {{- $disableLeaderElection := .collector.presets.kubernetesEvents.disableLeaderElection }}
 {{- if not $disableLeaderElection }}
 {{- $_ := set $config.service "extensions" (append ($config.service.extensions | default list) (printf "k8s_leader_elector/%s" $electorName) | uniq)  }}
@@ -436,7 +487,7 @@ receivers:
 {{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
 {{- end}}
 receivers:
-  k8sobjects:
+  k8s_objects:
     {{- if not $disableLeaderElection}}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
     {{- end}}
@@ -462,19 +513,19 @@ extensions:
 {{- $electorName := "k8s_objects" }}
 {{- $ctx := mustMerge (dict "namespace" .namespace "useLeaderElection" $useLeaderElection "electorName" $electorName) (dict "collector" .collector) }}
 {{- $objectsYaml := include "opentelemetry-kube-stack.collector.kubernetesObjectsConfig" $ctx | fromYaml }}
-{{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
+{{- $newObjects := (index $objectsYaml.receivers "k8s_objects").objects }}
 {{- $existingObjects := list }}
 {{- if .collector.config.receivers }}
-{{- if index .collector.config.receivers "k8sobjects" }}
-{{- if (index .collector.config.receivers "k8sobjects").objects }}
-{{- $existingObjects = (index .collector.config.receivers "k8sobjects").objects }}
+{{- if index .collector.config.receivers "k8s_objects" }}
+{{- if (index .collector.config.receivers "k8s_objects").objects }}
+{{- $existingObjects = (index .collector.config.receivers "k8s_objects").objects }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- $allObjects := concat $newObjects $existingObjects }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .collector.config }}
-{{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
+{{- $_ := set (index $config.receivers "k8s_objects") "objects" $allObjects }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8s_objects" | uniq) }}
 {{- if $useLeaderElection }}
 {{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq) }}
@@ -488,7 +539,7 @@ extensions:
 {{- include "opentelemetry-kube-stack.collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
 {{- end }}
 receivers:
-  k8sobjects:
+  k8s_objects:
     {{- if .useLeaderElection }}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
     {{- end }}
@@ -613,7 +664,7 @@ receivers:
 
 {{- $config := .collector.config }}
 {{- $processors := get $config "processors" | default dict }}
-{{- $resourceDetectionProcessor := get $processors "resourcedetection/env" | default dict }}
+{{- $resourceDetectionProcessor := get $processors "resource_detection/env" | default dict }}
 {{- $detectors := get $resourceDetectionProcessor "detectors" | default list }}
 
 {{- if .collector.presets.resourceDetection.aks.enabled }}
@@ -635,7 +686,7 @@ receivers:
 {{- end }}
 {{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}
 
-{{- $_ := set $processors "resourcedetection/env" $resourceDetectionProcessor }}
+{{- $_ := set $processors "resource_detection/env" $resourceDetectionProcessor }}
 {{- $_ := set $config "processors" $processors }}
 {{- $config | toYaml }}
 {{- end }}

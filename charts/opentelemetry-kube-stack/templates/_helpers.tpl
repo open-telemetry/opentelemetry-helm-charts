@@ -335,6 +335,70 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- end }}
 
 {{/*
+List of deprecated Collector component type names that this chart accepts while
+users migrate to the current lower_snake_case names.
+*/}}
+{{- define "opentelemetry-kube-stack.collector.componentRenames" -}}
+- old: k8sattributes
+  new: k8s_attributes
+  section: processors
+  pipeline: processors
+- old: resourcedetection/env
+  new: resource_detection/env
+  section: processors
+  pipeline: processors
+- old: hostmetrics
+  new: host_metrics
+  section: receivers
+  pipeline: receivers
+- old: kubeletstats
+  new: kubelet_stats
+  section: receivers
+  pipeline: receivers
+- old: filelog
+  new: file_log
+  section: receivers
+  pipeline: receivers
+- old: k8sobjects
+  new: k8s_objects
+  section: receivers
+  pipeline: receivers
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.deprecations" -}}
+{{- $warnings := list }}
+{{- $renames := include "opentelemetry-kube-stack.collector.componentRenames" . | fromYamlArray }}
+{{- range $collectorName, $collector := .Values.collectors }}
+{{- if $.Values.defaultCRConfig.enabled }}
+{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- end }}
+{{- if $collector.enabled }}
+{{- $config := deepCopy ($collector.config | default dict) }}
+{{- range $rename := $renames }}
+{{- $oldName := $rename.old }}
+{{- $newName := $rename.new }}
+{{- $sectionName := $rename.section }}
+{{- $pipelineName := $rename.pipeline }}
+{{- $components := get $config $sectionName | default dict }}
+{{- if hasKey $components $oldName }}
+{{- $warnings = append $warnings (printf "[DEPRECATION] Collector %q: component %q has been renamed to %q. Update your values.yaml. Support for the old name will be removed in a future chart release." $collectorName $oldName $newName) }}
+{{- end }}
+{{- $pipelines := dig "service" "pipelines" dict $config }}
+{{- range $signal, $pipeline := $pipelines }}
+{{- if $pipeline }}
+{{- $items := get $pipeline $pipelineName | default list }}
+{{- if has $oldName $items }}
+{{- $warnings = append $warnings (printf "[DEPRECATION] Collector %q: pipeline %q references renamed component %q. Use %q in your values.yaml. Support for the old name will be removed in a future chart release." $collectorName $signal $oldName $newName) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- join "\n" $warnings }}
+{{- end }}
+
+{{/*
 Helpers for prometheus servicemonitors
 */}}
 {{/* Prometheus specific stuff. */}}

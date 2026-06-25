@@ -6,7 +6,7 @@ metadata:
   name: agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.18.0
+    helm.sh/chart: opentelemetry-kube-stack-0.18.1
     app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -30,7 +30,7 @@ spec:
         lease_name: k8s.objects.receiver.opentelemetry.io
         lease_namespace: default
     processors:
-      k8sattributes:
+      k8s_attributes:
         extract:
           labels:
           - from: pod
@@ -89,7 +89,7 @@ spec:
         - sources:
           - from: connection
     receivers:
-      filelog:
+      file_log:
         exclude:
         - /var/log/pods/default_agent*_*/otc-container/*.log
         include:
@@ -103,7 +103,7 @@ spec:
         retry_on_failure:
           enabled: true
         start_at: end
-      k8sobjects:
+      k8s_objects:
         k8s_leader_elector: k8s_leader_elector/k8s_objects
         objects:
         - exclude_watch_type:
@@ -124,23 +124,23 @@ spec:
           exporters:
           - otlp
           processors:
-          - k8sattributes
+          - k8s_attributes
           receivers:
           - otlp
-          - filelog
-          - k8sobjects
+          - file_log
+          - k8s_objects
         metrics:
           exporters:
           - otlp
           processors:
-          - k8sattributes
+          - k8s_attributes
           receivers:
           - otlp
         traces:
           exporters:
           - otlp
           processors:
-          - k8sattributes
+          - k8s_attributes
           receivers:
           - otlp
   imagePullPolicy: IfNotPresent
@@ -232,7 +232,7 @@ metadata:
   name: gateway
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.18.0
+    helm.sh/chart: opentelemetry-kube-stack-0.18.1
     app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -365,7 +365,7 @@ metadata:
   name: ingress
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.18.0
+    helm.sh/chart: opentelemetry-kube-stack-0.18.1
     app.kubernetes.io/version: "0.153.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        

@@ -446,7 +446,7 @@ defaultCRConfig:
   # values.yaml to configure k8s as necessary.
   presets:
     # Configures the collector to collect logs.
-    # Adds the filelog receiver to the logs pipeline
+    # Adds the file_log receiver to the logs pipeline
     # and adds the necessary volumes and volume mounts.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver for details on the receiver.
@@ -460,14 +460,14 @@ defaultCRConfig:
       # Once the size exceeds the limit, all received entries of the source will be combined and flushed.
       maxRecombineLogSize: 102400
     # Configures the collector to collect host metrics.
-    # Adds the hostmetrics receiver to the metrics pipeline
+    # Adds the host_metrics receiver to the metrics pipeline
     # and adds the necessary volumes and volume mounts.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
     hostMetrics:
       enabled: false
     # Configures the Kubernetes Processor to add Kubernetes metadata.
-    # Adds the k8sattributes processor to all the pipelines
+    # Adds the k8s_attributes processor to all the pipelines
     # and adds the necessary rules to ClusteRole.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
@@ -480,22 +480,22 @@ defaultCRConfig:
       # The annotation's exact name will be the key.
       extractAllPodAnnotations: false
     # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
-    # Adds the kubeletstats receiver to the metrics pipeline
+    # Adds the kubelet_stats receiver to the metrics pipeline
     # and adds the necessary rules to ClusteRole.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
     kubeletMetrics:
       enabled: false
     # Configures the collector to collect kubernetes events.
-    # Adds the k8sobjects receiver to the logs pipeline
+    # Adds the k8s_objects receiver to the logs pipeline
     # and collects kubernetes events by default.
     # Best used with mode = deployment or statefulset.
     # MUST be used by a collector with a single replica.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
     kubernetesEvents:
       enabled: false
-    # Configures the collector to collect Kubernetes objects as logs using the k8sobjects receiver in pull mode (default interval: 1h).
-    # Adds the k8sobjects receiver to the logs pipeline and adds the necessary rules to ClusterRole.
+    # Configures the collector to collect Kubernetes objects as logs using the k8s_objects receiver in pull mode (default interval: 1h).
+    # Adds the k8s_objects receiver to the logs pipeline and adds the necessary rules to ClusterRole.
     # Compatible with kubernetesEvents preset — object lists are merged when both are enabled.
     # Best used with mode = deployment or statefulset.
     # MUST be used by a collector with a single replica.
@@ -686,7 +686,7 @@ collectors:
             http:
               endpoint: 0.0.0.0:4318
       processors:
-        resourcedetection/env:
+        resource_detection/env:
           detectors: [env, k8snode]
           timeout: 2s
           override: false
@@ -708,7 +708,7 @@ collectors:
             receivers:
               - otlp
             processors:
-              - resourcedetection/env
+              - resource_detection/env
               - resource/hostname
               - batch
             exporters:
@@ -717,7 +717,7 @@ collectors:
             receivers:
               - otlp
             processors:
-              - resourcedetection/env
+              - resource_detection/env
               - resource/hostname
               - batch
             exporters:
@@ -726,7 +726,7 @@ collectors:
             receivers:
               - otlp
             processors:
-              - resourcedetection/env
+              - resource_detection/env
               - resource/hostname
               - batch
             exporters:
