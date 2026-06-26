@@ -4,6 +4,24 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.159.1 to 0.160.0
+
+The default `config.service.telemetry.resource` now uses the Collector's `resource.attributes` array format instead of the deprecated inline map. This clears the deprecation warning the Collector logs on startup (appVersion 0.153.0+).
+
+If you override `config.service.telemetry.resource` in your `values.yaml` using the legacy inline map (for example `k8s.namespace.name: "..."`), migrate it to the array form:
+
+```yaml
+config:
+  service:
+    telemetry:
+      resource:
+        attributes:
+          - name: k8s.namespace.name
+            value: "${env:OTEL_K8S_NAMESPACE}"
+```
+
+The legacy inline map cannot be combined with `attributes`; the Collector rejects a `resource` block that contains both.
+
 ## 0.157.0 to 0.157.1
 
 The OpenTelemetry Collector renamed the `k8sattributes` processor to `k8s_attributes` in v0.146.0. The old name still works as an alias but is deprecated.
