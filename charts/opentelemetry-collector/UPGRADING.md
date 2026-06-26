@@ -4,6 +4,37 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.159.0 to 0.160.0
+
+The backwards compatibility support for `config.service.telemetry.metrics.address` has been removed.
+
+If your `values.yaml` sets `config.service.telemetry.metrics.address`, you must replace it with an explicit `config.service.telemetry.metrics.readers` entry. For example:
+
+```yaml
+config:
+  service:
+    telemetry:
+      metrics:
+        address: ${env:MY_POD_IP}:8888
+```
+
+becomes:
+
+```yaml
+config:
+  service:
+    telemetry:
+      metrics:
+        readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: ${env:MY_POD_IP}
+                  port: 8888
+```
+
+Alternatively, use `internalTelemetryViaOTLP` to export the Collector's internal telemetry via OTLP.
+
 ## 0.157.0 to 0.157.1
 
 The OpenTelemetry Collector renamed the `k8sattributes` processor to `k8s_attributes` in v0.146.0. The old name still works as an alias but is deprecated.
@@ -27,7 +58,7 @@ The deprecated memory ballast extension has been removed from the default config
 
 ## 0.88.0 to 0.89.0
 
-> [!WARNING]  
+> [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
 As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.
