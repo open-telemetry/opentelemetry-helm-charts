@@ -571,14 +571,17 @@ defaultCRConfig:
         # Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
     resourceDetection:
-      # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
-      # Typically used to resolve the 'k8s.cluster.name' resource attribute.
+      # Each detector can be enabled individually.
+      env:
+        enabled: true
       eks:
         enabled: false
       aks:
         enabled: false
       gcp:
         enabled: false
+      k8sApi:
+        enabled: true
 # Collectors is a map of collector configurations of the form:
 # collectors:
 #   collectorName:
@@ -635,12 +638,16 @@ collectors:
         podAnnotations:
           enabled: false
       resourceDetection:
+        env:
+          enabled: true
         aks:
           enabled: false
         gcp:
           enabled: false
         eks:
           enabled: false
+        k8sApi:
+          enabled: true
     config:
       receivers:
         otlp:
@@ -651,7 +658,6 @@ collectors:
               endpoint: 0.0.0.0:4318
       processors:
         resourcedetection/env:
-          detectors: [env, k8snode]
           timeout: 2s
           override: false
         resource/hostname:
