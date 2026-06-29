@@ -34,10 +34,14 @@ metrics:
           prometheus:
             host: {{ .address._0 | replace "{env!" "{env:" }}
             port: {{ .address._1 }}
-            {{- if .Values.config.service.telemetry.resource }}
+            {{- if .Values.config.service.telemetry.resource.attributes }}
             with_resource_constant_labels:
               included:
-              {{- range (keys .Values.config.service.telemetry.resource | sortAlpha) }}
+              {{- $names := list }}
+              {{- range .Values.config.service.telemetry.resource.attributes }}
+              {{- $names = append $names .name }}
+              {{- end }}
+              {{- range ($names | sortAlpha) }}
               - {{ println . }}
               {{- end }}
             {{- end }}
