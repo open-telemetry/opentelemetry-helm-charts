@@ -1,0 +1,29 @@
+---
+# Source: opentelemetry-operator/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.117.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.153.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: controller-manager
+  name: example-opentelemetry-operator-config
+  namespace: default
+data:
+  config.yaml: |
+    enable-instrumentation-crds: false
+    enable-multi-instrumentation: false
+    instrumentations:
+      spec:
+        exporter:
+          endpoint: http://collector.default.svc:4318
+        java:
+          image: java-autoinstrumentation:dev
+        propagators:
+        - tracecontext
+        - baggage
+        - b3

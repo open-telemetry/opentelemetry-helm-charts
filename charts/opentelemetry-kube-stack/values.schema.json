@@ -1633,6 +1633,12 @@
           },
           "type": "object"
         },
+        "command": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "args": {
           "additionalProperties": {
             "type": "string"
@@ -1737,6 +1743,26 @@
             "$ref": "#/$defs/PersistentVolumeClaim"
           },
           "type": "array"
+        },
+        "persistentVolumeClaimRetentionPolicy": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "whenDeleted": {
+              "type": "string",
+              "enum": [
+                "Delete",
+                "Retain"
+              ]
+            },
+            "whenScaled": {
+              "type": "string",
+              "enum": [
+                "Delete",
+                "Retain"
+              ]
+            }
+          }
         },
         "tolerations": {
           "items": {
@@ -4382,6 +4408,12 @@
       "$ref": "#/$defs/InstrumentationSpec"
     },
     "extraEnvs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "extraObjects": {
       "type": "array",
       "items": {
         "type": "object"
