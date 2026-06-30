@@ -35,6 +35,15 @@ config:
 
 Alternatively, use `internalTelemetryViaOTLP` to export the Collector's internal telemetry via OTLP.
 
+The `resourceDetection` preset now defaults to the `k8s_api` detector instead of the deprecated `k8snode` detector. This requires a collector image >= 0.154.0. If you are pinning your image to an older version, revert to the old detector in your `values.yaml`:
+
+```yaml
+presets:
+  resourceDetection:
+    k8snode:
+      enabled: true
+```
+
 ## 0.157.0 to 0.157.1
 
 The OpenTelemetry Collector renamed the `k8sattributes` processor to `k8s_attributes` in v0.146.0. The old name still works as an alias but is deprecated.

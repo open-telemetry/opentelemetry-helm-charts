@@ -94,7 +94,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
+{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled) .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
@@ -134,7 +134,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.presets.clusterMetrics.enabled }}
 {{- $config = (include "opentelemetry-collector.applyClusterMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
-{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8snode.enabled .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
+{{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled) .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
@@ -658,8 +658,10 @@ extensions:
 {{- if .Values.Values.presets.resourceDetection.env.enabled }}
 {{- $detectors = append $detectors "env" | uniq }}
 {{- end }}
-{{- if .Values.Values.presets.resourceDetection.k8snode.enabled }}
+{{- if ((.Values.Values.presets.resourceDetection.k8snode).enabled) }}
 {{- $detectors = append $detectors "k8snode" | uniq }}
+{{- else if ((.Values.Values.presets.resourceDetection.k8s_api).enabled) }}
+{{- $detectors = append $detectors "k8s_api" | uniq }}
 {{- end }}
 {{- if .Values.Values.presets.resourceDetection.aks.enabled }}
 {{- $aksConfig := include "opentelemetry-collector.resourceDetectionAksDetectorConfig" . | fromYaml }}
