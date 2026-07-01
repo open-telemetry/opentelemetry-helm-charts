@@ -7,7 +7,7 @@ Just upgrade and enjoy.
 ## 0.160.0 to 0.161.0
 
 > [!WARNING]
-> The `rewriteDeprecatedProcessorNames` value has been renamed to `rewriteDeprecatedComponentNames`. This is a breaking change. If you set `rewriteDeprecatedProcessorNames` in your `values.yaml`, rename it to `rewriteDeprecatedComponentNames`. The old name is no longer recognized and will be silently ignored.
+> The `rewriteDeprecatedProcessorNames` value has been renamed to `rewriteDeprecatedComponentNames`. This is a breaking change. If you set `rewriteDeprecatedProcessorNames` in your `values.yaml`, rename it to `rewriteDeprecatedComponentNames`. Because the chart's `values.schema.json` does not allow additional properties, leaving the old name in place will fail schema validation during `helm install` / `helm upgrade` with an error like `additional properties 'rewriteDeprecatedProcessorNames' not allowed`.
 
 The renamed `rewriteDeprecatedComponentNames` flag now gates renaming of the `k8snode` resourcedetection detector to `k8s_api` in addition to the `k8sattributes` -> `k8s_attributes` processor rename. When the flag is enabled (the default), a `k8snode` detector produced by `presets.resourceDetection.k8snode` is automatically rewritten to `k8s_api` in the generated config.
 
