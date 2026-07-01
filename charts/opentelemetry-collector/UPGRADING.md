@@ -4,13 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.159.0 to 0.160.0
-> [!WARNING]
-> The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
-
-The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
-
-If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name.
+## 0.160.0 to 0.161.0
 
 The backwards compatibility support for `config.service.telemetry.metrics.address` has been removed.
 
@@ -40,6 +34,14 @@ config:
 ```
 
 Alternatively, use `internalTelemetryViaOTLP` to export the Collector's internal telemetry via OTLP.
+
+## 0.159.0 to 0.160.0
+> [!WARNING]
+> The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
+
+The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
+
+If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name.
 
 The `resourceDetection` preset now defaults to the `k8s_api` detector instead of the deprecated `k8snode` detector. This requires a collector image >= 0.154.0. If you are pinning your image to an older version, revert to the old detector in your `values.yaml`:
 
