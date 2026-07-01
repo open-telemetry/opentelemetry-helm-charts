@@ -108,7 +108,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesAttributes.enabled }}
-{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config "rewriteDeprecatedProcessorNames" .Values.rewriteDeprecatedProcessorNames) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesObjects.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesObjectsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -118,6 +118,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- end }}
 {{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled) .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.rewriteDeprecatedProcessorNames }}
+{{- $config = (include "opentelemetry-collector.rewriteDeprecatedProcessorNames" (dict "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -145,7 +148,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesAttributes.enabled }}
-{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config "rewriteDeprecatedProcessorNames" .Values.rewriteDeprecatedProcessorNames) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesEvents.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -158,6 +161,9 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 {{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled) .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
+{{- if .Values.rewriteDeprecatedProcessorNames }}
+{{- $config = (include "opentelemetry-collector.rewriteDeprecatedProcessorNames" (dict "config" $config) | fromYaml) }}
 {{- end }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
@@ -358,31 +364,37 @@ exporters:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
+{{- $processorName := "k8sattributes" }}
+{{- if .rewriteDeprecatedProcessorNames }}
+{{- $processorName = "k8s_attributes" }}
+{{- end }}
+{{- $values := .Values.Values }}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" (dict "Values" $values "rewriteDeprecatedProcessorNames" .rewriteDeprecatedProcessorNames) | fromYaml) .config }}
 {{- if $config.service.pipelines.logs }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.logs.processors) }}
-    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8sattributes" | uniq)  }}
+  {{- if not (or (has "k8sattributes" $config.service.pipelines.logs.processors) (has "k8s_attributes" $config.service.pipelines.logs.processors)) }}
+    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors $processorName | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if and $config.service.pipelines.metrics }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.metrics.processors) }}
-    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8sattributes" | uniq)  }}
+  {{- if not (or (has "k8sattributes" $config.service.pipelines.metrics.processors) (has "k8s_attributes" $config.service.pipelines.metrics.processors)) }}
+    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors $processorName | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if and $config.service.pipelines.traces }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.traces.processors) }}
-    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8sattributes" | uniq)  }}
+  {{- if not (or (has "k8sattributes" $config.service.pipelines.traces.processors) (has "k8s_attributes" $config.service.pipelines.traces.processors)) }}
+    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors $processorName | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if $config.service.pipelines.profiles }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "processors" list)))) $config }}
-  {{- if not (has "k8sattributes" $config.service.pipelines.profiles.processors) }}
-    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "k8sattributes" | uniq)  }}
+  {{- if not (or (has "k8sattributes" $config.service.pipelines.profiles.processors) (has "k8s_attributes" $config.service.pipelines.profiles.processors)) }}
+    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors $processorName | uniq)  }}
   {{- end }}
-  {{- $podAssoc := $config.processors.k8sattributes.pod_association }}
+  {{- $processorBlock := index $config.processors $processorName }}
+  {{- $podAssoc := $processorBlock.pod_association }}
   {{- $containerIdSource := dict "sources" (list (dict "from" "resource_attribute" "name" "container.id")) }}
   {{- $hasContainerId := false }}
   {{- range $podAssoc }}
@@ -393,15 +405,19 @@ exporters:
     {{- end }}
   {{- end }}
   {{- if not $hasContainerId }}
-    {{- $_ := set $config.processors.k8sattributes "pod_association" (prepend $podAssoc $containerIdSource) }}
+    {{- $_ := set $processorBlock "pod_association" (prepend $podAssoc $containerIdSource) }}
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
+{{- $processorName := "k8sattributes" }}
+{{- if .rewriteDeprecatedProcessorNames }}
+{{- $processorName = "k8s_attributes" }}
+{{- end }}
 processors:
-  k8sattributes:
+  {{ $processorName }}:
   {{- if eq .Values.mode "daemonset" }}
     filter:
       node_from_env_var: K8S_NODE_NAME
@@ -745,3 +761,36 @@ gcp:
     k8s.cluster.name:
       enabled: true
 {{- end -}}
+
+{{- define "opentelemetry-collector.rewriteDeprecatedProcessorNames" -}}
+{{- $config := .config }}
+{{- $processorRenames := dict "k8sattributes" "k8s_attributes" }}
+{{- range $old, $new := $processorRenames }}
+  {{- /* Rewrite processor keys, including named variants like k8sattributes/custom */}}
+  {{- range $key, $val := $config.processors }}
+    {{- if or (eq $key $old) (hasPrefix (printf "%s/" $old) $key) }}
+      {{- $newKey := $key | replace (printf "%s/" $old) (printf "%s/" $new) | replace $old $new }}
+      {{- $existing := index $config.processors $newKey | default dict }}
+      {{- $_ := set $config.processors $newKey (mustMergeOverwrite $existing $val) }}
+      {{- $_ := unset $config.processors $key }}
+    {{- end }}
+  {{- end }}
+  {{- /* Rewrite pipeline processor references */}}
+  {{- range $signal, $pipeline := $config.service.pipelines }}
+    {{- if and $pipeline $pipeline.processors }}
+      {{- $newProcessors := list }}
+      {{- range $pipeline.processors }}
+        {{- if eq . $old }}
+          {{- $newProcessors = append $newProcessors $new }}
+        {{- else if hasPrefix (printf "%s/" $old) . }}
+          {{- $newProcessors = append $newProcessors (. | replace (printf "%s/" $old) (printf "%s/" $new)) }}
+        {{- else }}
+          {{- $newProcessors = append $newProcessors . }}
+        {{- end }}
+      {{- end }}
+      {{- $_ := set $pipeline "processors" ($newProcessors | uniq) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
