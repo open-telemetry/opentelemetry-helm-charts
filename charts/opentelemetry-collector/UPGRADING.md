@@ -4,13 +4,30 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.160.0 to 0.161.0
+
+> [!WARNING]
+> The `rewriteDeprecatedProcessorNames` value has been renamed to `rewriteDeprecatedComponentNames`. This is a breaking change. If you set `rewriteDeprecatedProcessorNames` in your `values.yaml`, rename it to `rewriteDeprecatedComponentNames`. The old name is no longer recognized and will be silently ignored.
+
+The renamed `rewriteDeprecatedComponentNames` flag now gates renaming of the `k8snode` resourcedetection detector to `k8s_api` in addition to the `k8sattributes` -> `k8s_attributes` processor rename. When the flag is enabled (the default), a `k8snode` detector produced by `presets.resourceDetection.k8snode` is automatically rewritten to `k8s_api` in the generated config.
+
+If you are using a Collector image that does not recognize the new component names, set `rewriteDeprecatedComponentNames: false` to preserve both the old `k8sattributes` processor name and the old `k8snode` detector name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  resourceDetection:
+    k8snode:
+      enabled: true
+```
+
 ## 0.159.0 to 0.160.0
 > [!WARNING]
 > The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
 
 The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
 
-If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name.
+If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name. (In chart 0.161.0 and later this value is named `rewriteDeprecatedComponentNames`.)
 
 The `resourceDetection` preset now defaults to the `k8s_api` detector instead of the deprecated `k8snode` detector. This requires a collector image >= 0.154.0. If you are pinning your image to an older version, revert to the old detector in your `values.yaml`:
 
@@ -20,6 +37,9 @@ presets:
     k8snode:
       enabled: true
 ```
+
+> [!NOTE]
+> As of chart version 0.161.0, `rewriteDeprecatedComponentNames` (formerly `rewriteDeprecatedProcessorNames`) also rewrites the `k8snode` detector to `k8s_api`. To keep the old `k8snode` detector you must additionally set `rewriteDeprecatedComponentNames: false`.
 
 ## 0.157.0 to 0.157.1
 

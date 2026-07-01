@@ -249,14 +249,19 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
   {{- end }}
 {{- end }}
 
+{{- define "opentelemetry-collector.deprecatedComponentRenames" -}}
+components:
+  processors:
+    k8sattributes: k8s_attributes
+detectors:
+  k8snode: k8s_api
+{{- end -}}
+
 {{- define "opentelemetry-collector.deprecations" -}}
 {{- $warnings := list -}}
-{{- $renames := list
-  (dict "old" "k8sattributes" "new" "k8s_attributes")
--}}
-{{- range $rename := $renames }}
-  {{- $oldName := index $rename "old" -}}
-  {{- $newName := index $rename "new" -}}
+{{- $renames := include "opentelemetry-collector.deprecatedComponentRenames" . | fromYaml -}}
+{{- $rewriteEnabled := $.Values.rewriteDeprecatedComponentNames -}}
+{{- range $oldName, $newName := (dig "components" "processors" dict $renames) }}
   {{- $hasOldProcessor := false -}}
   {{- range $key, $_ := $.Values.config.processors }}
     {{- if or (eq $key $oldName) (hasPrefix (printf "%s/" $oldName) $key) }}
@@ -264,7 +269,7 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
     {{- end }}
   {{- end }}
   {{- if $hasOldProcessor }}
-    {{- if $.Values.rewriteDeprecatedProcessorNames }}
+    {{- if $rewriteEnabled }}
       {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Your config has been automatically rewritten for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
     {{- else }}
       {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Please update your values.yaml to use the new name — support for the old name will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
@@ -279,7 +284,7 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
         {{- end }}
       {{- end }}
       {{- if $hasOldPipelineRef }}
-        {{- if $.Values.rewriteDeprecatedProcessorNames }}
+        {{- if $rewriteEnabled }}
           {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. It has been automatically rewritten to '%s' for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
         {{- else }}
           {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Please update your values.yaml to use '%s' — support for the old name will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
@@ -288,8 +293,14 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if (($.Values.presets.resourceDetection.k8snode).enabled) }}
-  {{- $warnings = append $warnings "[DEPRECATION] presets.resourceDetection.k8snode is deprecated and will be removed in a future release. Use presets.resourceDetection.k8s_api instead. See UPGRADING.md." -}}
+{{- range $oldName, $newName := (dig "detectors" dict $renames) }}
+  {{- if dig $oldName "enabled" false $.Values.presets.resourceDetection }}
+    {{- if $rewriteEnabled }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Detector '%s' has been renamed to '%s'. Your config has been automatically rewritten for this release. Please switch presets.resourceDetection.%s to presets.resourceDetection.%s in your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $oldName $newName $oldName $newName) -}}
+    {{- else }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Detector '%s' has been renamed to '%s'. Please switch presets.resourceDetection.%s to presets.resourceDetection.%s in your values.yaml — support for the old name will be removed in a future release. See UPGRADING.md." $oldName $newName $oldName $newName) -}}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- join "\n" $warnings -}}
 {{- end -}}
