@@ -21,6 +21,35 @@ presets:
       enabled: true
 ```
 
+The backwards compatibility support for `config.service.telemetry.metrics.address` has been removed.
+
+If your `values.yaml` sets `config.service.telemetry.metrics.address`, you must replace it with an explicit `config.service.telemetry.metrics.readers` entry. For example:
+
+```yaml
+config:
+  service:
+    telemetry:
+      metrics:
+        address: ${env:MY_POD_IP}:8888
+```
+
+becomes:
+
+```yaml
+config:
+  service:
+    telemetry:
+      metrics:
+        readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: ${env:MY_POD_IP}
+                  port: 8888
+```
+
+Alternatively, use `internalTelemetryViaOTLP` to export the Collector's internal telemetry via OTLP.
+
 ## 0.159.0 to 0.160.0
 > [!WARNING]
 > The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
