@@ -5,6 +5,12 @@ If the version you want to upgrade to is not listed here, then there is nothing 
 Just upgrade and enjoy.
 
 ## 0.159.0 to 0.160.0
+> [!WARNING]
+> The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
+
+The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
+
+If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name.
 
 The backwards compatibility support for `config.service.telemetry.metrics.address` has been removed.
 

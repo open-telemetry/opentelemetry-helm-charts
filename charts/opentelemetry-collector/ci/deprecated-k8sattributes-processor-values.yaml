@@ -1,4 +1,4 @@
-mode: deployment
+mode: daemonset
 
 image:
   repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
@@ -11,11 +11,18 @@ presets:
     enabled: true
 
 config:
+  processors:
+    k8sattributes:
+      passthrough: true
   service:
-    pipelines:      
-      traces:
+    pipelines:
+      logs:
         processors:
-          - resource
-          - k8s_attributes
+          - memory_limiter
           - batch
-      
+          - k8sattributes
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

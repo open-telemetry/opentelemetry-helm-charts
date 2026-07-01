@@ -257,12 +257,34 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
 {{- range $rename := $renames }}
   {{- $oldName := index $rename "old" -}}
   {{- $newName := index $rename "new" -}}
-  {{- if index $.Values.config.processors $oldName }}
-    {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Update your values.yaml. See UPGRADING.md." $oldName $newName) -}}
+  {{- $hasOldProcessor := false -}}
+  {{- range $key, $_ := $.Values.config.processors }}
+    {{- if or (eq $key $oldName) (hasPrefix (printf "%s/" $oldName) $key) }}
+      {{- $hasOldProcessor = true -}}
+    {{- end }}
+  {{- end }}
+  {{- if $hasOldProcessor }}
+    {{- if $.Values.rewriteDeprecatedProcessorNames }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Your config has been automatically rewritten for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
+    {{- else }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Processor '%s' has been renamed to '%s'. Please update your values.yaml to use the new name — support for the old name will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
+    {{- end }}
   {{- end }}
   {{- range $signal, $pipeline := $.Values.config.service.pipelines }}
-    {{- if and $pipeline $pipeline.processors (has $oldName $pipeline.processors) }}
-      {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Use '%s' in your values.yaml. See UPGRADING.md." $signal $oldName $newName) -}}
+    {{- if and $pipeline $pipeline.processors }}
+      {{- $hasOldPipelineRef := false -}}
+      {{- range $pipeline.processors }}
+        {{- if or (eq . $oldName) (hasPrefix (printf "%s/" $oldName) .) }}
+          {{- $hasOldPipelineRef = true -}}
+        {{- end }}
+      {{- end }}
+      {{- if $hasOldPipelineRef }}
+        {{- if $.Values.rewriteDeprecatedProcessorNames }}
+          {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. It has been automatically rewritten to '%s' for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
+        {{- else }}
+          {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Please update your values.yaml to use '%s' — support for the old name will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
+        {{- end }}
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}

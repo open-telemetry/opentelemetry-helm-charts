@@ -2,6 +2,8 @@ TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack opentelemetry-target-allocator opentelemetry-ebpf-instrumentation
 OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')"
 KUBE_VERSION ?= 1.29
+OPERATOR_SCHEMA = ./charts/opentelemetry-operator/values.schema.json
+OPERATOR_FEATUREGATE_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/pkg/featuregate/featuregate.go
 
 .PHONY: generate-examples
 generate-examples:
@@ -86,6 +88,28 @@ check-operator-crds:
 		rm -rf ${TMP_DIRECTORY}; \
 		exit 1; \
 	fi; \
+
+.PHONY: check-operator-feature-gates
+check-operator-feature-gates:
+	mkdir -p ${TMP_DIRECTORY}
+	@curl -s $(OPERATOR_FEATUREGATE_URL) | awk '/MustRegister\(/{blk=1;id="";st="";next} blk&&id==""&&match($$0,/"[^"]*"/){id=substr($$0,RSTART+1,RLENGTH-2);next} blk&&st==""&&/featuregate\.Stage/&&match($$0,/Stage(Alpha|Beta|Stable|Deprecated)/){st=substr($$0,RSTART+5,RLENGTH-5)} blk&&/^[ \t]*\)/{if(st=="Alpha"||st=="Beta")print id;blk=0}' | sort > ${TMP_DIRECTORY}/operator-feature-gates.txt
+	@jq -r '.properties.manager.properties.featureGatesMap.properties | keys[]' $(OPERATOR_SCHEMA) | sort > ${TMP_DIRECTORY}/schema-feature-gates.txt
+	if [ ! -s ${TMP_DIRECTORY}/operator-feature-gates.txt ]; then \
+		echo "Failed. Could not read feature gates from the operator (v$(OPERATOR_APP_VERSION))."; \
+		rm -rf ${TMP_DIRECTORY}; \
+		exit 1; \
+	fi; \
+	missing=$$(comm -23 ${TMP_DIRECTORY}/operator-feature-gates.txt ${TMP_DIRECTORY}/schema-feature-gates.txt); \
+	extra=$$(comm -13 ${TMP_DIRECTORY}/operator-feature-gates.txt ${TMP_DIRECTORY}/schema-feature-gates.txt); \
+	rm -rf ${TMP_DIRECTORY}; \
+	if [ -z "$$missing" ] && [ -z "$$extra" ]; then \
+		echo "Passed"; \
+	else \
+		echo "Failed. manager.featureGatesMap in charts/opentelemetry-operator/values.schema.json is out of sync with operator v$(OPERATOR_APP_VERSION)."; \
+		if [ -n "$$missing" ]; then echo "Add these feature gates to the schema:"; echo "$$missing" | sed 's/^/  /'; fi; \
+		if [ -n "$$extra" ]; then echo "Remove these feature gates from the schema:"; echo "$$extra" | sed 's/^/  /'; fi; \
+		exit 1; \
+	fi
 
 define get-crd
 @curl -s -o $(1) $(2)
