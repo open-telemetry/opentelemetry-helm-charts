@@ -48,6 +48,10 @@
       "type": "string",
       "description": "Name of the namespace to deploy the resources into."
     },
+    "rewriteDeprecatedComponentNames": {
+      "type": "boolean",
+      "description": "When true, deprecated component names (processors and resourcedetection detectors) are rewritten in the generated config."
+    },
     "presets": {
       "type": "object",
       "additionalProperties": false,
@@ -103,11 +107,11 @@
               "type": "boolean"
             },
             "extractAllPodLabels": {
-              "description": "Specifies whether the k8sattributes processor should extract all pod labels.",
+              "description": "Specifies whether the k8s_attributes processor should extract all pod labels.",
               "type": "boolean"
             },
             "extractAllPodAnnotations": {
-              "description": "Specifies whether the k8sattributes processor should extract all pod annotations.",
+              "description": "Specifies whether the k8s_attributes processor should extract all pod annotations.",
               "type": "boolean"
             }
           }
@@ -270,12 +274,22 @@
                 }
               }
             },
+            "k8s_api": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the k8s_api resource detector should be enabled.",
+                  "type": "boolean"
+                }
+              }
+            },
             "k8snode": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "enabled": {
-                  "description": "Specifies whether the k8snode resource detector should be enabled.",
+                  "description": "Deprecated: use k8s_api instead. Specifies whether the k8snode resource detector should be enabled.",
                   "type": "boolean"
                 }
               }

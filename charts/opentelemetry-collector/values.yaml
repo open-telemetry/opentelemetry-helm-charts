@@ -46,7 +46,7 @@ presets:
   hostMetrics:
     enabled: false
   # Configures the Kubernetes Processor to add Kubernetes metadata.
-  # Adds the k8sattributes processor to all the pipelines
+  # Adds the k8s_attributes processor to all the pipelines
   # and adds a preset of minimum required RBAC rules to ClusterRole.
   # Best used with mode = daemonset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
@@ -141,14 +141,14 @@ presets:
 
   # Configures the collector to detect resource attributes using the resourcedetection processor.
   # Adds the resourcedetection/env processor to all pipelines.
-  # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
+  # Each detector can be enabled individually. Base detectors 'env' and 'k8s_api' are always included when any detector is enabled.
   # Typically used to resolve the 'k8s.cluster.name' resource attribute.
   # See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor for details.
   resourceDetection:
     enabled: false
     env:
       enabled: true
-    k8snode:
+    k8s_api:
       enabled: true
     eks:
       enabled: false
@@ -169,8 +169,7 @@ configMap:
   # existingPath: ""
 
 # When enabled, the chart will configure the collector to emit its traces, metrics, and logs over http via the OTLP using the Otel Go SDK.
-# If internalTelemetryViaOTLP.metrics.enabled the chart will remove the default prometheus receiver (which was configured to scrape the Collector's metrics)
-# and the service.telemetry.metrics.address value.
+# If internalTelemetryViaOTLP.metrics.enabled the chart will remove the default prometheus receiver (which was configured to scrape the Collector's metrics).
 # Learn more about the Collector telemetry at https://opentelemetry.io/docs/collector/internal-telemetry/.
 #
 # THIS OPTION IS EXPERIMENTAL AND SUBJECT TO BREAKING CHANGES
@@ -199,6 +198,12 @@ internalTelemetryViaOTLP:
     endpoint: ""
     # overrides internalTelemetryViaOTLP.headers for logs
     headers: []
+
+# Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
+# processor, k8snode -> k8s_api resourcedetection detector) in the generated
+# config. Set to false if using older Collector images that do not recognize the
+# new names. Renamed from rewriteDeprecatedProcessorNames in chart 0.162.0.
+rewriteDeprecatedComponentNames: true
 
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
