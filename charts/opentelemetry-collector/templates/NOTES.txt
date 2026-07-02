@@ -14,7 +14,7 @@
 {{ fail "[ERROR] presets.profiling is enabled but podSecurityContext.runAsNonRoot is true. The eBPF profiler requires runAsUser: 0 to run. Set podSecurityContext.runAsNonRoot to false or remove it." }}
 {{ end }}
 {{- if .Values.securityContext }}
-[WARNING] presets.profiling is enabled with a custom securityContext. The preset will NOT inject runAsUser: 0 and privileged: true automatically; required by the eBPF profiler to function. Ensure your securityContext sets runAsUser: 0 plus either privileged: true, or right capabilities otherwise.
+[WARNING] presets.profiling is enabled with a custom securityContext. The preset will NOT inject runAsUser: 0 and capabilities automatically; required by the eBPF profiler to function. Ensure your securityContext sets runAsUser: 0 plus the right capabilities (BPF, PERFMON, SYS_PTRACE, SYS_RESOURCE, DAC_READ_SEARCH, SYSLOG, CHECKPOINT_RESTORE, IPC_LOCK) otherwise.
 {{ end }}
 {{ end }}
 

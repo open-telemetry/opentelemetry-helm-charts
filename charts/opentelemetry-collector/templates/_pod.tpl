@@ -28,18 +28,14 @@ containers:
       - {{ . }}
       {{- end }}
     securityContext:
-      {{- if and (not (.Values.securityContext)) (.Values.presets.profiling.enabled) (.Values.presets.profiling.unprivileged) }}
+      {{- if and (not (.Values.securityContext)) (.Values.presets.profiling.enabled) }}
       runAsUser: 0
       runAsGroup: 0
       privileged: false
       allowPrivilegeEscalation: false
       capabilities:
         drop: [ALL]
-        add: {{ concat (list "BPF" "PERFMON" "SYS_PTRACE" "SYS_RESOURCE" "DAC_READ_SEARCH" "SYSLOG" "CHECKPOINT_RESTORE" "IPC_LOCK") .Values.presets.profiling.additionalCapabilities | toJson }}
-      {{- else if and (not (.Values.securityContext)) (.Values.presets.profiling.enabled) }}
-      runAsUser: 0
-      runAsGroup: 0
-      privileged: true
+        add: ["BPF", "PERFMON", "SYS_PTRACE", "SYS_RESOURCE", "DAC_READ_SEARCH", "SYSLOG", "CHECKPOINT_RESTORE", "IPC_LOCK"]
       {{- else if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
       runAsUser: 0
       runAsGroup: 0
