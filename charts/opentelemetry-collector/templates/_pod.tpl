@@ -33,6 +33,12 @@ containers:
       runAsGroup: 0
       privileged: false
       allowPrivilegeEscalation: false
+      seccompProfile:
+        type: Unconfined
+      {{- if semverCompare ">= 1.30-0" .Capabilities.KubeVersion.Version }}
+      appArmorProfile:
+        type: Unconfined
+      {{- end }}
       capabilities:
         drop: [ALL]
         add: ["BPF", "PERFMON", "SYS_PTRACE", "SYS_RESOURCE", "DAC_READ_SEARCH", "SYSLOG", "CHECKPOINT_RESTORE", "IPC_LOCK"]
