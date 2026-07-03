@@ -1,8 +1,9 @@
 {{/*
 Normalizes user-supplied collector.config component names before applying
 presets. Old component keys and pipeline references are rewritten to the new
-names. Rendering fails when old and new names for the same component are both
-configured, because the chart cannot safely choose which config should win.
+names. When both the old and new names for the same component are configured,
+the new name wins and the old one is dropped, so that a user overriding the
+chart defaults with either spelling always resolves to the current name.
 */}}
 {{- define "opentelemetry-kube-stack.collector.normalizeComponentNames" -}}
 {{- $collectorName := .collector.suffix | default "unnamed" }}
@@ -14,11 +15,10 @@ configured, because the chart cannot safely choose which config should win.
 {{- $sectionName := $rename.section }}
 {{- $pipelineName := $rename.pipeline }}
 {{- $components := get $config $sectionName | default dict }}
-{{- if and (hasKey $components $oldName) (hasKey $components $newName) }}
-{{- fail (printf "collector %q: config.%s contains both renamed component names %q and %q. Configure only %q." $collectorName $sectionName $oldName $newName $newName) }}
-{{- end }}
 {{- if hasKey $components $oldName }}
+{{- if not (hasKey $components $newName) }}
 {{- $_ := set $components $newName (get $components $oldName) }}
+{{- end }}
 {{- $_ := unset $components $oldName }}
 {{- $_ := set $config $sectionName $components }}
 {{- end }}
@@ -26,9 +26,6 @@ configured, because the chart cannot safely choose which config should win.
 {{- range $signal, $pipeline := $pipelines }}
 {{- if $pipeline }}
 {{- $items := get $pipeline $pipelineName | default list }}
-{{- if and (has $oldName $items) (has $newName $items) }}
-{{- fail (printf "collector %q: config.service.pipelines.%s.%s contains both renamed component names %q and %q. Configure only %q." $collectorName $signal $pipelineName $oldName $newName $newName) }}
-{{- end }}
 {{- if has $oldName $items }}
 {{- $updated := list }}
 {{- range $item := $items }}
