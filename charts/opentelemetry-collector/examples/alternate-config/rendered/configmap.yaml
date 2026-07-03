@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.159.2
+    helm.sh/chart: opentelemetry-collector-0.162.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.154.0"
@@ -18,7 +18,7 @@ data:
     exporters:
       debug: {}
     processors:
-      k8sattributes:
+      k8s_attributes:
         extract:
           metadata:
           - k8s.namespace.name
@@ -71,13 +71,13 @@ data:
           exporters:
           - debug
           processors:
-          - k8sattributes
+          - k8s_attributes
           receivers:
           - k8sobjects
         metrics:
           exporters:
           - debug
           processors:
-          - k8sattributes
+          - k8s_attributes
           receivers:
           - k8s_cluster
