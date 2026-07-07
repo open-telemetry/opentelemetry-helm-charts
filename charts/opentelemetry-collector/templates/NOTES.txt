@@ -26,10 +26,8 @@
 {{- fail "[ERROR] dnsConfig should be provided when dnsPolicy is None" }}
 {{ end }}
 
-{{- if .Values.presets.clusterMetrics.enabled }}
-{{- if gt (int .Values.replicaCount) 1 }}
-{{- fail "Cluster Metrics preset is not suitable for replicaCount greater than one. Please change replica count to one." }}
-{{ end }}
+{{- if and .Values.presets.clusterMetrics.enabled (or (eq .Values.mode "deployment") (eq .Values.mode "statefulset")) (gt (int .Values.replicaCount) 1) .Values.presets.clusterMetrics.disableLeaderElection }}
+{{- fail "Cluster Metrics preset requires leader election when replicaCount is greater than one. Set presets.clusterMetrics.disableLeaderElection to false or reduce replicaCount to one." }}
 {{ end }}
 
 {{/* validate extensions must include health_check */}}

@@ -14,7 +14,7 @@ metadata:
 rules:
 {{- $clusterMetricsEnabled := .Values.presets.clusterMetrics.enabled }}
 {{- $disableLeaderElectionForClusterMetrics := .Values.presets.clusterMetrics.disableLeaderElection}}
-{{- $useLeaderElectionForClusterMetrics := and (eq .Values.mode "daemonset") ( $clusterMetricsEnabled ) (not $disableLeaderElectionForClusterMetrics) }}
+{{- $useLeaderElectionForClusterMetrics := and (or (eq .Values.mode "daemonset") (gt (int .Values.replicaCount) 1)) ( $clusterMetricsEnabled ) (not $disableLeaderElectionForClusterMetrics) }}
 {{- $kubernetesObjectsEnabled := .Values.presets.kubernetesObjects.enabled }}
 {{- $disableLeaderElectionForKubernetesObjects := .Values.presets.kubernetesObjects.disableLeaderElection }}
 {{- $useLeaderElectionForKubernetesObjects := and (eq .Values.mode "daemonset") ( $kubernetesObjectsEnabled ) (not $disableLeaderElectionForKubernetesObjects) }}
