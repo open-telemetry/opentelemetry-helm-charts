@@ -677,6 +677,35 @@ ingress:
   #       hosts:
   #         - collector.example.com
 
+# Gateway API HTTPRoute. An alternative to ingress for exposing the
+# collector's HTTP-based receivers through a Gateway API implementation.
+# Requires the Gateway API CRDs to be installed in the cluster.
+httproute:
+  enabled: false
+  # HTTPRoute apiVersion (defaults to "gateway.networking.k8s.io/v1" when empty)
+  apiVersion: ""
+  annotations: {}
+  # parentRefs reference the Gateway(s) this HTTPRoute is attached to
+  # parentRefs:
+  #   - name: my-gateway
+  #     namespace: gateway-system
+  #     sectionName: otlp-http
+  parentRefs: []
+  # hostnames matched against the HTTP Host header to select this route
+  # hostnames:
+  #   - collector.example.com
+  hostnames: []
+  # rules associate request matches with a backend port on the collector
+  # service. backendRefs "name" defaults to the collector service when omitted.
+  # rules:
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /
+  #     backendRefs:
+  #       - port: 4318
+  rules: []
+
 podMonitor:
   # The pod monitor by default scrapes the metrics port.
   # The metrics port needs to be enabled as well.
