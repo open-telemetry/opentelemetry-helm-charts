@@ -124,6 +124,63 @@ components:
   #         - secretName: demo-tls
   #           hosts:
   #             - demo.example.com
+  ## HTTPRoute rules to add for the component (Gateway API alternative to ingress)
+  ## Requires the Gateway API CRDs (gateway.networking.k8s.io/v1) to be installed on the cluster
+  # httpRoute:
+  ## Enable the creation of HTTPRoute rules. Default is false
+  #   enabled: false
+  ## Annotations to add to the HTTPRoute
+  #   annotations: {}
+  ## parentRefs point this route at one or more Gateways
+  #   parentRefs:
+  #     - name: my-gateway
+  #       namespace: gateway-system
+  #       sectionName: http
+  ## Hostnames this route should match
+  #   hostnames:
+  #     - demo.example.com
+  ## Rules define path matches and which Service/port to route to.
+  ## serviceName defaults to this component's own Service if omitted - set it to route
+  ## to a different component's Service (e.g. to replicate frontend-proxy's routing rules)
+  ## filters is a raw passthrough to HTTPRoute rule filters (e.g. URLRewrite) - use it to
+  ## strip a matched path prefix before it reaches a backend that doesn't expect it
+  #   rules:
+  #     - matches:
+  #         - path:
+  #             type: PathPrefix
+  #             value: /images
+  #       filters:
+  #         - type: URLRewrite
+  #           urlRewrite:
+  #             path:
+  #               type: ReplacePrefixMatch
+  #               replacePrefixMatch: /
+  #       serviceName: image-provider
+  #       port: 8081
+  #     - matches:
+  #         - path:
+  #             type: PathPrefix
+  #             value: /
+  #       serviceName: frontend
+  #       port: 8080
+  ## Additional HTTPRoutes - only created if httpRoute.enabled is true
+  ## Useful for when differently annotated HTTPRoutes are required
+  ## Each additional HTTPRoute needs key "name" set to something unique
+  #   additionalHttpRoutes: []
+  #     - name: extra-demo-httproute
+  #       parentRefs:
+  #         - name: my-gateway
+  #           namespace: gateway-system
+  #           sectionName: http
+  #       annotations: {}
+  #       hostnames:
+  #         - demo.example.com
+  #       rules:
+  #         - matches:
+  #             - path:
+  #                 type: PathPrefix
+  #                 value: /
+  #           port: 8080
   ## Command to use in the container spec, in case you don't want to go with the default command from the image.
   #   command: []
   ## Configuration to for this component; will create a Volume, and Mount backed by an optionally created ConfigMap.
