@@ -607,14 +607,24 @@ defaultCRConfig:
         # Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
     resourceDetection:
-      # Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included when any detector is enabled.
-      # Typically used to resolve the 'k8s.cluster.name' resource attribute.
+      # Each detector can be enabled individually.
+      # Detects resource attributes from the OTEL_RESOURCE_ATTRIBUTES environment variable.
+      # WARNING: this variable is normally set by the OpenTelemetry Operator to the *collector
+      # pod's own* resource attributes (e.g. k8s.pod.name, k8s.namespace.name of the collector
+      # itself). Enabling this detector therefore risks injecting the collector's own identity
+      # into the resource attributes of the telemetry it processes, which is usually undesired.
+      env:
+        enabled: true
       eks:
         enabled: false
       aks:
         enabled: false
       gcp:
         enabled: false
+      # Detects k8s.cluster.uid, k8s.node.name and k8s.node.uid via the Kubernetes API.
+      # Typically used to resolve the 'k8s.cluster.name' / 'k8s.cluster.uid' resource attributes.
+      k8sApi:
+        enabled: true
 # Collectors is a map of collector configurations of the form:
 # collectors:
 #   collectorName:
@@ -671,12 +681,16 @@ collectors:
         podAnnotations:
           enabled: false
       resourceDetection:
+        env:
+          enabled: true
         aks:
           enabled: false
         gcp:
           enabled: false
         eks:
           enabled: false
+        k8sApi:
+          enabled: true
     config:
       receivers:
         otlp:
@@ -687,7 +701,6 @@ collectors:
               endpoint: 0.0.0.0:4318
       processors:
         resourcedetection/env:
-          detectors: [env, k8snode]
           timeout: 2s
           override: false
         resource/hostname:
