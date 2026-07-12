@@ -639,8 +639,6 @@ receivers:
 {{- end }}
 
 {{- if .collector.presets.resourceDetection.k8sApi.enabled }}
-{{- $k8sApiResourceDetectionProcessor := include "opentelemetry-kube-stack.collector.resourceDetectionK8sApiDetectorConfig" . | fromYaml }}
-{{- $resourceDetectionProcessor = mustMergeOverwrite $resourceDetectionProcessor $k8sApiResourceDetectionProcessor }}
 {{- $detectors = append $detectors "k8s_api" | uniq }}
 {{- end }}
 {{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}
@@ -670,13 +668,6 @@ aks:
 gcp:
   resource_attributes:
     k8s.cluster.name:
-      enabled: true
-{{- end -}}
-
-{{- define "opentelemetry-kube-stack.collector.resourceDetectionK8sApiDetectorConfig" -}}
-k8s_api:
-  resource_attributes:
-    k8s.cluster.uid:
       enabled: true
 {{- end -}}
 
