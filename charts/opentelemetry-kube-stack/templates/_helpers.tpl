@@ -365,6 +365,16 @@ users migrate to the current lower_snake_case names.
   pipeline: receivers
 {{- end }}
 
+{{- define "opentelemetry-kube-stack.collector.componentNames" -}}
+{{- $names := dict }}
+{{- $renames := include "opentelemetry-kube-stack.collector.componentRenames" . | fromYamlArray }}
+{{- range $rename := $renames }}
+{{- $name := ternary $rename.new $rename.old $.rewriteDeprecatedComponentNames }}
+{{- $_ := set $names $rename.old $name }}
+{{- end }}
+{{- $names | toYaml }}
+{{- end }}
+
 {{- define "opentelemetry-kube-stack.deprecations" -}}
 {{- $warnings := list }}
 {{- $renames := include "opentelemetry-kube-stack.collector.componentRenames" . | fromYamlArray }}
