@@ -23,3 +23,15 @@ collectors:
       receivers:
         hostmetrics:
           collection_interval: 1m
+      exporters:
+        debug: {}
+      service:
+        pipelines:
+          logs:
+            receivers: [filelog, k8sobjects]
+            processors: [k8sattributes, resourcedetection/env]
+            exporters: [debug]
+          metrics:
+            receivers: [hostmetrics, kubeletstats]
+            processors: [k8sattributes, resourcedetection/env]
+            exporters: [debug]
