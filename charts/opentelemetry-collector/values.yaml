@@ -110,11 +110,11 @@ presets:
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
   # Can be used with mode = deployment, statefulset, or daemonset.
-  # When used as a daemonset, a leader election is setup to prevent duplication
+  # When used as a daemonset or with multiple replicas, leader election is set up to prevent duplication.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
   clusterMetrics:
     enabled: false
-    # When enabled with mode = daemonset, leader election is setup to prevent telemetry duplication.
+    # When enabled with mode = daemonset or with multiple replicas, leader election is set up to prevent telemetry duplication.
     # disableLeaderElection: false
   # Configures the collector to collect logs and metrics from pods with specific annotations.
   # This preset can not be used together with the `logsCollection` preset.
@@ -676,6 +676,35 @@ ingress:
   #     - secretName: collector-tls
   #       hosts:
   #         - collector.example.com
+
+# Gateway API HTTPRoute. An alternative to ingress for exposing the
+# collector's HTTP-based receivers through a Gateway API implementation.
+# Requires the Gateway API CRDs to be installed in the cluster.
+httproute:
+  enabled: false
+  # HTTPRoute apiVersion (defaults to "gateway.networking.k8s.io/v1" when empty)
+  apiVersion: ""
+  annotations: {}
+  # parentRefs reference the Gateway(s) this HTTPRoute is attached to
+  # parentRefs:
+  #   - name: my-gateway
+  #     namespace: gateway-system
+  #     sectionName: otlp-http
+  parentRefs: []
+  # hostnames matched against the HTTP Host header to select this route
+  # hostnames:
+  #   - collector.example.com
+  hostnames: []
+  # rules associate request matches with a backend port on the collector
+  # service. backendRefs "name" defaults to the collector service when omitted.
+  # rules:
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /
+  #     backendRefs:
+  #       - port: 4318
+  rules: []
 
 podMonitor:
   # The pod monitor by default scrapes the metrics port.

@@ -254,12 +254,12 @@ presets:
 
 ### Configuration for Kubernetes Cluster Metrics
 
-The collector can be configured to collects cluster-level metrics from the Kubernetes API server. A single instance of this receiver can be used to monitor a cluster.
+The collector can be configured to collect cluster-level metrics from the Kubernetes API server. A single active instance of this receiver can be used to monitor a cluster.
 
 This feature is disabled by default. It has the following requirements:
 
 - It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
-- It requires statefulset or deployment mode with a single replica.
+- It can run in deployment, statefulset, or daemonset mode. When multiple replicas are configured, leader election is enabled by default to prevent duplicate cluster metrics.
 
 To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
 
@@ -267,7 +267,7 @@ Here is an example `values.yaml`:
 
 ```yaml
 mode: deployment
-replicaCount: 1
+replicaCount: 2
 presets:
   clusterMetrics:
     enabled: true

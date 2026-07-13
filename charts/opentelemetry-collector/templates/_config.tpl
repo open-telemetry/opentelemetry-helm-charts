@@ -208,7 +208,8 @@ receivers:
 {{- if and (hasKey $vals "presets") (hasKey $vals.presets "clusterMetrics") -}}
   {{- $disableLeaderElection = $vals.presets.clusterMetrics.disableLeaderElection -}}
 {{- end -}}
-{{- $useLeaderElection := and (eq $vals.mode "daemonset") (not $disableLeaderElection) -}}
+{{- $hasMultipleReplicas := gt (int $vals.replicaCount) 1 -}}
+{{- $useLeaderElection := and (or (eq $vals.mode "daemonset") $hasMultipleReplicas) (not $disableLeaderElection) -}}
 {{- $electorName := "k8s_cluster" }}
 {{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.clusterMetricsConfig" $ctx | fromYaml) .config }}
