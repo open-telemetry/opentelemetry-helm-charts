@@ -1,0 +1,35 @@
+collectors:
+  component-aliases:
+    enabled: true
+    suffix: component-aliases
+    mode: daemonset
+    config:
+      receivers:
+        filelog:
+          include:
+            - /var/log/pods/*/*/*.log
+        hostmetrics:
+          scrapers:
+            cpu: {}
+        kubeletstats:
+          endpoint: https://${env:OTEL_K8S_NODE_IP}:10250
+        k8sobjects:
+          objects:
+            - name: pods
+              mode: pull
+      processors:
+        k8sattributes: {}
+        resourcedetection/env:
+          detectors: [env, k8snode]
+      exporters:
+        debug: {}
+      service:
+        pipelines:
+          logs:
+            receivers: [filelog, k8sobjects]
+            processors: [k8sattributes, resourcedetection/env]
+            exporters: [debug]
+          metrics:
+            receivers: [hostmetrics, kubeletstats]
+            processors: [k8sattributes, resourcedetection/env]
+            exporters: [debug]
