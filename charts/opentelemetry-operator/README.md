@@ -41,7 +41,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 > [!NOTE]
 > This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Use `crds.create=false` instead if you do not want the chart to install the OpenTelemetry Operator's CRDs.
 >
-> To retain the cluster-scoped CRDs when the chart is uninstalled, set `crds.annotations` to add annotations to all managed CRDs, for example `crds.annotations."helm\.sh/resource-policy"=keep`.
+> To add annotations to all CRDs managed by this chart, set `crds.annotations`.
 
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
