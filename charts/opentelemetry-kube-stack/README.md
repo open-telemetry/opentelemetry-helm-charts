@@ -76,7 +76,7 @@ The exact labels attached vary per preset:
 
 Prometheus labels are mapped to OpenTelemetry metrics data points and resource attributes according to the `prometheus` receiver [Resource Attribute Mapping](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/prometheusreceiver/resource_attribute_mapping.md)
 
-Kubernetes resource attributes (`k8s.*`) are eventually supplied downstream by the `k8sattributes` processor when `presets.kubernetesAttributes.enabled=true` (recommended).
+Kubernetes resource attributes (`k8s.*`) are eventually supplied downstream by the `k8s_attributes` processor when `presets.kubernetesAttributes.enabled=true` (recommended).
 
 </details>
 

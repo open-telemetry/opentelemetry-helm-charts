@@ -35,7 +35,7 @@ spec:
         send_batch_max_size: 1500
         send_batch_size: 1000
         timeout: 1s
-      k8sattributes:
+      k8s_attributes:
         extract:
           labels:
           - from: pod
@@ -98,14 +98,14 @@ spec:
         - action: insert
           from_attribute: k8s.node.name
           key: host.name
-      resourcedetection/env:
+      resource_detection/env:
         detectors:
         - env
         - k8s_api
         override: false
         timeout: 2s
     receivers:
-      filelog:
+      file_log:
         exclude: []
         include:
         - /var/log/pods/*/*/*.log
@@ -118,7 +118,7 @@ spec:
         retry_on_failure:
           enabled: true
         start_at: end
-      hostmetrics:
+      host_metrics:
         collection_interval: 10s
         root_path: /hostfs
         scrapers:
@@ -198,7 +198,7 @@ spec:
         - MemoryPressure
         - DiskPressure
         - NetworkUnavailable
-      k8sobjects:
+      k8s_objects:
         k8s_leader_elector: k8s_leader_elector/k8s_objects
         objects:
         - exclude_watch_type:
@@ -206,7 +206,7 @@ spec:
           group: events.k8s.io
           mode: watch
           name: events
-      kubeletstats:
+      kubelet_stats:
         auth_type: serviceAccount
         collection_interval: 15s
         endpoint: https://${env:OTEL_K8S_NODE_IP}:10250
@@ -422,36 +422,36 @@ spec:
           - debug
           - otlp
           processors:
-          - k8sattributes
-          - resourcedetection/env
+          - k8s_attributes
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
           - otlp
-          - filelog
-          - k8sobjects
+          - file_log
+          - k8s_objects
         metrics:
           exporters:
           - debug
           - otlp
           processors:
-          - k8sattributes
-          - resourcedetection/env
+          - k8s_attributes
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
           - prometheus
           - otlp
-          - hostmetrics
-          - kubeletstats
+          - host_metrics
+          - kubelet_stats
           - k8s_cluster
         traces:
           exporters:
           - debug
           - otlp
           processors:
-          - k8sattributes
-          - resourcedetection/env
+          - k8s_attributes
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
