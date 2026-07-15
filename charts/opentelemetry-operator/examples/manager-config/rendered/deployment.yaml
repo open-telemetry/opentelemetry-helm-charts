@@ -4,9 +4,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.119.0
+    helm.sh/chart: opentelemetry-operator-0.120.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.154.0"
+    app.kubernetes.io/version: "0.156.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example
@@ -26,9 +26,9 @@ spec:
         checksum/config: 0da985a5e8e6c8d2ffbbcdbd02b166f0c8b47a193418632712111fcc71a431d5
         kubectl.kubernetes.io/default-container: manager
       labels:
-        helm.sh/chart: opentelemetry-operator-0.119.0
+        helm.sh/chart: opentelemetry-operator-0.120.0
         app.kubernetes.io/name: opentelemetry-operator
-        app.kubernetes.io/version: "0.154.0"
+        app.kubernetes.io/version: "0.156.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: opentelemetry-operator
         app.kubernetes.io/instance: example
@@ -44,7 +44,7 @@ spec:
             - --health-probe-addr=:8081
             - --webhook-port=9443
             - --config-file=/etc/opentelemetry-operator/config.yaml
-            - --collector-image=otel/opentelemetry-collector-k8s:0.154.0
+            - --collector-image=otel/opentelemetry-collector-k8s:0.156.0
             - --ignore-missing-collector-crds=true
           command:
             - /manager
@@ -55,7 +55,7 @@ spec:
                   fieldPath: spec.serviceAccountName
             - name: ENABLE_WEBHOOKS
               value: "true"
-          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.154.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.156.0"
           name: manager
           imagePullPolicy: IfNotPresent
           ports:
