@@ -6,8 +6,8 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.18.0
-    app.kubernetes.io/version: "0.153.0"
+    helm.sh/chart: opentelemetry-kube-stack-0.19.1
+    app.kubernetes.io/version: "0.154.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
 spec:
@@ -26,7 +26,7 @@ spec:
         send_batch_max_size: 1500
         send_batch_size: 1000
         timeout: 1s
-      k8sattributes:
+      k8s_attributes:
         extract:
           labels:
           - from: pod
@@ -89,14 +89,14 @@ spec:
         - action: insert
           from_attribute: k8s.node.name
           key: host.name
-      resourcedetection/env:
+      resource_detection/env:
         detectors:
         - env
         - k8snode
         override: false
         timeout: 2s
     receivers:
-      k8sobjects:
+      k8s_objects:
         k8s_leader_elector: k8s_leader_elector/k8s_objects
         objects:
         - mode: pull
@@ -175,19 +175,19 @@ spec:
           exporters:
           - debug
           processors:
-          - k8sattributes
-          - resourcedetection/env
+          - k8s_attributes
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
           - otlp
-          - k8sobjects
+          - k8s_objects
         metrics:
           exporters:
           - debug
           processors:
-          - k8sattributes
-          - resourcedetection/env
+          - k8s_attributes
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
@@ -196,8 +196,8 @@ spec:
           exporters:
           - debug
           processors:
-          - k8sattributes
-          - resourcedetection/env
+          - k8s_attributes
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:

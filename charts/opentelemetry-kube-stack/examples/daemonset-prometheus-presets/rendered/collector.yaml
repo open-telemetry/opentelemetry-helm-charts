@@ -6,8 +6,8 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.18.0
-    app.kubernetes.io/version: "0.153.0"
+    helm.sh/chart: opentelemetry-kube-stack-0.19.1
+    app.kubernetes.io/version: "0.154.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
 spec:
@@ -26,7 +26,7 @@ spec:
         - action: insert
           from_attribute: k8s.node.name
           key: host.name
-      resourcedetection/env:
+      resource_detection/env:
         detectors:
         - env
         - k8snode
@@ -166,7 +166,7 @@ spec:
           exporters:
           - debug
           processors:
-          - resourcedetection/env
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
@@ -175,7 +175,7 @@ spec:
           exporters:
           - debug
           processors:
-          - resourcedetection/env
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
@@ -187,7 +187,7 @@ spec:
           exporters:
           - debug
           processors:
-          - resourcedetection/env
+          - resource_detection/env
           - resource/hostname
           - batch
           receivers:
