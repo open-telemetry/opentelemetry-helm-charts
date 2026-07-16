@@ -118,6 +118,7 @@ define get-crd
 @sed -i 's/opentelemetry-operator-system/{{ template "opentelemetry-operator.namespace" . }}/g' $(1)
 @sed -i 's/opentelemetry-operator-webhook-service/{{ template "opentelemetry-operator.fullname" . }}-webhook/g' $(1)
 @sed -i '1s/^/{{- if .Values.crds.create }}\n/' $(1)
+@sed -i '0,/^  annotations:/s//  annotations:\n{{- with .Values.crds.annotations }}\n{{ toYaml . | indent 4 }}\n{{- end }}/' $(1)
 @sed -i 's#\(.*\)path: /convert#&\n\1port: {{ .Values.admissionWebhooks.servicePort }}#' $(1)
 @sed -i 's#\(.*\)conversion:#{{- if .Values.admissionWebhooks.create }}\n&#' $(1)
 @sed -i 's#\(.*\)- v1beta1#&\n{{- end }}#' $(1)
@@ -128,5 +129,6 @@ define get-clusterobservability-crd
 @curl -s -o $(1) $(2)
 @sed -i '1s/^---/{{- if .Values.crds.create }}/' $(1)
 @sed -i '1a{{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}' $(1)
+@sed -i '0,/^  annotations:/s//  annotations:\n{{- with .Values.crds.annotations }}\n{{ toYaml . | indent 4 }}\n{{- end }}/' $(1)
 @echo '{{- end }}\n{{- end }}' >> $(1)
 endef
