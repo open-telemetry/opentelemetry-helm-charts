@@ -125,7 +125,7 @@ target allocator has a receiver to populate.
 {{- $config = (include "opentelemetry-kube-stack.collector.applyClusterMetricsConfig" (dict "collector" $collector "namespace" .namespace) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
-{{- if or .collector.presets.resourceDetection.env.enabled .collector.presets.resourceDetection.eks.enabled .collector.presets.resourceDetection.aks.enabled .collector.presets.resourceDetection.gcp.enabled .collector.presets.resourceDetection.k8sApi.enabled }}
+{{- if or .collector.presets.resourceDetection.env.enabled .collector.presets.resourceDetection.eks.enabled .collector.presets.resourceDetection.aks.enabled .collector.presets.resourceDetection.gcp.enabled .collector.presets.resourceDetection.k8s_api.enabled }}
 {{- $config = (include "opentelemetry-kube-stack.collector.applyResourceDetectionConfig" (dict "collector" $collector) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
@@ -703,7 +703,7 @@ receivers:
 {{- $detectors = append $detectors "gcp" | uniq }}
 {{- end }}
 
-{{- if .collector.presets.resourceDetection.k8sApi.enabled }}
+{{- if .collector.presets.resourceDetection.k8s_api.enabled }}
 {{- $detectors = append $detectors "k8s_api" | uniq }}
 {{- end }}
 {{- $_ := set $resourceDetectionProcessor "detectors" $detectors }}

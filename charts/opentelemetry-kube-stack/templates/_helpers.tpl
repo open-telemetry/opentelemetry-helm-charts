@@ -204,7 +204,7 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- $kubernetesObjectsApiExtensionsEnabled = (any $kubernetesObjectsApiExtensionsEnabled (dig "presets" "kubernetesObjects" "apiExtensions" "enabled" true $collector)) }}
 {{- $useLeaderElection = (any $useLeaderElection (and (eq $collector.mode "daemonset") (not (dig "presets" "kubernetesObjects" "disableLeaderElection" false $collector)))) }}
 {{- end }}
-{{- if (dig "presets" "resourceDetection" "k8sApi" "enabled" false $collector) }}
+{{- if (dig "presets" "resourceDetection" "k8s_api" "enabled" false $collector) }}
 {{- $k8sApiEnabled = true }}
 {{- end }}
 {{- end }}
