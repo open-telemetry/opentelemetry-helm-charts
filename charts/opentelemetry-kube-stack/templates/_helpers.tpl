@@ -185,12 +185,12 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
 {{- $clusterMetricsEnabled = true }}
-{{- $useLeaderElection = (any $useLeaderElection (and (eq $collector.mode "daemonset") (not (dig "presets" "clusterMetrics" "disableLeaderElection" false $collector)))) }}
+{{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "clusterMetrics" "disableLeaderElection" false $collector))) }}
 {{- end }}
 {{- $eventsEnabled = (any $eventsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
 {{- $eventsEnabled = true }}
-{{- $useLeaderElection = (any $useLeaderElection (and (eq $collector.mode "daemonset") (not (dig "presets" "kubernetesEvents" "disableLeaderElection" false $collector)))) }}
+{{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "kubernetesEvents" "disableLeaderElection" false $collector))) }}
 {{- end }}
 {{- if (dig "presets" "kubernetesObjects" "enabled" false $collector) }}
 {{- $kubernetesObjectsEnabled = true }}
