@@ -110,6 +110,39 @@ $ helm show values open-telemetry/opentelemetry-operator
 
 When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
 
+### Image Registry Overrides
+
+The chart supports separating image registry from repository for operator-managed images.
+
+- `global.imageRegistry`: default registry prefix used by all operator-managed images
+- `manager.*.registry`: optional per-image registry override that takes precedence over `global.imageRegistry`
+
+Supported image blocks:
+
+- `manager.image`
+- `manager.collectorImage`
+- `manager.opampBridgeImage`
+- `manager.targetAllocatorImage`
+- `manager.autoInstrumentationImage.{java,nodejs,python,dotnet,go,apacheHttpd,nginx}`
+
+Example:
+
+```yaml
+global:
+  imageRegistry: customregistry
+
+manager:
+  collectorImage:
+    repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+    tag: 0.156.0
+  autoInstrumentationImage:
+    java:
+      repository: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java
+      tag: 2.20.0
+```
+
+This renders as `customregistry/ghcr.io/...` unless a specific `registry` is set on that image block.
+
 ### Role-based Access Control (RBAC) Configuration
 
 The OpenTelemetry Collector requires specific RBAC permissions to function correctly, especially when using the `k8sattributesprocessor`. Depending on your deployment's scope, you may need to configure Cluster-scoped or Namespace-scoped RBAC permissions.
