@@ -177,6 +177,7 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- $kubernetesObjectsPolicyEnabled := false }}
 {{- $kubernetesObjectsApiExtensionsEnabled := false }}
 {{- $useLeaderElection := false }}
+{{- $k8sApiEnabled := false }}
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $.Values.defaultCRConfig.enabled }}
 {{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
@@ -202,6 +203,9 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- $kubernetesObjectsPolicyEnabled = (any $kubernetesObjectsPolicyEnabled (dig "presets" "kubernetesObjects" "policy" "enabled" true $collector)) }}
 {{- $kubernetesObjectsApiExtensionsEnabled = (any $kubernetesObjectsApiExtensionsEnabled (dig "presets" "kubernetesObjects" "apiExtensions" "enabled" true $collector)) }}
 {{- $useLeaderElection = (any $useLeaderElection (and (eq $collector.mode "daemonset") (not (dig "presets" "kubernetesObjects" "disableLeaderElection" false $collector)))) }}
+{{- end }}
+{{- if (dig "presets" "resourceDetection" "k8s_api" "enabled" false $collector) }}
+{{- $k8sApiEnabled = true }}
 {{- end }}
 {{- end }}
 {{- if $useLeaderElection }}
@@ -280,6 +284,15 @@ Optionally include the RBAC for the k8sCluster receiver
 - apiGroups: ["events.k8s.io"]
   resources: ["events"]
   verbs: ["watch", "list"]
+{{- end }}
+{{- if $k8sApiEnabled }}
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  resourceNames: ["kube-system"]
+  verbs: ["get"]
 {{- end }}
 {{- if $kubernetesObjectsEnabled }}
 {{- if $kubernetesObjectsCoreEnabled }}
