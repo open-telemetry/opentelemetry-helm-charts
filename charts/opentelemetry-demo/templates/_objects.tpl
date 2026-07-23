@@ -308,3 +308,65 @@ spec:
 {{- end}}
 {{- end}}
 {{- end}}
+
+{{/*
+Demo component HTTPRoute template
+*/}}
+{{- define "otel-demo.httproute" }}
+{{- $hasRoute := false}}
+{{- if .httpRoute }}
+{{- if .httpRoute.enabled }}
+{{- $hasRoute = true }}
+{{- end }}
+{{- end }}
+{{- $hasServicePorts := false}}
+{{- if .service }}
+{{- if .service.port }}
+{{- $hasServicePorts = true }}
+{{- end }}
+{{- end }}
+{{- if and $hasRoute (or .ports $hasServicePorts) }}
+{{- $httpRoutes := list .httpRoute }}
+{{- if .httpRoute.additionalHttpRoutes }}
+{{-   $httpRoutes = concat $httpRoutes .httpRoute.additionalHttpRoutes -}}
+{{- end }}
+{{- range $httpRoutes }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  {{- if .name }}
+  name: {{ $.name }}-{{ .name | lower }}
+  {{- else }}
+  name: {{ $.name }}
+  {{- end }}
+  labels:
+    {{- include "otel-demo.labels" $ | nindent 4 }}
+  {{- if .annotations }}
+  annotations:
+    {{ toYaml .annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .parentRefs }}
+  parentRefs:
+    {{- toYaml .parentRefs | nindent 4 }}
+  {{- end }}
+  {{- if .hostnames }}
+  hostnames:
+    {{- toYaml .hostnames | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .rules }}
+    - matches:
+        {{- toYaml .matches | nindent 8 }}
+      {{- if .filters }}
+      filters:
+        {{- toYaml .filters | nindent 8 }}
+      {{- end }}
+      backendRefs:
+        - name: {{ .serviceName | default $.name }}
+          port: {{ .port }}
+    {{- end }}
+{{- end }}
+{{- end}}
+{{- end}}
