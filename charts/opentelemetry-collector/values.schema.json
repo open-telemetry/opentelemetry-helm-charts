@@ -256,6 +256,55 @@
             }
           }
         },
+        "prometheus": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Prometheus-based scraping presets. Each preset adds a named instance of the prometheus receiver to the metrics pipeline. Require mode = daemonset (the scrape configs use ${OTEL_K8S_NODE_IP} / ${OTEL_K8S_NODE_NAME}).",
+          "properties": {
+            "cadvisor": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Scrapes cAdvisor metrics from the local node's kubelet via a static_config targeting https://${OTEL_K8S_NODE_IP}:<port>/metrics/cadvisor with service-account bearer-token auth. Adds a `prometheus/cadvisor` receiver. Drops the highest-cardinality / lowest-value cAdvisor series by default.",
+              "properties": {
+                "enabled": {
+                  "description": "Enable scraping of cAdvisor metrics from the local node's kubelet.",
+                  "type": "boolean"
+                },
+                "port": {
+                  "description": "Port where the kubelet HTTPS endpoint serves /metrics/cadvisor. Defaults to 10250.",
+                  "type": "integer"
+                },
+                "scrapeInterval": {
+                  "description": "Scrape interval as a duration string accepted by Prometheus (e.g. \"30s\", \"1m\"). Defaults to 30s.",
+                  "type": "string"
+                },
+                "scrapeTimeout": {
+                  "description": "Scrape timeout as a duration string accepted by Prometheus (e.g. \"10s\"). Defaults to 10s.",
+                  "type": "string"
+                }
+              }
+            },
+            "podAnnotations": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Scrapes pods on the local node carrying classic Prometheus annotations (prometheus.io/scrape=true, prometheus.io/port, prometheus.io/path, prometheus.io/scheme). Adds a `prometheus/pod_annotations` receiver to the metrics pipeline that uses Kubernetes pod service discovery + Prometheus relabel rules.",
+              "properties": {
+                "enabled": {
+                  "description": "Enable scraping of pods carrying classic Prometheus annotations via a standalone Prometheus receiver.",
+                  "type": "boolean"
+                },
+                "scrapeInterval": {
+                  "description": "Scrape interval as a duration string accepted by Prometheus (e.g. \"30s\", \"1m\"). Defaults to 30s.",
+                  "type": "string"
+                },
+                "scrapeTimeout": {
+                  "description": "Scrape timeout as a duration string accepted by Prometheus (e.g. \"10s\"). Defaults to 10s.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
         "resourceDetection": {
           "type": "object",
           "additionalProperties": false,
