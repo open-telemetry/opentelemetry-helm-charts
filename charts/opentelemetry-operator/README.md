@@ -40,6 +40,8 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 > [!NOTE]
 > This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Use `crds.create=false` instead if you do not want the chart to install the OpenTelemetry Operator's CRDs.
+>
+> To add annotations to all CRDs managed by this chart, set `crds.annotations`.
 
 ```console
 $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
