@@ -1,0 +1,1167 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "otel-native",
+        "kubernetes"
+      ],
+      "targetBlank": false,
+      "title": "Kubernetes",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "interval": "1m",
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Rate of Bits Received",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "interval": "1m",
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Rate of Bits Transmitted",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/Bits/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/Packets/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "pps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Workload"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Drill down",
+                    "url": "/d/728bf77cc1166d2f3133bf25846876cc/kubernetes-networking-workload?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_packets_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "format": "table",
+          "instant": true,
+          "refId": "H"
+        }
+      ],
+      "title": "Current Status",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "workload",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true,
+              "Time 7": true,
+              "Time 8": true,
+              "workload_type 2": true,
+              "workload_type 3": true,
+              "workload_type 4": true,
+              "workload_type 5": true,
+              "workload_type 6": true,
+              "workload_type 7": true,
+              "workload_type 8": true
+            },
+            "indexByName": {
+              "Time 1": 0,
+              "Time 2": 1,
+              "Time 3": 2,
+              "Time 4": 3,
+              "Time 5": 4,
+              "Time 6": 5,
+              "Time 7": 6,
+              "Time 8": 7,
+              "Value #A": 10,
+              "Value #B": 11,
+              "Value #C": 12,
+              "Value #D": 13,
+              "Value #E": 14,
+              "Value #F": 15,
+              "Value #G": 16,
+              "Value #H": 17,
+              "workload": 8,
+              "workload_type 1": 9,
+              "workload_type 2": 18,
+              "workload_type 3": 19,
+              "workload_type 4": 20,
+              "workload_type 5": 21,
+              "workload_type 6": 22,
+              "workload_type 7": 23,
+              "workload_type 8": 24
+            },
+            "renameByName": {
+              "Value #A": "Rx Bits",
+              "Value #B": "Tx Bits",
+              "Value #C": "Rx Bits (Avg)",
+              "Value #D": "Tx Bits (Avg)",
+              "Value #E": "Rx Packets",
+              "Value #F": "Tx Packets",
+              "Value #G": "Rx Packets Dropped",
+              "Value #H": "Tx Packets Dropped",
+              "workload": "Workload",
+              "workload_type 1": "Type"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Receive Bandwidth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 5,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Transmit Bandwidth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "id": 6,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Average Container Bandwidth by Workload: Received",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "id": 7,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(avg by (workload, workload_type) (label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace((8 * rate(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval])), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Average Container Bandwidth by Workload: Transmitted",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "id": 10,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"receive\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Rate of Received Packets Dropped",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 11,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sort_desc(sum by (workload, workload_type) (label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_deployment_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_deployment_name\", \"(.*)\"), \"workload_type\", \"deployment\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_statefulset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_statefulset_name\", \"(.*)\"), \"workload_type\", \"statefulset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_daemonset_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_daemonset_name\", \"(.*)\"), \"workload_type\", \"daemonset\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_job_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_job_name\", \"(.*)\"), \"workload_type\", \"job\", \"__name__\", \".*\") or label_replace(label_replace(rate(k8s_pod_network_errors_total{k8s_cluster_name=\"$cluster\",k8s_namespace_name=\"$namespace\",direction=\"transmit\",k8s_cronjob_name!=\"\"}[$__rate_interval]), \"workload\", \"$1\", \"k8s_cronjob_name\", \"(.*)\"), \"workload_type\", \"cronjob\", \"__name__\", \".*\")))",
+          "legendFormat": "{{workload}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Rate of Transmitted Packets Dropped",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "10s",
+  "schemaVersion": 42,
+  "tags": [
+    "otel"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "default",
+          "value": "default"
+        },
+        "label": "Data source",
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "hide": 2,
+        "label": "cluster",
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(k8s_pod_network_io_bytes_total, k8s_cluster_name)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "label": "namespace",
+        "name": "namespace",
+        "options": [],
+        "query": "label_values(k8s_pod_network_io_bytes_total{k8s_cluster_name=\"$cluster\"}, k8s_namespace_name)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "label": "workload_type",
+        "name": "type",
+        "options": [
+          {
+            "selected": false,
+            "text": "deployment",
+            "value": "deployment"
+          },
+          {
+            "selected": false,
+            "text": "statefulset",
+            "value": "statefulset"
+          },
+          {
+            "selected": false,
+            "text": "daemonset",
+            "value": "daemonset"
+          },
+          {
+            "selected": false,
+            "text": "job",
+            "value": "job"
+          },
+          {
+            "selected": false,
+            "text": "cronjob",
+            "value": "cronjob"
+          }
+        ],
+        "query": "deployment,statefulset,daemonset,job,cronjob",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "Kubernetes / Networking / Namespace (Workload) - OTEL",
+  "uid": "bbb2a765a623ae38130206c7d94a160f2",
+  "version": 13
+}
