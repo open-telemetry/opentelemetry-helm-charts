@@ -39,6 +39,8 @@ containers:
       appArmorProfile:
         type: Unconfined
       {{- end }}
+      seLinuxOptions:
+        type: spc_t
       capabilities:
         drop: [ALL]
         add: ["BPF", "PERFMON", "SYS_PTRACE", "SYS_RESOURCE", "DAC_READ_SEARCH", "SYSLOG", "CHECKPOINT_RESTORE", "IPC_LOCK"]
