@@ -5,10 +5,10 @@ kind: Deployment
 metadata:
   name: jaeger
   labels:
-    helm.sh/chart: jaeger-4.7.0
+    helm.sh/chart: jaeger-4.11.1
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "2.17.0"
+    app.kubernetes.io/version: "2.19.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: all-in-one
     prometheus.io/port: "8888"
@@ -49,7 +49,7 @@ spec:
             value: "4317"
           securityContext:
             {}
-          image: jaegertracing/jaeger:2.17.0
+          image: jaegertracing/jaeger:2.19.0
           imagePullPolicy: IfNotPresent
           name: jaeger
           args:
@@ -78,6 +78,8 @@ spec:
               protocol: TCP
             - containerPort: 8888
               protocol: TCP
+            - containerPort: 8889
+              protocol: TCP
           livenessProbe:
             failureThreshold: 5
             httpGet:
@@ -105,6 +107,9 @@ spec:
             - name: user-config
               mountPath: /etc/jaeger/user-config.yaml
               subPath: user-config.yaml
+            - name: ui-config
+              mountPath: /etc/jaeger/ui-config.json
+              subPath: ui-config.json
       securityContext:
         fsGroup: 10001
         runAsGroup: 10001
@@ -114,3 +119,6 @@ spec:
         - name: user-config
           configMap:
             name: user-config
+        - name: ui-config
+          configMap:
+            name: ui-config

@@ -6,10 +6,10 @@ metadata:
   name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.153.0
+    helm.sh/chart: opentelemetry-collector-0.165.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.151.0"
+    app.kubernetes.io/version: "0.156.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 6d46df0c54651e12287f70568b5252afed41d32c2f7bce211accdc49efbeeccc
+        checksum/config: 03372f25128f9f74c22b9accce7d4b1c1df37448a491baf018e91b7c8d4da0a0
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -42,9 +42,10 @@ spec:
         - name: opentelemetry-collector
           args:
             - --config=/conf/relay.yaml
+            - --feature-gates=service.profilesSupport
           securityContext:
             {}
-          image: "otel/opentelemetry-collector-contrib:0.151.0"
+          image: "otel/opentelemetry-collector-contrib:0.156.0"
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -113,7 +114,7 @@ spec:
                 fieldRef:
                   fieldPath: status.hostIP
             - name: GOMEMLIMIT
-              value: "160MiB"
+              value: "320MiB"
           livenessProbe:
             httpGet:
               path: /
@@ -124,7 +125,7 @@ spec:
               port: 13133
           resources:
             limits:
-              memory: 200Mi
+              memory: 400Mi
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap

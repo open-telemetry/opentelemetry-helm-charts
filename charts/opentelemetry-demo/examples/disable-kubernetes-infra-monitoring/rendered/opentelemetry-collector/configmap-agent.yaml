@@ -6,17 +6,17 @@ metadata:
   name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.153.0
+    helm.sh/chart: opentelemetry-collector-0.165.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.151.0"
+    app.kubernetes.io/version: "0.156.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
 data:
   relay: |
     connectors:
-      spanmetrics: {}
+      span_metrics: {}
     exporters:
       debug: {}
       opensearch:
@@ -26,13 +26,17 @@ data:
             insecure: true
         logs_index: otel-logs
         logs_index_time_format: yyyy-MM-dd
-      otlp/jaeger:
+      otlp_grpc/firepit:
+        endpoint: firepit:4317
+        tls:
+          insecure: true
+      otlp_grpc/jaeger:
         endpoint: jaeger:4317
         sending_queue:
           batch: {}
         tls:
           insecure: true
-      otlphttp/prometheus:
+      otlp_http/prometheus:
         endpoint: http://prometheus:9090/api/v1/otlp
         sending_queue:
           batch: {}
@@ -44,9 +48,31 @@ data:
       k8s_observer:
         auth_type: serviceAccount
         node: ${env:K8S_NODE_NAME}
+      opamp:
+        agent_description:
+          include_resource_attributes: true
+          non_identifying_attributes:
+            demo.collector.role: gateway
+            deployment.environment.name: demo
+        capabilities:
+          reports_available_components: true
+          reports_effective_config: true
+          reports_health: true
+        instance_uid: 00000000-0000-7000-8000-000000000001
+        server:
+          ws:
+            endpoint: ws://opamp-server:4320/v1/opamp
     processors:
       batch: {}
-      k8sattributes:
+      filter/sanitize_profiles:
+        error_mode: ignore
+        profiles:
+          profile:
+          - IsMatch(resource.attributes["service.name"], "containerd-shim-.*")
+      gen_ai_normalizer:
+        sources:
+        - name: openllmetry
+      k8s_attributes:
         extract:
           metadata:
           - k8s.namespace.name
@@ -79,6 +105,9 @@ data:
         pod_association:
         - sources:
           - from: resource_attribute
+            name: container.id
+        - sources:
+          - from: resource_attribute
             name: k8s.pod.ip
         - sources:
           - from: resource_attribute
@@ -98,7 +127,16 @@ data:
         detectors:
         - env
         - system
-      transform:
+      transform/sanitize_logs:
+        error_mode: ignore
+        log_statements:
+        - context: scope
+          statements:
+          - set(attributes["otelcol_signal"], attributes["otelcol.signal"]) where attributes["otelcol.signal"]
+            != nil and not IsMap(attributes["otelcol.signal"])
+          - delete_key(attributes, "otelcol.signal") where attributes["otelcol_signal"]
+            != nil
+      transform/sanitize_spans:
         error_mode: ignore
         trace_statements:
         - conditions:
@@ -154,6 +192,14 @@ data:
             static_configs:
             - targets:
               - ${env:MY_POD_IP}:8888
+      prometheus/ad:
+        config:
+          scrape_configs:
+          - job_name: ad
+            scrape_interval: 10s
+            static_configs:
+            - targets:
+              - ad:9465
       receiver_creator/metrics:
         discovery:
           enabled: true
@@ -164,6 +210,7 @@ data:
     service:
       extensions:
       - health_check
+      - opamp
       - k8s_observer
       pipelines:
         logs:
@@ -171,45 +218,65 @@ data:
           - opensearch
           - debug
           processors:
-          - k8sattributes
+          - k8s_attributes
           - memory_limiter
           - resourcedetection
           - resource
-          - batch
+          - transform/sanitize_logs
           receivers:
           - otlp
         metrics:
           exporters:
-          - otlphttp/prometheus
+          - otlp_http/prometheus
           - debug
           processors:
-          - k8sattributes
+          - k8s_attributes
           - memory_limiter
           - resourcedetection
           - resource
-          - batch
           receivers:
           - otlp
           - kafkametrics
-          - spanmetrics
+          - span_metrics
+          - prometheus/ad
           - receiver_creator/metrics
-        traces:
+        profiles:
           exporters:
-          - otlp/jaeger
+          - otlp_grpc/firepit
           - debug
-          - spanmetrics
           processors:
-          - k8sattributes
+          - k8s_attributes
           - memory_limiter
           - resourcedetection
           - resource
-          - transform
-          - batch
+          - filter/sanitize_profiles
+          receivers:
+          - otlp
+        traces:
+          exporters:
+          - otlp_grpc/jaeger
+          - debug
+          - span_metrics
+          processors:
+          - k8s_attributes
+          - memory_limiter
+          - resourcedetection
+          - resource
+          - transform/sanitize_logs
+          - gen_ai_normalizer
           receivers:
           - otlp
           - jaeger
           - zipkin
       telemetry:
+        logs:
+          processors:
+          - batch:
+              exporter:
+                otlp:
+                  endpoint: http://otel-collector:4318
+                  insecure: true
+                  protocol: http/protobuf
         metrics:
           level: detailed
           readers:
