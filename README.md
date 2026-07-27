@@ -85,7 +85,7 @@ For more information about the maintainer role, see the [community repository](h
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
 - [Juliano Costa](https://github.com/julianocosta89), Datadog
-- [Pierre Tessier](https://github.com/puckpuck), Honeycomb
+- [Pierre Tessier](https://github.com/puckpuck), Resolve AI
 - [Povilas](https://github.com/povilasv), Coralogix
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
