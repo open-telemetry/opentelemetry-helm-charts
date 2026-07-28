@@ -1134,6 +1134,11 @@ components:
     imageOverride:
       repository: "ghcr.io/florianl/firepit"
       tag: "v0.1.0"
+    ports:
+      - name: otlp-grpc
+        value: 4317
+      - name: otlp-http
+        value: 4318
     service:
       port: 8080
     podAnnotations:
@@ -1355,6 +1360,22 @@ otel-ebpf-profiler:
   presets:
     profiling:
       enabled: true
+  # This instance only carries the profiling receiver, not the receivers
+  # these ports normally front. Left enabled, their hostPorts collide with
+  # the main otel-collector daemonset on every node.
+  ports:
+    otlp:
+      enabled: false
+    otlp-http:
+      enabled: false
+    jaeger-compact:
+      enabled: false
+    jaeger-thrift:
+      enabled: false
+    jaeger-grpc:
+      enabled: false
+    zipkin:
+      enabled: false
   podAnnotations:
     resource.opentelemetry.io/service.namespace: opentelemetry-demo
   resources:
