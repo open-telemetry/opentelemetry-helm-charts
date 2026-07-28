@@ -274,6 +274,13 @@ components:
     resources:
       limits:
         memory: 500Mi
+    additionalVolumeMounts:
+      - name: agent-fixtures
+        mountPath: /app/fixtures/vcr_cassettes
+    additionalVolumes:
+      - name: agent-fixtures
+        configMap:
+          name: agent-fixtures
 
   cart:
     enabled: true
@@ -779,6 +786,10 @@ components:
                 - baggage:
             resource:
               attributes_list: ${OTEL_RESOURCE_ATTRIBUTES}
+    initContainers:
+      - name: wait-for-astronomy-db
+        image: busybox:latest
+        command: ["sh", "-c", "until nc -z -v -w30 astronomy-db 5432; do echo waiting for astronomy-db; sleep 2; done;"]
     resources:
       limits:
         memory: 20Mi
@@ -1174,6 +1185,10 @@ opentelemetry-collector:
               allowed_origins:
                 - "http://*"
                 - "https://*"
+              allowed_headers:
+                - "content-type"
+                - "traceparent"
+                - "baggage"
       kafkametrics:
         scrapers:
           - brokers

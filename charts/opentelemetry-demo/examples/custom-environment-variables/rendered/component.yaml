@@ -855,7 +855,12 @@ spec:
             limits:
               memory: 500Mi
           volumeMounts:
+            - mountPath: /app/fixtures/vcr_cassettes
+              name: agent-fixtures
       volumes:
+        - configMap:
+            name: agent-fixtures
+          name: agent-fixtures
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: apps/v1
@@ -2313,6 +2318,14 @@ spec:
               subPath: otel-config.yml
             - name: tmp
               mountPath: /tmp
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - until nc -z -v -w30 astronomy-db 5432; do echo waiting for astronomy-db; sleep
+            2; done;
+          image: busybox:latest
+          name: wait-for-astronomy-db
       volumes:
         - name: product-catalog-otel-config
           configMap:

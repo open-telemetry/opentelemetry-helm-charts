@@ -39,6 +39,18 @@ data:
         "productCatalogFailure": {
           "description": "Fail product catalog service on a specific product",
           "state": "ENABLED",
+          "targeting": {
+            "if": [
+              {
+                "==": [
+                  { "var": "product_id" },
+                  "OLJCESPC7Z"
+                ]
+              },
+              "off",
+              "off"
+            ]
+          },
           "variants": {
             "on": true,
             "off": false
@@ -91,11 +103,16 @@ data:
           "defaultVariant": "off"
         },
         "cartFailure": {
-          "description": "Fail cart service",
+          "description": "Fail cart service n% of the time",
           "state": "ENABLED",
           "variants": {
-            "on": true,
-            "off": false
+            "100%": 1,
+            "90%": 0.9,
+            "75%": 0.75,
+            "50%": 0.5,
+            "25%": 0.25,
+            "10%": 0.1,
+            "off": 0
           },
           "defaultVariant": "off"
         },
@@ -141,6 +158,16 @@ data:
           },
           "defaultVariant": "off"
         },
+        "intlShippingSlowdown": {
+          "description": "Delays international shipping responses to simulate overseas shipping delay",
+          "state": "ENABLED",
+          "variants": {
+            "10sec": 10,
+            "5sec": 5,
+            "off": 0
+          },
+          "defaultVariant": "off"
+        },
         "failedReadinessProbe": {
           "description": "readiness probe failure for cart service",
           "state": "ENABLED",
@@ -162,6 +189,26 @@ data:
             "10000x": 10000
           },
           "defaultVariant": "off"
+        },
+        "loadGeneratorTraffic": {
+          "description": "Enable synthetic traffic from the load generator. Turn off to pause all load-generator scenarios.",
+          "state": "ENABLED",
+          "variants": {
+            "off": 0,
+            "on": 1
+          },
+          "defaultVariant": "on"
+        },
+        "loadGeneratorVUs": {
+          "description": "Number of concurrent virtual users the load generator's HTTP scenario runs. Changes take effect on the wrapper's next poll, restarting k6.",
+          "state": "ENABLED",
+          "variants": {
+            "5": 5,
+            "10": 10,
+            "25": 25,
+            "50": 50
+          },
+          "defaultVariant": "5"
         }
       }
     }
