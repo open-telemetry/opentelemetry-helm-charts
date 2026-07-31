@@ -97,6 +97,13 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled) .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- include "opentelemetry-collector.assertPrometheusPresets" . }}
+{{- if .Values.presets.prometheus.cadvisor.enabled }}
+{{- $config = (include "opentelemetry-collector.applyPrometheusScrapeConfig" (dict "Values" $data "config" $config "configTemplate" "opentelemetry-collector.prometheusCadvisorConfig" "receiverName" "prometheus/cadvisor") | fromYaml) }}
+{{- end }}
+{{- if .Values.presets.prometheus.podAnnotations.enabled }}
+{{- $config = (include "opentelemetry-collector.applyPrometheusScrapeConfig" (dict "Values" $data "config" $config "configTemplate" "opentelemetry-collector.prometheusPodAnnotationsConfig" "receiverName" "prometheus/pod_annotations") | fromYaml) }}
+{{- end }}
 {{- if .Values.rewriteDeprecatedComponentNames }}
 {{- $config = (include "opentelemetry-collector.rewriteDeprecatedComponentNames" (dict "config" $config) | fromYaml) }}
 {{- end }}
@@ -140,6 +147,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.env.enabled .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled) .Values.presets.resourceDetection.eks.enabled .Values.presets.resourceDetection.aks.enabled .Values.presets.resourceDetection.gcp.enabled) }}
 {{- $config = (include "opentelemetry-collector.applyResourceDetectionConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
+{{- include "opentelemetry-collector.assertPrometheusPresets" . }}
 {{- if .Values.rewriteDeprecatedComponentNames }}
 {{- $config = (include "opentelemetry-collector.rewriteDeprecatedComponentNames" (dict "config" $config) | fromYaml) }}
 {{- end }}
@@ -794,4 +802,142 @@ gcp:
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
+{{- end }}
+
+{{/*
+Validates the `presets.prometheus.*` family of presets: requires mode = daemonset because the
+scrape configs reference ${OTEL_K8S_NODE_IP} / ${OTEL_K8S_NODE_NAME}.
+*/}}
+{{- define "opentelemetry-collector.assertPrometheusPresets" -}}
+{{- $prom := .Values.presets.prometheus }}
+{{- $enabled := list }}
+{{- if $prom.cadvisor.enabled }}{{- $enabled = append $enabled "cadvisor" }}{{- end }}
+{{- if $prom.podAnnotations.enabled }}{{- $enabled = append $enabled "podAnnotations" }}{{- end }}
+{{- if $enabled }}
+{{- $enabledList := join ", " $enabled }}
+{{- if ne .Values.mode "daemonset" }}
+{{- fail (printf "presets.prometheus.{%s} require mode: daemonset (current mode: %q). The scrape configs reference ${OTEL_K8S_NODE_IP} / ${OTEL_K8S_NODE_NAME}, which are only injected on daemonset collector pods." $enabledList .Values.mode) }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Shared apply helper for the `presets.prometheus.*` family. Merges the named scrape-config
+template into the collector config and appends the receiver to the metrics pipeline.
+Args:
+  Values         - the Helm values dict
+  config         - the current config dict
+  configTemplate - full name of the scrape-config template to include
+  receiverName   - receiver key to append to service.pipelines.metrics.receivers
+*/}}
+{{- define "opentelemetry-collector.applyPrometheusScrapeConfig" -}}
+{{- $config := mustMergeOverwrite (include .configTemplate .Values | fromYaml) .config }}
+{{- if and (dig "service" "pipelines" "metrics" false $config) (not (has .receiverName (dig "service" "pipelines" "metrics" "receivers" list $config))) }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append ($config.service.pipelines.metrics.receivers | default list) .receiverName | uniq) }}
+{{- end }}
+{{- $config | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-collector.prometheusCadvisorConfig" -}}
+{{- $cfg := .Values.presets.prometheus.cadvisor }}
+receivers:
+  prometheus/cadvisor:
+    config:
+      scrape_configs:
+        - job_name: kubelet
+          scheme: https
+          metrics_path: /metrics/cadvisor
+          scrape_interval: {{ $cfg.scrapeInterval }}
+          scrape_timeout: {{ $cfg.scrapeTimeout }}
+          authorization:
+            type: Bearer
+            credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          static_configs:
+            - targets:
+                - ${env:OTEL_K8S_NODE_IP}:{{ $cfg.port }}
+          relabel_configs:
+            - target_label: node
+              replacement: ${env:OTEL_K8S_NODE_NAME}
+          metric_relabel_configs:
+            - source_labels: [__name__]
+              regex: container_cpu_(load_average_10s|system_seconds_total|user_seconds_total)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_fs_(io_current|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_memory_(mapped_file|swap)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_(file_descriptors|tasks_state|threads_max)
+              action: drop
+            - source_labels: [__name__]
+              regex: container_spec.*
+              action: drop
+            - source_labels: [id, pod]
+              regex: .+;
+              action: drop
+{{- end }}
+
+{{- define "opentelemetry-collector.prometheusPodAnnotationsConfig" -}}
+{{- $cfg := .Values.presets.prometheus.podAnnotations }}
+receivers:
+  prometheus/pod_annotations:
+    config:
+      scrape_configs:
+        - job_name: kubernetes-pods
+          scrape_interval: {{ $cfg.scrapeInterval }}
+          scrape_timeout: {{ $cfg.scrapeTimeout }}
+          kubernetes_sd_configs:
+            - role: pod
+              selectors:
+                - role: pod
+                  field: "spec.nodeName=${env:OTEL_K8S_NODE_NAME}"
+                  label: "app.kubernetes.io/component!=opentelemetry-collector"
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels:
+                [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+              action: drop
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+              action: replace
+              regex: (https?)
+              target_label: __scheme__
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels:
+                [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              # NOTE: otel collector uses env var replacement. $$ is used as a literal $.
+              replacement: $$1:$$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$$1
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_node_name]
+              action: replace
+              target_label: node
+            - source_labels: [__meta_kubernetes_pod_phase]
+              regex: Pending|Succeeded|Failed|Completed
+              action: drop
+            - action: replace
+              source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              target_label: job
 {{- end }}

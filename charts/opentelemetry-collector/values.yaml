@@ -139,6 +139,32 @@ presets:
   profiling:
     enabled: false
 
+  # Configures the collector to scrape Prometheus metrics.
+  # Each preset adds a named prometheus receiver instance to the metrics pipeline.
+  # Requires mode = daemonset. Enabling any of these presets with a different mode
+  # fails the chart render.
+  prometheus:
+    # Scrapes cAdvisor metrics from the local node's kubelet via a static_config targeting
+    # `https://${OTEL_K8S_NODE_IP}:<port>/metrics/cadvisor` with bearer-token auth from the
+    # collector's service account. Adds a `prometheus/cadvisor` receiver.
+    cadvisor:
+      enabled: false
+      # Port where the kubelet HTTPS endpoint serves /metrics/cadvisor.
+      port: 10250
+      # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+      scrapeInterval: 30s
+      # Scrape timeout, as a duration string accepted by Prometheus.
+      scrapeTimeout: 10s
+    # Scrapes pods on the local node carrying classic Prometheus annotations:
+    # prometheus.io/scrape=true (required), prometheus.io/port, prometheus.io/path,
+    # prometheus.io/scheme. Adds a `prometheus/pod_annotations` receiver.
+    podAnnotations:
+      enabled: false
+      # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+      scrapeInterval: 30s
+      # Scrape timeout, as a duration string accepted by Prometheus.
+      scrapeTimeout: 10s
+
   # Configures the collector to detect resource attributes using the resourcedetection processor.
   # Adds the resourcedetection/env processor to all pipelines.
   # Each detector can be enabled individually. Base detectors 'env' and 'k8s_api' are always included when any detector is enabled.
