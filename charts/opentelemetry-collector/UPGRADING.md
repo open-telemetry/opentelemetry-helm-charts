@@ -4,6 +4,31 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.165.0 to 0.166.0
+
+The `kubernetesEvents` preset can now use the `k8s_events` receiver instead of the `k8sobjects` receiver, via the new `presets.kubernetesEvents.useK8sEventsReceiver` flag. The flag defaults to `false`, so the generated config is unchanged unless you opt in.
+
+```yaml
+presets:
+  kubernetesEvents:
+    enabled: true
+    useK8sEventsReceiver: true
+```
+
+When enabled, the preset emits a `k8s_events` receiver and the generated ClusterRole grants `events` in the core (`""`) API group instead of `events.k8s.io`. The `k8s_events` receiver is included in the [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) distribution.
+
+In a future release this flag will default to `true`, and it will be removed once the transition is complete.
+
+If you prefer to keep collecting events through the `k8sobjects` receiver alongside other Kubernetes objects, the `kubernetesObjects` preset gained an equivalent `events` option:
+
+```yaml
+presets:
+  kubernetesObjects:
+    enabled: true
+    events:
+      enabled: true
+```
+
 ## 0.161.0 to 0.162.0
 
 > [!WARNING]
