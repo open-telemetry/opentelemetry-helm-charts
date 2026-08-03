@@ -60,14 +60,14 @@ Render a deduped list of environment variables and 'extraEnvs'
 {{- $envMap := dict }}
 {{- $valueFromMap := dict }}
 {{- range $item := .extraEnvs }}
-{{- if $item.value }}
+{{- if hasKey $item "value" }}
 {{- $_ := set $envMap $item.name $item.value }}
 {{- else }}
 {{- $_ := set $valueFromMap $item.name $item.valueFrom }}
 {{- end }}
 {{- end }}
 {{- range $item := .env }}
-{{- if $item.value }}
+{{- if hasKey $item "value" }}
 {{- $_ := set $envMap $item.name $item.value }}
 {{- else }}
 {{- $_ := set $valueFromMap $item.name $item.valueFrom }}
