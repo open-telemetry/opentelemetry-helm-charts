@@ -85,7 +85,6 @@ For more information about the maintainer role, see the [community repository](h
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
 - [Juliano Costa](https://github.com/julianocosta89), Datadog
-- [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
@@ -94,6 +93,7 @@ For more information about the approver role, see the [community repository](htt
 
 - [Josh Voravong](https://github.com/jvoravong), Approver
 - [Naseem K. Ullah](https://github.com/naseemkullah), Approver
+- [Pierre Tessier](https://github.com/puckpuck), Approver
 - [Tigran Najaryan](https://github.com/tigrannajaryan), Maintainer
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
