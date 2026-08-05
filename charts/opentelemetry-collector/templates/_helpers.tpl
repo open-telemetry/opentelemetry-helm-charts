@@ -112,6 +112,9 @@ Create the name of the clusterRoleBinding to use
 {{- if .Values.podAnnotations }}
 {{- tpl (.Values.podAnnotations | toYaml) . }}
 {{- end }}
+{{- if and (not .Values.securityContext) .Values.presets.profiling.enabled (semverCompare "< 1.30-0" .Capabilities.KubeVersion.Version) }}
+container.apparmor.security.beta.kubernetes.io/{{ include "opentelemetry-collector.lowercase_chartname" . }}: unconfined
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.podLabels" -}}
