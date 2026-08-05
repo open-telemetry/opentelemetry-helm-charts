@@ -67,37 +67,37 @@ spec:
             - --config-file=/etc/opentelemetry-operator/config.yaml
             {{- end }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
-            - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
+            - --collector-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.collectorImage "tag" .Values.manager.collectorImage.tag) }}
             {{- end }}
             {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
-            - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
+            - --operator-opamp-bridge-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.opampBridgeImage "tag" .Values.manager.opampBridgeImage.tag) }}
             {{- end }}
             {{- if and .Values.manager.targetAllocatorImage.repository .Values.manager.targetAllocatorImage.tag }}
-            - --target-allocator-image={{ .Values.manager.targetAllocatorImage.repository }}:{{ .Values.manager.targetAllocatorImage.tag }}
+            - --target-allocator-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.targetAllocatorImage "tag" .Values.manager.targetAllocatorImage.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.java.repository .Values.manager.autoInstrumentationImage.java.tag }}
-            - --auto-instrumentation-java-image={{ .Values.manager.autoInstrumentationImage.java.repository }}:{{ .Values.manager.autoInstrumentationImage.java.tag }}
+            - --auto-instrumentation-java-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.java "tag" .Values.manager.autoInstrumentationImage.java.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.nodejs.repository .Values.manager.autoInstrumentationImage.nodejs.tag }}
-            - --auto-instrumentation-nodejs-image={{ .Values.manager.autoInstrumentationImage.nodejs.repository }}:{{ .Values.manager.autoInstrumentationImage.nodejs.tag }}
+            - --auto-instrumentation-nodejs-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.nodejs "tag" .Values.manager.autoInstrumentationImage.nodejs.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.python.repository .Values.manager.autoInstrumentationImage.python.tag }}
-            - --auto-instrumentation-python-image={{ .Values.manager.autoInstrumentationImage.python.repository }}:{{ .Values.manager.autoInstrumentationImage.python.tag }}
+            - --auto-instrumentation-python-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.python "tag" .Values.manager.autoInstrumentationImage.python.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
-            - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
+            - --auto-instrumentation-dotnet-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.dotnet "tag" .Values.manager.autoInstrumentationImage.dotnet.tag) }}
             {{- end }}
             {{- if .Values.manager.autoInstrumentation.go.enabled }}
             - --enable-go-instrumentation
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
-            - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
+            - --auto-instrumentation-go-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.go "tag" .Values.manager.autoInstrumentationImage.go.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
-            - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            - --auto-instrumentation-apache-httpd-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.apacheHttpd "tag" .Values.manager.autoInstrumentationImage.apacheHttpd.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.nginx.repository .Values.manager.autoInstrumentationImage.nginx.tag }}
-            - --auto-instrumentation-nginx-image={{ .Values.manager.autoInstrumentationImage.nginx.repository }}:{{ .Values.manager.autoInstrumentationImage.nginx.tag }}
+            - --auto-instrumentation-nginx-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.nginx "tag" .Values.manager.autoInstrumentationImage.nginx.tag) }}
             {{- end }}
             {{- if .Values.manager.ignoreMissingCollectorCRDs }}
             - --ignore-missing-collector-crds=true

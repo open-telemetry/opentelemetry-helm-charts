@@ -170,8 +170,23 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 {{/*
 The image to use for opentelemetry-operator.
 */}}
+{{- define "opentelemetry-operator.imageReference" -}}
+{{- $globalRegistry := "" -}}
+{{- if and .global .global.imageRegistry -}}
+{{- $globalRegistry = .global.imageRegistry -}}
+{{- end -}}
+{{- $imageRegistry := coalesce .image.registry $globalRegistry "" -}}
+{{- $repository := .image.repository -}}
+{{- $tag := .tag -}}
+{{- if $imageRegistry -}}
+{{- printf "%s/%s:%s" (trimSuffix "/" $imageRegistry) (trimPrefix "/" $repository) $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "opentelemetry-operator.image" -}}
-{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
+{{- include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.image "tag" (default .Chart.AppVersion .Values.manager.image.tag)) -}}
 {{- end }}
 
 {{- define "opentelemetry-operator.featureGatesMap" -}}
