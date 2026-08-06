@@ -1969,11 +1969,20 @@
       "default": {},
       "title": "The testFramework Schema",
       "required": [
+        "certManagerAddress",
         "image",
         "securityContext"
       ],
       "additionalProperties": false,
       "properties": {
+        "certManagerAddress": {
+          "type": "string",
+          "default": "cert-manager-webhook.cert-manager",
+          "title": "The cert-manager webhook address used by the Helm test hook",
+          "examples": [
+            "cert-manager-webhook.cert-manager"
+          ]
+        },
         "image": {
           "type": "object",
           "default": {},
@@ -2024,6 +2033,7 @@
       },
       "examples": [
         {
+          "certManagerAddress": "cert-manager-webhook.cert-manager",
           "image": {
             "repository": "busybox",
             "tag": "latest"
@@ -2224,6 +2234,7 @@
         "fsGroup": 65532
       },
       "testFramework": {
+        "certManagerAddress": "cert-manager-webhook.cert-manager",
         "image": {
           "repository": "busybox",
           "tag": "latest"
