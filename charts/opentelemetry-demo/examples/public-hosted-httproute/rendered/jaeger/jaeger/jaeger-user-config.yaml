@@ -1,0 +1,76 @@
+---
+# Source: opentelemetry-demo/charts/jaeger/templates/jaeger/jaeger-user-config.yaml
+# Generates a config map from a file provided by user via `--set-file userconfig=`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-config
+  namespace: default
+  labels:
+    helm.sh/chart: jaeger-4.7.0
+    app.kubernetes.io/name: jaeger
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "2.17.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  user-config.yaml: |
+    exporters:
+      jaeger_storage_exporter:
+        trace_storage: memory_backend
+    extensions:
+      healthcheckv2:
+        http:
+          endpoint: 0.0.0.0:13133
+        use_v2: true
+      jaeger_query:
+        base_path: /jaeger/ui
+        storage:
+          metrics: metrics_backend
+          traces: memory_backend
+      jaeger_storage:
+        backends:
+          memory_backend:
+            memory:
+              max_traces: ${env:MEMORY_MAX_TRACES}
+        metric_backends:
+          metrics_backend:
+            prometheus:
+              endpoint: http://${env:PROMETHEUS_ADDR}
+              normalize_calls: true
+              normalize_duration: true
+    processors:
+      batch: {}
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:JAEGER_HOST}:${env:JAEGER_GRPC_PORT}
+    service:
+      extensions:
+      - jaeger_storage
+      - jaeger_query
+      - healthcheckv2
+      pipelines:
+        traces:
+          exporters:
+          - jaeger_storage_exporter
+          processors:
+          - batch
+          receivers:
+          - otlp
+      telemetry:
+        logs:
+          level: info
+        metrics:
+          level: detailed
+          readers:
+          - periodic:
+              exporter:
+                otlp:
+                  endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
+                  insecure: true
+                  protocol: http/protobuf
+              interval: 10000
+              timeout: 5000
+        resource:
+          service.name: jaeger

@@ -1,0 +1,67 @@
+components:
+  frontend-proxy:
+    httpRoute:
+      enabled: true
+      annotations:
+        test.io/collector: default
+      parentRefs:
+        - name: default-gateway
+          namespace: gateway-system
+          sectionName: http
+      hostnames:
+        - defaultcollector.example.com
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          port: 4318
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /jaeger/ui/
+          serviceName: jaeger
+          port: 16686
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /loadgen/
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          serviceName: load-generator
+          port: 8089
+
+      additionalHttpRoutes:
+        - name: additional-basic
+          parentRefs:
+            - name: default-gateway
+              namespace: gateway-system
+              sectionName: http
+          hostnames:
+            - additional-basic.example.com
+          rules:
+            - matches:
+                - path:
+                    type: PathPrefix
+                    value: /
+              port: 4318
+
+        - name: additional-advanced
+          parentRefs:
+            - name: advanced-gateway
+              namespace: gateway-system
+              sectionName: http
+          annotations:
+            test.io/httproute: additional-advanced
+          hostnames:
+            - additional-advanced.example.com
+          rules:
+            - matches:
+                - path:
+                    type: Exact
+                    value: /
+              port: 4318

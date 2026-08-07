@@ -1,0 +1,63 @@
+# HTTPRoute replaces frontend-proxy (Envoy) as the router in front of the demo.
+# frontend-proxy is disabled here and its routing rules (documented in NOTES.txt)
+# are replicated as HTTPRoute rules pointing directly at each backend Service.
+components:
+  frontend:
+    envOverrides:
+      - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: https://otel-demo-collector.example.com/v1/traces
+
+    httpRoute:
+      enabled: true
+      parentRefs:
+        - name: my-gateway
+          namespace: gateway-system
+          sectionName: http
+      hostnames:
+        - otel-demo.example.com
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          serviceName: frontend
+          port: 8080
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /jaeger/ui/
+          serviceName: jaeger
+          port: 16686
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /grafana/
+          serviceName: grafana
+          port: 80
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /loadgen/
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          serviceName: load-generator
+          port: 8089
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /feature/
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          serviceName: flagd
+          port: 4000
+
+  frontend-proxy:
+    enabled: false
