@@ -40,11 +40,59 @@ logs:
             {{- end }}
 {{- end }}
 
+{{/*
+Resolve the internal telemetry resource attributes into the list format the
+Collector expects, folding in legacy map overrides set under config.
+*/}}
+{{- define "opentelemetry-collector.telemetryResource" -}}
+{{- $attributes := dict }}
+{{- range $name, $value := .Values.telemetryResourceAttributes }}
+{{- $_ := set $attributes $name $value }}
+{{- end }}
+{{- $resource := (((.Values.config).service).telemetry).resource | default dict }}
+{{- $extra := list }}
+{{- if hasKey $resource "attributes" }}
+{{- if kindIs "slice" $resource.attributes }}
+{{- $extra = $resource.attributes }}
+{{- else }}
+{{- range $name, $value := $resource.attributes }}
+{{- $_ := set $attributes $name $value }}
+{{- end }}
+{{- end }}
+{{- else }}
+{{- range $name, $value := $resource }}
+{{- $_ := set $attributes $name $value }}
+{{- end }}
+{{- end }}
+{{- $rendered := list }}
+{{- range $name := (keys $attributes | sortAlpha) }}
+{{- $value := get $attributes $name }}
+{{- if not (kindIs "invalid" $value) }}
+{{- $rendered = append $rendered (dict "name" $name "value" (toString $value)) }}
+{{- end }}
+{{- end }}
+{{- $rendered = concat $rendered $extra }}
+{{- if $rendered }}
+attributes:
+{{ toYaml $rendered }}
+{{- end }}
+{{- end }}
+
 {{- define "opentelemetry-collector.baseConfig" -}}
 {{- if .Values.alternateConfig }}
 {{- .Values.alternateConfig | toYaml }}
 {{- else}}
 {{- $config := deepCopy .Values.config }}
+{{- $service := $config.service | default dict }}
+{{- $telemetry := $service.telemetry | default dict }}
+{{- $resource := include "opentelemetry-collector.telemetryResource" . | fromYaml }}
+{{- if $resource }}
+{{- $_ := set $telemetry "resource" $resource }}
+{{- else }}
+{{- $_ := unset $telemetry "resource" }}
+{{- end }}
+{{- $_ := set $service "telemetry" $telemetry }}
+{{- $_ := set $config "service" $service }}
 {{- if .Values.internalTelemetryViaOTLP.traces.enabled }}
 {{- $_ := set $config.service "telemetry" (mustMerge $config.service.telemetry (include "opentelemetry-collector.otelsdkotlp.traces" . | fromYaml)) }}
 {{- end }}
