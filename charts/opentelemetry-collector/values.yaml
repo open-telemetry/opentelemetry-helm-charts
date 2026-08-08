@@ -199,6 +199,19 @@ internalTelemetryViaOTLP:
     # overrides internalTelemetryViaOTLP.headers for logs
     headers: []
 
+# Resource attributes attached to the collector's own internal telemetry.
+# Rendered into config.service.telemetry.resource.attributes, which is the
+# format the Collector expects since v0.123.0. Kept as a map so a single
+# attribute can be overridden without re-declaring the defaults; set a value to
+# null to drop that attribute.
+telemetryResourceAttributes:
+  k8s.namespace.name: "${env:OTEL_K8S_NAMESPACE}"
+  k8s.node.name: "${env:OTEL_K8S_NODE_NAME}"
+  k8s.node.ip: "${env:OTEL_K8S_NODE_IP}"
+  k8s.pod.name: "${env:OTEL_K8S_POD_NAME}"
+  k8s.pod.ip: "${env:OTEL_K8S_POD_IP}"
+  host.name: "${env:OTEL_K8S_NODE_NAME}"
+
 # Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
 # processor, k8snode -> k8s_api resourcedetection detector) in the generated
 # config. Set to false if using older Collector images that do not recognize the
@@ -255,13 +268,6 @@ config:
       endpoint: ${env:MY_POD_IP}:9411
   service:
     telemetry:
-      resource:
-        k8s.namespace.name: "${env:OTEL_K8S_NAMESPACE}"
-        k8s.node.name: "${env:OTEL_K8S_NODE_NAME}"
-        k8s.node.ip: "${env:OTEL_K8S_NODE_IP}"
-        k8s.pod.name: "${env:OTEL_K8S_POD_NAME}"
-        k8s.pod.ip: "${env:OTEL_K8S_POD_IP}"
-        host.name: "${env:OTEL_K8S_NODE_NAME}"
       metrics:
         readers:
           - pull:
