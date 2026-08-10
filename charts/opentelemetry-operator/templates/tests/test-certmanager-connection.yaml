@@ -14,10 +14,7 @@ spec:
     - name: wget
       image: "{{ .Values.testFramework.image.repository }}:{{ .Values.testFramework.image.tag }}"
       env:
-        - name: CERT_MANAGER_CLUSTERIP
-          value: "cert-manager-webhook.cert-manager"
-        - name: CERT_MANAGER_PORT
-          value: "443"
+        {{- toYaml .Values.testFramework.certManager.env | nindent 8 }}
       command:
         - sh
         - -c
