@@ -1969,18 +1969,59 @@
       "default": {},
       "title": "The testFramework Schema",
       "required": [
-        "certManagerAddress",
+        "certManager",
         "image",
         "securityContext"
       ],
       "additionalProperties": false,
       "properties": {
-        "certManagerAddress": {
-          "type": "string",
-          "default": "cert-manager-webhook.cert-manager",
-          "title": "The cert-manager webhook address used by the Helm test hook",
+        "certManager": {
+          "type": "object",
+          "default": {},
+          "title": "The cert-manager test configuration Schema",
+          "required": [
+            "env"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "env": {
+              "type": "array",
+              "default": [],
+              "title": "Environment variables used by the cert-manager Helm test hook",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "valueFrom": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          },
           "examples": [
-            "cert-manager-webhook.cert-manager"
+            {
+              "env": [
+                {
+                  "name": "CERT_MANAGER_CLUSTERIP",
+                  "value": "cert-manager-webhook.cert-manager"
+                },
+                {
+                  "name": "CERT_MANAGER_PORT",
+                  "value": "443"
+                }
+              ]
+            }
           ]
         },
         "image": {
@@ -2033,7 +2074,18 @@
       },
       "examples": [
         {
-          "certManagerAddress": "cert-manager-webhook.cert-manager",
+          "certManager": {
+            "env": [
+              {
+                "name": "CERT_MANAGER_CLUSTERIP",
+                "value": "cert-manager-webhook.cert-manager"
+              },
+              {
+                "name": "CERT_MANAGER_PORT",
+                "value": "443"
+              }
+            ]
+          },
           "image": {
             "repository": "busybox",
             "tag": "latest"
@@ -2234,7 +2286,18 @@
         "fsGroup": 65532
       },
       "testFramework": {
-        "certManagerAddress": "cert-manager-webhook.cert-manager",
+        "certManager": {
+          "env": [
+            {
+              "name": "CERT_MANAGER_CLUSTERIP",
+              "value": "cert-manager-webhook.cert-manager"
+            },
+            {
+              "name": "CERT_MANAGER_PORT",
+              "value": "443"
+            }
+          ]
+        },
         "image": {
           "repository": "busybox",
           "tag": "latest"

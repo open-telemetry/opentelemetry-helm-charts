@@ -398,8 +398,12 @@ securityContext:
 automountServiceAccountToken: true
 
 testFramework:
-  ## Address used by the Helm test hook to verify the cert-manager webhook.
-  certManagerAddress: cert-manager-webhook.cert-manager
+  certManager:
+    env:
+      - name: CERT_MANAGER_CLUSTERIP
+        value: "cert-manager-webhook.cert-manager"
+      - name: CERT_MANAGER_PORT
+        value: "443"
   image:
     repository: busybox
     tag: latest
