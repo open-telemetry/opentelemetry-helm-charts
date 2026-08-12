@@ -113,6 +113,7 @@ check-operator-feature-gates:
 
 define get-crd
 @curl -s -o $(1) $(2)
+@sed -i '\#controller-gen.kubebuilder.io/version:#a\    {{- with .Values.crds.annotations }}\n    {{- toYaml . | nindent 4 }}\n    {{- end }}' $(1)
 @sed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
 @sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
 @sed -i 's/opentelemetry-operator-system/{{ template "opentelemetry-operator.namespace" . }}/g' $(1)
@@ -126,6 +127,7 @@ endef
 
 define get-clusterobservability-crd
 @curl -s -o $(1) $(2)
+@sed -i '\#controller-gen.kubebuilder.io/version:#a\    {{- with .Values.crds.annotations }}\n    {{- toYaml . | nindent 4 }}\n    {{- end }}' $(1)
 @sed -i '1s/^---/{{- if .Values.crds.create }}/' $(1)
 @sed -i '1a{{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}' $(1)
 @echo '{{- end }}\n{{- end }}' >> $(1)

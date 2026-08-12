@@ -4,6 +4,19 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.167.0 to 0.168.0
+
+The `rewriteDeprecatedComponentNames` flag now also gates renaming of the `filelog` receiver to `file_log`. The `filelog` receiver was renamed to `file_log` in OpenTelemetry Collector Contrib v0.149.0 (`filelog` remains as a deprecated alias that logs a warning at runtime). When the flag is enabled (the default), the `presets.logsCollection` receiver — and any `filelog` receiver you define in `config.receivers` — is automatically rewritten to `file_log` in the generated config.
+
+If you are using a Collector image older than v0.149.0 that does not recognize the `file_log` name, set `rewriteDeprecatedComponentNames: false` to preserve the old `filelog` name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  logsCollection:
+    enabled: true
+```
+
 ## 0.161.0 to 0.162.0
 
 > [!WARNING]

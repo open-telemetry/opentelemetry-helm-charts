@@ -112,6 +112,9 @@ Create the name of the clusterRoleBinding to use
 {{- if .Values.podAnnotations }}
 {{- tpl (.Values.podAnnotations | toYaml) . }}
 {{- end }}
+{{- if and (not .Values.securityContext) .Values.presets.profiling.enabled (semverCompare "< 1.30-0" .Capabilities.KubeVersion.Version) }}
+container.apparmor.security.beta.kubernetes.io/{{ include "opentelemetry-collector.lowercase_chartname" . }}: unconfined
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.podLabels" -}}
@@ -251,6 +254,8 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
 
 {{- define "opentelemetry-collector.deprecatedComponentRenames" -}}
 components:
+  receivers:
+    filelog: file_log
   processors:
     k8sattributes: k8s_attributes
 detectors:
@@ -288,6 +293,38 @@ detectors:
           {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. It has been automatically rewritten to '%s' for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
         {{- else }}
           {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed processor '%s'. Please update your values.yaml to use '%s' — support for the old name will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- range $oldName, $newName := (dig "components" "receivers" dict $renames) }}
+  {{- $hasOldReceiver := false -}}
+  {{- range $key, $_ := $.Values.config.receivers }}
+    {{- if or (eq $key $oldName) (hasPrefix (printf "%s/" $oldName) $key) }}
+      {{- $hasOldReceiver = true -}}
+    {{- end }}
+  {{- end }}
+  {{- if $hasOldReceiver }}
+    {{- if $rewriteEnabled }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Receiver '%s' has been renamed to '%s'. Your config has been automatically rewritten for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
+    {{- else }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Receiver '%s' has been renamed to '%s'. Please update your values.yaml to use the new name — support for the old name will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
+    {{- end }}
+  {{- end }}
+  {{- range $signal, $pipeline := $.Values.config.service.pipelines }}
+    {{- if and $pipeline $pipeline.receivers }}
+      {{- $hasOldPipelineRef := false -}}
+      {{- range $pipeline.receivers }}
+        {{- if or (eq . $oldName) (hasPrefix (printf "%s/" $oldName) .) }}
+          {{- $hasOldPipelineRef = true -}}
+        {{- end }}
+      {{- end }}
+      {{- if $hasOldPipelineRef }}
+        {{- if $rewriteEnabled }}
+          {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed receiver '%s'. It has been automatically rewritten to '%s' for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
+        {{- else }}
+          {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed receiver '%s'. Please update your values.yaml to use '%s' — support for the old name will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
         {{- end }}
       {{- end }}
     {{- end }}

@@ -1423,11 +1423,11 @@
                   "type": "boolean"
                 },
                 "extractAllPodLabels": {
-                  "description": "Specifies whether the k8sattributes processor should extract all pod labels.",
+                  "description": "Specifies whether the k8s_attributes processor should extract all pod labels.",
                   "type": "boolean"
                 },
                 "extractAllPodAnnotations": {
-                  "description": "Specifies whether the k8sattributes processor should extract all pod annotations.",
+                  "description": "Specifies whether the k8s_attributes processor should extract all pod annotations.",
                   "type": "boolean"
                 }
               }
@@ -1643,8 +1643,28 @@
             "resourceDetection": {
               "type": "object",
               "additionalProperties": false,
-              "description": "Configures resource detection processors. Each detector can be enabled individually. Base detectors 'env' and 'k8snode' are always included.",
+              "description": "Configures resource detection processors. Each detector can be enabled individually.",
               "properties": {
+                "env": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Enables the env resource detector to detect resource attributes from the OTEL_RESOURCE_ATTRIBUTES environment variable. WARNING: this variable is set by the OpenTelemetry Operator to the collector pod's own resource attributes (e.g. k8s.pod.name, k8s.namespace.name), so enabling this detector risks injecting the collector's own identity into the telemetry it processes, which is usually undesired.",
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "k8s_api": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Enables the k8s_api resource detector to detect k8s.cluster.uid, k8s.node.name and k8s.node.uid via the Kubernetes API. WARNING: the k8s.node.name and k8s.node.uid resolved are those of the collector's own node, so enabling this detector risks enriching telemetry that originates from a different node with the wrong k8s.node.name and k8s.node.uid, which is usually undesired.",
+                      "type": "boolean"
+                    }
+                  }
+                },
                 "eks": {
                   "type": "object",
                   "additionalProperties": false,
@@ -4466,6 +4486,10 @@
     },
     "clusterName": {
       "type": "string"
+    },
+    "rewriteDeprecatedComponentNames": {
+      "description": "When true, deprecated Collector component names are rewritten to their current lower_snake_case names in user-provided and preset-generated configuration.",
+      "type": "boolean"
     },
     "clusterRole": {
       "type": "object",
