@@ -143,8 +143,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/*
 Generate the configmap data based on preset and configuration values
 */}}
+{{/*
+Whether the Prometheus scrape endpoint should be configured.
+
+OBI only expires Prometheus metric children while serving a scrape, so an
+endpoint that nothing scrapes retains every series for the lifetime of the
+process. The ServiceMonitor requires a Service, so service.enabled is the
+only condition needed.
+*/}}
+{{- define "obi.prometheusExportEnabled" -}}
+{{- if .Values.service.enabled -}}
+true
+{{- end -}}
+{{- end }}
+
 {{- define "obi.configData" -}}
 {{- $config := deepCopy .Values.config.data }}
+{{- if not (include "obi.prometheusExportEnabled" .) }}
+{{- $_ := unset $config "prometheus_export" }}
+{{- end }}
 {{- if eq .Values.preset "network" }}
 {{- if not .Values.config.data.network }}
 {{- $_ := set $config "network" (dict "enable" true) }}
