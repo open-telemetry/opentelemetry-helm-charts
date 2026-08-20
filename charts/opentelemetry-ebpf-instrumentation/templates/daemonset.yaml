@@ -6,7 +6,8 @@ metadata:
   labels:
     {{- include "obi.labels" . | nindent 4 }}
     app.kubernetes.io/component: workload
-  {{- with .Values.annotations }}
+  {{- $daemonSetAnnotations := merge (deepCopy (.Values.daemonSetAnnotations | default dict)) (.Values.annotations | default dict) }}
+  {{- with $daemonSetAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
