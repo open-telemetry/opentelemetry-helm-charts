@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.170.0
+    helm.sh/chart: opentelemetry-collector-0.171.0
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.158.0"
@@ -17,7 +17,7 @@ data:
   relay: |
     exporters:
       debug: {}
-      otlp:
+      otlp_grpc:
         endpoint: example-opentelemetry-collector:4317
         tls:
           insecure: true
@@ -61,7 +61,7 @@ data:
       pipelines:
         logs:
           exporters:
-          - otlp
+          - otlp_grpc
           - debug
           processors:
           - memory_limiter
@@ -70,7 +70,7 @@ data:
           - otlp
         metrics:
           exporters:
-          - otlp
+          - otlp_grpc
           - debug
           processors:
           - memory_limiter
@@ -80,7 +80,7 @@ data:
           - prometheus
         traces:
           exporters:
-          - otlp
+          - otlp_grpc
           - debug
           processors:
           - memory_limiter
