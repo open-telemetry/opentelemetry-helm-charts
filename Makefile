@@ -1,6 +1,8 @@
 TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack opentelemetry-target-allocator opentelemetry-ebpf-instrumentation
 OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')"
+KUBE_STACK_OPERATOR_APP_VERSION ?= $(shell cat ./charts/opentelemetry-kube-stack/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
+
 KUBE_VERSION ?= 1.29
 OPERATOR_SCHEMA = ./charts/opentelemetry-operator/values.schema.json
 OPERATOR_FEATUREGATE_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/pkg/featuregate/featuregate.go
@@ -87,7 +89,31 @@ check-operator-crds:
 		echo "Failed. run 'make update-operator-crds' to update the crds"; \
 		rm -rf ${TMP_DIRECTORY}; \
 		exit 1; \
-	fi; \
+	fi
+
+.PHONY: check-opentelemetry-kube-stack-crds
+check-opentelemetry-kube-stack-crds:
+	mkdir -p $(TMP_DIRECTORY)/otel-crds
+	$(call get-base-crd,${TMP_DIRECTORY}/otel-crds/opentelemetry.io_instrumentations.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_instrumentations.yaml)
+	$(call get-base-crd,${TMP_DIRECTORY}/otel-crds/opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_opampbridges.yaml)
+	$(call get-base-crd,${TMP_DIRECTORY}/otel-crds/opentelemetry.io_opentelemetrycollectors.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_opentelemetrycollectors.yaml)
+	$(call get-base-crd,${TMP_DIRECTORY}/otel-crds/opentelemetry.io_targetallocators.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_targetallocators.yaml)
+
+	if diff ${TMP_DIRECTORY}/otel-crds ./charts/opentelemetry-kube-stack/charts/otel-crds/crds > /dev/null; then \
+		echo "Passed"; \
+		rm -rf ${TMP_DIRECTORY}; \
+	else \
+		echo "Failed otel-crds. run 'make update-opentelemetry-kube-stack-crds' to update the otel-crds"; \
+		rm -rf ${TMP_DIRECTORY}; \
+		exit 1; \
+	fi
+
+.PHONY: update-opentelemetry-kube-stack-crds
+update-opentelemetry-kube-stack-crds:
+	$(call get-base-crd,./charts/opentelemetry-kube-stack/charts/otel-crds/crds/opentelemetry.io_instrumentations.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_instrumentations.yaml)
+	$(call get-base-crd,./charts/opentelemetry-kube-stack/charts/otel-crds/crds/opentelemetry.io_opampbridges.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_opampbridges.yaml)
+	$(call get-base-crd,./charts/opentelemetry-kube-stack/charts/otel-crds/crds/opentelemetry.io_opentelemetrycollectors.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_opentelemetrycollectors.yaml)
+	$(call get-base-crd,./charts/opentelemetry-kube-stack/charts/otel-crds/crds/opentelemetry.io_targetallocators.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(KUBE_STACK_OPERATOR_APP_VERSION)/config/crd/bases/opentelemetry.io_targetallocators.yaml)
 
 .PHONY: check-operator-feature-gates
 check-operator-feature-gates:
@@ -112,7 +138,7 @@ check-operator-feature-gates:
 	fi
 
 define get-crd
-@curl -s -o $(1) $(2)
+$(call get-base-crd,$(1),$(2))
 @sed -i '\#controller-gen.kubebuilder.io/version:#a\    {{- with .Values.crds.annotations }}\n    {{- toYaml . | nindent 4 }}\n    {{- end }}' $(1)
 @sed -i '\#path: /convert#a {{ if .caBundle }}{{ cat "caBundle:" .caBundle | indent 8 }}{{ end }}' $(1)
 @sed -i 's#opentelemetry-operator-system/opentelemetry-operator-serving-cert#{{ include "opentelemetry-operator.webhookCertAnnotation" . }}#g' $(1)
@@ -125,8 +151,12 @@ define get-crd
 @echo '{{- end }}' >> $(1)
 endef
 
-define get-clusterobservability-crd
+define get-base-crd
 @curl -s -o $(1) $(2)
+endef
+
+define get-clusterobservability-crd
+$(call get-base-crd,$(1),$(2))
 @sed -i '\#controller-gen.kubebuilder.io/version:#a\    {{- with .Values.crds.annotations }}\n    {{- toYaml . | nindent 4 }}\n    {{- end }}' $(1)
 @sed -i '1s/^---/{{- if .Values.crds.create }}/' $(1)
 @sed -i '1a{{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}' $(1)
