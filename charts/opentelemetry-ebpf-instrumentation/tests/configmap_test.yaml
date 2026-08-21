@@ -18,3 +18,28 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: omits prometheus_export when no Service can scrape it
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: prometheus_export
+
+  - it: keeps prometheus_export when a Service is enabled
+    set:
+      service:
+        enabled: true
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: prometheus_export
+
+  - it: omits prometheus_export when only a ServiceMonitor is enabled
+    set:
+      serviceMonitor:
+        enabled: true
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: prometheus_export
+

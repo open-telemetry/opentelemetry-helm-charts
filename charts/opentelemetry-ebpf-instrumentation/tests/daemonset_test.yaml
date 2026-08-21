@@ -22,3 +22,23 @@ tests:
       - equal:
           path: spec.template.spec.volumes[0].configMap.name
           value: external-config
+
+  - it: omits the metrics container port when no Service can scrape it
+    template: templates/daemonset.yaml
+    asserts:
+      - isNull:
+          path: spec.template.spec.containers[0].ports
+
+  - it: renders the metrics container port when a Service is enabled
+    template: templates/daemonset.yaml
+    set:
+      service:
+        enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: metrics
+            containerPort: 9090
+            protocol: TCP
+
