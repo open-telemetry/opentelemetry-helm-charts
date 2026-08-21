@@ -1,0 +1,31 @@
+mode: deployment
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+config:
+  receivers:
+    otlp: {}
+  exporters:
+    otlp: {}
+    otlp/backend: {}
+    otlphttp: {}
+    otlphttp/backend: {}
+  service:
+    pipelines:
+      traces:
+        receivers:
+          - otlp
+        exporters:
+          - otlp
+          - otlp/backend
+          - otlphttp
+          - otlphttp/backend
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

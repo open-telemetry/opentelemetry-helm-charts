@@ -766,7 +766,10 @@ gcp:
     {{- if $section }}
       {{- range $key, $val := $section }}
         {{- if or (eq $key $old) (hasPrefix (printf "%s/" $old) $key) }}
-          {{- $newKey := $key | replace (printf "%s/" $old) (printf "%s/" $new) | replace $old $new }}
+          {{- $newKey := $new }}
+          {{- if hasPrefix (printf "%s/" $old) $key }}
+            {{- $newKey = $key | replace (printf "%s/" $old) (printf "%s/" $new) }}
+          {{- end }}
           {{- $existing := index $section $newKey | default dict }}
           {{- $_ := set $section $newKey (mustMergeOverwrite $existing $val) }}
           {{- $_ := unset $section $key }}
