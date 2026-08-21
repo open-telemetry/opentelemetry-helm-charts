@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.0
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: opentelemetrycollectors.opentelemetry.io
 spec:
   group: opentelemetry.io
@@ -3349,6 +3349,8 @@ spec:
                     type: object
                   prometheusCR:
                     properties:
+                      denyFSAccessThroughSMs:
+                        type: boolean
                       enabled:
                         type: boolean
                       podMonitorSelector:
@@ -4482,6 +4484,10 @@ spec:
                                     type: integer
                                   signerName:
                                     type: string
+                                  userAnnotations:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
                                 required:
                                 - keyType
                                 - signerName
@@ -6067,6 +6073,12 @@ spec:
                     minimum: 1
                     type: integer
                 type: object
+              command:
+                items:
+                  type: string
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: atomic
               config:
                 properties:
                   connectors:
@@ -6285,10 +6297,43 @@ spec:
                       x-kubernetes-map-type: atomic
                   type: object
                 type: array
+              hostAliases:
+                items:
+                  properties:
+                    hostnames:
+                      items:
+                        type: string
+                      type: array
+                      x-kubernetes-list-type: atomic
+                    ip:
+                      type: string
+                  required:
+                  - ip
+                  type: object
+                type: array
+                x-kubernetes-list-type: atomic
               hostNetwork:
                 type: boolean
               hostPID:
                 type: boolean
+              hostUsers:
+                type: boolean
+              httpRoute:
+                properties:
+                  enabled:
+                    type: boolean
+                  gateway:
+                    type: string
+                  gatewayNamespace:
+                    type: string
+                  hostnames:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - enabled
+                - gateway
+                type: object
               image:
                 type: string
               imagePullPolicy:
@@ -7300,6 +7345,11 @@ spec:
                     type: array
                     x-kubernetes-list-type: atomic
                 type: object
+              podManagementPolicy:
+                enum:
+                - OrderedReady
+                - Parallel
+                type: string
               podSecurityContext:
                 properties:
                   appArmorProfile:
@@ -8029,6 +8079,8 @@ spec:
                     - consistent-hashing
                     - per-node
                     type: string
+                  allowInsecureAuthSecrets:
+                    type: boolean
                   collectorNotReadyGracePeriod:
                     default: 30s
                     format: duration
@@ -8130,6 +8182,14 @@ spec:
                     type: string
                   image:
                     type: string
+                  mtls:
+                    properties:
+                      enabled:
+                        type: boolean
+                      useCertManager:
+                        default: true
+                        type: boolean
+                    type: object
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -8246,13 +8306,73 @@ spec:
                         items:
                           type: string
                         type: array
+                      denyFSAccessThroughSMs:
+                        type: boolean
                       denyNamespaces:
                         items:
                           type: string
                         type: array
                       enabled:
                         type: boolean
+                      evaluationInterval:
+                        default: 30s
+                        format: duration
+                        type: string
+                      podMonitorNamespaceSelector:
+                        default: {}
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                              required:
+                              - key
+                              - operator
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                        x-kubernetes-map-type: atomic
                       podMonitorSelector:
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                              required:
+                              - key
+                              - operator
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                        x-kubernetes-map-type: atomic
+                      probeNamespaceSelector:
+                        default: {}
                         properties:
                           matchExpressions:
                             items:
@@ -8310,6 +8430,33 @@ spec:
                         type: array
                         x-kubernetes-list-type: atomic
                         x-kubernetes-preserve-unknown-fields: true
+                      scrapeConfigNamespaceSelector:
+                        default: {}
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                              required:
+                              - key
+                              - operator
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                        x-kubernetes-map-type: atomic
                       scrapeConfigSelector:
                         properties:
                           matchExpressions:
@@ -8340,6 +8487,41 @@ spec:
                         default: 30s
                         format: duration
                         type: string
+                      scrapeProtocols:
+                        items:
+                          type: string
+                        type: array
+                      secretNamespaces:
+                        items:
+                          type: string
+                        type: array
+                      serviceMonitorNamespaceSelector:
+                        default: {}
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                              required:
+                              - key
+                              - operator
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                        x-kubernetes-map-type: atomic
                       serviceMonitorSelector:
                         properties:
                           matchExpressions:
@@ -9461,6 +9643,10 @@ spec:
                                     type: integer
                                   signerName:
                                     type: string
+                                  userAnnotations:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
                                 required:
                                 - keyType
                                 - signerName
@@ -9674,8 +9860,47 @@ spec:
                 > 0) || !has(self.additionalContainers)'
           status:
             properties:
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    message:
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
               image:
                 type: string
+              observedGeneration:
+                format: int64
+                type: integer
               scale:
                 properties:
                   replicas:
