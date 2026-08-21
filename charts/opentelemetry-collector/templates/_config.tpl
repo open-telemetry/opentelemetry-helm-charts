@@ -248,8 +248,12 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyLogsCollectionConfig" -}}
+{{- $receiverName := "filelog" }}
+{{- if .Values.Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "file_log" }}
+{{- end }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.logsCollectionConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "filelog" | uniq)  }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $receiverName | uniq)  }}
 {{- if .Values.Values.presets.logsCollection.storeCheckpoints}}
 {{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions "file_storage" | uniq)  }}
@@ -258,13 +262,17 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.logsCollectionConfig" -}}
+{{- $receiverName := "filelog" }}
+{{- if .Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "file_log" }}
+{{- end }}
 {{- if .Values.presets.logsCollection.storeCheckpoints }}
 extensions:
   file_storage:
     directory: /var/lib/otelcol
 {{- end }}
 receivers:
-  filelog:
+  {{ $receiverName }}:
     include: [ /var/log/pods/*/*/*.log ]
     {{- if .Values.presets.logsCollection.includeCollectorLogs }}
     exclude: []
