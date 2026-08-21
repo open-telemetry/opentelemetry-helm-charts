@@ -46,7 +46,13 @@ Collector expects, folding in legacy map overrides set under config.
 */}}
 {{- define "opentelemetry-collector.telemetryResource" -}}
 {{- $attributes := dict }}
-{{- range $name, $value := .Values.telemetryResourceAttributes }}
+{{- $telemetry := .Values.telemetry | default dict }}
+{{- range $name, $attribute := $telemetry.defaultResourceAttributes }}
+{{- if dig "enabled" true $attribute }}
+{{- $_ := set $attributes $name $attribute.value }}
+{{- end }}
+{{- end }}
+{{- range $name, $value := $telemetry.additionalResourceAttributes }}
 {{- $_ := set $attributes $name $value }}
 {{- end }}
 {{- $resource := (((.Values.config).service).telemetry).resource | default dict }}

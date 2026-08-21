@@ -201,16 +201,33 @@ internalTelemetryViaOTLP:
 
 # Resource attributes attached to the collector's own internal telemetry.
 # Rendered into config.service.telemetry.resource.attributes, which is the
-# format the Collector expects since v0.123.0. Kept as a map so a single
-# attribute can be overridden without re-declaring the defaults; set a value to
-# null to drop that attribute.
-telemetryResourceAttributes:
-  k8s.namespace.name: "${env:OTEL_K8S_NAMESPACE}"
-  k8s.node.name: "${env:OTEL_K8S_NODE_NAME}"
-  k8s.node.ip: "${env:OTEL_K8S_NODE_IP}"
-  k8s.pod.name: "${env:OTEL_K8S_POD_NAME}"
-  k8s.pod.ip: "${env:OTEL_K8S_POD_IP}"
-  host.name: "${env:OTEL_K8S_NODE_NAME}"
+# format the Collector expects since v0.123.0.
+telemetry:
+  # Attributes the chart sets by default. Set enabled to false to drop one.
+  # An explicit flag is used rather than a null value because null does not
+  # reliably delete a subchart default (helm/helm#31943).
+  defaultResourceAttributes:
+    k8s.namespace.name:
+      enabled: true
+      value: "${env:OTEL_K8S_NAMESPACE}"
+    k8s.node.name:
+      enabled: true
+      value: "${env:OTEL_K8S_NODE_NAME}"
+    k8s.node.ip:
+      enabled: true
+      value: "${env:OTEL_K8S_NODE_IP}"
+    k8s.pod.name:
+      enabled: true
+      value: "${env:OTEL_K8S_POD_NAME}"
+    k8s.pod.ip:
+      enabled: true
+      value: "${env:OTEL_K8S_POD_IP}"
+    host.name:
+      enabled: true
+      value: "${env:OTEL_K8S_NODE_NAME}"
+  # Extra attributes, as a plain name/value map.
+  additionalResourceAttributes: {}
+  #  service.namespace: "team-a"
 
 # Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
 # processor, k8snode -> k8s_api resourcedetection detector) in the generated

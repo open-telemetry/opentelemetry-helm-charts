@@ -1,0 +1,21 @@
+mode: deployment
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
+
+telemetry:
+  defaultResourceAttributes:
+    host.name:
+      enabled: false
+    k8s.pod.ip:
+      enabled: false
+    k8s.namespace.name:
+      value: "${env:MY_NAMESPACE_OVERRIDE}"
+  additionalResourceAttributes:
+    service.namespace: "team-a"
+    deployment.environment: "staging"

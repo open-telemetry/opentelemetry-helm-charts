@@ -35,8 +35,6 @@ data:
             endpoint: ${env:MY_POD_IP}:6831
           thrift_http:
             endpoint: ${env:MY_POD_IP}:14268
-      k8s_cluster:
-        collection_interval: 10s
       otlp:
         protocols:
           grpc:
@@ -74,7 +72,6 @@ data:
           receivers:
           - otlp
           - prometheus
-          - k8s_cluster
         traces:
           exporters:
           - debug
@@ -95,15 +92,15 @@ data:
                   port: 8888
         resource:
           attributes:
-          - name: host.name
-            value: ${env:OTEL_K8S_NODE_NAME}
+          - name: deployment.environment
+            value: staging
           - name: k8s.namespace.name
-            value: ${env:OTEL_K8S_NAMESPACE}
+            value: ${env:MY_NAMESPACE_OVERRIDE}
           - name: k8s.node.ip
             value: ${env:OTEL_K8S_NODE_IP}
           - name: k8s.node.name
             value: ${env:OTEL_K8S_NODE_NAME}
-          - name: k8s.pod.ip
-            value: ${env:OTEL_K8S_POD_IP}
           - name: k8s.pod.name
             value: ${env:OTEL_K8S_POD_NAME}
+          - name: service.namespace
+            value: team-a

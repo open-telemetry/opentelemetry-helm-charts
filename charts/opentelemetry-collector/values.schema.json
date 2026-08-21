@@ -52,16 +52,42 @@
       "type": "boolean",
       "description": "When true, deprecated component names (processors and resourcedetection detectors) are rewritten in the generated config."
     },
-    "telemetryResourceAttributes": {
+    "telemetry": {
       "type": "object",
-      "description": "Resource attributes attached to the collector's own internal telemetry, rendered into config.service.telemetry.resource.attributes.",
-      "additionalProperties": {
-        "type": [
-          "string",
-          "number",
-          "boolean",
-          "null"
-        ]
+      "additionalProperties": false,
+      "description": "Settings for the collector's own internal telemetry.",
+      "properties": {
+        "defaultResourceAttributes": {
+          "type": "object",
+          "description": "Resource attributes the chart attaches by default, rendered into config.service.telemetry.resource.attributes. Set enabled to false to drop one.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            }
+          }
+        },
+        "additionalResourceAttributes": {
+          "type": "object",
+          "description": "Extra resource attributes attached to the collector's own internal telemetry.",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
       }
     },
     "presets": {
