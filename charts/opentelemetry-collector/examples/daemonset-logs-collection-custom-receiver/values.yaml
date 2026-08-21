@@ -1,0 +1,27 @@
+mode: daemonset
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+presets:
+  logsCollection:
+    enabled: true
+
+# Explicit configuration for the receiver the logsCollection preset creates.
+# User supplied values take precedence over the preset's defaults, so the custom
+# exclude list and the operator chain below replace the preset's own, while the
+# remaining preset defaults (include, start_at, retry_on_failure, ...) are kept.
+config:
+  receivers:
+    file_log:
+      exclude:
+        - /var/log/pods/extra-exclude_*/*/*.log
+      operators:
+        - type: container
+          id: container-parser
+        - type: json_parser
+          severity:
+            parse_from: attributes.level

@@ -1,0 +1,22 @@
+mode: daemonset
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+# Collector images older than contrib v0.149.0 do not know the `file_log` name.
+# With the rewrite disabled the logsCollection preset keeps using the deprecated
+# `filelog` name, and user supplied `filelog` configuration is merged into it.
+rewriteDeprecatedComponentNames: false
+
+presets:
+  logsCollection:
+    enabled: true
+
+config:
+  receivers:
+    filelog:
+      exclude:
+        - /var/log/pods/extra-exclude_*/*/*.log
