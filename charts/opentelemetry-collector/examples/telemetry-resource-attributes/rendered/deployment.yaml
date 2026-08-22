@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: standalone-collector
 spec:
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -26,7 +26,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 43ab73a027e5e43b1431c0225379533478b0e2764fd75dec43edcfcf71681282
+        checksum/config: 4f36921da6c706d4a0d0768a0e3bed0c5b324abe3d34d5fe5f9c632844963395
         
       labels:
         app.kubernetes.io/name: opentelemetry-collector
@@ -41,8 +41,6 @@ spec:
         {}
       containers:
         - name: opentelemetry-collector
-          command:
-            - /otelcol-k8s
           args:
             - --config=/conf/relay.yaml
           securityContext:
@@ -99,7 +97,7 @@ spec:
                   apiVersion: v1
                   fieldPath: status.podIP
             - name: GOMEMLIMIT
-              value: "3276MiB"
+              value: "152MiB"
           livenessProbe:
             httpGet:
               path: /
@@ -110,8 +108,8 @@ spec:
               port: 13133
           resources:
             limits:
-              cpu: 2
-              memory: 4Gi
+              cpu: 100m
+              memory: 200M
           volumeMounts:
             - mountPath: /conf
               name: opentelemetry-collector-configmap

@@ -4,6 +4,37 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.170.0 to 0.171.0
+
+The collector's internal telemetry resource attributes moved out of `config.service.telemetry.resource` and into a new top-level `telemetry` section. The chart now renders them into `config.service.telemetry.resource.attributes`, the list format the Collector has expected since v0.123.0, which stops the deprecation warning logged at every start.
+
+No action is required. If you override `config.service.telemetry.resource` as a map, those entries are still picked up and converted, and they continue to win over the defaults. Values are rendered as strings, so a numeric-looking attribute such as an all-digits node name no longer fails to start the collector.
+
+To add an attribute without re-declaring the defaults:
+
+```yaml
+telemetry:
+  resourceAttributes:
+    extra:
+      service.namespace: "team-a"
+```
+
+An `extra` name that matches a default replaces it, rather than emitting the attribute twice.
+
+To drop one of the chart's defaults, disable it explicitly:
+
+```yaml
+telemetry:
+  resourceAttributes:
+    default:
+      host.name:
+        enabled: false
+```
+
+`enabled` is used rather than setting the value to `null` because a `null` does not reliably delete a subchart default on Helm 4 (helm/helm#31943), which made the attribute impossible to remove when this chart is used as a subchart.
+
+A list supplied at `config.service.telemetry.resource.attributes` is passed through and appended after the attributes derived from `telemetry`.
+
 ## 0.169.0 to 0.170.0
 
 The `kubernetesEvents` preset can now use the `k8s_events` receiver instead of the `k8sobjects` receiver, via the new `presets.kubernetesEvents.useK8sEventsReceiver` flag. The flag defaults to `false`, so the generated config is unchanged unless you opt in.
