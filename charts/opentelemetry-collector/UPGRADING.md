@@ -14,17 +14,21 @@ To add an attribute without re-declaring the defaults:
 
 ```yaml
 telemetry:
-  additionalResourceAttributes:
-    service.namespace: "team-a"
+  resourceAttributes:
+    extra:
+      service.namespace: "team-a"
 ```
+
+An `extra` name that matches a default replaces it, rather than emitting the attribute twice.
 
 To drop one of the chart's defaults, disable it explicitly:
 
 ```yaml
 telemetry:
-  defaultResourceAttributes:
-    host.name:
-      enabled: false
+  resourceAttributes:
+    default:
+      host.name:
+        enabled: false
 ```
 
 `enabled` is used rather than setting the value to `null` because a `null` does not reliably delete a subchart default on Helm 4 (helm/helm#31943), which made the attribute impossible to remove when this chart is used as a subchart.

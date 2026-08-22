@@ -57,17 +57,35 @@
       "additionalProperties": false,
       "description": "Settings for the collector's own internal telemetry.",
       "properties": {
-        "defaultResourceAttributes": {
+        "resourceAttributes": {
           "type": "object",
-          "description": "Resource attributes the chart attaches by default, rendered into config.service.telemetry.resource.attributes. Set enabled to false to drop one.",
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "enabled": {
-                "type": "boolean"
-              },
-              "value": {
+          "additionalProperties": false,
+          "description": "Resource attributes rendered into config.service.telemetry.resource.attributes.",
+          "properties": {
+            "default": {
+              "type": "object",
+              "description": "Resource attributes the chart attaches by default. Set enabled to false to drop one.",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "value": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                }
+              }
+            },
+            "extra": {
+              "type": "object",
+              "description": "Extra resource attributes. A name that matches one in default replaces it.",
+              "additionalProperties": {
                 "type": [
                   "string",
                   "number",
@@ -75,17 +93,6 @@
                 ]
               }
             }
-          }
-        },
-        "additionalResourceAttributes": {
-          "type": "object",
-          "description": "Extra resource attributes attached to the collector's own internal telemetry.",
-          "additionalProperties": {
-            "type": [
-              "string",
-              "number",
-              "boolean"
-            ]
           }
         }
       }
