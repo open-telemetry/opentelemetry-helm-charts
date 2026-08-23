@@ -292,6 +292,19 @@ presets:
     enabled: true
 ```
 
+By default the preset uses the Kubernetes Objects receiver. Setting `presets.kubernetesEvents.useK8sEventsReceiver` to `true` switches it to the [Kubernetes Events receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-events-receiver), which is the semconv-compliant component for Kubernetes events:
+
+```yaml
+mode: deployment
+replicaCount: 1
+presets:
+  kubernetesEvents:
+    enabled: true
+    useK8sEventsReceiver: true
+```
+
+This flag defaults to `false` today, will default to `true` in a future release, and will then be removed.
+
 ### Configuration for Host Metrics
 
 The collector can be configured to collect host metrics for Kubernetes nodes.

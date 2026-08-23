@@ -72,6 +72,8 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
+    # When enabled, the preset uses the k8s_events receiver instead of k8sobjects. Will default to true in a future release.
+    useK8sEventsReceiver: false
   # Collects Kubernetes objects via the k8sobjects receiver in pull mode (default interval: 1h).
   # Can be used with mode = deployment, statefulset, or daemonset.
   # Compatible with kubernetesEvents preset. Extra resources can be added via
@@ -106,6 +108,9 @@ presets:
     # API extensions resources: customresourcedefinitions
     apiExtensions:
       enabled: true
+    # Kubernetes events, collected in watch mode.
+    events:
+      enabled: false
   # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
   # Adds the k8s_cluster receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.

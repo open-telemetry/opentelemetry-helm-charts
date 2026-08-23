@@ -486,12 +486,20 @@ processors:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
+{{- $receiverName := "k8sobjects" -}}
+{{- if .Values.Values.presets.kubernetesEvents.useK8sEventsReceiver -}}
+{{- $receiverName = "k8s_events" -}}
+{{- end -}}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq)  }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $receiverName | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesEventsConfig" -}}
+{{- if .Values.presets.kubernetesEvents.useK8sEventsReceiver -}}
+receivers:
+  k8s_events: {}
+{{- else -}}
 receivers:
   k8sobjects:
     objects:
@@ -500,6 +508,7 @@ receivers:
         group: "events.k8s.io"
         exclude_watch_type:
           - "DELETED"
+{{- end }}
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesObjectsConfig" -}}
@@ -656,6 +665,13 @@ receivers:
         mode: watch
         group: apiextensions.k8s.io
 {{- end }}
+{{- end }}
+{{- if $preset.events.enabled }}
+      - name: events
+        mode: watch
+        group: events.k8s.io
+        exclude_watch_type:
+          - "DELETED"
 {{- end }}
 {{- end }}
 
