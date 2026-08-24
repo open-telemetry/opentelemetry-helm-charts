@@ -12,9 +12,11 @@ This approach is inspired by the kube-prometheus-stack approach which you can se
 Right now, upgrades are NOT handled by this chart, however that could change in the future. This is what is run to bring in the CRDs today.
 
 > [!NOTE]
-> The prometheus operator version should be equal to what is documented in the opentelemetry operator's compatability matrix [here](https://github.com/open-telemetry/opentelemetry-operator?tab=readme-ov-file#opentelemetry-operator-vs-kubernetes-vs-cert-manager-vs-prometheus-operator)
+> The prometheus operator version should be equal to what is documented in the opentelemetry operator's compatability matrix [here](https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/getting-started/compatibility.md#compatibility-matrix)
 
 ```bash
-wget https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.74.0/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
-wget https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.74.0/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+wget https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.92.0/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+wget https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.92.0/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
+wget https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.92.0/example/prometheus-operator-crd/monitoring.coreos.com_scrapeconfigs.yaml
+wget https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.92.0/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
 ```
