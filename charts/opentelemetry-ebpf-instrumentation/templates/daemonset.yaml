@@ -75,17 +75,24 @@ spec:
               drop:
                 - ALL
           {{- end }}
+          {{- $promExport := dict }}
+          {{- if include "obi.prometheusExportEnabled" . }}
+          {{- $promExport = ((.Values.config.data).prometheus_export) | default dict }}
+          {{- end }}
+          {{- $metricsPort := .Values.service.targetPort | default ($promExport).port }}
+          {{- $internalMetricsPort := and
+                    (or .Values.service.internalMetrics.targetPort ((.Values.config.data.internal_metrics).prometheus).port)
+                    (ne ($promExport).port ((.Values.config.data.internal_metrics).prometheus).port)
+                    (ne .Values.service.internalMetrics.targetPort .Values.service.targetPort) }}
+          {{- if or $metricsPort $internalMetricsPort .Values.config.data.profile_port }}
           ports:
-          {{- if (or (.Values.service.targetPort) ((.Values.config.data.prometheus_export).port)) }}
+          {{- end }}
+          {{- if $metricsPort }}
           - name: {{ .Values.service.portName }}
-            containerPort: {{ .Values.service.targetPort | default .Values.config.data.prometheus_export.port }}
+            containerPort: {{ $metricsPort }}
             protocol: TCP
           {{- end }}
-          {{- if (and
-                    (or .Values.service.internalMetrics.targetPort ((.Values.config.data.internal_metrics).prometheus).port)
-                    (ne ((.Values.config.data).prometheus_export).port ((.Values.config.data.internal_metrics).prometheus).port)
-                    (ne .Values.service.internalMetrics.targetPort .Values.service.targetPort)
-                  ) }}
+          {{- if $internalMetricsPort }}
           - name: {{ .Values.service.internalMetrics.portName }}
             containerPort: {{ .Values.service.internalMetrics.targetPort | default .Values.config.data.internal_metrics.prometheus.port }}
             protocol: TCP
