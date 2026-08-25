@@ -37,6 +37,10 @@ data:
         - id: container-parser
           max_log_size: 102400
           type: container
+        - id: parse-json-body
+          if: body matches "^{.*}$"
+          on_error: send_quiet
+          type: json_parser
         retry_on_failure:
           enabled: true
         start_at: end
