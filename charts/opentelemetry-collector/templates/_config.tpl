@@ -70,10 +70,16 @@ Collector expects, folding in legacy map overrides set under config.
 {{- $_ := set $attributes $name $value }}
 {{- end }}
 {{- end }}
+{{- $overridden := dict }}
+{{- range $item := $extra }}
+{{- if kindIs "map" $item }}
+{{- $_ := set $overridden (toString (dig "name" "" $item)) true }}
+{{- end }}
+{{- end }}
 {{- $rendered := list }}
 {{- range $name := (keys $attributes | sortAlpha) }}
 {{- $value := get $attributes $name }}
-{{- if not (kindIs "invalid" $value) }}
+{{- if and (not (kindIs "invalid" $value)) (not (hasKey $overridden $name)) }}
 {{- $rendered = append $rendered (dict "name" $name "value" (toString $value)) }}
 {{- end }}
 {{- end }}
