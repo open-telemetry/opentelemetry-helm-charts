@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.170.0
+    helm.sh/chart: opentelemetry-collector-0.170.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.158.0"
@@ -37,6 +37,10 @@ data:
         - id: container-parser
           max_log_size: 102400
           type: container
+        - id: parse-json-body
+          if: body matches "^{.*}$"
+          on_error: send_quiet
+          type: json_parser
         retry_on_failure:
           enabled: true
         start_at: end
