@@ -10,3 +10,17 @@ presets:
   logsCollection:
     enabled: true
     includeCollectorLogs: true
+
+# The logsCollection preset creates the file_log receiver.
+# User supplied config is merged last, so this operator list replaces the preset's own and the preset's.
+config:
+  receivers:
+    file_log:
+      operators:
+        - type: container
+          id: container-parser
+          max_log_size: 102400
+        - type: json_parser
+          id: parse-json-body
+          if: 'body matches "^{.*}$"'
+          on_error: send_quiet
