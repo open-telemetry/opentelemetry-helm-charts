@@ -65,6 +65,30 @@ check-examples:
 		done; \
 	done
 
+# helm-docs is provided by the version-pinned hook in .pre-commit-config.yaml so that
+# local generation and the pre-commit CI job always use the same helm-docs build.
+# Charts opt in by adding a README.md.gotmpl; the rest are listed in .helmdocsignore.
+.PHONY: generate-docs
+generate-docs:
+	@command -v pre-commit > /dev/null || { echo "Failed. pre-commit is required, see https://pre-commit.com/#install"; exit 1; }
+	@pre-commit run helm-docs-built --all-files || true
+	@if pre-commit run helm-docs-built --all-files; then \
+		echo "Generated the chart READMEs from their README.md.gotmpl and values.yaml"; \
+	else \
+		echo "Failed. helm-docs could not generate the chart READMEs, see the output above"; \
+		exit 1; \
+	fi
+
+.PHONY: check-docs
+check-docs:
+	@command -v pre-commit > /dev/null || { echo "Failed. pre-commit is required, see https://pre-commit.com/#install"; exit 1; }
+	@if pre-commit run helm-docs-built --all-files --show-diff-on-failure; then \
+		echo "Passed"; \
+	else \
+		echo "Failed. run 'make generate-docs' to re-generate the chart READMEs from their README.md.gotmpl and values.yaml"; \
+		exit 1; \
+	fi
+
 .PHONY: update-operator-crds
 update-operator-crds:
 	$(call get-crd,./charts/opentelemetry-operator/conf/crds/crd-opentelemetrycollector.yaml,https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/bundle/community/manifests/opentelemetry.io_opentelemetrycollectors.yaml)
