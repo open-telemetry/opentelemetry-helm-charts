@@ -561,6 +561,9 @@ receivers:
 {{- range list "namespaces" "pods" "nodes" "services" "serviceaccounts" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
 {{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
@@ -569,6 +572,9 @@ receivers:
 {{- range list "deployments" "replicasets" "daemonsets" "statefulsets" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: apps
 {{- if $preset.watch }}
       - name: {{ . }}
@@ -579,6 +585,9 @@ receivers:
 {{- range list "jobs" "cronjobs" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: batch
 {{- if $preset.watch }}
       - name: {{ . }}
@@ -591,6 +600,9 @@ receivers:
 {{- range list "roles" "rolebindings" "clusterroles" "clusterrolebindings" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: rbac.authorization.k8s.io
 {{- if $preset.watch }}
       - name: {{ . }}
@@ -603,6 +615,9 @@ receivers:
 {{- range list "storageclasses" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: storage.k8s.io
 {{- if $preset.watch }}
       - name: {{ . }}
@@ -613,6 +628,9 @@ receivers:
 {{- range list "persistentvolumes" "persistentvolumeclaims" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
 {{- if $preset.watch }}
       - name: {{ . }}
         mode: watch
@@ -623,6 +641,9 @@ receivers:
 {{- range list "ingresses" "networkpolicies" }}
       - name: {{ . }}
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: networking.k8s.io
 {{- if $preset.watch }}
       - name: {{ . }}
@@ -634,6 +655,9 @@ receivers:
 {{- if $preset.autoscaling.enabled }}
       - name: horizontalpodautoscalers
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: autoscaling
 {{- if $preset.watch }}
       - name: horizontalpodautoscalers
@@ -643,6 +667,9 @@ receivers:
 {{- if $preset.autoscaling.vpa.enabled }}
       - name: verticalpodautoscalers
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: autoscaling.k8s.io
 {{- if $preset.watch }}
       - name: verticalpodautoscalers
@@ -654,6 +681,9 @@ receivers:
 {{- if $preset.policy.enabled }}
       - name: poddisruptionbudgets
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: policy
 {{- if $preset.watch }}
       - name: poddisruptionbudgets
@@ -664,6 +694,9 @@ receivers:
 {{- if $preset.apiExtensions.enabled }}
       - name: customresourcedefinitions
         mode: pull
+{{- if $preset.interval }}
+        interval: {{ $preset.interval }}
+{{- end }}
         group: apiextensions.k8s.io
 {{- if $preset.watch }}
       - name: customresourcedefinitions
