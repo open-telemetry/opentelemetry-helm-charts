@@ -4,6 +4,10 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.171.0 to 0.171.1
+
+The `extraEnvs` and `extraEnvsFrom` are now templated in the same manner other templated fields, e.g. `extraVolumes`. If you are using any `{{ }}` syntax in `extraEnvs` or `extraEnvsFrom` you will need to escape them using ``` {{` <original content> `}} ```.
+
 ## 0.170.0 to 0.171.0
 
 > [!WARNING]
