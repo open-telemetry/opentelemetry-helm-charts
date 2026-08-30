@@ -1,0 +1,41 @@
+mode: deployment
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+rewriteDeprecatedComponentNames: false
+
+config:
+  receivers:
+    otlp: {}
+  exporters:
+    otlp:
+      endpoint: "localhost:4317"
+      tls:
+        insecure: true
+    otlp/backend:
+      endpoint: "localhost:4317"
+      tls:
+        insecure: true
+    otlphttp:
+      endpoint: "http://localhost:4318"
+    otlphttp/backend:
+      endpoint: "http://localhost:4318"
+  service:
+    pipelines:
+      traces:
+        receivers:
+          - otlp
+        exporters:
+          - otlp
+          - otlp/backend
+          - otlphttp
+          - otlphttp/backend
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

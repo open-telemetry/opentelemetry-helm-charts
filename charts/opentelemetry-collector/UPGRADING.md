@@ -4,7 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.170.0 to 0.171.0
+## 0.172.0 to 0.173.0
 
 The collector's internal telemetry resource attributes moved out of `config.service.telemetry.resource` and into a new top-level `telemetry` section. The chart now renders them into `config.service.telemetry.resource.attributes`, the list format the Collector has expected since v0.123.0, which stops the deprecation warning logged at every start.
 
@@ -34,6 +34,25 @@ telemetry:
 `enabled` is used rather than setting the value to `null` because a `null` does not reliably delete a subchart default on Helm 4 (helm/helm#31943), which made the attribute impossible to remove when this chart is used as a subchart.
 
 A list supplied at `config.service.telemetry.resource.attributes` is passed through and appended after the attributes derived from `telemetry`.
+
+## 0.171.0 to 0.171.1
+
+The `extraEnvs` and `extraEnvsFrom` are now templated in the same manner other templated fields, e.g. `extraVolumes`. If you are using any `{{ }}` syntax in `extraEnvs` or `extraEnvsFrom` you will need to escape them using ``` {{` <original content> `}} ```.
+
+## 0.170.0 to 0.171.0
+
+> [!WARNING]
+> The new `otlp_grpc` and `otlp_http` exporter names require OpenTelemetry Collector v0.144.0 or newer.
+
+The upstream `otlp` and `otlphttp` exporters have been renamed to `otlp_grpc` and `otlp_http`. When `rewriteDeprecatedComponentNames` is enabled (the default), exporter definitions under `config.exporters` and exporter references under `config.service.pipelines` are automatically rewritten. Named instances are preserved, for example `otlp/backend` becomes `otlp_grpc/backend`.
+
+Please update your `values.yaml` to use the new exporter names directly. The `otlp` receiver is not affected by this rename. The automatic rewrite will be removed in a future chart release.
+
+If you are using a Collector image older than v0.144.0, set `rewriteDeprecatedComponentNames: false` to preserve the old exporter names:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+```
 
 ## 0.169.0 to 0.170.0
 

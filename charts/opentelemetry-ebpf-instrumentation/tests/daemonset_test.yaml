@@ -22,3 +22,61 @@ tests:
       - equal:
           path: spec.template.spec.volumes[0].configMap.name
           value: external-config
+
+  - it: applies daemonSetAnnotations to the DaemonSet
+    template: templates/daemonset.yaml
+    set:
+      daemonSetAnnotations:
+        daemonset-only: "true"
+    asserts:
+      - equal:
+          path: metadata.annotations.daemonset-only
+          value: "true"
+
+  - it: does not apply daemonSetAnnotations to the ConfigMap
+    template: templates/configmap.yaml
+    set:
+      daemonSetAnnotations:
+        daemonset-only: "true"
+    asserts:
+      - notExists:
+          path: metadata.annotations
+
+  - it: merges annotations and daemonSetAnnotations on the DaemonSet
+    template: templates/daemonset.yaml
+    set:
+      annotations:
+        shared: from-annotations
+      daemonSetAnnotations:
+        daemonset-only: "true"
+    asserts:
+      - equal:
+          path: metadata.annotations.shared
+          value: from-annotations
+      - equal:
+          path: metadata.annotations.daemonset-only
+          value: "true"
+
+  - it: prefers daemonSetAnnotations over annotations on the DaemonSet when keys overlap
+    template: templates/daemonset.yaml
+    set:
+      annotations:
+        shared: from-annotations
+      daemonSetAnnotations:
+        shared: from-daemon-set-annotations
+    asserts:
+      - equal:
+          path: metadata.annotations.shared
+          value: from-daemon-set-annotations
+
+  - it: leaves the ConfigMap with only the shared annotations value when keys overlap
+    template: templates/configmap.yaml
+    set:
+      annotations:
+        shared: from-annotations
+      daemonSetAnnotations:
+        shared: from-daemon-set-annotations
+    asserts:
+      - equal:
+          path: metadata.annotations.shared
+          value: from-annotations

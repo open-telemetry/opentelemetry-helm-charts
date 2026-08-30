@@ -258,6 +258,9 @@ components:
     filelog: file_log
   processors:
     k8sattributes: k8s_attributes
+  exporters:
+    otlp: otlp_grpc
+    otlphttp: otlp_http
 detectors:
   k8snode: k8s_api
 {{- end -}}
@@ -266,6 +269,38 @@ detectors:
 {{- $warnings := list -}}
 {{- $renames := include "opentelemetry-collector.deprecatedComponentRenames" . | fromYaml -}}
 {{- $rewriteEnabled := $.Values.rewriteDeprecatedComponentNames -}}
+{{- range $oldName, $newName := (dig "components" "exporters" dict $renames) }}
+  {{- $hasOldExporter := false -}}
+  {{- range $key, $_ := $.Values.config.exporters }}
+    {{- if or (eq $key $oldName) (hasPrefix (printf "%s/" $oldName) $key) }}
+      {{- $hasOldExporter = true -}}
+    {{- end }}
+  {{- end }}
+  {{- if $hasOldExporter }}
+    {{- if $rewriteEnabled }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Exporter '%s' has been renamed to '%s'. Your config has been automatically rewritten for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
+    {{- else }}
+      {{- $warnings = append $warnings (printf "[DEPRECATION] Exporter '%s' has been renamed to '%s'. Please update your values.yaml to use the new name — support for the old name will be removed in a future release. See UPGRADING.md." $oldName $newName) -}}
+    {{- end }}
+  {{- end }}
+  {{- range $signal, $pipeline := $.Values.config.service.pipelines }}
+    {{- if and $pipeline $pipeline.exporters }}
+      {{- $hasOldPipelineRef := false -}}
+      {{- range $pipeline.exporters }}
+        {{- if or (eq . $oldName) (hasPrefix (printf "%s/" $oldName) .) }}
+          {{- $hasOldPipelineRef = true -}}
+        {{- end }}
+      {{- end }}
+      {{- if $hasOldPipelineRef }}
+        {{- if $rewriteEnabled }}
+          {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed exporter '%s'. It has been automatically rewritten to '%s' for this release. Please update your values.yaml — auto-rewrite will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
+        {{- else }}
+          {{- $warnings = append $warnings (printf "[DEPRECATION] Pipeline '%s' references renamed exporter '%s'. Please update your values.yaml to use '%s' — support for the old name will be removed in a future release. See UPGRADING.md." $signal $oldName $newName) -}}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 {{- range $oldName, $newName := (dig "components" "processors" dict $renames) }}
   {{- $hasOldProcessor := false -}}
   {{- range $key, $_ := $.Values.config.processors }}
