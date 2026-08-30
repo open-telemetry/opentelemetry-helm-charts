@@ -56,6 +56,9 @@ Collector expects, folding in legacy map overrides set under config.
 {{- $_ := set $attributes $name $value }}
 {{- end }}
 {{- $resource := (((.Values.config).service).telemetry).resource | default dict }}
+{{- if not (kindIs "map" $resource) }}
+{{- fail "config.service.telemetry.resource must be a map of attribute names to values, or an object with an attributes list" }}
+{{- end }}
 {{- $extra := list }}
 {{- if hasKey $resource "attributes" }}
 {{- if kindIs "slice" $resource.attributes }}
