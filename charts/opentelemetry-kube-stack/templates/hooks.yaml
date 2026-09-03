@@ -62,12 +62,20 @@ spec:
       {{- else}}
       serviceAccountName: {{ .Values.cleanupJob.existingServiceAccount }}
       {{- end}}
+      {{- with .Values.cleanupJob.podSecurityContext }}
+      securityContext:
+{{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: delete-resources
         {{- if $.Values.cleanupJob.image.digest }}
         image: "{{ $.Values.cleanupJob.image.repository }}@{{ $.Values.cleanupJob.image.digest }}"
         {{- else }}
         image: "{{ $.Values.cleanupJob.image.repository }}:{{ $.Values.cleanupJob.image.tag }}"
+        {{- end }}
+        {{- with $.Values.cleanupJob.securityContext }}
+        securityContext:
+{{- toYaml . | nindent 10 }}
         {{- end }}
         args:
           - "delete"

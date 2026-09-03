@@ -4,9 +4,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.105.1
+    helm.sh/chart: opentelemetry-operator-0.119.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.144.0"
+    app.kubernetes.io/version: "0.154.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example
@@ -184,6 +184,16 @@ rules:
       - list
       - watch
   - apiGroups:
+      - operators.coreos.com
+    resources:
+      - clusterserviceversions
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - coordination.k8s.io
     resources:
       - leases
@@ -193,11 +203,32 @@ rules:
       - list
       - update
   - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+  - apiGroups:
       - events.k8s.io
     resources:
       - events
     verbs:
+      - create
       - list
+      - patch
+      - watch
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - httproutes
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
       - watch
   - apiGroups:
       - monitoring.coreos.com
@@ -355,6 +386,12 @@ rules:
       - patch
       - delete
   - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
       - authorization.k8s.io
     resources:
       - subjectaccessreviews
@@ -366,9 +403,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.105.1
+    helm.sh/chart: opentelemetry-operator-0.119.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.144.0"
+    app.kubernetes.io/version: "0.154.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example
@@ -379,24 +416,3 @@ rules:
       - /metrics
     verbs:
       - get
----
-# Source: opentelemetry-kube-stack/charts/opentelemetry-operator/templates/clusterrole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    helm.sh/chart: opentelemetry-operator-0.105.1
-    app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.144.0"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: opentelemetry-operator
-    app.kubernetes.io/instance: example
-    app.kubernetes.io/component: controller-manager
-  name: example-opentelemetry-operator-proxy
-rules:
-  - apiGroups:
-      - authentication.k8s.io
-    resources:
-      - tokenreviews
-    verbs:
-      - create

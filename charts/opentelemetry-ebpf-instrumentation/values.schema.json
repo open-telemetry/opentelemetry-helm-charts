@@ -110,6 +110,17 @@
         "prometheus.io/port": "9090"
       }
     },
+    "daemonSetAnnotations": {
+      "type": "object",
+      "title": "DaemonSet Only Annotations",
+      "description": "Annotations to add to the DaemonSet only. Unlike annotations, these are not applied to the ConfigMap, so they do not change the DaemonSet's checksum/config and do not trigger a pod rollout",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "example": {
+        "pulumi.com/skipAwait": "true"
+      }
+    },
     "initContainers": {
       "type": "array",
       "title": "Init Containers",
@@ -244,6 +255,15 @@
       "title": "Privileged Mode",
       "description": "If set to false, deploys an unprivileged / less privileged setup",
       "default": true
+    },
+    "contextPropagation": {
+      "type": "object",
+      "title": "Context Propagation",
+      "description": "SEnables context propagation support",
+      "additionalProperties": true,
+      "example": {
+        "enabled": true
+      }
     },
     "extraCapabilities": {
       "type": "array",

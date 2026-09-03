@@ -3,7 +3,10 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
+    controller-gen.kubebuilder.io/version: v0.21.0
+    {{- with .Values.crds.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
@@ -873,6 +876,13 @@ spec:
                 type: object
               serviceAccount:
                 type: string
+              tls:
+                properties:
+                  insecure:
+                    type: boolean
+                  insecure_skip_verify:
+                    type: boolean
+                type: object
               tolerations:
                 items:
                   properties:

@@ -4,6 +4,137 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.171.0 to 0.171.1
+
+The `extraEnvs` and `extraEnvsFrom` are now templated in the same manner other templated fields, e.g. `extraVolumes`. If you are using any `{{ }}` syntax in `extraEnvs` or `extraEnvsFrom` you will need to escape them using ``` {{` <original content> `}} ```.
+
+## 0.170.0 to 0.171.0
+
+> [!WARNING]
+> The new `otlp_grpc` and `otlp_http` exporter names require OpenTelemetry Collector v0.144.0 or newer.
+
+The upstream `otlp` and `otlphttp` exporters have been renamed to `otlp_grpc` and `otlp_http`. When `rewriteDeprecatedComponentNames` is enabled (the default), exporter definitions under `config.exporters` and exporter references under `config.service.pipelines` are automatically rewritten. Named instances are preserved, for example `otlp/backend` becomes `otlp_grpc/backend`.
+
+Please update your `values.yaml` to use the new exporter names directly. The `otlp` receiver is not affected by this rename. The automatic rewrite will be removed in a future chart release.
+
+If you are using a Collector image older than v0.144.0, set `rewriteDeprecatedComponentNames: false` to preserve the old exporter names:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+```
+
+## 0.169.0 to 0.170.0
+
+The `kubernetesEvents` preset can now use the `k8s_events` receiver instead of the `k8sobjects` receiver, via the new `presets.kubernetesEvents.useK8sEventsReceiver` flag. The flag defaults to `false`, so the generated config is unchanged unless you opt in.
+
+```yaml
+presets:
+  kubernetesEvents:
+    enabled: true
+    useK8sEventsReceiver: true
+```
+
+When enabled, the preset emits a `k8s_events` receiver and the generated ClusterRole grants `events` in the core (`""`) API group instead of `events.k8s.io`. The `k8s_events` receiver is included in the [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) distribution.
+
+In a future release this flag will default to `true`, and it will be removed once the transition is complete.
+
+If you prefer to keep collecting events through the `k8sobjects` receiver alongside other Kubernetes objects, the `kubernetesObjects` preset gained an equivalent `events` option:
+
+```yaml
+presets:
+  kubernetesObjects:
+    enabled: true
+    events:
+      enabled: true
+```
+
+## 0.167.0 to 0.168.0
+
+The `rewriteDeprecatedComponentNames` flag now also gates renaming of the `filelog` receiver to `file_log`. The `filelog` receiver was renamed to `file_log` in OpenTelemetry Collector Contrib v0.149.0 (`filelog` remains as a deprecated alias that logs a warning at runtime). When the flag is enabled (the default), the `presets.logsCollection` receiver — and any `filelog` receiver you define in `config.receivers` — is automatically rewritten to `file_log` in the generated config.
+
+If you are using a Collector image older than v0.149.0 that does not recognize the `file_log` name, set `rewriteDeprecatedComponentNames: false` to preserve the old `filelog` name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  logsCollection:
+    enabled: true
+```
+
+## 0.161.0 to 0.162.0
+
+> [!WARNING]
+> The `rewriteDeprecatedProcessorNames` value has been renamed to `rewriteDeprecatedComponentNames`. This is a breaking change. If you set `rewriteDeprecatedProcessorNames` in your `values.yaml`, rename it to `rewriteDeprecatedComponentNames`. Because the chart's `values.schema.json` does not allow additional properties, leaving the old name in place will fail schema validation during `helm install` / `helm upgrade` with an error like `additional properties 'rewriteDeprecatedProcessorNames' not allowed`.
+
+The renamed `rewriteDeprecatedComponentNames` flag now gates renaming of the `k8snode` resourcedetection detector to `k8s_api` in addition to the `k8sattributes` -> `k8s_attributes` processor rename. When the flag is enabled (the default), a `k8snode` detector produced by `presets.resourceDetection.k8snode` is automatically rewritten to `k8s_api` in the generated config.
+
+If you are using a Collector image that does not recognize the new component names, set `rewriteDeprecatedComponentNames: false` to preserve both the old `k8sattributes` processor name and the old `k8snode` detector name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  resourceDetection:
+    k8snode:
+      enabled: true
+```
+
+## 0.160.0 to 0.161.0
+
+The backwards compatibility support for `config.service.telemetry.metrics.address` has been removed.
+
+If your `values.yaml` sets `config.service.telemetry.metrics.address`, you must replace it with an explicit `config.service.telemetry.metrics.readers` entry. For example:
+
+```yaml
+config:
+  service:
+    telemetry:
+      metrics:
+        address: ${env:MY_POD_IP}:8888
+```
+
+becomes:
+
+```yaml
+config:
+  service:
+    telemetry:
+      metrics:
+        readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: ${env:MY_POD_IP}
+                  port: 8888
+```
+
+Alternatively, use `internalTelemetryViaOTLP` to export the Collector's internal telemetry via OTLP.
+
+## 0.159.0 to 0.160.0
+> [!WARNING]
+> The new processor name `k8s_attributes` will only work with Collector versions >= 0.146.0.
+
+The `kubernetesAttributes` preset now generates config using the new `k8s_attributes` processor name. If your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`), it is automatically rewritten to `k8s_attributes`. Please update your values.yaml to use the new name directly, the auto-rewrite will be removed in a future chart release.
+
+If you are using a Collector image older than 0.146.0, set `rewriteDeprecatedProcessorNames: false` to preserve the old `k8sattributes` processor name. (In chart 0.162.0 and later this value is named `rewriteDeprecatedComponentNames`.)
+
+The `resourceDetection` preset now defaults to the `k8s_api` detector instead of the deprecated `k8snode` detector. This requires a collector image >= 0.154.0. If you are pinning your image to an older version, revert to the old detector in your `values.yaml`:
+
+```yaml
+presets:
+  resourceDetection:
+    k8snode:
+      enabled: true
+```
+
+> [!NOTE]
+> As of chart version 0.162.0, `rewriteDeprecatedComponentNames` (formerly `rewriteDeprecatedProcessorNames`) also rewrites the `k8snode` detector to `k8s_api`. To keep the old `k8snode` detector you must additionally set `rewriteDeprecatedComponentNames: false`.
+
+## 0.157.0 to 0.157.1
+
+The OpenTelemetry Collector renamed the `k8sattributes` processor to `k8s_attributes` in v0.146.0. The old name still works as an alias but is deprecated.
+
+If your `values.yaml` references `k8sattributes` in `config.processors` or in any pipeline processor list, you will see a deprecation warning during `helm install` / `helm upgrade`. Please rename all occurrences of `k8sattributes` to `k8s_attributes` in your `values.yaml`. Support for the old name will be removed in a future chart release.
+
 ## 0.121.0 to 0.122.0
 
 In the v0.123.1 Collector release we stopped pushing images to Dockerhub due to how their new rate limit changes affected our CI. If you're using `otel/opentelemetry-collector-k8s` for the image you should switch to `ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s`. See https://github.com/open-telemetry/community/issues/2641 for more details.
@@ -21,7 +152,7 @@ The deprecated memory ballast extension has been removed from the default config
 
 ## 0.88.0 to 0.89.0
 
-> [!WARNING]  
+> [!WARNING]
 > Critical content demanding immediate user attention due to potential risks.
 
 As part of working towards using the [OpenTelemetry Collector Kubernetes Distro](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) by default, the chart now requires users to explicitly set an image repository. If you are already explicitly setting an image repository this breaking change does not affect you.

@@ -16,6 +16,30 @@ Once Helm is set up properly, add the repo as follows:
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 ```
 
+## Helm Provenance and Integrity
+
+All charts in this repository are signed. More information about how to verify
+charts can be found in the official
+[Helm documentation](https://helm.sh/docs/topics/provenance/).
+
+A local running gpg agent is mandatory.
+
+To import the signing key for this repository run the following command:
+
+```console
+curl https://open-telemetry.github.io/opentelemetry-helm-charts/pubkey.gpg | gpg --import
+```
+
+Helm reads a legacy GnuPG keyring, which modern GnuPG (2.1+) does not create on
+import. Depending on your GnuPG version, you may need to export the imported key so that Helm can find it:
+
+```console
+gpg --export > ~/.gnupg/pubring.gpg
+```
+
+You can now use the `--verify` flag during `helm install`
+to enable chart signature validation.
+
 ## Helm Charts
 
 You can then run `helm search repo open-telemetry` to see the charts.
@@ -51,8 +75,8 @@ See [CONTRIBUTING.md](https://github.com/open-telemetry/opentelemetry-helm-chart
 ### Maintainers
 
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Jacob Aronoff](https://github.com/jaronoff97), Lightstep
-- [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
+- [Jacob Aronoff](https://github.com/jaronoff97), Tero
+- [Tyler Helmuth](https://github.com/TylerHelmuth), Grafana Labs
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
@@ -60,16 +84,16 @@ For more information about the maintainer role, see the [community repository](h
 
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
-- [Josh Voravong](https://github.com/jvoravong), Splunk
 - [Juliano Costa](https://github.com/julianocosta89), Datadog
-- [Pierre Tessier](https://github.com/puckpuck), Honeycomb
 - [Povilas](https://github.com/povilasv), Coralogix
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 ### Emeritus
 
+- [Josh Voravong](https://github.com/jvoravong), Approver
 - [Naseem K. Ullah](https://github.com/naseemkullah), Approver
+- [Pierre Tessier](https://github.com/puckpuck), Approver
 - [Tigran Najaryan](https://github.com/tigrannajaryan), Maintainer
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).

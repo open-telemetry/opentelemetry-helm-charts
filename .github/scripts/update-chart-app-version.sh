@@ -151,6 +151,63 @@ increment_patch_version() {
   printf '%s.%s.%s\n' "${major}" "${minor}" "$((patch + 1))"
 }
 
+semver_gte() {
+  local left="$1"
+  local right="$2"
+  local left_major=""
+  local left_minor=""
+  local left_patch=""
+  local right_major=""
+  local right_minor=""
+  local right_patch=""
+
+  IFS='.' read -r left_major left_minor left_patch <<< "${left}"
+  IFS='.' read -r right_major right_minor right_patch <<< "${right}"
+
+  [[ -n "${left_major}" && -n "${left_minor}" && -n "${left_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${left}"
+  [[ -n "${right_major}" && -n "${right_minor}" && -n "${right_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${right}"
+
+  if (( left_major != right_major )); then
+    [[ ${left_major} -gt ${right_major} ]]
+    return $?
+  fi
+
+  if (( left_minor != right_minor )); then
+    [[ ${left_minor} -gt ${right_minor} ]]
+    return $?
+  fi
+
+  [[ ${left_patch} -ge ${right_patch} ]]
+}
+
+semver_major_minor_gt() {
+  local left="$1"
+  local right="$2"
+  local left_major=""
+  local left_minor=""
+  local left_patch=""
+  local right_major=""
+  local right_minor=""
+  local right_patch=""
+
+  IFS='.' read -r left_major left_minor left_patch <<< "${left}"
+  IFS='.' read -r right_major right_minor right_patch <<< "${right}"
+
+  [[ -n "${left_major}" && -n "${left_minor}" && -n "${left_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${left}"
+  [[ -n "${right_major}" && -n "${right_minor}" && -n "${right_patch}" ]] \
+    || fail "Invalid semver value for comparison: ${right}"
+
+  if (( left_major != right_major )); then
+    [[ ${left_major} -gt ${right_major} ]]
+    return $?
+  fi
+
+  [[ ${left_minor} -gt ${right_minor} ]]
+}
+
 desired_app_version() {
   if [[ -n "${APP_VERSION_PREFIX}" ]]; then
     printf '%s%s\n' "${APP_VERSION_PREFIX}" "${NORMALIZED_RELEASE_VERSION}"
@@ -167,11 +224,26 @@ desired_chart_version() {
 
   case "${VERSION_POLICY}" in
     mirror-upstream-without-prefix)
+      if [[ "${current_app_version}" == "${next_app_version}" ]]; then
+        printf '%s\n' "${current_chart_version}"
+        return 0
+      fi
+
+      if semver_gte "${current_chart_version}" "${NORMALIZED_RELEASE_VERSION}"; then
+        increment_patch_version "${current_chart_version}"
+        return 0
+      fi
+
       printf '%s\n' "${NORMALIZED_RELEASE_VERSION}"
       ;;
     patch-bump)
       if [[ "${current_app_version}" == "${next_app_version}" ]]; then
         printf '%s\n' "${current_chart_version}"
+        return 0
+      fi
+
+      if semver_major_minor_gt "${NORMALIZED_RELEASE_VERSION}" "${current_chart_version}"; then
+        printf '%s\n' "${NORMALIZED_RELEASE_VERSION}"
         return 0
       fi
 
@@ -215,15 +287,22 @@ run_post_update_action() {
 }
 
 set_default_outputs() {
+  local next_chart_version="$1"
   local pr_title=""
   local pr_body=""
+  local branch_name=""
 
   pr_title="$(render_template "${PR_TITLE_TEMPLATE}")"
   pr_body="$(render_template "${PR_BODY_TEMPLATE}")"
+  # Auto-update branches must live under otelbot/ to bypass the repo EasyCLA
+  # branch rule while still allowing the follow-up PR workflows to run. Use
+  # the next chart version so branch identity tracks the chart revision rather
+  # than only the upstream app/image tag.
+  branch_name="otelbot/${BRANCH_PREFIX}-${next_chart_version}"
 
   set_output "changed" "false"
   set_output "release_tag" "${RESOLVED_RELEASE_TAG}"
-  set_output "branch_name" "${BRANCH_PREFIX}-${RESOLVED_RELEASE_TAG}"
+  set_output "branch_name" "${branch_name}"
   set_output "commit_message" "${pr_title}"
   set_output "stage_path" "${STAGE_PATH}"
   set_output "pr_title" "${pr_title}"
@@ -274,7 +353,7 @@ main() {
   next_app_version="$(desired_app_version)"
   next_chart_version="$(desired_chart_version "${current_app_version}" "${current_chart_version}" "${next_app_version}")"
 
-  set_default_outputs
+  set_default_outputs "${next_chart_version}"
 
   if [[ "${current_chart_version}" == "${next_chart_version}" && "${current_app_version}" == "${next_app_version}" ]]; then
     log "Chart already points at ${RESOLVED_RELEASE_TAG}; nothing to do."

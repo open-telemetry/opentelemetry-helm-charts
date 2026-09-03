@@ -1,0 +1,20 @@
+suite: configmap
+templates:
+  - templates/configmap.yaml
+tests:
+  - it: renders default configmap
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-opentelemetry-ebpf-instrumentation
+
+  - it: does not render when config creation disabled
+    set:
+      config:
+        create: false
+        name: external-config
+    asserts:
+      - hasDocuments:
+          count: 0

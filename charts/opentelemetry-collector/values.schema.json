@@ -48,6 +48,10 @@
       "type": "string",
       "description": "Name of the namespace to deploy the resources into."
     },
+    "rewriteDeprecatedComponentNames": {
+      "type": "boolean",
+      "description": "When true, deprecated component names (processors and resourcedetection detectors) are rewritten in the generated config."
+    },
     "presets": {
       "type": "object",
       "additionalProperties": false,
@@ -103,11 +107,11 @@
               "type": "boolean"
             },
             "extractAllPodLabels": {
-              "description": "Specifies whether the k8sattributes processor should extract all pod labels.",
+              "description": "Specifies whether the k8s_attributes processor should extract all pod labels.",
               "type": "boolean"
             },
             "extractAllPodAnnotations": {
-              "description": "Specifies whether the k8sattributes processor should extract all pod annotations.",
+              "description": "Specifies whether the k8s_attributes processor should extract all pod annotations.",
               "type": "boolean"
             }
           }
@@ -117,8 +121,120 @@
           "additionalProperties": false,
           "properties": {
             "enabled": {
-              "description": "Specifies whether the collector should collect Kubernetes objects.",
+              "description": "Specifies whether the collector should collect Kubernetes events.",
               "type": "boolean"
+            },
+            "useK8sEventsReceiver": {
+              "description": "Specifies whether the preset should use the k8s_events receiver instead of the k8sobjects receiver.",
+              "type": "boolean"
+            }
+          }
+        },
+        "kubernetesObjects": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Specifies whether the collector should collect Kubernetes objects via the k8sobjects receiver.",
+              "type": "boolean"
+            },
+            "disableLeaderElection": {
+              "description": "Specifies whether the collector should use leader election extension to collect Kubernetes objects when in daemonset mode.",
+              "type": "boolean"
+            },
+            "watch": {
+              "description": "Specifies whether the collector should also collect Kubernetes objects in watch mode. When false (default), only pull mode is used.",
+              "type": "boolean"
+            },
+            "core": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether core resources (pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs) should be collected.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "rbac": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether RBAC resources (roles, rolebindings, clusterroles, clusterrolebindings) should be collected.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "storage": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether storage resources (storageclasses, persistentvolumes, persistentvolumeclaims) should be collected.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "networking": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether networking resources (ingresses, networkpolicies) should be collected.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "autoscaling": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether autoscaling resources (horizontalpodautoscalers) should be collected.",
+                  "type": "boolean"
+                },
+                "vpa": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "description": "Specifies whether verticalpodautoscalers should be collected. Requires VPA CRD to be installed.",
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+            "policy": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether policy resources (poddisruptionbudgets) should be collected.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "apiExtensions": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether API extensions resources (customresourcedefinitions) should be collected.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "events": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether Kubernetes events should be collected in watch mode.",
+                  "type": "boolean"
+                }
+              }
             }
           }
         },
@@ -150,6 +266,76 @@
               "enabled": {
                 "description": "Specifies whether the collector should collect metrics.",
                 "type": "boolean"
+              }
+            }
+          }
+        },
+        "resourceDetection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Specifies whether the resourceDetection preset is enabled. When false, no resourcedetection/env processor is added regardless of individual detector settings.",
+              "type": "boolean"
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the env resource detector should be enabled.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "k8s_api": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the k8s_api resource detector should be enabled.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "k8snode": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Deprecated: use k8s_api instead. Specifies whether the k8snode resource detector should be enabled.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "eks": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the EKS resource detector should be enabled.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "aks": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the AKS resource detector should be enabled.",
+                  "type": "boolean"
+                }
+              }
+            },
+            "gcp": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the GCP resource detector should be enabled.",
+                  "type": "boolean"
+                }
               }
             }
           }
@@ -420,6 +606,29 @@
             "enabled"
           ]
         }
+      }
+    },
+    "resizePolicy": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resourceName": {
+            "type": "string"
+          },
+          "restartPolicy": {
+            "type": "string",
+            "enum": [
+              "NotRequired",
+              "RestartContainer"
+            ]
+          }
+        },
+        "required": [
+          "resourceName",
+          "restartPolicy"
+        ]
       }
     },
     "resources": {
@@ -945,6 +1154,78 @@
             "required": [
               "name"
             ]
+          }
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "httproute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "apiVersion": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "parentRefs": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "hostnames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "matches": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "backendRefs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "integer"
+                    },
+                    "weight": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "port"
+                  ]
+                }
+              },
+              "filters": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
           }
         }
       },

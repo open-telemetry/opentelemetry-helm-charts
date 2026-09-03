@@ -156,5 +156,5 @@ Generate the configmap data based on preset and configuration values
 {{- $_ := set $config "discovery" $discovery }}
 {{- end }}
 {{- end }}
-{{- toYaml $config }}
+{{- tpl (toYaml $config) . }}
 {{- end }}

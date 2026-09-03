@@ -6,7 +6,7 @@ in kubernetes cluster.
 ## Prerequisites
 
 - Kubernetes 1.24+
-- Helm 3.9+
+- Helm 4.0+
 
 ## Installing the Chart
 
@@ -101,7 +101,7 @@ presets:
     includeCollectorLogs: true
 ```
 
-The way this feature works is it adds a `filelog` receiver on the `logs` pipeline. This receiver is preconfigured
+The way this feature works is it adds a `file_log` receiver on the `logs` pipeline. This receiver is preconfigured
 to read the files where Kubernetes container runtime writes all containers' console output to.
 
 #### :warning: Warning: Risk of looping the exported logs back into the receiver, causing "log explosion"
@@ -109,9 +109,9 @@ to read the files where Kubernetes container runtime writes all containers' cons
 #### Log collection for a subset of pods or containers
 
 The `logsCollection` preset will by default ingest the logs of all kubernetes containers.
-This is achieved by using an include path of `/var/log/pods/*/*/*.log` for the `filelog`receiver.
+This is achieved by using an include path of `/var/log/pods/*/*/*.log` for the `file_log` receiver.
 
-To limit the import to a certain subset of pods or containers, the `filelog`
+To limit the import to a certain subset of pods or containers, the `file_log`
 receivers `include` list can be overwritten by supplying explicit configuration.
 
 E.g. The following configuration would only import logs for pods within the namespace: `example-namespace`:
@@ -124,13 +124,13 @@ presets:
     enabled: true
 config:
   receivers:
-    filelog:
+    file_log:
       include:
         - /var/log/pods/example-namespace_*/*/*.log
 ```
 
 The container logs pipeline uses the `debug` exporter by default.
-Paired with the default `filelog` receiver that receives all containers' console output,
+Paired with the default `file_log` receiver that receives all containers' console output,
 it is easy to accidentally feed the exported logs back into the receiver.
 
 Also note that using the `--verbosity=detailed` option for the `debug` exporter causes it to output
@@ -142,8 +142,8 @@ If you want to include the collector's logs, make sure to replace the `debug` ex
 with an exporter that does not send logs to collector's standard output.
 
 Here's an example `values.yaml` file that replaces the default `debug` exporter on the `logs` pipeline
-with an `otlphttp` exporter that sends the container logs to `https://example.com:55681` endpoint.
-It also clears the `filelog` receiver's `exclude` property, for collector logs to be included in the pipeline.
+with an `otlp_http` exporter that sends the container logs to `https://example.com:55681` endpoint.
+It also clears the `file_log` receiver's `exclude` property, for collector logs to be included in the pipeline.
 
 ```yaml
 mode: daemonset
@@ -155,13 +155,13 @@ presets:
 
 config:
   exporters:
-    otlphttp:
+    otlp_http:
       endpoint: https://example.com:55681
   service:
     pipelines:
       logs:
         exporters:
-          - otlphttp
+          - otlp_http
 ```
 
 ### Configuration for Kubernetes Attributes Processor
@@ -254,12 +254,12 @@ presets:
 
 ### Configuration for Kubernetes Cluster Metrics
 
-The collector can be configured to collects cluster-level metrics from the Kubernetes API server. A single instance of this receiver can be used to monitor a cluster.
+The collector can be configured to collect cluster-level metrics from the Kubernetes API server. A single active instance of this receiver can be used to monitor a cluster.
 
 This feature is disabled by default. It has the following requirements:
 
 - It requires the [Kubernetes Cluster receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver) to be included in the collector, such as [k8s](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-k8s) version of the collector image.
-- It requires statefulset or deployment mode with a single replica.
+- It can run in deployment, statefulset, or daemonset mode. When multiple replicas are configured, leader election is enabled by default to prevent duplicate cluster metrics.
 
 To enable this feature, set the  `presets.clusterMetrics.enabled` property to `true`.
 
@@ -267,7 +267,7 @@ Here is an example `values.yaml`:
 
 ```yaml
 mode: deployment
-replicaCount: 1
+replicaCount: 2
 presets:
   clusterMetrics:
     enabled: true
@@ -291,6 +291,19 @@ presets:
   kubernetesEvents:
     enabled: true
 ```
+
+By default the preset uses the Kubernetes Objects receiver. Setting `presets.kubernetesEvents.useK8sEventsReceiver` to `true` switches it to the [Kubernetes Events receiver](https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-events-receiver), which is the semconv-compliant component for Kubernetes events:
+
+```yaml
+mode: deployment
+replicaCount: 1
+presets:
+  kubernetesEvents:
+    enabled: true
+    useK8sEventsReceiver: true
+```
+
+This flag defaults to `false` today, will default to `true` in a future release, and will then be removed.
 
 ### Configuration for Host Metrics
 

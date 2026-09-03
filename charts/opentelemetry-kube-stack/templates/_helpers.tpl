@@ -60,14 +60,14 @@ Render a deduped list of environment variables and 'extraEnvs'
 {{- $envMap := dict }}
 {{- $valueFromMap := dict }}
 {{- range $item := .extraEnvs }}
-{{- if $item.value }}
+{{- if hasKey $item "value" }}
 {{- $_ := set $envMap $item.name $item.value }}
 {{- else }}
 {{- $_ := set $valueFromMap $item.name $item.valueFrom }}
 {{- end }}
 {{- end }}
 {{- range $item := .env }}
-{{- if $item.value }}
+{{- if hasKey $item "value" }}
 {{- $_ := set $envMap $item.name $item.value }}
 {{- else }}
 {{- $_ := set $valueFromMap $item.name $item.valueFrom }}
@@ -167,8 +167,21 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- end }}
 {{- $clusterMetricsEnabled := false }}
 {{- $eventsEnabled := false }}
+{{- $kubernetesObjectsEnabled := false }}
+{{- $kubernetesObjectsCoreEnabled := false }}
+{{- $kubernetesObjectsRbacEnabled := false }}
+{{- $kubernetesObjectsStorageEnabled := false }}
+{{- $kubernetesObjectsNetworkingEnabled := false }}
+{{- $kubernetesObjectsAutoscalingEnabled := false }}
+{{- $kubernetesObjectsAutoscalingVpaEnabled := false }}
+{{- $kubernetesObjectsPolicyEnabled := false }}
+{{- $kubernetesObjectsApiExtensionsEnabled := false }}
 {{- $useLeaderElection := false }}
+{{- $k8sApiEnabled := false }}
 {{ range $_, $collector := $.Values.collectors -}}
+{{- if $.Values.defaultCRConfig.enabled }}
+{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- end }}
 {{- $clusterMetricsEnabled = (any $clusterMetricsEnabled (dig "config" "receivers" "k8s_cluster" false $collector)) }}
 {{- if (dig "presets" "clusterMetrics" "enabled" false $collector) }}
 {{- $clusterMetricsEnabled = true }}
@@ -178,6 +191,21 @@ Optionally include the RBAC for the k8sCluster receiver
 {{- if (dig "presets" "kubernetesEvents" "enabled" false $collector) }}
 {{- $eventsEnabled = true }}
 {{- $useLeaderElection = (any $useLeaderElection (not (dig "presets" "kubernetesEvents" "disableLeaderElection" false $collector))) }}
+{{- end }}
+{{- if (dig "presets" "kubernetesObjects" "enabled" false $collector) }}
+{{- $kubernetesObjectsEnabled = true }}
+{{- $kubernetesObjectsCoreEnabled = (any $kubernetesObjectsCoreEnabled (dig "presets" "kubernetesObjects" "core" "enabled" true $collector)) }}
+{{- $kubernetesObjectsRbacEnabled = (any $kubernetesObjectsRbacEnabled (dig "presets" "kubernetesObjects" "rbac" "enabled" true $collector)) }}
+{{- $kubernetesObjectsStorageEnabled = (any $kubernetesObjectsStorageEnabled (dig "presets" "kubernetesObjects" "storage" "enabled" true $collector)) }}
+{{- $kubernetesObjectsNetworkingEnabled = (any $kubernetesObjectsNetworkingEnabled (dig "presets" "kubernetesObjects" "networking" "enabled" true $collector)) }}
+{{- $kubernetesObjectsAutoscalingEnabled = (any $kubernetesObjectsAutoscalingEnabled (dig "presets" "kubernetesObjects" "autoscaling" "enabled" true $collector)) }}
+{{- $kubernetesObjectsAutoscalingVpaEnabled = (any $kubernetesObjectsAutoscalingVpaEnabled (dig "presets" "kubernetesObjects" "autoscaling" "vpa" "enabled" false $collector)) }}
+{{- $kubernetesObjectsPolicyEnabled = (any $kubernetesObjectsPolicyEnabled (dig "presets" "kubernetesObjects" "policy" "enabled" true $collector)) }}
+{{- $kubernetesObjectsApiExtensionsEnabled = (any $kubernetesObjectsApiExtensionsEnabled (dig "presets" "kubernetesObjects" "apiExtensions" "enabled" true $collector)) }}
+{{- $useLeaderElection = (any $useLeaderElection (and (eq $collector.mode "daemonset") (not (dig "presets" "kubernetesObjects" "disableLeaderElection" false $collector)))) }}
+{{- end }}
+{{- if (dig "presets" "resourceDetection" "k8s_api" "enabled" false $collector) }}
+{{- $k8sApiEnabled = true }}
 {{- end }}
 {{- end }}
 {{- if $useLeaderElection }}
@@ -257,6 +285,140 @@ Optionally include the RBAC for the k8sCluster receiver
   resources: ["events"]
   verbs: ["watch", "list"]
 {{- end }}
+{{- if $k8sApiEnabled }}
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  resourceNames: ["kube-system"]
+  verbs: ["get"]
+{{- end }}
+{{- if $kubernetesObjectsEnabled }}
+{{- if $kubernetesObjectsCoreEnabled }}
+- apiGroups: [""]
+  resources: ["namespaces", "pods", "nodes", "services", "serviceaccounts"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsRbacEnabled }}
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsStorageEnabled }}
+- apiGroups: [""]
+  resources: ["persistentvolumes", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsNetworkingEnabled }}
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "networkpolicies"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsAutoscalingEnabled }}
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+{{- if $kubernetesObjectsAutoscalingVpaEnabled }}
+- apiGroups: ["autoscaling.k8s.io"]
+  resources: ["verticalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- end }}
+{{- if $kubernetesObjectsPolicyEnabled }}
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- if $kubernetesObjectsApiExtensionsEnabled }}
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+List of deprecated Collector component type names that this chart accepts while
+users migrate to the current lower_snake_case names.
+*/}}
+{{- define "opentelemetry-kube-stack.collector.componentRenames" -}}
+- old: k8sattributes
+  new: k8s_attributes
+  section: processors
+  pipeline: processors
+- old: resourcedetection/env
+  new: resource_detection/env
+  section: processors
+  pipeline: processors
+- old: hostmetrics
+  new: host_metrics
+  section: receivers
+  pipeline: receivers
+- old: kubeletstats
+  new: kubelet_stats
+  section: receivers
+  pipeline: receivers
+- old: filelog
+  new: file_log
+  section: receivers
+  pipeline: receivers
+- old: k8sobjects
+  new: k8s_objects
+  section: receivers
+  pipeline: receivers
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.collector.componentNames" -}}
+{{- $names := dict }}
+{{- $renames := include "opentelemetry-kube-stack.collector.componentRenames" . | fromYamlArray }}
+{{- range $rename := $renames }}
+{{- $name := ternary $rename.new $rename.old $.rewriteDeprecatedComponentNames }}
+{{- $_ := set $names $rename.old $name }}
+{{- end }}
+{{- $names | toYaml }}
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.deprecations" -}}
+{{- $warnings := list }}
+{{- $renames := include "opentelemetry-kube-stack.collector.componentRenames" . | fromYamlArray }}
+{{- range $collectorName, $collector := .Values.collectors }}
+{{- if $.Values.defaultCRConfig.enabled }}
+{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
+{{- end }}
+{{- if $collector.enabled }}
+{{- $config := deepCopy ($collector.config | default dict) }}
+{{- range $rename := $renames }}
+{{- $oldName := $rename.old }}
+{{- $newName := $rename.new }}
+{{- $sectionName := $rename.section }}
+{{- $pipelineName := $rename.pipeline }}
+{{- $components := get $config $sectionName | default dict }}
+{{- if hasKey $components $oldName }}
+{{- $warnings = append $warnings (printf "[DEPRECATION] Collector %q: component %q has been renamed to %q. Update your values.yaml. Support for the old name will be removed in a future chart release." $collectorName $oldName $newName) }}
+{{- end }}
+{{- $pipelines := dig "service" "pipelines" dict $config }}
+{{- range $signal, $pipeline := $pipelines }}
+{{- if $pipeline }}
+{{- $items := get $pipeline $pipelineName | default list }}
+{{- if has $oldName $items }}
+{{- $warnings = append $warnings (printf "[DEPRECATION] Collector %q: pipeline %q references renamed component %q. Use %q in your values.yaml. Support for the old name will be removed in a future chart release." $collectorName $signal $oldName $newName) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- join "\n" $warnings }}
 {{- end }}
 
 {{/*

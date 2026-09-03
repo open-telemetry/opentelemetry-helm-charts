@@ -4,7 +4,10 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ include "opentelemetry-operator.webhookCertAnnotation" . }}
-    controller-gen.kubebuilder.io/version: v0.20.1
+    controller-gen.kubebuilder.io/version: v0.21.0
+    {{- with .Values.crds.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
@@ -3368,6 +3371,8 @@ spec:
                     type: object
                   prometheusCR:
                     properties:
+                      denyFSAccessThroughSMs:
+                        type: boolean
                       enabled:
                         type: boolean
                       podMonitorSelector:
@@ -6090,6 +6095,12 @@ spec:
                     minimum: 1
                     type: integer
                 type: object
+              command:
+                items:
+                  type: string
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: atomic
               config:
                 properties:
                   connectors:
@@ -7613,6 +7624,17 @@ spec:
                 type: string
               serviceName:
                 type: string
+              sessionAffinity:
+                type: string
+              sessionAffinityConfig:
+                properties:
+                  clientIP:
+                    properties:
+                      timeoutSeconds:
+                        format: int32
+                        type: integer
+                    type: object
+                type: object
               shareProcessNamespace:
                 type: boolean
               startupProbe:
@@ -8090,6 +8112,8 @@ spec:
                     - consistent-hashing
                     - per-node
                     type: string
+                  allowInsecureAuthSecrets:
+                    type: boolean
                   collectorNotReadyGracePeriod:
                     default: 30s
                     format: duration
@@ -8191,6 +8215,93 @@ spec:
                     type: string
                   image:
                     type: string
+                  mtls:
+                    properties:
+                      enabled:
+                        type: boolean
+                      tls:
+                        properties:
+                          certificateAuthorityCertificate:
+                            properties:
+                              configMap:
+                                properties:
+                                  key:
+                                    default: ca.crt
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              secret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                            type: object
+                          clientCertificate:
+                            properties:
+                              certificateSecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              keySecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                            required:
+                            - certificateSecret
+                            - keySecret
+                            type: object
+                          serverCertificate:
+                            properties:
+                              certificateSecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              keySecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                            required:
+                            - certificateSecret
+                            - keySecret
+                            type: object
+                        type: object
+                      useCertManager:
+                        default: true
+                        type: boolean
+                    type: object
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -8307,6 +8418,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      denyFSAccessThroughSMs:
+                        type: boolean
                       denyNamespaces:
                         items:
                           type: string
@@ -8487,6 +8600,10 @@ spec:
                         format: duration
                         type: string
                       scrapeProtocols:
+                        items:
+                          type: string
+                        type: array
+                      secretNamespaces:
                         items:
                           type: string
                         type: array
@@ -9855,8 +9972,47 @@ spec:
                 > 0) || !has(self.additionalContainers)'
           status:
             properties:
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    message:
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
               image:
                 type: string
+              observedGeneration:
+                format: int64
+                type: integer
               scale:
                 properties:
                   replicas:

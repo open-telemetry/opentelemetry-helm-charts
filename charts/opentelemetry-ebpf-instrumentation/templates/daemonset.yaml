@@ -6,7 +6,8 @@ metadata:
   labels:
     {{- include "obi.labels" . | nindent 4 }}
     app.kubernetes.io/component: workload
-  {{- with .Values.annotations }}
+  {{- $daemonSetAnnotations := merge (deepCopy (.Values.daemonSetAnnotations | default dict)) (.Values.annotations | default dict) }}
+  {{- with $daemonSetAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -33,7 +34,9 @@ spec:
       {{- if eq .Values.preset "application" }}
       hostPID: true
       {{- end }}
-      {{- if or (eq .Values.preset "network") .Values.config.data.network }}
+      {{- $networkEnabled := or (eq .Values.preset "network") .Values.config.data.network }}
+      {{- $contextPropagationEnabled := .Values.contextPropagation.enabled }}
+      {{- if or $networkEnabled $contextPropagationEnabled }}
       hostNetwork: true
       dnsPolicy: {{ .Values.dnsPolicy }}
       {{- end }}
@@ -61,6 +64,9 @@ spec:
                 - BPF
                 - SYS_PTRACE
                 - NET_RAW
+                {{- if or $networkEnabled $contextPropagationEnabled }}
+                - NET_ADMIN
+                {{- end }}
                 - CHECKPOINT_RESTORE
                 - DAC_READ_SEARCH
                 - PERFMON
@@ -118,6 +124,15 @@ spec:
           volumeMounts:
             - mountPath: /etc/ebpf-instrument/config
               name: ebpf-instrument-config
+            {{- if or $networkEnabled $contextPropagationEnabled }}
+            - mountPath: /sys/fs/cgroup
+              name: cgroup
+              readOnly: true
+            {{- end }}
+            {{- if $contextPropagationEnabled }}
+            - mountPath: /sys/kernel/tracing
+              name: tracefs
+            {{- end }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -141,6 +156,17 @@ spec:
         - name: ebpf-instrument-config
           configMap:
             name: {{ default (include "obi.fullname" .) .Values.config.name }}
+        {{- if or $networkEnabled $contextPropagationEnabled }}
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+            type: Directory
+        {{- end }}
+        {{- if $contextPropagationEnabled }}
+        - name: tracefs
+          hostPath:
+            path: /sys/kernel/tracing
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -6,6 +6,114 @@
 > release and then install the new version.
 
 
+## To 0.41
+
+This release follows the OpenTelemetry Demo application's `3.0.0` release and
+brings in ~270 upstream commits. Given the note above, this is a full
+reinstall, but the following changes are worth knowing about since they affect
+any custom `values.yaml` overrides you maintain.
+
+### Removed components
+
+* `product-reviews` and its mock `llm` backend have been removed entirely
+  (including the `reviews` schema previously created in the Postgres init
+  script). Any custom values overriding `components.product-reviews` or
+  `components.llm` must be removed.
+
+### Postgres renamed and re-credentialed
+
+The `postgresql` component has been renamed to `astronomy-db` to match
+upstream, and its credentials changed:
+
+* Superuser: still the default `postgres` user, password `changeit`
+  (previously `POSTGRES_USER=root`/`POSTGRES_PASSWORD=otel`).
+* Application user/database: `astronomy_user`/`astronomy_db` with password
+  `astronomy_password` (previously `otelu`/`otel` with password `otelp`).
+  `product-catalog` and `accounting`'s `DB_CONNECTION_STRING` values have been
+  updated to match.
+* A new `monitoring_user`/`monitoring_password` (with the `pg_monitor` role)
+  is used by the collector's annotation-discovered `postgresql` metrics
+  scrape instead of the old `root`/`otel` credentials.
+
+If you override `components.postgresql` in your own values, rename it to
+`components.astronomy-db` and update any credentials/connection strings your
+own services use to reach it.
+
+### Load generator: Locust replaced with k6
+
+The `load-generator` component now runs [k6](https://k6.io/) (via the
+`xk6-otel` extension) instead of Locust. All `LOCUST_*` environment variables
+have been removed (there is no longer a web UI or exposed port) and replaced
+with `LOAD_GENERATOR_VUS`, `K6_TARGET_URL`, and `K6_OTEL_*` variables. The
+`frontend-proxy`'s `LOCUST_WEB_HOST`/`LOCUST_WEB_PORT` routing has also been
+removed.
+
+### flagd OTLP configuration
+
+`flagd`'s native `FLAGD_METRICS_EXPORTER`/`FLAGD_OTEL_COLLECTOR_URI`
+environment variables have been replaced with the standard
+`OTEL_EXPORTER_OTLP_ENDPOINT`/`OTEL_EXPORTER_OTLP_PROTOCOL` (`http/protobuf`)
+variables, and the image bumped to `v0.16.0`.
+
+### New components
+
+* `telemetry-docs`: serves Weaver-generated telemetry schema documentation.
+* `opamp-server`: an OpAMP server the Collector now reports status, health,
+  and effective config to via the new `opamp` extension.
+* `agent`, `mcp`, `chatbot`: a new AI shopping-assistant stack (LangGraph
+  agent, an MCP tool server, and a Gradio chat UI). `API_KEY` defaults to
+  empty and `LLM_BASE_URL`/`LLM_MODEL` default to a placeholder endpoint —
+  set these to point at a real LLM provider to use the assistant.
+* `firepit` and `otel-ebpf-profiler`: optional profiling stack, added
+  **disabled by default**.
+  * `firepit` is a regular `components.firepit` entry, same as any other demo
+    component.
+  * `otel-ebpf-profiler` is a **second, separate instance of the
+    `opentelemetry-collector` chart** (an aliased dependency in `Chart.yaml`,
+    configured under the top-level `otel-ebpf-profiler` key, not under
+    `components`), since eBPF profiling needs privileged/hostPID access that
+    shouldn't be granted to the collector already handling metrics/traces/logs.
+    It uses the chart's built-in `presets.profiling`
+    ([open-telemetry/opentelemetry-helm-charts#2126](https://github.com/open-telemetry/opentelemetry-helm-charts/pull/2126)),
+    which automatically wires the `profiling` receiver, a privileged
+    `securityContext`, `hostPID`, and the `tracefs` hostPath mount — no manual
+    volume/securityContext wiring needed.
+  * The **main** Collector already carries `--feature-gates=service.profilesSupport`,
+    a `profiles` pipeline, and an `otlp_grpc/firepit` exporter unconditionally
+    (harmless when the stack is disabled — the pipeline just has nothing
+    feeding it). So enabling `firepit` and `otel-ebpf-profiler` is enough on
+    its own; no other Collector changes are needed to see profiling data flow.
+
+### OpenTelemetry Collector config
+
+* Exporters renamed: `otlp/jaeger` → `otlp_grpc/jaeger`,
+  `otlphttp/prometheus` → `otlp_http/prometheus`. If you override the
+  traces/metrics pipelines' `exporters` lists, update the names.
+* The `spanmetrics` connector was renamed to `span_metrics`.
+* A new `prometheus/ad` receiver scrapes a `/metrics` endpoint now exposed by
+  `ad` on port `9465`.
+* A new `gen_ai_normalizer` processor normalizes OpenLLMetry/Traceloop GenAI
+  attributes (emitted by `agent`/`mcp`/`chatbot`) into GenAI semconv
+  attributes.
+* `checkout`, `shipping`, and `flagd` now export OTLP over `http/protobuf` to
+  the Collector's HTTP port (`4318`) instead of gRPC (`4317`).
+
+### Other changes
+
+* `checkout`, `product-catalog`, and `shipping` now run with
+  `readOnlyRootFilesystem: true` plus a `/tmp` `emptyDir` mount.
+* `checkout`, `accounting`, and `fraud-detection` gained a `KAFKA_TOPIC`
+  environment variable (defaulting to `orders`) to configure the Kafka topic
+  name.
+* `valkey-cart`'s image moved from `valkey/valkey` to `ghcr.io/valkey-io/valkey`
+  (tag `9.0.4-alpine3.23`).
+* `default.env` now includes a base `OTEL_RESOURCE_ATTRIBUTES=service.namespace=otel-demo`
+  entry, and most components set a `service.criticality=<low|medium|high|critical>`
+  value via `envOverrides`' `OTEL_RESOURCE_ATTRIBUTES_EXTRA` mechanism, matching
+  upstream. If you already set your own `OTEL_RESOURCE_ATTRIBUTES` override for a
+  component, be aware it will now be combined with this base value rather than
+  standing alone.
+
 ## To 0.40.4
 
 The `transform` processor now uses the `set_semconv_span_name()` function to

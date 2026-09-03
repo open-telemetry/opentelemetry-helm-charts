@@ -4,9 +4,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.111.0
+    helm.sh/chart: opentelemetry-operator-0.122.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.149.0"
+    app.kubernetes.io/version: "0.158.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example
@@ -184,6 +184,16 @@ rules:
       - list
       - watch
   - apiGroups:
+      - operators.coreos.com
+    resources:
+      - clusterserviceversions
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - coordination.k8s.io
     resources:
       - leases
@@ -251,6 +261,7 @@ rules:
     resources:
       - instrumentations
     verbs:
+      - create
       - get
       - list
       - patch
@@ -259,6 +270,7 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      - clusterobservabilities
       - opampbridges
     verbs:
       - create
@@ -271,12 +283,15 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      - clusterobservabilities/finalizers
       - opampbridges/finalizers
     verbs:
       - update
   - apiGroups:
       - opentelemetry.io
     resources:
+      - clusterobservabilities/status
+      - instrumentations/status
       - opampbridges/status
     verbs:
       - get
@@ -287,6 +302,7 @@ rules:
     resources:
       - opentelemetrycollectors
     verbs:
+      - create
       - get
       - list
       - patch
@@ -376,6 +392,12 @@ rules:
       - patch
       - delete
   - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
       - authorization.k8s.io
     resources:
       - subjectaccessreviews
@@ -387,9 +409,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    helm.sh/chart: opentelemetry-operator-0.111.0
+    helm.sh/chart: opentelemetry-operator-0.122.0
     app.kubernetes.io/name: opentelemetry-operator
-    app.kubernetes.io/version: "0.149.0"
+    app.kubernetes.io/version: "0.158.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-operator
     app.kubernetes.io/instance: example

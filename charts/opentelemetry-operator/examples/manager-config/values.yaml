@@ -1,0 +1,20 @@
+crds:
+  create: false
+
+manager:
+  collectorImage:
+    repository: "otel/opentelemetry-collector-k8s"
+  ignoreMissingCollectorCRDs: true
+  config:
+    enable-instrumentation-crds: false
+    enable-multi-instrumentation: false
+    instrumentations:
+      spec:
+        exporter:
+          endpoint: http://collector.default.svc:4318
+        propagators:
+          - tracecontext
+          - baggage
+          - b3
+        java:
+          image: java-autoinstrumentation:dev

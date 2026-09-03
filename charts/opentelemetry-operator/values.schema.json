@@ -48,6 +48,16 @@
         1
       ]
     },
+    "minReadySeconds": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "title": "The minReadySeconds Schema",
+      "examples": [
+        0,
+        30
+      ]
+    },
     "nameOverride": {
       "type": "string",
       "default": "",
@@ -156,7 +166,6 @@
         "opampBridgeImage",
         "targetAllocatorImage",
         "autoInstrumentationImage",
-        "featureGates",
         "ports",
         "env",
         "extraEnvs",
@@ -173,6 +182,7 @@
         "rolling",
         "securityContext",
         "ignoreMissingCollectorCRDs",
+        "config",
         "autoInstrumentation",
         "metrics"
       ],
@@ -609,21 +619,16 @@
             }
           ]
         },
-        "featureGates": {
-          "type": "string",
-          "default": "",
-          "title": "The featureGates to enable"
-        },
         "featureGatesMap": {
           "type": "object",
           "default": {},
           "title": "The featureGates Schema",
           "additionalProperties": false,
           "properties": {
-            "operator.targetallocator.mtls": {
+            "operator.clusterobservability": {
               "type": "boolean",
               "default": false,
-              "title": "Whether to enable MTLS for Target Allocator communication",
+              "title": "Whether to enable the ClusterObservability controller",
               "examples": [
                 false
               ]
@@ -636,26 +641,18 @@
                 false
               ]
             },
-            "operator.collector.targetallocatorcr": {
+            "operand.networkpolicy": {
               "type": "boolean",
               "default": false,
-              "title": "Whether to create TargetAllocator custom resource",
+              "title": "Adds a network policy to the collector to allow traffic to all collector receivers and egress traffic from the collector pod",
               "examples": [
                 false
               ]
             },
-            "operator.golang.flags": {
+            "operator.networkpolicy": {
               "type": "boolean",
               "default": false,
-              "title": "Set GOMEMLIMIT and GOMAXPROCS for collector automatically",
-              "examples": [
-                false
-              ]
-            },
-            "operator.collector.default.config": {
-              "type": "boolean",
-              "default": false,
-              "title": "Set default endpoints for known components",
+              "title": "Creates a NetworkPolicy to restrict access to the operator pod",
               "examples": [
                 false
               ]
@@ -698,6 +695,14 @@
               "title": "The healthzPort Schema",
               "examples": [
                 8081
+              ]
+            },
+            "pprofPort": {
+              "type": "integer",
+              "default": 0,
+              "title": "The pprofPort Schema",
+              "examples": [
+                6060
               ]
             }
           },
@@ -1249,6 +1254,17 @@
             false
           ]
         },
+        "config": {
+          "type": "object",
+          "default": {},
+          "title": "The config Schema",
+          "required": [],
+          "additionalProperties": true,
+          "description": "OpenTelemetry Operator manager configuration rendered as a ConfigMap and mounted with --config-file. The operator applies file configuration before CLI flags, so chart-rendered CLI flags take precedence over the same fields set here. The chart always sets the manager metrics address, metrics security, and health probe address with CLI flags. It also sets leader election, pprof, and webhook port flags when those chart values are enabled.",
+          "examples": [
+            {}
+          ]
+        },
         "autoInstrumentation": {
           "type": "object",
           "default": {},
@@ -1378,7 +1394,6 @@
               "tag": ""
             }
           },
-          "featureGates": "",
           "ports": {
             "metricsPort": 8443,
             "webhookPort": 9443,
@@ -1440,6 +1455,7 @@
           },
           "rolling": false,
           "securityContext": {},
+          "config": {},
           "metrics": {
             "secure": true,
             "tls": {
@@ -1788,6 +1804,19 @@
           "examples": [
             true
           ]
+        },
+        "annotations": {
+          "type": "object",
+          "default": {},
+          "title": "CRD Annotations",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [
+            {
+              "example.com/managed-by": "opentelemetry-operator-chart"
+            }
+          ]
         }
       },
       "examples": [
@@ -1924,11 +1953,61 @@
       "default": {},
       "title": "The testFramework Schema",
       "required": [
+        "certManager",
         "image",
         "securityContext"
       ],
       "additionalProperties": false,
       "properties": {
+        "certManager": {
+          "type": "object",
+          "default": {},
+          "title": "The cert-manager test configuration Schema",
+          "required": [
+            "env"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "env": {
+              "type": "array",
+              "default": [],
+              "title": "Environment variables used by the cert-manager Helm test hook",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "valueFrom": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "env": [
+                {
+                  "name": "CERT_MANAGER_CLUSTERIP",
+                  "value": "cert-manager-webhook.cert-manager"
+                },
+                {
+                  "name": "CERT_MANAGER_PORT",
+                  "value": "443"
+                }
+              ]
+            }
+          ]
+        },
         "image": {
           "type": "object",
           "default": {},
@@ -1979,6 +2058,18 @@
       },
       "examples": [
         {
+          "certManager": {
+            "env": [
+              {
+                "name": "CERT_MANAGER_CLUSTERIP",
+                "value": "cert-manager-webhook.cert-manager"
+              },
+              {
+                "name": "CERT_MANAGER_PORT",
+                "value": "443"
+              }
+            ]
+          },
           "image": {
             "repository": "busybox",
             "tag": "latest"
@@ -2070,7 +2161,6 @@
             "tag": ""
           }
         },
-        "featureGates": "",
         "ports": {
           "metricsPort": 8443,
           "webhookPort": 9443,
@@ -2131,7 +2221,8 @@
           }
         },
         "rolling": false,
-        "securityContext": {}
+        "securityContext": {},
+        "config": {}
       },
       "admissionWebhooks": {
         "create": true,
@@ -2179,6 +2270,18 @@
         "fsGroup": 65532
       },
       "testFramework": {
+        "certManager": {
+          "env": [
+            {
+              "name": "CERT_MANAGER_CLUSTERIP",
+              "value": "cert-manager-webhook.cert-manager"
+            },
+            {
+              "name": "CERT_MANAGER_PORT",
+              "value": "443"
+            }
+          ]
+        },
         "image": {
           "repository": "busybox",
           "tag": "latest"

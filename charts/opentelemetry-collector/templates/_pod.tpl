@@ -31,7 +31,19 @@ containers:
       {{- if and (not (.Values.securityContext)) (.Values.presets.profiling.enabled) }}
       runAsUser: 0
       runAsGroup: 0
-      privileged: true
+      privileged: false
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: Unconfined
+      {{- if semverCompare ">= 1.30-0" .Capabilities.KubeVersion.Version }}
+      appArmorProfile:
+        type: Unconfined
+      {{- end }}
+      seLinuxOptions:
+        type: spc_t
+      capabilities:
+        drop: [ALL]
+        add: ["BPF", "PERFMON", "SYS_PTRACE", "SYS_RESOURCE", "DAC_READ_SEARCH", "SYSLOG", "CHECKPOINT_RESTORE", "IPC_LOCK"]
       {{- else if and (not (.Values.securityContext)) (.Values.presets.logsCollection.storeCheckpoints) }}
       runAsUser: 0
       runAsGroup: 0
@@ -83,6 +95,7 @@ containers:
         .Values.presets.kubeletMetrics.enabled
         (and .Values.presets.kubernetesAttributes.enabled (eq .Values.mode "daemonset"))
         (and (or .Values.presets.annotationDiscovery.logs.enabled .Values.presets.annotationDiscovery.metrics.enabled) (eq .Values.mode "daemonset"))
+        (and .Values.presets.resourceDetection.enabled (or .Values.presets.resourceDetection.k8s_api.enabled ((.Values.presets.resourceDetection.k8snode).enabled)))
       }}
       - name: K8S_NODE_NAME
         valueFrom:
@@ -97,12 +110,12 @@ containers:
       - name: GOMEMLIMIT
         value: {{ include "opentelemetry-collector.gomemlimit" .Values.resources.limits.memory | quote }}
       {{- end }}
-      {{- with .Values.extraEnvs }}
-      {{- . | toYaml | nindent 6 }}
+      {{- if .Values.extraEnvs }}
+      {{- tpl (toYaml .Values.extraEnvs) . | nindent 6 }}
       {{- end }}
-    {{- with .Values.extraEnvsFrom }}
+    {{- if .Values.extraEnvsFrom }}
     envFrom:
-    {{- . | toYaml | nindent 6 }}
+    {{- tpl (toYaml .Values.extraEnvsFrom) . | nindent 6 }}
     {{- end }}
     {{- if .Values.lifecycleHooks }}
     lifecycle:
@@ -166,6 +179,10 @@ containers:
       httpGet:
         path: {{ .Values.startupProbe.httpGet.path }}
         port: {{ .Values.startupProbe.httpGet.port }}
+    {{- end }}
+    {{- with .Values.resizePolicy }}
+    resizePolicy:
+      {{- toYaml . | nindent 6 }}
     {{- end }}
     {{- with .Values.resources }}
     resources:

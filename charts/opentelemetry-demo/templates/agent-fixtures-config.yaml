@@ -1,0 +1,11 @@
+{{- if .Values.components.agent.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-fixtures
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.labels" . | nindent 4 }}
+data:
+  {{ (.Files.Glob "agent-fixtures/*.yaml").AsConfig | nindent 2 }}
+{{- end }}

@@ -207,6 +207,16 @@ rules:
       - list
       - watch
   - apiGroups:
+      - operators.coreos.com
+    resources:
+      - clusterserviceversions
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - coordination.k8s.io
     resources:
       - leases
@@ -274,6 +284,9 @@ rules:
     resources:
       - instrumentations
     verbs:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - create
+      {{- end}}
       - get
       - list
       - patch
@@ -282,6 +295,9 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - clusterobservabilities
+      {{- end}}
       - opampbridges
     verbs:
       - create
@@ -294,12 +310,19 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - clusterobservabilities/finalizers
+      {{- end}}
       - opampbridges/finalizers
     verbs:
       - update
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - clusterobservabilities/status
+      {{- end}}
+      - instrumentations/status
       - opampbridges/status
     verbs:
       - get
@@ -310,6 +333,9 @@ rules:
     resources:
       - opentelemetrycollectors
     verbs:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - create
+      {{- end}}
       - get
       - list
       - patch
@@ -398,6 +424,12 @@ rules:
       - update
       - patch
       - delete
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
   - apiGroups:
       - authorization.k8s.io
     resources:
