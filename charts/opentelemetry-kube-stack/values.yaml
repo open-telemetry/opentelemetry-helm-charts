@@ -1167,8 +1167,11 @@ kubeApiServer:
     #  foo: bar
 
 ## Component scraping the kubelet and kubelet-hosted cAdvisor
-## the configuration for this is currently only in kubelet_scrape_configs.yaml
-## This is because kubelet doesn't have a service and can only be scraped manually.
+## These values only take effect when a scrape_configs_file that references them
+## is loaded, because kubelet doesn't have a service and can only be scraped
+## manually. The packaged chart does not ship such a file; the recommended way
+## to scrape the kubelet is via ScrapeConfig custom resources picked up by the
+## target allocator. See the prometheus-otel example for a working setup.
 kubelet:
   enabled: false
   namespace: kube-system
