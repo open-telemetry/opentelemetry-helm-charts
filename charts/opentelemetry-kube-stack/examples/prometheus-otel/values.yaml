@@ -2,8 +2,11 @@ clusterName: demo
 collectors:
   daemon:
     enabled: true
-    # because this file is inside the examples folder, we need to reference it directly.
-    scrape_configs_file: "examples/prometheus-otel/kubelet_scrape_configs.yaml"
+    # Kubelet metrics come from the ScrapeConfig custom resources in
+    # kubelet_scrape_configs_cr.yaml, discovered via scrapeConfigSelector below.
+    # A scrape_configs_file cannot be used for this because the packaged chart
+    # does not ship the examples folder.
+    scrape_configs_file: ""
     # Adding an additional label for this collctor.
     labels:
       otel-collector-type: daemonset-example
@@ -14,6 +17,7 @@ collectors:
       prometheusCR:
         enabled: true
         podMonitorSelector: {}
+        scrapeConfigSelector: {}
         scrapeInterval: "30s"
         serviceMonitorSelector: {}
     config:

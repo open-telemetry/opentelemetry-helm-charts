@@ -1,0 +1,180 @@
+# Kubelet scrape configuration as Prometheus Operator ScrapeConfig custom resources.
+#
+# These resources replace the static scrape_configs_file that this example used to
+# reference. The target allocator discovers them through prometheusCR.scrapeConfigSelector
+# (enabled in this example's values.yaml) and hands the resulting jobs to the collector,
+# so they work with the packaged chart where the examples folder is not shipped.
+#
+# The kubelet requires authentication. ScrapeConfig resources cannot reference the
+# collector's mounted service account token file, so this manifest creates a dedicated
+# service account with a long-lived token secret and the RBAC needed to scrape the
+# kubelet endpoints. The target allocator reads the token from the secret and embeds
+# it in the scrape configuration it serves to the collector.
+#
+# Apply this file into the same namespace the chart is installed in. The manifests
+# below assume the `default` namespace; change it if you installed elsewhere.
+#
+#   kubectl apply -n default -f kubelet_scrape_configs_cr.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubelet-monitoring
+  namespace: default
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubelet-monitoring-token
+  namespace: default
+  annotations:
+    kubernetes.io/service-account.name: kubelet-monitoring
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubelet-monitoring
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes/metrics
+    verbs: ["get"]
+  - nonResourceURLs:
+      - /metrics
+      - /metrics/cadvisor
+      - /metrics/probes
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubelet-monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubelet-monitoring
+subjects:
+  - kind: ServiceAccount
+    name: kubelet-monitoring
+    namespace: default
+---
+# Scrapes the kubelet's /metrics endpoint.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet
+  namespace: default
+spec:
+  authorization:
+    type: Bearer
+    credentials:
+      name: kubelet-monitoring-token
+      key: token
+  honorLabels: true
+  honorTimestamps: true
+  kubernetesSDConfigs:
+    - role: Node
+  metricsPath: /metrics
+  relabelings:
+    - sourceLabels: [job]
+      targetLabel: __tmp_prometheus_job_name
+    - targetLabel: job
+      replacement: kubelet
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - targetLabel: endpoint
+      replacement: https-metrics
+    - sourceLabels: [__metrics_path__]
+      targetLabel: metrics_path
+  scheme: HTTPS
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  tlsConfig:
+    insecureSkipVerify: true
+---
+# Scrapes the kubelet's /metrics/cadvisor endpoint for container metrics.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-cadvisor
+  namespace: default
+spec:
+  authorization:
+    type: Bearer
+    credentials:
+      name: kubelet-monitoring-token
+      key: token
+  honorLabels: true
+  honorTimestamps: true
+  kubernetesSDConfigs:
+    - role: Node
+  metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: container_cpu_(cfs_throttled_seconds_total|load_average_10s|system_seconds_total|user_seconds_total)
+      action: drop
+    - sourceLabels: [__name__]
+      regex: container_fs_(io_current|io_time_seconds_total|io_time_weighted_seconds_total|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)
+      action: drop
+    - sourceLabels: [__name__]
+      regex: container_memory_(mapped_file|swap)
+      action: drop
+    - sourceLabels: [__name__]
+      regex: container_(file_descriptors|tasks_state|threads_max)
+      action: drop
+    - sourceLabels: [__name__]
+      regex: container_spec.*
+      action: drop
+    - sourceLabels: [id, pod]
+      regex: .+;
+      action: drop
+  metricsPath: /metrics/cadvisor
+  relabelings:
+    - sourceLabels: [job]
+      targetLabel: __tmp_prometheus_job_name
+    - targetLabel: job
+      replacement: kubelet
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - targetLabel: endpoint
+      replacement: https-metrics
+    - sourceLabels: [__metrics_path__]
+      targetLabel: metrics_path
+  scheme: HTTPS
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  tlsConfig:
+    insecureSkipVerify: true
+---
+# Scrapes the kubelet's /metrics/probes endpoint.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-probes
+  namespace: default
+spec:
+  authorization:
+    type: Bearer
+    credentials:
+      name: kubelet-monitoring-token
+      key: token
+  honorLabels: true
+  honorTimestamps: true
+  kubernetesSDConfigs:
+    - role: Node
+  metricsPath: /metrics/probes
+  relabelings:
+    - sourceLabels: [job]
+      targetLabel: __tmp_prometheus_job_name
+    - targetLabel: job
+      replacement: kubelet
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - targetLabel: endpoint
+      replacement: https-metrics
+    - sourceLabels: [__metrics_path__]
+      targetLabel: metrics_path
+  scheme: HTTPS
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  tlsConfig:
+    insecureSkipVerify: true
