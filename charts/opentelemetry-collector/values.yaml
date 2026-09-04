@@ -68,10 +68,12 @@ presets:
   # Configures the collector to collect kubernetes events.
   # Adds the k8sobjects receiver to the logs pipeline
   # and collects kubernetes events by default.
-  # Best used with mode = deployment or statefulset.
+  # Best used with mode = deployment, statefulset or daemonset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
+    # When enabled with mode = daemonset, leader election is setup to prevent telemetry duplication.
+    # disableLeaderElection: false
     # When enabled, the preset uses the k8s_events receiver instead of k8sobjects. Will default to true in a future release.
     useK8sEventsReceiver: false
   # Collects Kubernetes objects via the k8sobjects receiver in pull mode (default interval: 1h).
