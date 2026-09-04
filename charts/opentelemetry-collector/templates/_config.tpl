@@ -88,6 +88,9 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.presets.kubernetesAttributes.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config "rewriteDeprecatedComponentNames" .Values.rewriteDeprecatedComponentNames) | fromYaml) }}
 {{- end }}
+{{- if .Values.presets.kubernetesEvents.enabled }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
+{{- end }}
 {{- if .Values.presets.kubernetesObjects.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesObjectsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
@@ -222,9 +225,9 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.clusterMetricsConfig" -}}
-{{- if .useLeaderElection}}
-{{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace)}}
-{{- end}}
+{{- if .useLeaderElection }}
+{{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
+{{- end }}
 receivers:
   k8s_cluster:
     {{- if .useLeaderElection}}
@@ -494,22 +497,46 @@ processors:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
+{{- $vals := .Values.Values -}}
+{{- $disableLeaderElection := false -}}
+{{- $useK8sEventsReceiver := false -}}
 {{- $receiverName := "k8sobjects" -}}
-{{- if .Values.Values.presets.kubernetesEvents.useK8sEventsReceiver -}}
-{{- $receiverName = "k8s_events" -}}
+{{- if and (hasKey $vals "presets") (hasKey $vals.presets "kubernetesEvents") -}}
+  {{- $disableLeaderElection = $vals.presets.kubernetesEvents.disableLeaderElection -}}
+  {{- $useK8sEventsReceiver = $vals.presets.kubernetesEvents.useK8sEventsReceiver -}}
 {{- end -}}
-{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" .Values | fromYaml) .config }}
+{{- if $useK8sEventsReceiver -}}
+  {{- $receiverName = "k8s_events" -}}
+{{- end -}}
+{{- $hasMultipleReplicas := gt (int $vals.replicaCount) 1 -}}
+{{- $useLeaderElection := and (or (eq $vals.mode "daemonset") $hasMultipleReplicas) (not $disableLeaderElection) -}}
+{{- $electorName := "k8s_cluster" }}
+{{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useK8sEventsReceiver" $useK8sEventsReceiver "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
+{{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" $ctx | fromYaml) .config }}
+{{- if $useLeaderElection}}
+{{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
+{{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq)  }}
+{{- end }}
 {{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $receiverName | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesEventsConfig" -}}
-{{- if .Values.presets.kubernetesEvents.useK8sEventsReceiver -}}
+{{- if .useLeaderElection }}
+{{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.cluster.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
+{{- end }}
+{{- if .useK8sEventsReceiver }}
 receivers:
-  k8s_events: {}
-{{- else -}}
+  k8s_events:
+    {{- if .useLeaderElection }}
+    k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
+    {{- end }}
+{{- else }}
 receivers:
   k8sobjects:
+    {{- if .useLeaderElection }}
+    k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
+    {{- end }}
     objects:
       - name: events
         mode: "watch"
