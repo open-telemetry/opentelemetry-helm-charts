@@ -1,0 +1,27 @@
+---
+# Source: opentelemetry-kube-stack/templates/instrumentation.yaml
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: example
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.20.7
+    app.kubernetes.io/version: "0.154.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"    
+spec:
+  exporter:
+    endpoint: http://collector-collector:4317
+  propagators:
+    - tracecontext
+    - baggage
+    - b3
+    - b3multi
+    - jaeger
+    - xray
+    - ottrace
+  resource:
+    addK8sUIDAttributes: true
+    resourceAttributes:
+      deployment.environment.name: production
+      k8s.cluster.name: my_k8s_cluster
