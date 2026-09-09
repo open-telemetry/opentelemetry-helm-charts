@@ -6,7 +6,6 @@
 # otelcol-ebpf-profiler binary: otlp receiver and the cumulativetodelta processor.
 # Without isolation, the otlp receiver and cumulativetodelta processor
 # would flow into the profiler collector and crash it.
-
 defaultCRConfig:
   presets:
     kubernetesAttributes:
@@ -42,10 +41,6 @@ defaultCRConfig:
           exporters: [debug]
 
 collectors:
-  # The daemon: normal collector that inherits everything from
-  # defaultCRConfig. The otlp receiver and cumulativetodelta processor
-  # it inherits would crash the otelcol-ebpf-profiler binary if they
-  # leaked through inheritance into the profiler.
   daemon:
     enabled: true
     suffix: daemon
@@ -56,8 +51,6 @@ collectors:
       hostMetrics:
         enabled: true
 
-  # The profiler: community otelcol-ebpf-profiler distribution with isolation.
-  # It only gets the presets it explicitly enables and its own config.
   profiler:
     enabled: true
     suffix: profiler
