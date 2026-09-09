@@ -380,8 +380,7 @@ defaultCRConfig:
   #   type: RollingUpdate
 
   # Retention policy for the PersistentVolumeClaim https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention
-  persistentVolumeClaimRetentionPolicy:
-    {}
+  persistentVolumeClaimRetentionPolicy: {}
     # whenDeleted: Retain
     # whenScaled: Retain
 
@@ -429,12 +428,15 @@ defaultCRConfig:
   #   configMap:
   #     name: config
 
-  # Init containers for the collector
+  # Init containers for the collector. Rendered as Helm templates with the
+  # merged collector context, so entries can reference collector fields, e.g.
+  # image: "{{ .collector.image.repository }}:{{ .collector.image.tag }}".
   initContainers: []
   # - name: init-nginx
   #   image: nginx
 
-  # Additional containers for the collector
+  # Additional containers for the collector. Rendered as Helm templates with
+  # the merged collector context, like initContainers.
   additionalContainers: []
   # - name: additional-container
   #   image: busybox
@@ -641,6 +643,18 @@ defaultCRConfig:
 #     enabled: true
 #     name: "example"
 # Each collector configuration is layered on top of the `defaultCRConfig`, overriding a default if set.
+# Set inheritDefaultCRConfig: false on a collector so it does not
+# inherit the shared config and the enabled presets from defaultCRConfig;
+# the collector then defines its own config and only the presets
+# it explicitly enables. Other defaults (mode, image, clusterRoleBinding,
+# env, resources, ...) still apply and can be overridden as usual.
+# This is required when the collector runs a
+# dedicated distribution image (e.g. an eBPF profiler) whose binary
+# does not include the components declared in the shared
+# defaultCRConfig.config, and whose preset defaults may inject
+# receivers or processors that the distribution binary does not ship.
+# scrape_configs_file and targetAllocator are also excluded from inheritance with this configuration;
+# define them locally if needed.
 # This configuration allows for multiple layers of overrides for different clusters. For example, you could
 # create a collector called test with an OTLP exporter in your values.yaml, and then override the endpoint's
 # destination in a file called values-staging.yaml.
