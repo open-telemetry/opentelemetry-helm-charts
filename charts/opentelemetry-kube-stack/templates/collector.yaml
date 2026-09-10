@@ -1,9 +1,7 @@
 {{ range $_, $collector := $.Values.collectors -}}
 {{- if $collector.enabled -}}
-{{- if $.Values.defaultCRConfig.enabled }}
-{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
-{{- end }}
-{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)  "kubelet" $.Values.kubelet "clusterName" $.Values.clusterName "rewriteDeprecatedComponentNames" $.Values.rewriteDeprecatedComponentNames) }}
+{{- $collector = (include "opentelemetry-kube-stack.mergeCollector" (dict "root" $ "collector" $collector) | fromYaml) }}
+{{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)  "kubelet" $.Values.kubelet "clusterName" $.Values.clusterName "rewriteDeprecatedComponentNames" $.Values.rewriteDeprecatedComponentNames "resourceAttributes" ($.Values.resourceAttributes | default dict)) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
 ---
 apiVersion: opentelemetry.io/v1beta1
@@ -75,7 +73,7 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   securityContext:
-  {{- if and (not ($collector.securityContext)) ($collector.presets.logsCollection.storeCheckpoints) }}
+  {{- if and (not ($collector.securityContext)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) }}
     runAsUser: 0
     runAsGroup: 0
   {{- else -}}
@@ -135,9 +133,9 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   {{- end }}
-  {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumeMounts) }}
+  {{- if or ((dig "presets" "logsCollection" "enabled" false $collector)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) ((dig "presets" "hostMetrics" "enabled" false $collector)) ($collector.volumeMounts) }}
   volumeMounts:
-  {{- if $collector.presets.logsCollection.enabled }}
+  {{- if (dig "presets" "logsCollection" "enabled" false $collector) }}
   - name: varlogpods
     mountPath: /var/log/pods
     readOnly: true
@@ -145,11 +143,11 @@ spec:
     mountPath: /var/lib/docker/containers
     readOnly: true
   {{- end }}
-  {{- if $collector.presets.logsCollection.storeCheckpoints}}
+  {{- if (dig "presets" "logsCollection" "storeCheckpoints" false $collector)}}
   - name: varlibotelcol
     mountPath: /var/lib/otelcol
   {{- end }}
-  {{- if $collector.presets.hostMetrics.enabled }}
+  {{- if (dig "presets" "hostMetrics" "enabled" false $collector) }}
   - name: hostfs
     mountPath: /hostfs
     readOnly: true
@@ -206,13 +204,13 @@ spec:
   tolerations:
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- if or ($collector.presets.logsCollection.enabled) ($collector.presets.logsCollection.storeCheckpoints) ($collector.presets.hostMetrics.enabled) ($collector.volumes) }}
+  {{- if or ((dig "presets" "logsCollection" "enabled" false $collector)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) ((dig "presets" "hostMetrics" "enabled" false $collector)) ($collector.volumes) }}
   volumes:
-  {{- if $collector.presets.logsCollection.enabled }}
+  {{- if (dig "presets" "logsCollection" "enabled" false $collector) }}
   - name: varlogpods
     hostPath:
       path: /var/log/pods
-  {{- if $collector.presets.logsCollection.storeCheckpoints }}
+  {{- if (dig "presets" "logsCollection" "storeCheckpoints" false $collector) }}
   - name: varlibotelcol
     hostPath:
       path: /var/lib/otelcol
@@ -222,7 +220,7 @@ spec:
     hostPath:
       path: /var/lib/docker/containers
   {{- end }}
-  {{- if $collector.presets.hostMetrics.enabled }}
+  {{- if (dig "presets" "hostMetrics" "enabled" false $collector) }}
   - name: hostfs
     hostPath:
       path: /
@@ -233,11 +231,11 @@ spec:
   {{- end }}
   {{- with $collector.initContainers }}
   initContainers:
-  {{- toYaml . | nindent 4 }}
+  {{- tpl (toYaml .) $merged | nindent 4 }}
   {{- end }}
   {{- with $collector.additionalContainers }}
   additionalContainers:
-  {{- toYaml . | nindent 4 }}
+  {{- tpl (toYaml .) $merged | nindent 4 }}
   {{- end }}
   {{- with $collector.topologySpreadConstraints }}
   topologySpreadConstraints:

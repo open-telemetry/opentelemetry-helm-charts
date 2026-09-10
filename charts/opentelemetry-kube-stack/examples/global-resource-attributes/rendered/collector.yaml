@@ -3,7 +3,7 @@
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
-  name: example-cluster-stats
+  name: example-collector
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-kube-stack-0.20.8
@@ -15,12 +15,18 @@ spec:
   mode: deployment
   config:
     exporters:
-      debug: {}
+      otlp_http:
+        endpoint: https://otlp.example.com:4318
+    extensions:
+      k8s_leader_elector/k8s_cluster:
+        auth_type: serviceAccount
+        lease_name: k8s.cluster.receiver.opentelemetry.io
+        lease_namespace: default
+      k8s_leader_elector/k8s_objects:
+        auth_type: serviceAccount
+        lease_name: k8s.objects.receiver.opentelemetry.io
+        lease_namespace: default
     processors:
-      batch:
-        send_batch_max_size: 1500
-        send_batch_size: 1000
-        timeout: 1s
       k8s_attributes:
         extract:
           labels:
@@ -77,11 +83,14 @@ spec:
             name: k8s.namespace.name
         - sources:
           - from: connection
-      resource_detection/env:
-        detectors:
-        - env
-        override: false
-        timeout: 2s
+      resource/global:
+        attributes:
+        - action: upsert
+          key: deployment.environment.name
+          value: production
+        - action: upsert
+          key: k8s.cluster.name
+          value: my_k8s_cluster
     receivers:
       k8s_cluster:
         allocatable_types_to_report:
@@ -90,12 +99,14 @@ spec:
         - storage
         auth_type: serviceAccount
         collection_interval: 10s
+        k8s_leader_elector: k8s_leader_elector/k8s_cluster
         node_conditions_to_report:
         - Ready
         - MemoryPressure
         - DiskPressure
         - NetworkUnavailable
       k8s_objects:
+        k8s_leader_elector: k8s_leader_elector/k8s_objects
         objects:
         - exclude_watch_type:
           - DELETED
@@ -103,36 +114,43 @@ spec:
           mode: watch
           name: events
     service:
+      extensions:
+      - k8s_leader_elector/k8s_objects
+      - k8s_leader_elector/k8s_cluster
       pipelines:
         logs:
           exporters:
-          - debug
+          - otlp_http
           processors:
           - k8s_attributes
-          - resource_detection/env
-          - batch
+          - resource/global
           receivers:
           - k8s_objects
         metrics:
           exporters:
-          - debug
+          - otlp_http
           processors:
           - k8s_attributes
-          - resource_detection/env
-          - batch
+          - resource/global
           receivers:
           - k8s_cluster
-  replicas: 1
+        traces:
+          exporters:
+          - otlp_http
+          processors:
+          - k8s_attributes
+          - resource/global
+  replicas: 
   imagePullPolicy: IfNotPresent
   upgradeStrategy: automatic
   terminationGracePeriodSeconds: 30
   resources:
     limits:
-      cpu: 200m
-      memory: 500Mi
+      cpu: 250m
+      memory: 128Mi
     requests:
-      cpu: 100m
-      memory: 250Mi
+      cpu: 250m
+      memory: 64Mi
   securityContext:
     {}
   env:
@@ -183,6 +201,8 @@ spec:
   config:
     exporters:
       debug: {}
+      otlp_http:
+        endpoint: https://otlp.example.com:4318
     processors:
       batch:
         send_batch_max_size: 1500
@@ -246,6 +266,14 @@ spec:
             name: k8s.namespace.name
         - sources:
           - from: connection
+      resource/global:
+        attributes:
+        - action: upsert
+          key: deployment.environment.name
+          value: production
+        - action: upsert
+          key: k8s.cluster.name
+          value: my_k8s_cluster
       resource/hostname:
         attributes:
         - action: insert
@@ -548,23 +576,25 @@ spec:
       pipelines:
         logs:
           exporters:
-          - debug
+          - otlp_http
           processors:
           - k8s_attributes
           - resource_detection/env
           - resource/hostname
           - batch
+          - resource/global
           receivers:
           - otlp
           - file_log
         metrics:
           exporters:
-          - debug
+          - otlp_http
           processors:
           - k8s_attributes
           - resource_detection/env
           - resource/hostname
           - batch
+          - resource/global
           receivers:
           - prometheus
           - otlp
@@ -572,12 +602,13 @@ spec:
           - kubelet_stats
         traces:
           exporters:
-          - debug
+          - otlp_http
           processors:
           - k8s_attributes
           - resource_detection/env
           - resource/hostname
           - batch
+          - resource/global
           receivers:
           - otlp
   imagePullPolicy: IfNotPresent

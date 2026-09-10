@@ -1,0 +1,51 @@
+resourceAttributes:
+  deployment.environment.name: "production"
+  k8s.cluster.name: "my_k8s_cluster"
+
+defaultCRConfig:
+  config:
+    exporters:
+      otlp_http:
+        endpoint: "https://otlp.example.com:4318"
+collectors:
+  daemon:
+    presets:
+      clusterMetrics:
+        enabled: false
+      kubernetesEvents:
+        enabled: false
+    config:
+      service:
+        pipelines:
+          logs:
+            exporters:
+              - otlp_http
+          metrics:
+            exporters:
+              - otlp_http
+          traces:
+            exporters:
+              - otlp_http
+  cluster:
+    enabled: true
+    presets:
+      kubernetesAttributes:
+        enabled: true
+      clusterMetrics:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
+    config:
+      service:
+        pipelines:
+          logs:
+            exporters:
+              - otlp_http
+          metrics:
+            exporters:
+              - otlp_http
+          traces:
+            exporters:
+              - otlp_http
+instrumentation:
+  enabled: true
