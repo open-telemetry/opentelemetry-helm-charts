@@ -53,3 +53,17 @@ repos:
       #
       # check yaml...............................................................Failed
       # ...Many files fail...
+
+  - repo: https://github.com/norwoodj/helm-docs
+    rev: v1.14.2
+    hooks:
+      # Regenerates charts/*/README.md from each chart's README.md.gotmpl and values.yaml.
+      # A stale README shows up as a file modified by this hook, which fails the pre-commit workflow.
+      - id: helm-docs-built
+        name: generate chart READMEs (helm-docs)
+        args:
+          - --chart-search-root=charts
+          - --template-files=README.md.gotmpl
+          - --sort-values-order=file
+        pass_filenames: false
+        files: '^(charts/[^/]+/(README\.md(\.gotmpl)?|Chart\.yaml|values\.yaml)|\.helmdocsignore)$'
