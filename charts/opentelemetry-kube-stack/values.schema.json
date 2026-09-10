@@ -1734,6 +1734,17 @@
           "type": "string",
           "default": ""
         },
+        "resourceAttributes": {
+          "description": "Per-collector resource attributes. Merged over the top-level `resourceAttributes` map (per-collector keys win on conflict) and rendered as a `resource/global` processor appended to every pipeline.",
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
         "resources": {
           "$ref": "#/$defs/ResourceRequirements"
         },
@@ -1948,6 +1959,10 @@
         },
         "deploymentUpdateStrategy": {
           "$ref": "#/$defs/DeploymentUpdateStrategy"
+        },
+        "inheritDefaultCRConfig": {
+          "type": "boolean",
+          "description": "When false, the collector does not inherit the shared config, presets, or scrape_configs_file from defaultCRConfig, and targetAllocator. It defines its own config and only the presets it explicitly enables. Other defaults (env, resources, image, etc.) still apply and can be overridden. Required for collectors running a dedicated distribution whose binary does not include the components declared in the shared defaultCRConfig.config."
         }
       },
       "additionalProperties": true,
@@ -3422,6 +3437,25 @@
         },
         "resources": {
           "$ref": "#/$defs/ResourceRequirements"
+        },
+        "extensions": {
+          "items": {
+            "properties": {
+              "image": {
+                "type": "string"
+              },
+              "dir": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "image",
+              "dir"
+            ]
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -4498,6 +4532,17 @@
     },
     "clusterName": {
       "type": "string"
+    },
+    "resourceAttributes": {
+      "description": "Default resource attributes merged into every collector pipeline (as a `resource/global` processor with `upsert` action) and into the Instrumentation CR's `resource.resourceAttributes`.",
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      }
     },
     "rewriteDeprecatedComponentNames": {
       "description": "When true, deprecated Collector component names are rewritten to their current lower_snake_case names in user-provided and preset-generated configuration.",
