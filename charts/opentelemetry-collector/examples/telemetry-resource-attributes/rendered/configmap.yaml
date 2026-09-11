@@ -1,9 +1,9 @@
 ---
-# Source: opentelemetry-collector/templates/configmap-agent.yaml
+# Source: opentelemetry-collector/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: example-opentelemetry-collector-agent
+  name: example-opentelemetry-collector
   namespace: default
   labels:
     helm.sh/chart: opentelemetry-collector-0.174.0
@@ -12,15 +12,11 @@ metadata:
     app.kubernetes.io/version: "0.160.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
-    app.kubernetes.io/component: agent-collector
+    app.kubernetes.io/component: standalone-collector
 data:
   relay: |
     exporters:
       debug: {}
-      otlp_grpc:
-        endpoint: example-opentelemetry-collector:4317
-        tls:
-          insecure: true
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
@@ -61,7 +57,6 @@ data:
       pipelines:
         logs:
           exporters:
-          - otlp_grpc
           - debug
           processors:
           - memory_limiter
@@ -70,7 +65,6 @@ data:
           - otlp
         metrics:
           exporters:
-          - otlp_grpc
           - debug
           processors:
           - memory_limiter
@@ -80,7 +74,6 @@ data:
           - prometheus
         traces:
           exporters:
-          - otlp_grpc
           - debug
           processors:
           - memory_limiter
@@ -99,15 +92,13 @@ data:
                   port: 8888
         resource:
           attributes:
-          - name: host.name
-            value: ${env:OTEL_K8S_NODE_NAME}
           - name: k8s.namespace.name
-            value: ${env:OTEL_K8S_NAMESPACE}
+            value: ${env:MY_NAMESPACE_OVERRIDE}
           - name: k8s.node.ip
             value: ${env:OTEL_K8S_NODE_IP}
           - name: k8s.node.name
-            value: ${env:OTEL_K8S_NODE_NAME}
-          - name: k8s.pod.ip
-            value: ${env:OTEL_K8S_POD_IP}
+            value: replaces-the-default
           - name: k8s.pod.name
             value: ${env:OTEL_K8S_POD_NAME}
+          - name: service.namespace
+            value: team-a
