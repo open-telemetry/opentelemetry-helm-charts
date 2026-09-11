@@ -4,7 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.172.1 to 0.173.0
+## 0.173.0 to 0.174.0
 
 The collector's internal telemetry resource attributes moved out of `config.service.telemetry.resource` and into a new top-level `telemetry` section. The chart now renders them into `config.service.telemetry.resource.attributes`, the list format the Collector has expected since v0.123.0, which stops the deprecation warning logged at every start.
 
