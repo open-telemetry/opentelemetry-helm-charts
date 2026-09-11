@@ -18,12 +18,14 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Copy README to temp
         run: cp -f README.md ${{ runner.temp }}/README.md
 
       - name: Checkout gh-pages
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] v7.0.1; persisted token pushes README to gh-pages
         with:
           ref: gh-pages
 
