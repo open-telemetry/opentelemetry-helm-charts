@@ -2578,6 +2578,13 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - until nc -z -v -w30 flagd 8013; do echo waiting for flagd; sleep 2; done;
+          image: busybox:latest
+          name: wait-for-flagd
       volumes:
         - name: tmp
           emptyDir: {}
