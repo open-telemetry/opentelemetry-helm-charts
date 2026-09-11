@@ -6,11 +6,11 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.20.8
+    helm.sh/chart: opentelemetry-kube-stack-0.20.9
     app.kubernetes.io/version: "0.154.0"
     app.kubernetes.io/managed-by: Helm
-    release: "example"
-    otel-collector-type: daemonset-example
+    release: "example"    
+    otel-collector-type: daemonset-example    
 spec:
   managementState: managed
   mode: daemonset
@@ -99,7 +99,7 @@ spec:
       scrapeInterval: 30s
       serviceMonitorSelector: {}
   env:
-  - name: K8S_NODE_NAME
+  - name: K8S_NODE_NAME 
     valueFrom:
       fieldRef:
         fieldPath: spec.nodeName
@@ -128,7 +128,7 @@ spec:
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),host.name=$(OTEL_K8S_NODE_NAME),k8s.node.ip=$(OTEL_K8S_NODE_IP),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.cluster.name=demo"
-
+  
   - name: ACCESS_TOKEN
     valueFrom:
       secretKeyRef:
