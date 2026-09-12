@@ -486,6 +486,17 @@ defaultCRConfig:
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
     hostMetrics:
       enabled: false
+    # Configures the collector to collect profiling data.
+    # Adds profiles pipeline with the profiling receiver,
+    # and adds the necessary volumes, security context and host PID access.
+    #
+    # Warning: The profiling receiver requires elevated capabilities and hostPID,
+    # so it should be used with a dedicated collector distribution (e.g. otelcol-ebpf-profiler)
+    # rather than the general-purpose k8s distribution. This avoids granting elevated privileges
+    # to the same collector that handles metrics, traces, and logs.
+    # See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler for more details.
+    profiling:
+      enabled: false
     # Configures the Kubernetes Processor to add Kubernetes metadata.
     # Adds the k8s_attributes processor to all the pipelines
     # and adds the necessary rules to ClusteRole.
