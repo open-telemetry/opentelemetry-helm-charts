@@ -890,6 +890,10 @@ components:
     mountedEmptyDirs:
       - name: tmp
         mountPath: /tmp
+    initContainers:
+      - name: wait-for-flagd
+        image: busybox:latest
+        command: ["sh", "-c", "until nc -z -v -w30 flagd 8013; do echo waiting for flagd; sleep 2; done;"]
 
   flagd:
     enabled: true

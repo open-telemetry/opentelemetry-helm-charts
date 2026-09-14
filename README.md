@@ -89,6 +89,12 @@ For more information about the maintainer role, see the [community repository](h
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
+### Triagers
+
+- [Marc Schäfer](https://github.com/marcschaeferger)
+
+For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
+
 ### Emeritus
 
 - [Josh Voravong](https://github.com/jvoravong), Approver
