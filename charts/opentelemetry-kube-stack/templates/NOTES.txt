@@ -18,13 +18,11 @@ With the features you've enabled, you can:
 * Manually instrument and manually configure applications:
    Bundle the OTel SDK in your application containers and manually configure them using:
 {{- range $_, $collector := $.Values.collectors -}}
-{{- if $.Values.defaultCRConfig.enabled }}
-{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
-{{- end }}
+{{- $collector = (include "opentelemetry-kube-stack.mergeCollector" (dict "root" $ "collector" $collector) | fromYaml) }}
 {{- $merged := (dict "Template" $.Template "Files" $.Files "Chart" $.Chart "clusterRole" $.Values.clusterRole "collector" $collector "Release" $.Release "fullnameOverride" $.Values.fullnameOverride "presets" $.Values.presets "namespace" (include "opentelemetry-kube-stack.namespace" $)  "kubelet" $.Values.kubelet "clusterName" $.Values.clusterName) }}
 {{- $fullname := (include "opentelemetry-kube-stack.collectorFullname" $merged) }}
 {{- range $_, $protocol := list "grpc" "http" -}}
-{{ $endpoint := dig "receivers" "otlp" "protocols" $protocol "endpoint" "" $collector.config}}
+{{ $endpoint := dig "receivers" "otlp" "protocols" $protocol "endpoint" "" ($collector.config | default dict)}}
 {{- if and $collector.enabled (ne $endpoint "") -}}
 {{- $port := regexFind ":[0-9]+$" $endpoint }}
    - {{ $protocol }}: {{ $fullname }}-collector.{{ include "opentelemetry-kube-stack.namespace" $ }}.svc.cluster.local{{ $port }}
@@ -36,9 +34,7 @@ https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annot
 {{ end -}}
 
 {{- range $name, $collector := .Values.collectors }}
-{{- if $.Values.defaultCRConfig.enabled }}
-{{- $collector = (mergeOverwrite (deepCopy $.Values.defaultCRConfig) $collector) }}
-{{- end }}
+{{- $collector = (include "opentelemetry-kube-stack.mergeCollector" (dict "root" $ "collector" $collector) | fromYaml) }}
 {{- if $collector.updateStrategy }}
 
 [WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1.
