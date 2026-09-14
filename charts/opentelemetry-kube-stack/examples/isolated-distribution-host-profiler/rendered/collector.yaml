@@ -17,6 +17,7 @@ spec:
     exporters:
       debug: {}
     extensions:
+      health_check: {}
       k8s_leader_elector/k8s_cluster:
         auth_type: serviceAccount
         lease_name: k8s.cluster.receiver.opentelemetry.io
@@ -30,6 +31,7 @@ spec:
         send_batch_max_size: 1500
         send_batch_size: 1000
         timeout: 1s
+      cumulativetodelta: {}
       k8s_attributes:
         extract:
           labels:
@@ -98,7 +100,9 @@ spec:
         - env
         - k8s_api
         override: false
-        timeout: 2s
+      transform/insert_cluster_name:
+        metric_statements:
+        - set(resource.attributes["k8s.cluster.name"], "${env:CLUSTER_NAME}")
     receivers:
       file_log:
         exclude: []
@@ -409,6 +413,7 @@ spec:
               insecure_skip_verify: true
     service:
       extensions:
+      - health_check
       - k8s_leader_elector/k8s_objects
       - k8s_leader_elector/k8s_cluster
       pipelines:
@@ -512,3 +517,163 @@ spec:
   - name: hostfs
     hostPath:
       path: /
+---
+# Source: opentelemetry-kube-stack/templates/collector.yaml
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: example-profiler
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.21.0
+    app.kubernetes.io/version: "0.154.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"        
+spec:
+  managementState: managed
+  mode: daemonset
+  config:
+    exporters:
+      debug: {}
+      otlp:
+        endpoint: my-otel-backend:4317
+    processors:
+      k8s_attributes:
+        extract:
+          labels:
+          - from: pod
+            key: app.kubernetes.io/instance
+            tag_name: k8s.app.instance
+          - from: pod
+            key: app.kubernetes.io/component
+            tag_name: k8s.app.component
+          metadata:
+          - k8s.namespace.name
+          - k8s.pod.name
+          - k8s.pod.uid
+          - k8s.node.name
+          - k8s.pod.start_time
+          - k8s.deployment.name
+          - k8s.replicaset.name
+          - k8s.replicaset.uid
+          - k8s.daemonset.name
+          - k8s.daemonset.uid
+          - k8s.job.name
+          - k8s.job.uid
+          - k8s.container.name
+          - k8s.cronjob.name
+          - k8s.statefulset.name
+          - k8s.statefulset.uid
+          - container.image.tag
+          - container.image.name
+          - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+          otel_annotations: true
+        filter:
+          node_from_env_var: OTEL_K8S_NODE_NAME
+        passthrough: false
+        pod_association:
+        - sources:
+          - from: resource_attribute
+            name: container.id
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.uid
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.name
+          - from: resource_attribute
+            name: k8s.namespace.name
+          - from: resource_attribute
+            name: k8s.node.name
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.ip
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.name
+          - from: resource_attribute
+            name: k8s.namespace.name
+        - sources:
+          - from: connection
+    receivers:
+      profiling: {}
+    service:
+      pipelines:
+        profiles:
+          exporters:
+          - otlp
+          processors:
+          - k8s_attributes
+          receivers:
+          - profiling
+  imagePullPolicy: IfNotPresent
+  upgradeStrategy: automatic
+  hostPID: true
+  terminationGracePeriodSeconds: 30
+  resources:
+    limits:
+      cpu: 250m
+      memory: 128Mi
+    requests:
+      cpu: 250m
+      memory: 64Mi
+  command:
+    - otelcol-ebpf-profiler
+    - --feature-gates=+service.profilesSupport
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    privileged: false
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: Unconfined
+    seLinuxOptions:
+      type: spc_t
+    capabilities:
+      drop: [ALL]
+      add: ["BPF", "PERFMON", "SYS_PTRACE", "SYS_RESOURCE", "DAC_READ_SEARCH", "SYSLOG", "CHECKPOINT_RESTORE", "IPC_LOCK"]
+  podAnnotations:
+    container.apparmor.security.beta.kubernetes.io/otc-container: unconfined
+  volumeMounts:
+  - name: tracefs
+    mountPath: /sys/kernel/tracing
+    readOnly: true
+  env:
+  - name: K8S_NODE_NAME 
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),host.name=$(OTEL_K8S_NODE_NAME),k8s.node.ip=$(OTEL_K8S_NODE_IP),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.cluster.name=unknown_k8s_cluster"
+  
+  volumes:
+  - name: tracefs
+    hostPath:
+      path: /sys/kernel/tracing
