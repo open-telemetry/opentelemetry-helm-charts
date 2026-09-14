@@ -286,13 +286,13 @@ admissionWebhooks:
     objectSelector: {}
 
   ## Selectors for Instrumentation webhooks.
-  ## Empty maps inherit the selectors from admissionWebhooks.pods.
+  ## Empty maps use the common selectors from admissionWebhooks.namespaceSelector and admissionWebhooks.objectSelector.
   instrumentation:
     namespaceSelector: {}
     objectSelector: {}
 
   ## Selectors for OpenTelemetryCollector webhooks.
-  ## Empty maps inherit the selectors from admissionWebhooks.pods.
+  ## Empty maps use the common selectors from admissionWebhooks.namespaceSelector and admissionWebhooks.objectSelector.
   opentelemetryCollector:
     namespaceSelector: {}
     objectSelector: {}
@@ -305,7 +305,7 @@ admissionWebhooks:
   timeoutSeconds: 10
 
   ## Common selectors for all admission webhooks (Pods, Instrumentation, and OpenTelemetryCollector).
-  ## Per-webhook selectors override these values when set.
+  ## Per-webhook selectors are merged with these values, with specific values taking precedence on conflicts.
   namespaceSelector: {}
   objectSelector: {}
 
