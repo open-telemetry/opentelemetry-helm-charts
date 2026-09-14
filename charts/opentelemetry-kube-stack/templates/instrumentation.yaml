@@ -4,6 +4,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: {{ include "opentelemetry-kube-stack.instrumentation" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
     {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | indent 4 }}
@@ -25,7 +26,12 @@ spec:
   env:
     {{- $envOutput | nindent 4 }}
   {{- end }}
-  {{- with .Values.instrumentation.resource }}
+  {{- $resource := deepCopy (.Values.instrumentation.resource | default dict) }}
+  {{- if .Values.resourceAttributes }}
+  {{- $merged := mustMergeOverwrite (deepCopy .Values.resourceAttributes) ($resource.resourceAttributes | default dict) }}
+  {{- $_ := set $resource "resourceAttributes" $merged }}
+  {{- end }}
+  {{- with $resource }}
   resource:
     {{- toYaml . | nindent 4 }}
   {{- end }}

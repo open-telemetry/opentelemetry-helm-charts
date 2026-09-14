@@ -25,6 +25,12 @@ namespaceOverride: ""
 # -- DaemonSet annotations to apply to all related resources
 annotations: {}
 
+# -- Annotations to add to the DaemonSet only. Unlike `annotations`, these are not
+# applied to the ConfigMap, so they do not change the DaemonSet's `checksum/config`
+# and do not trigger a pod rollout. Takes precedence over `annotations` if a key is
+# set in both.
+daemonSetAnnotations: {}
+
 # -- Init containers to run before the main eBPF instrumentation container
 initContainers: []
   # - name: setup-config

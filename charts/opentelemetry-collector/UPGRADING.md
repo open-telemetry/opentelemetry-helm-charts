@@ -4,6 +4,25 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.171.0 to 0.171.1
+
+The `extraEnvs` and `extraEnvsFrom` are now templated in the same manner other templated fields, e.g. `extraVolumes`. If you are using any `{{ }}` syntax in `extraEnvs` or `extraEnvsFrom` you will need to escape them using ``` {{` <original content> `}} ```.
+
+## 0.170.0 to 0.171.0
+
+> [!WARNING]
+> The new `otlp_grpc` and `otlp_http` exporter names require OpenTelemetry Collector v0.144.0 or newer.
+
+The upstream `otlp` and `otlphttp` exporters have been renamed to `otlp_grpc` and `otlp_http`. When `rewriteDeprecatedComponentNames` is enabled (the default), exporter definitions under `config.exporters` and exporter references under `config.service.pipelines` are automatically rewritten. Named instances are preserved, for example `otlp/backend` becomes `otlp_grpc/backend`.
+
+Please update your `values.yaml` to use the new exporter names directly. The `otlp` receiver is not affected by this rename. The automatic rewrite will be removed in a future chart release.
+
+If you are using a Collector image older than v0.144.0, set `rewriteDeprecatedComponentNames: false` to preserve the old exporter names:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+```
+
 ## 0.169.0 to 0.170.0
 
 The `kubernetesEvents` preset can now use the `k8s_events` receiver instead of the `k8sobjects` receiver, via the new `presets.kubernetesEvents.useK8sEventsReceiver` flag. The flag defaults to `false`, so the generated config is unchanged unless you opt in.

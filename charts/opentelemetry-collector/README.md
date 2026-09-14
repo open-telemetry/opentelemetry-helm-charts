@@ -142,7 +142,7 @@ If you want to include the collector's logs, make sure to replace the `debug` ex
 with an exporter that does not send logs to collector's standard output.
 
 Here's an example `values.yaml` file that replaces the default `debug` exporter on the `logs` pipeline
-with an `otlphttp` exporter that sends the container logs to `https://example.com:55681` endpoint.
+with an `otlp_http` exporter that sends the container logs to `https://example.com:55681` endpoint.
 It also clears the `file_log` receiver's `exclude` property, for collector logs to be included in the pipeline.
 
 ```yaml
@@ -155,13 +155,13 @@ presets:
 
 config:
   exporters:
-    otlphttp:
+    otlp_http:
       endpoint: https://example.com:55681
   service:
     pipelines:
       logs:
         exporters:
-          - otlphttp
+          - otlp_http
 ```
 
 ### Configuration for Kubernetes Attributes Processor
