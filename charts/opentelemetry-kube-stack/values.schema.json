@@ -3899,13 +3899,16 @@
     },
     "TLSConfig": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "serverName": {
           "type": "string"
         },
         "insecureSkipVerify": {
           "type": "boolean"
+        },
+        "ca": {
+          "type": "object"
         }
       },
       "required": [
@@ -4147,6 +4150,21 @@
         "additionalLabels": {
           "$ref": "#/$defs/AdditionalLabels"
         },
+        "authorization": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tlsConfig": {
+          "type": "object",
+          "additionalProperties": true
+        },
         "https": {
           "anyOf": [
             {
@@ -4154,26 +4172,6 @@
             },
             {
               "type": "null"
-            }
-          ]
-        },
-        "insecureSkipVerify": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "serverName": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "string"
             }
           ]
         },
@@ -4190,15 +4188,6 @@
           }
         },
         "scheme": {
-          "type": "string"
-        },
-        "caFile": {
-          "type": "string"
-        },
-        "certFile": {
-          "type": "string"
-        },
-        "keyFile": {
           "type": "string"
         }
       },
@@ -4618,9 +4607,30 @@
         },
         "ignoreNamespaceSelectors": {
           "type": "boolean"
+        },
+        "authorization": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "type": "boolean"
+            },
+            "serviceAccountName": {
+              "type": "string"
+            },
+            "secretName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "serviceAccountName",
+            "secretName"
+          ]
         }
       },
       "required": [
+        "authorization",
         "enabled",
         "ignoreNamespaceSelectors"
       ]

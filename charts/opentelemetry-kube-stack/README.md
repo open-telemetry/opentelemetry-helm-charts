@@ -224,10 +224,7 @@ Consult also the [Helm Documentation on CRDs](https://helm.sh/docs/chart_best_pr
 
 _See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documentation._
 
-### Upgrade from 0.6.x to 0.7.x
-
-Version 0.7.0 has unified the previous collectors (daemonset and deployment) in a single one. If you are using custom configurations for `cluster` collector, you will need to merge your `cluster` collector configuration with `daemon` collector and remove `collectors.cluster` section from your values file.
-If you are using helm, upgrade command is enough the prune old resources, but gitops approaches like 'ArgoCD' could require to select pruning options during sync process to get rid of removed resources.
+For version-specific upgrade guidance, see [UPGRADING.md](UPGRADING.md).
 
 ## Configuration
 
