@@ -1,0 +1,142 @@
+---
+# Source: opentelemetry-otap-dataflow/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-opentelemetry-otap-dataflow
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-otap-dataflow-0.1.0
+    app.kubernetes.io/name: opentelemetry-otap-dataflow
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.50.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry
+    app.kubernetes.io/component: config
+data:
+  config.yaml: |
+    engine:
+      observability:
+        pipeline:
+          connections:
+          - from: internal_telemetry/engine
+            to: otlp_http/dynatrace
+          nodes:
+            internal_telemetry/engine:
+              config:
+                metrics:
+                  interval: 30s
+              type: receiver:internal_telemetry
+            otlp_http/dynatrace:
+              config:
+                endpoint: ${env:DT_ENDPOINT}/v2/otlp
+                headers:
+                  Authorization: Api-Token ${env:DT_API_TOKEN}
+                http: {}
+              type: exporter:otlp_http
+      telemetry:
+        metrics:
+          provider: its
+    groups:
+      default:
+        pipelines:
+          main:
+            connections:
+            - from: otlp/ingest
+              to: attributes/enrich
+            - from: attributes/enrich
+              to: filter/drop_health
+            - from: filter/drop_health
+              to: router/by_signal
+            - from: router/by_signal["logs"]
+              to: transform/opl
+            - from: transform/opl
+              to: batch/logs
+            - from: router/by_signal["metrics"]
+              to: batch/metrics
+            - from: router/by_signal["traces"]
+              to: batch/traces
+            - from:
+              - batch/logs
+              - batch/metrics
+              - batch/traces
+              to: retry/export
+            - from: retry/export
+              to: otlp_http/dynatrace
+            nodes:
+              attributes/enrich:
+                config:
+                  actions:
+                  - action: upsert
+                    key: k8s.cluster.name
+                    value: unknown-k8s-cluster
+                  - action: upsert
+                    key: telemetry.pipeline.engine
+                    value: otap-dataflow
+                  - action: upsert
+                    key: pipeline
+                    value: otel-arrow
+                type: processor:attribute
+              batch/logs:
+                config:
+                  send_batch_size: 1000
+                  timeout: 5s
+                type: processor:batch
+              batch/metrics:
+                config:
+                  send_batch_size: 1000
+                  timeout: 5s
+                type: processor:batch
+              batch/traces:
+                config:
+                  send_batch_size: 1000
+                  timeout: 5s
+                type: processor:batch
+              filter/drop_health:
+                config:
+                  traces:
+                    span:
+                    - attributes["url.path"] == "/health"
+                type: processor:filter
+              otlp/ingest:
+                config:
+                  protocols:
+                    grpc:
+                      listening_addr: 0.0.0.0:4317
+                    http:
+                      listening_addr: 0.0.0.0:4318
+                type: receiver:otlp
+              otlp_http/dynatrace:
+                config:
+                  endpoint: ${env:DT_ENDPOINT}/v2/otlp
+                  headers:
+                    Authorization: Api-Token ${env:DT_API_TOKEN}
+                  http: {}
+                type: exporter:otlp_http
+              retry/export:
+                config:
+                  initial_interval: 1s
+                  max_interval: 30s
+                type: processor:retry
+              router/by_signal:
+                config: {}
+                outputs:
+                - logs
+                - metrics
+                - traces
+                type: processor:type_router
+              transform/opl:
+                config:
+                  opl_query: |
+                    logs
+                    | if (contains(body, "error")) { set severity_text = "ERROR" } else { set severity_text = "CLEARED" }
+                    | if (matches(body, r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+")) { set attributes["pii.email.detected"] = "true", body = concat("REDACTED:", encode(sha256(body), "hex")) }
+                type: processor:transform
+            policies:
+              channel_capacity:
+                control:
+                  node: 100
+                  pipeline: 100
+                pdata: 128
+            type: otap
+    version: otel_dataflow/v1
