@@ -765,6 +765,15 @@ spec:
                 x-kubernetes-list-type: atomic
               priorityClassName:
                 type: string
+              proxy:
+                properties:
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  url:
+                    type: string
+                type: object
               replicas:
                 format: int32
                 maximum: 1
@@ -961,6 +970,11 @@ spec:
               volumeMounts:
                 items:
                   properties:
+                    bindMountOptions:
+                      items:
+                        type: string
+                      type: array
+                      x-kubernetes-list-type: set
                     mountPath:
                       type: string
                     mountPropagation:
@@ -1078,6 +1092,9 @@ spec:
                         defaultMode:
                           format: int32
                           type: integer
+                        defaultUser:
+                          format: int64
+                          type: integer
                         items:
                           items:
                             properties:
@@ -1088,6 +1105,9 @@ spec:
                                 type: integer
                               path:
                                 type: string
+                              user:
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -1128,6 +1148,9 @@ spec:
                         defaultMode:
                           format: int32
                           type: integer
+                        defaultUser:
+                          format: int64
+                          type: integer
                         items:
                           items:
                             properties:
@@ -1162,6 +1185,9 @@ spec:
                                 - resource
                                 type: object
                                 x-kubernetes-map-type: atomic
+                              user:
+                                format: int64
+                                type: integer
                             required:
                             - path
                             type: object
@@ -1172,6 +1198,9 @@ spec:
                       properties:
                         medium:
                           type: string
+                        mode:
+                          format: int32
+                          type: integer
                         sizeLimit:
                           anyOf:
                           - type: integer
@@ -1483,6 +1512,9 @@ spec:
                         defaultMode:
                           format: int32
                           type: integer
+                        defaultUser:
+                          format: int64
+                          type: integer
                         sources:
                           items:
                             properties:
@@ -1522,6 +1554,9 @@ spec:
                                     type: string
                                   signerName:
                                     type: string
+                                  user:
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -1537,6 +1572,9 @@ spec:
                                           type: integer
                                         path:
                                           type: string
+                                        user:
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -1586,6 +1624,9 @@ spec:
                                           - resource
                                           type: object
                                           x-kubernetes-map-type: atomic
+                                        user:
+                                          format: int64
+                                          type: integer
                                       required:
                                       - path
                                       type: object
@@ -1607,6 +1648,9 @@ spec:
                                     type: integer
                                   signerName:
                                     type: string
+                                  user:
+                                    format: int64
+                                    type: integer
                                   userAnnotations:
                                     additionalProperties:
                                       type: string
@@ -1627,6 +1671,9 @@ spec:
                                           type: integer
                                         path:
                                           type: string
+                                        user:
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -1649,6 +1696,9 @@ spec:
                                     type: integer
                                   path:
                                     type: string
+                                  user:
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -1746,6 +1796,9 @@ spec:
                         defaultMode:
                           format: int32
                           type: integer
+                        defaultUser:
+                          format: int64
+                          type: integer
                         items:
                           items:
                             properties:
@@ -1756,6 +1809,9 @@ spec:
                                 type: integer
                               path:
                                 type: string
+                              user:
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
