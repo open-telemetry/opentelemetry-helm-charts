@@ -1,0 +1,33 @@
+---
+# Source: opentelemetry-otap-dataflow/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-opentelemetry-otap-dataflow
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-otap-dataflow-0.1.0
+    app.kubernetes.io/name: opentelemetry-otap-dataflow
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/version: "0.50.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry
+    app.kubernetes.io/component: service
+spec:
+  type: ClusterIP
+  ports:
+    - name: admin
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: opentelemetry-otap-dataflow
+    app.kubernetes.io/instance: example
