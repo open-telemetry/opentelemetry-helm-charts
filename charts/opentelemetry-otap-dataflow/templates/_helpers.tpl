@@ -44,7 +44,7 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{- define "otap-dataflow.labels" -}}
+{{- define "helper.commonLabels" -}}
 helm.sh/chart: {{ include "otap-dataflow.chart" . }}
 {{ include "otap-dataflow.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
