@@ -1,0 +1,76 @@
+# Demonstrates profiling preset with inheritDefaultCRConfig set to
+# false for a collector running a dedicated distribution (otelcol-ebpf-profiler)
+# whose binary does not include all components from the shared defaultCRConfig.
+#
+# The shared defaultCRConfig declares components absent from the
+# otelcol-ebpf-profiler binary: otlp receiver and the cumulativetodelta processor.
+# Without isolation, the otlp receiver and cumulativetodelta processor
+# would flow into the profiler collector and crash it.
+defaultCRConfig:
+  presets:
+    kubernetesAttributes:
+      enabled: true
+    resourceDetection:
+      k8s_api:
+        enabled: true
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      cumulativetodelta: {}
+      resource_detection/env:
+        override: false
+      transform/insert_cluster_name:
+        metric_statements:
+          - set(resource.attributes["k8s.cluster.name"], "${env:CLUSTER_NAME}")
+    exporters:
+      debug: {}
+    extensions:
+      health_check: {}
+    service:
+      extensions: [health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [resource_detection/env, transform/insert_cluster_name]
+          exporters: [debug]
+
+collectors:
+  daemon:
+    enabled: true
+    suffix: daemon
+    mode: daemonset
+    presets:
+      logsCollection:
+        enabled: true
+      hostMetrics:
+        enabled: true
+
+  profiler:
+    enabled: true
+    suffix: profiler
+    mode: daemonset
+    inheritDefaultCRConfig: false
+    image:
+      repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-ebpf-profiler
+    command:
+      - otelcol-ebpf-profiler
+      - --feature-gates=+service.profilesSupport
+    presets:
+      profiling:
+        enabled: true
+      kubernetesAttributes:
+        enabled: true
+    config:
+      exporters:
+        otlp:
+          endpoint: my-otel-backend:4317
+      service:
+        pipelines:
+          profiles:
+            exporters: [otlp]
