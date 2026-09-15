@@ -323,3 +323,84 @@ EOF
 ```
 
 [v1beta1_migration]: https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1
+
+## Using with ArgoCD
+
+### Certificate Recreation on Every Sync
+
+When using this chart with ArgoCD, the webhook certificate secret may show
+a diff on every sync. This happens because ArgoCD uses `helm template`
+(dry-run mode) which does not support the Helm `lookup` function, and the
+default `secretAnnotations` include `helm.sh/hook-delete-policy: before-hook-creation`
+which causes ArgoCD to delete and recreate the cert on every sync.
+
+The complete solution requires two steps:
+
+**Step 1 — Update your Helm values to prevent cert deletion and recreation:**
+
+```yaml
+admissionWebhooks:
+  autoGenerateCert:
+    enabled: true
+    recreate: false
+  secretAnnotations:
+    "helm.sh/hook": null
+    "helm.sh/hook-delete-policy": null
+```
+
+**Step 2 — Configure ArgoCD `ignoreDifferences` with `RespectIgnoreDifferences=true`:**
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opentelemetry-operator
+spec:
+  syncPolicy:
+    syncOptions:
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: <release-name>-controller-manager-service-cert
+      jsonPointers:
+        - /data/tls.crt
+        - /data/tls.key
+        - /data/ca.crt
+    - group: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    - group: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+```
+
+> **Note:** After applying these changes you may need to manually
+> resync the `caBundle` on CRDs and webhooks once.
+
+**Optional: Resync caBundle script**
+
+If certs were regenerated after adding `ignoreDifferences`, run this
+script to patch the caBundle on webhooks and CRDs:
+
+```bash
+#!/bin/bash
+NS="opentelemetry-operator-system"
+SECRET_NAME="<release-name>-controller-manager-service-cert"
+MWC_NAME=$(kubectl get mutatingwebhookconfiguration -o name | grep "opentelemetry-operator-mutation" | head -n 1)
+VWC_NAME=$(kubectl get validatingwebhookconfiguration -o name | grep "opentelemetry-operator-validation" | head -n 1)
+CRD_NAME=$(kubectl get crd -o name | grep "opentelemetrycollectors.opentelemetry.io")
+
+CA=$(kubectl get secret $SECRET_NAME -n $NS -o jsonpath='{.data.ca\.crt}')
+
+kubectl patch $MWC_NAME --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/webhooks/0/clientConfig/caBundle\", \"value\":\"$CA\"}]"
+
+kubectl patch $VWC_NAME --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/webhooks/0/clientConfig/caBundle\", \"value\":\"$CA\"}]"
+
+kubectl patch $CRD_NAME --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/spec/conversion/webhook/clientConfig/caBundle\", \"value\":\"$CA\"}]"
+```
