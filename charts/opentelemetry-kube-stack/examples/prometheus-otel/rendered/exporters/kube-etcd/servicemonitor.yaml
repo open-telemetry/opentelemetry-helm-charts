@@ -7,7 +7,7 @@ metadata:
   namespace: default
   labels:
     app: opentelemetry-kube-stack-kube-etcd
-    helm.sh/chart: opentelemetry-kube-stack-0.23.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"
@@ -23,4 +23,8 @@ spec:
       - "kube-system"
   endpoints:
   - port: http-metrics
-    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    authorization:
+      credentials:
+        key: token
+        name: 'example-kubernetes-metrics-token'
+      type: Bearer
