@@ -6,10 +6,10 @@ metadata:
   name: flagd-config
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-demo-0.41.2
+    helm.sh/chart: opentelemetry-demo-0.42.0
     
     
-    app.kubernetes.io/version: "3.0.0"
+    app.kubernetes.io/version: "3.1.0"
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 data:
@@ -45,6 +45,25 @@ data:
             "on": true
           }
         },
+        "aiRunawayAgent": {
+          "defaultVariant": "off",
+          "description": "forces the agent to keep looping tool calls until it hits its recursion limit",
+          "state": "ENABLED",
+          "variants": {
+            "off": 0,
+            "on": 20
+          }
+        },
+        "aiSlowResponse": {
+          "defaultVariant": "off",
+          "description": "slow LLM responses in the agent service",
+          "state": "ENABLED",
+          "variants": {
+            "10sec": 10000,
+            "5sec": 5000,
+            "off": 0
+          }
+        },
         "cartFailure": {
           "defaultVariant": "off",
           "description": "Fail cart service n% of the time",
@@ -70,6 +89,18 @@ data:
             "10x": 10,
             "1x": 1,
             "off": 0
+          }
+        },
+        "emitRawPii": {
+          "defaultVariant": "off",
+          "description": "Emit raw PII attributes (user.email, demo.payment.card_number, demo.payment.card_cvv) from checkout and payment for the collector redaction example. Not a failure scenario -- controls PII emission, independent of collector-side redaction which always runs.",
+          "metadata": {
+            "schedulable": false
+          },
+          "state": "ENABLED",
+          "variants": {
+            "off": false,
+            "on": true
           }
         },
         "failedReadinessProbe": {
@@ -110,24 +141,13 @@ data:
             "on": 100
           }
         },
-        "loadGeneratorTraffic": {
-          "defaultVariant": "on",
-          "description": "Enable synthetic traffic from the load generator. Turn off to pause all load-generator scenarios.",
+        "loadGeneratorFloodHomepage": {
+          "defaultVariant": "off",
+          "description": "Flood the frontend with a large amount of requests.",
           "state": "ENABLED",
           "variants": {
             "off": 0,
-            "on": 1
-          }
-        },
-        "loadGeneratorVUs": {
-          "defaultVariant": "5",
-          "description": "Number of concurrent virtual users the load generator's HTTP scenario runs. Changes take effect on the wrapper's next poll, restarting k6.",
-          "state": "ENABLED",
-          "variants": {
-            "10": 10,
-            "25": 25,
-            "5": 5,
-            "50": 50
+            "on": 100
           }
         },
         "paymentFailure": {
@@ -171,6 +191,15 @@ data:
               "off"
             ]
           },
+          "variants": {
+            "off": false,
+            "on": true
+          }
+        },
+        "productCatalogLockContention": {
+          "defaultVariant": "off",
+          "description": "Trigger lock contention on the product catalog database",
+          "state": "ENABLED",
           "variants": {
             "off": false,
             "on": true
