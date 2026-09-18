@@ -11,6 +11,8 @@ default:
       value: otel-collector
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
+    - name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
+      value: explicit_bucket_histogram
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.version={{ .Chart.AppVersion }}
   # Allows overriding and additions to .Values.default.env
@@ -273,6 +275,8 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_EXPORTER_OTLP_INSECURE
         value: "true"
+      - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
+        value: "true"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=low
     resources:
@@ -307,6 +311,10 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: OPAMP_SERVER_ENDPOINT
+        value: ws://opamp-server:4320/v1/opamp
+      - name: OPAMP_SERVER_TLS_INSECURE_SKIP_VERIFY
+        value: "false"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=high
     resources:
@@ -337,6 +345,12 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_EXPORTER_OTLP_INSECURE
+        value: "true"
+      - name: OPAMP_SERVER_ENDPOINT
+        value: ws://opamp-server:4320/v1/opamp
+      - name: OPAMP_SERVER_TLS_INSECURE_SKIP_VERIFY
+        value: "false"
+      - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
         value: "true"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=low
@@ -381,6 +395,8 @@ components:
         value: http/protobuf
       - name: GOMEMLIMIT
         value: 16MiB
+      - name: OTEL_GO_X_OBSERVABILITY
+        value: "true"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=critical
     resources:
@@ -596,6 +612,10 @@ components:
         value: "4317"
       - name: OTEL_COLLECTOR_PORT_HTTP
         value: "4318"
+      - name: LOCUST_WEB_HOST
+        value: load-generator
+      - name: LOCUST_WEB_PORT
+        value: "8089"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=critical
     resources:
@@ -637,48 +657,50 @@ components:
     enabled: true
     useDefault:
       env: true
+    service:
+      port: 8089
     podAnnotations:
       resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
-      - name: LOAD_GENERATOR_VUS
+      - name: LOCUST_WEB_HOST
+        value: "0.0.0.0"
+      - name: LOCUST_WEB_PORT
+        value: "8089"
+      - name: LOCUST_USERS
         value: "5"
-      - name: K6_TARGET_URL
+      - name: LOCUST_HOST
         value: http://frontend-proxy:8080
-      - name: K6_BROWSER_ENABLED
+      - name: LOCUST_HEADLESS
+        value: "false"
+      - name: LOCUST_AUTOSTART
         value: "true"
-      - name: K6_BROWSER_ARGS
-        value: no-sandbox,disable-dev-shm-usage
+      - name: LOCUST_BROWSER_TRAFFIC_ENABLED
+        value: "true"
+      - name: LOCUST_HTTP_USER_WEIGHT
+        value: "9"
+      - name: LOCUST_BROWSER_USER_WEIGHT
+        value: "1"
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
+      - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
+        value: "true"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
       - name: FLAGD_OFREP_PORT
         value: "8016"
-      - name: LOCUST_HOST
-        value: http://frontend-proxy:8080
-      - name: LOCUST_HEADLESS
-        value: "true"
-      - name: LOCUST_AUTOSTART
-        value: "true"
-      - name: LOCUST_USERS
-        value: "5"
+      - name: AGENT_ENDPOINT
+        value: agent
+      - name: AGENT_PORT
+        value: "8010"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
-      - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        value: http/protobuf
-      - name: K6_OTEL_EXPORTER_PROTOCOL
-        value: http/protobuf
-      - name: K6_OTEL_HTTP_EXPORTER_ENDPOINT
-        value: $(OTEL_COLLECTOR_NAME):4318
-      - name: K6_OTEL_HTTP_EXPORTER_INSECURE
-        value: "true"
-      - name: K6_OTEL_METRIC_PREFIX
-        value: k6.
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=low
     resources:
       limits:
-        memory: 512Mi
+        memory: 1500Mi
 
   mcp:
     enabled: true
@@ -698,6 +720,8 @@ components:
       - name: TRACELOOP_BASE_URL
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_EXPORTER_OTLP_INSECURE
+        value: "true"
+      - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
         value: "true"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=low
@@ -726,8 +750,6 @@ components:
         value: "false"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=critical
-      - name: NODE_OPTIONS
-        value: --require @opentelemetry/auto-instrumentations-node/register
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: grpc
     resources:
@@ -755,12 +777,18 @@ components:
         value: "8013"
       - name: GOMEMLIMIT
         value: 16MiB
+      - name: OTEL_GO_X_OBSERVABILITY
+        value: "true"
       - name: DB_CONNECTION_STRING
         value: postgres://astronomy_user:astronomy_password@astronomy-db/astronomy_db?sslmode=disable
       - name: OTEL_SEMCONV_STABILITY_OPT_IN
         value: database
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: OPAMP_SERVER_ENDPOINT
+        value: ws://opamp-server:4320/v1/opamp
+      - name: OPAMP_SERVER_TLS_INSECURE_SKIP_VERIFY
+        value: "false"
       - name: OTEL_CONFIG_FILE
         value: /otel-config.yml
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
@@ -857,6 +885,8 @@ components:
         value: "true"
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
+      - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
+        value: "true"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
@@ -1255,30 +1285,53 @@ opentelemetry-collector:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      resourcedetection:
+      resource_detection:
         detectors: [env, system]
       transform/sanitize_spans:
         error_mode: ignore
         trace_statements:
-          # Sanitize spans to prevent span metrics cardinality explosion
-          # caused by non-compliant high cardinality span names:
-          # 1. Define missing http.route on key HTTP operations for meaningful operation names
-          # 2. Then normalize span names; http server spans lacking http.route default to operations "GET", "POST", etc.
-          - context: span
-            # FRONTEND SERVICE
-            conditions:
-              - span.kind == SPAN_KIND_SERVER and resource.attributes["service.name"] == "frontend" and span.attributes["http.route"] == nil
-            statements:
-              # Workaround for Next.js high cardinality span name issue: https://github.com/vercel/next.js/issues/54694
-              - set(span.attributes["http.route"], "/api/cart") where IsMatch(span.attributes["http.target"], "\\/api\\/cart")  # e.g. # /api/cart
-              - set(span.attributes["http.route"], "/api/checkout") where IsMatch(span.attributes["http.target"], "\\/api\\/checkout")  # e.g. # /api/checkout
-              - set(span.attributes["http.route"], "/api/products/{productId}") where IsMatch(span.attributes["http.target"], "\\/api\\/products\\/.*")  # e.g. /api/products/1YMWWN1N4O
-              - set(span.attributes["http.route"], "/api/recommendations") where IsMatch(span.attributes["http.target"], "\\/api\\/recommendations")  # e.g. # /api/recommendations?productIds=...
-              - set(span.attributes["http.route"], "/api/data") where IsMatch(span.attributes["http.target"], "\\/api\\/data.*")  # e.g. # " /api/data?contextKeys=telescopes" or /api/data/?contextKeys=cameras
           - context: span
             statements:
-              # SANITIZE ALL SPAN NAMES TO PREVENT CARDINALITY EXPLOSION
-              - set_semconv_span_name("1.37.0", "unsanitized_span_name")
+              # Sanitize span names to prevent span metrics cardinality explosion
+              # caused by non-compliant high cardinality span names
+              - set_semconv_span_name("1.43.0", "original_span_name")
+      # Redact sensitive attributes before export. Collector-side redaction is
+      # a fallback -- prefer not collecting sensitive data in the first place.
+      # Raw PII is only emitted by checkout/payment when the `emitRawPii`
+      # feature flag is enabled (off by default); these processors run
+      # unconditionally as a safety net regardless of the flag.
+      #
+      # transform/redact_sensitive_data does precise, per-key handling of the
+      # known sensitive attributes (delete, hash, partial-mask). The redaction
+      # processor below layers a broader key-name safety net for attributes
+      # transform doesn't know about.
+      transform/redact_sensitive_data:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - delete_key(attributes, "demo.payment.card_cvv") where attributes["demo.payment.card_cvv"] != nil
+              - set(attributes["user.hash"], SHA256(attributes["user.email"])) where attributes["user.email"] != nil
+              - delete_key(attributes, "user.email") where attributes["user.email"] != nil
+              # Keep only the last four digits, e.g. 4432-8015-6152-0454 -> ****-****-****-0454
+              - replace_pattern(attributes["demo.payment.card_number"], "^\\d{4}-\\d{4}-\\d{4}-", "****-****-****-") where attributes["demo.payment.card_number"] != nil
+      # allow_all_keys avoids the fail-closed default (allow_all_keys=false
+      # drops every attribute not in allowed_keys), which would strip
+      # attributes across this shared gateway pipeline. blocked_key_patterns
+      # matches attribute keys rather than values, so it can't over-redact
+      # benign numeric attributes like demo.order.id.
+      redaction:
+        allow_all_keys: true
+        # Exempt by key rather than by value: the transform above already masks
+        # this to its last 4 digits, so redaction doesn't need to depend on
+        # matching that exact masked string.
+        ignored_keys:
+          - demo.payment.card_number
+        blocked_key_patterns:
+          - "demo\\.payment\\.card_pin"
+          - "password"
+          - "secret"
+        summary: info
       transform/sanitize_logs:
         error_mode: ignore
         log_statements:
@@ -1329,18 +1382,18 @@ opentelemetry-collector:
       extensions: [health_check, opamp]
       pipelines:
         traces:
-          processors: [memory_limiter, resourcedetection, resource, transform/sanitize_logs, gen_ai_normalizer]
+          processors: [memory_limiter, resource_detection, resource, transform/sanitize_spans, gen_ai_normalizer, transform/redact_sensitive_data, redaction]
           exporters: [otlp_grpc/jaeger, debug, span_metrics]
         metrics:
           receivers: [otlp, kafkametrics, span_metrics, prometheus/ad]
-          processors: [memory_limiter, resourcedetection, resource]
+          processors: [memory_limiter, resource_detection, resource]
           exporters: [otlp_http/prometheus, debug]
         logs:
-          processors: [memory_limiter, resourcedetection, resource, transform/sanitize_logs]
+          processors: [memory_limiter, resource_detection, resource, transform/sanitize_logs]
           exporters: [opensearch, debug]
         profiles:
           receivers: [otlp]
-          processors: [memory_limiter, resourcedetection, resource, filter/sanitize_profiles]
+          processors: [memory_limiter, resource_detection, resource, filter/sanitize_profiles]
           exporters: [otlp_grpc/firepit, debug]
       telemetry:
         metrics:
