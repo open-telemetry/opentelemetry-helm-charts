@@ -9,6 +9,182 @@ tests:
       - equal:
           path: metadata.name
           value: RELEASE-NAME-opentelemetry-ebpf-instrumentation
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'file_format: "1.0"'
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'version: "2.0"'
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'name: include-all-kubernetes-applications'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)discovery:'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)prometheus_export:'
+
+  - it: renders the Config v2 network preset without v1 fields
+    set:
+      preset: network
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'enabled: true'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'name: include-all-kubernetes-applications'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)[[:space:]]+rules:'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)network:'
+
+  - it: preserves user-provided Config v2 rules and templates values
+    set:
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              capture:
+                rules:
+                  - action: include
+                    name: custom-rule
+                    match:
+                      kubernetes:
+                        namespace_glob:
+                          - '{{ .Release.Namespace }}'
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'name: custom-rule'
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: "namespace_glob:\\n[[:space:]]+- 'NAMESPACE'"
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'name: include-all-kubernetes-applications'
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'default_action: exclude'
+
+  - it: preserves an explicitly empty Config v2 rules list
+    set:
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              capture:
+                rules: []
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'rules: \[\]'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'name: include-all-kubernetes-applications'
+
+  - it: removes a Config v2 default when explicitly set to null
+    set:
+      config:
+        data:
+          meter_provider: null
+          extensions:
+            obi:
+              version: "2.0"
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)meter_provider:'
+
+  - it: removes a nested Config v2 default when explicitly set to null
+    set:
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              capture:
+                instrumentation:
+                  dns: null
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)[[:space:]]+dns:'
+
+  - it: retains legacy Config v1 defaults and application discovery
+    set:
+      config:
+        data:
+          log_level: debug
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)discovery:'
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)otel_traces_export:'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'version: "2.0"'
+
+  - it: removes a Config v1 default when explicitly set to null
+    set:
+      config:
+        data:
+          log_level: debug
+          prometheus_export: null
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)prometheus_export:'
+
+  - it: retains legacy Config v1 network preset behavior
+    set:
+      preset: network
+      config:
+        data:
+          log_level: debug
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)network:\n[[:space:]]+enable: true'
+
+  - it: rejects declarative config without an OBI version marker
+    set:
+      config:
+        data:
+          file_format: "1.0"
+    asserts:
+      - failedTemplate:
+          errorMessage: 'config.data.file_format requires config.data.extensions.obi.version: "2.0"'
+
+  - it: rejects an unsupported declarative file format
+    set:
+      config:
+        data:
+          file_format: "2.0"
+          extensions:
+            obi:
+              version: "2.0"
+    asserts:
+      - failedTemplate:
+          errorMessage: 'unsupported config.data.file_format "2.0"; supported version is "1.0"'
+
+  - it: rejects an unsupported OBI configuration version
+    set:
+      config:
+        data:
+          extensions:
+            obi:
+              version: "3.0"
+    asserts:
+      - failedTemplate:
+          errorMessage: 'unsupported config.data.extensions.obi.version "3.0"; supported version is "2.0"'
 
   - it: does not render when config creation disabled
     set:
