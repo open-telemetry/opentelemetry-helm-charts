@@ -1,0 +1,58 @@
+{{- if and .Values.kubernetesServiceMonitors.enabled .Values.kubernetesServiceMonitors.authorization.create }}
+{{- $root := . }}
+{{- $namespaces := list (include "opentelemetry-kube-stack.namespace" .) }}
+{{- if .Values.kubernetesServiceMonitors.ignoreNamespaceSelectors }}
+{{- $namespaces = append $namespaces "default" }}
+{{- $namespaces = append $namespaces "kube-system" }}
+{{- end }}
+{{- range ($namespaces | uniq) }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" $root }}
+  namespace: {{ . }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" $root | nindent 4 }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" $root }}
+  namespace: {{ . }}
+  annotations:
+    kubernetes.io/service-account.name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" $root }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" $root | nindent 4 }}
+type: kubernetes.io/service-account-token
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" . | nindent 4 }}
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . }}
+subjects:
+{{- range ($namespaces | uniq) }}
+  - kind: ServiceAccount
+    name: {{ include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" $root }}
+    namespace: {{ . }}
+{{- end }}
+{{- end }}
