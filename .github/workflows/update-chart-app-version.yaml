@@ -2,6 +2,9 @@ name: Update Chart App Version
 
 on:
   workflow_call:
+    secrets:
+      OTELBOT_PRIVATE_KEY:
+        required: true
     inputs:
       chart_name:
         required: true
@@ -62,7 +65,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,7 +74,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup
-        uses: ./.github/actions/setup
+        uses: $/.github/actions/setup
         with:
           create-kind-cluster: "false"
           helm-version: "v4.0.5"

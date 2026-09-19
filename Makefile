@@ -37,13 +37,13 @@ generate-examples:
 .PHONY: check-examples
 check-examples:
 	for chart_name in $(CHARTS); do \
+		helm dependency build charts/$${chart_name}; \
 		EXAMPLES_DIR=charts/$${chart_name}/examples; \
 		EXAMPLES=$$(find $${EXAMPLES_DIR} -maxdepth 1 -mindepth 1 -type d -exec basename \{\} \;); \
 		for example in $${EXAMPLES}; do \
 			echo "Checking example: $${example}"; \
 			VALUES=$$(find $${EXAMPLES_DIR}/$${example} -name *values.yaml); \
 			for value in $${VALUES}; do \
-				helm dependency build charts/$${chart_name}; \
 				helm template example charts/$${chart_name} --namespace default --values $${value} --kube-version $(KUBE_VERSION) --output-dir "${TMP_DIRECTORY}/$${example}"; \
 				SUBCHARTS_DIR=${TMP_DIRECTORY}/$${example}/$${chart_name}/charts; \
 				SUBCHARTS=$$(find $${SUBCHARTS_DIR} -maxdepth 1 -mindepth 1 -type d -exec basename \{\} \;); \

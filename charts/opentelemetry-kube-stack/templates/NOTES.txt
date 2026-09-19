@@ -59,6 +59,32 @@ https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annot
           More details: https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/README.md#tls-certificate-requirement
 {{- end }}
 
+{{- range $name, $collector := .Values.collectors -}}
+{{- $collector = (include "opentelemetry-kube-stack.mergeCollector" (dict "root" $ "collector" $collector) | fromYaml) }}
+{{- if $collector.enabled }}
+{{- if (dig "presets" "profiling" "enabled" false $collector) }}
+{{- $repo := $collector.image.repository -}}
+{{- $unsupported := include "opentelemetry-kube-stack.profilingUnsupportedImages" . | fromYamlArray -}}
+{{- range $distro := $unsupported }}
+  {{- if or (eq $repo $distro) (hasSuffix (printf "/%s" $distro) $repo) }}
+    {{ fail (printf "[ERROR] presets.profiling is enabled for collector %s but image.repository is a community distribution that does not include the profiling receiver. Use the opentelemetry-collector-ebpf-profiler distribution or a custom distribution that includes the receiver." $name) }}
+  {{- end }}
+{{- end }}
+{{- if eq (toString $collector.podSecurityContext.runAsNonRoot) "true" }}
+{{ fail (printf "[ERROR] presets.profiling is enabled for collector '%s' but podSecurityContext.runAsNonRoot is true. The eBPF profiler requires runAsUser: 0 to run. Set podSecurityContext.runAsNonRoot to false or remove it." $name) }}
+{{ end }}
+{{- if $collector.securityContext }}
+[WARNING] presets.profiling is enabled for collector {{ $name }} with a custom securityContext. The preset will NOT inject runAsUser: 0 and capabilities automatically; required by the eBPF profiler to function. Ensure your securityContext sets runAsUser: 0 plus the right capabilities (BPF, PERFMON, SYS_PTRACE, SYS_RESOURCE, DAC_READ_SEARCH, SYSLOG, CHECKPOINT_RESTORE, IPC_LOCK) otherwise.
+{{ end }}
+{{- if eq (dig "inheritDefaultCRConfig" true $collector) true }}
+[WARNING] presets.profiling is enabled for collector {{ $name }} without inheritDefaultCRConfig: false.
+          If defaultCRConfig contains components not in your distribution's binary,
+          the collector will fail to start. Consider setting inheritDefaultCRConfig: false.
+{{ end }}
+{{ end }}
+{{- end }}
+{{- end }}
+
 {{- $deprecations := include "opentelemetry-kube-stack.deprecations" . -}}
 {{- if $deprecations }}
 

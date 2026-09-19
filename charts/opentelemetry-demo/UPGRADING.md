@@ -6,6 +6,73 @@
 > release and then install the new version.
 
 
+## To 0.42
+
+This release follows the OpenTelemetry Demo application's `3.1.0` release. Given
+the note above, this is a full reinstall, but the following changes are worth
+knowing about since they affect any custom `values.yaml` overrides you
+maintain.
+
+### Load generator: k6 replaced with Locust
+
+The `load-generator` component now runs
+[Locust](https://locust.io/) again instead of k6. All `K6_*`, `LOAD_GENERATOR_VUS`
+and `OTEL_EXPORTER_OTLP_PROTOCOL` variables have been removed and replaced with
+`LOCUST_*` variables. The Locust web UI is served on port `8089` and
+`frontend-proxy` routes `/loadgen` to it again (`LOCUST_WEB_HOST`/
+`LOCUST_WEB_PORT`).
+
+### Collector processor renames and new redaction processors
+
+The `resourcedetection` processor has been renamed to `resource_detection`.
+If you override `components.otelcol.config.processors` in your own values,
+rename the processor (and its references in the `service` pipelines).
+
+The traces pipeline also includes two new processors:
+
+* `transform/redact_sensitive_data`: deletes `demo.payment.card_cvv`, hashes
+  `user.email` and masks `demo.payment.card_number`.
+* `redaction`: a key-name based safety net for other sensitive attributes.
+
+If you maintain custom pipeline definitions, the
+upstream traces pipeline order is
+`[memory_limiter, resource_detection, resource, transform/sanitize_spans, gen_ai_normalizer, transform/redact_sensitive_data, redaction]`.
+This release also fixes a bug where the traces pipeline referenced
+`transform/sanitize_logs` instead of `transform/sanitize_spans`.
+
+`transform/sanitize_spans` itself was simplified upstream to a plain
+`set_semconv_span_name("1.43.0", "original_span_name")` call; the
+Next.js `http.route` workarounds it previously contained were removed.
+
+### New environment variables
+
+* All services: `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION`
+  set to `explicit_bucket_histogram`.
+* Python services (`agent`, `chatbot`, `load-generator`, `mcp`,
+  `recommendation`): `OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED`.
+* Go services (`checkout`, `product-catalog`): `OTEL_GO_X_OBSERVABILITY`.
+* `cart`, `chatbot` and `product-catalog`: `OPAMP_SERVER_ENDPOINT` and
+  `OPAMP_SERVER_TLS_INSECURE_SKIP_VERIFY` for the new OpAMP-based remote
+  configuration support. Note: the chart runs `opamp-server` with
+  `-no-tls` (as introduced in 0.41.1), so the endpoints use `ws://` instead of
+  the demo's `wss://`/`https://` and TLS certificate verification is not
+  skipped; flip both if you re-enable TLS on the OpAMP server.
+* `payment`: the `NODE_OPTIONS` variable was removed.
+
+### flagd feature flags
+
+The demo feature flag definitions changed: `loadGeneratorTraffic` and
+`loadGeneratorVUs` were removed, and `aiRunawayAgent`, `aiSlowResponse`,
+`emitRawPii`, `loadGeneratorFloodHomepage` and `productCatalogLockContention`
+were added. See `flagd/demo.flagd.json` for the current set.
+
+### Dependency chart updates
+
+The dependency subcharts were updated to their latest releases:
+opentelemetry-collector `0.165.0` -> `0.173.1`, jaeger `4.11.1` -> `4.13.1`,
+prometheus `29.18.0` -> `29.30.2`, grafana `12.7.2` -> `13.2.5` and
+opensearch `3.7.0` -> `3.8.0`.
+
 ## To 0.41
 
 This release follows the OpenTelemetry Demo application's `3.0.0` release and

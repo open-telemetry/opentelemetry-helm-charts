@@ -240,16 +240,23 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
 */}}
 {{- define "opentelemetry-collector.configTemplateChecksumAnnotation" -}}
   {{- if .Values.configMap.existingPath -}}
-  checksum/config: {{ include (print $.Template.BasePath "/" .Values.configMap.existingPath) . | sha256sum }}
+  checksum/config: {{ include "opentelemetry-collector.configChecksum" (dict "context" . "path" (print "/" .Values.configMap.existingPath)) }}
   {{- else -}}
     {{- if eq .Values.mode "daemonset" -}}
-    checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
+    checksum/config: {{ include "opentelemetry-collector.configChecksum" (dict "context" . "path" "/configmap-agent.yaml") }}
     {{- else if eq .Values.mode "deployment" -}}
-    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    checksum/config: {{ include "opentelemetry-collector.configChecksum" (dict "context" . "path" "/configmap.yaml") }}
     {{- else if eq .Values.mode "statefulset" -}}
-    checksum/config: {{ include (print $.Template.BasePath "/configmap-statefulset.yaml") . | sha256sum }}
+    checksum/config: {{ include "opentelemetry-collector.configChecksum" (dict "context" . "path" "/configmap-statefulset.yaml") }}
     {{- end -}}
   {{- end }}
+{{- end }}
+
+{{/*
+Hash only the data of a rendered ConfigMap, so that the chart labels on the manifest do not change the checksum
+*/}}
+{{- define "opentelemetry-collector.configChecksum" -}}
+{{- pick (include (print .context.Template.BasePath .path) .context | fromYaml) "data" "stringData" | toYaml | sha256sum -}}
 {{- end }}
 
 {{- define "opentelemetry-collector.deprecatedComponentRenames" -}}
