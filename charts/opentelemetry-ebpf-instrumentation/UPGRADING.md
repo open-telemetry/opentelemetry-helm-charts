@@ -4,10 +4,6 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.9.3 to 0.9.4
-
-The `tpl` function has been added to `.Values.config.data`. If you are currently using any `{{ }}` syntax in `.Values.config.data` it will now be rendered. To escape existing instances of `{{ }}`, use ``` {{` <original content> `}} ```. For example, `{{ REDACTED_EMAIL }}` becomes ``` {{` {{ REDACTED_EMAIL }} `}} ```.
-
 ## 0.13.1 to 0.14.0
 
 The chart-managed default configuration now uses OBI Config v2. The effective
@@ -28,3 +24,7 @@ when converting custom configuration.
 The Config v2 Prometheus pull exporter uses `/metrics`; it does not expose the
 Config v1 `prometheus_export.path` setting. Override
 `serviceMonitor.metrics.endpoint.path` when the scraper needs a different path.
+
+## 0.9.3 to 0.9.4
+
+The `tpl` function has been added to `.Values.config.data`. If you are currently using any `{{ }}` syntax in `.Values.config.data` it will now be rendered. To escape existing instances of `{{ }}`, use ``` {{` <original content> `}} ```. For example, `{{ REDACTED_EMAIL }}` becomes ``` {{` {{ REDACTED_EMAIL }} `}} ```.
