@@ -308,6 +308,11 @@ defaultCRConfig:
   #   denyNamespaces:
   #     - namespace-3
   #     - namespace-4
+  #   # Namespaces whose Secret updates the target allocator watches. When omitted while
+  #   # kubernetesServiceMonitors is enabled, this defaults to the namespaces where those
+  #   # ServiceMonitors and their authorization Secrets are created.
+  #   secretNamespaces:
+  #     - namespace-1
   # # mTLS between the collector and the target allocator, requires cert-manager
   # mtls:
   #   enabled: true
@@ -1138,7 +1143,8 @@ kubernetesServiceMonitors:
   ignoreNamespaceSelectors: false
   authorization:
     ## Create a dedicated service account and long-lived service account token Secret used only
-    ## to authenticate Kubernetes component metrics scrapes.
+    ## to authenticate Kubernetes component metrics scrapes. When false, configure each enabled
+    ## component's serviceMonitor.authorization with an existing Secret or set it to null.
     create: true
     ## Override the generated service account or Secret names.
     serviceAccountName: ""
@@ -1378,11 +1384,8 @@ coreDns:
     #   k8s-app: kube-dns
   serviceMonitor:
     enabled: true
-    authorization:
-      type: Bearer
-      credentials:
-        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
-        key: token
+    ## Configure authorization if the CoreDNS metrics endpoint requires it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1458,11 +1461,8 @@ kubeDns:
     # selector:
     #   k8s-app: kube-dns
   serviceMonitor:
-    authorization:
-      type: Bearer
-      credentials:
-        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
-        key: token
+    ## Configure authorization if the kube-dns metrics endpoints require it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1582,11 +1582,8 @@ kubeEtcd:
   ##
   serviceMonitor:
     enabled: true
-    authorization:
-      type: Bearer
-      credentials:
-        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
-        key: token
+    ## Configure authorization if the etcd metrics endpoint requires it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1775,11 +1772,8 @@ kubeProxy:
 
   serviceMonitor:
     enabled: true
-    authorization:
-      type: Bearer
-      credentials:
-        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
-        key: token
+    ## Configure authorization if the kube-proxy metrics endpoint requires it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""

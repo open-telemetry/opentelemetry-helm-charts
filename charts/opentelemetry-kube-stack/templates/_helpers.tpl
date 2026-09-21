@@ -163,6 +163,9 @@ Create the name of the clusterRoleBinding to use
 {{- end }}
 
 {{- define "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" -}}
+{{- if not (and .Values.kubernetesServiceMonitors.enabled .Values.kubernetesServiceMonitors.authorization.create) -}}
+{{- fail "The Kubernetes component ServiceMonitors authenticate by default with the Secret created by kubernetesServiceMonitors.authorization.create, which is only rendered when kubernetesServiceMonitors.enabled is also true. Enable both settings, or set the serviceMonitor.authorization of each enabled Kubernetes component to a Secret you manage yourself, or to null to scrape without authentication." -}}
+{{- end -}}
 {{- default (printf "%s-token" (include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . | trunc 57 | trimSuffix "-") | trunc 63 | trimSuffix "-") .Values.kubernetesServiceMonitors.authorization.secretName -}}
 {{- end }}
 
@@ -494,6 +497,16 @@ Callers must use fromYaml to get a dict.
 {{- $_ := unset $base "targetAllocator" -}}
 {{- $collector = (mergeOverwrite $base $collector) -}}
 
+{{- end -}}
+{{- if and $root.Values.kubernetesServiceMonitors.enabled (dig "targetAllocator" "prometheusCR" "enabled" false $collector) -}}
+{{- $prometheusCR := get (get $collector "targetAllocator") "prometheusCR" -}}
+{{- if not (hasKey $prometheusCR "secretNamespaces") -}}
+{{- if $root.Values.kubernetesServiceMonitors.ignoreNamespaceSelectors -}}
+{{- $_ := set $prometheusCR "secretNamespaces" (list "default" "kube-system") -}}
+{{- else -}}
+{{- $_ := set $prometheusCR "secretNamespaces" (list (include "opentelemetry-kube-stack.namespace" $root)) -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}
 {{- $collector | toYaml -}}
 {{- end }}
