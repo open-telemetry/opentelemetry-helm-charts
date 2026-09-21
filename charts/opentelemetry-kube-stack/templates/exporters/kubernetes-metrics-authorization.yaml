@@ -1,9 +1,10 @@
 {{- if and .Values.kubernetesServiceMonitors.enabled .Values.kubernetesServiceMonitors.authorization.create }}
 {{- $root := . }}
-{{- $namespaces := list (include "opentelemetry-kube-stack.namespace" .) }}
+{{- $namespaces := list }}
 {{- if .Values.kubernetesServiceMonitors.ignoreNamespaceSelectors }}
-{{- $namespaces = append $namespaces "default" }}
-{{- $namespaces = append $namespaces "kube-system" }}
+{{- $namespaces = list "default" "kube-system" }}
+{{- else }}
+{{- $namespaces = list (include "opentelemetry-kube-stack.namespace" .) }}
 {{- end }}
 {{- range ($namespaces | uniq) }}
 ---
