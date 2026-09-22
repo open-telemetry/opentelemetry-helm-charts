@@ -6,7 +6,7 @@ metadata:
   name: "example-opentelemetry-operator-metrics-test"
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-operator-0.123.0
+    helm.sh/chart: opentelemetry-operator-0.123.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
@@ -28,7 +28,8 @@ spec:
         - sh
         - -c
         # The following shell script tests if the controller-manager-metrics-service is up.
-        # If the service is up, when we try to wget its exposed port, we will get an HTTP error 400.
+        # With secure metrics the port speaks TLS, so a plain HTTP request gets an HTTP error 400.
+        # Without secure metrics the port speaks plain HTTP, so /metrics answers with 200.
         - |
           i=0
           while [ "$i" -lt 30 ]; do
@@ -65,7 +66,7 @@ metadata:
   name: "example-opentelemetry-operator-webhook-test"
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-operator-0.123.0
+    helm.sh/chart: opentelemetry-operator-0.123.1
     app.kubernetes.io/name: opentelemetry-operator
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
