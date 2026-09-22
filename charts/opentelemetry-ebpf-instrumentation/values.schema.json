@@ -375,7 +375,7 @@
             "null"
           ],
           "title": "Target Port",
-          "description": "Target port for the service. Defaults to prometheus_export.port from configuration."
+          "description": "Target port for the service. Defaults to the Prometheus port derived from the effective OBI configuration."
         },
         "portName": {
           "type": "string",
@@ -451,7 +451,7 @@
                 "null"
               ],
               "title": "Internal Metrics Target Port",
-              "description": "Target port for internal metrics. Defaults to internal_metrics.prometheus.port from configuration.",
+              "description": "Target port for internal metrics. Defaults to the internal Prometheus port derived from the effective OBI configuration.",
               "example": null
             },
             "portName": {
@@ -728,7 +728,7 @@
         "create": {
           "type": "boolean",
           "title": "Create ConfigMap",
-          "description": "Set to true to use the default configurations",
+          "description": "Set to true to create a ConfigMap from the effective OBI configuration",
           "default": true
         },
         "name": {
@@ -741,40 +741,15 @@
         "data": {
           "type": "object",
           "title": "Configuration Data",
-          "description": "Default OpenTelemetry eBPF Instrumentation configuration data. User-provided values will be merged with these defaults. The configuration includes settings for telemetry export endpoints, attributes, filters, Prometheus metrics, and other instrumentation options.",
+          "description": "OpenTelemetry eBPF Instrumentation configuration overrides. An empty object uses the chart's Config v2 defaults. Config v2 is detected by extensions.obi.version=2.0; non-empty data without that marker uses the legacy Config v1 defaults. This value is ignored when config.name selects an external ConfigMap.",
           "additionalProperties": true,
-          "default": {
-            "otel_traces_export": {
-              "endpoint": "http://${HOST_IP}:4317"
-            },
-            "otel_metrics_export": {
-              "endpoint": "http://${HOST_IP}:4318"
-            },
-            "attributes": {
-              "kubernetes": {
-                "enable": true
-              }
-            },
-            "filter": {
-              "network": {
-                "k8s_dst_owner_name": {
-                  "not_match": "{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}"
-                },
-                "k8s_src_owner_name": {
-                  "not_match": "{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}"
-                }
-              }
-            },
-            "prometheus_export": {
-              "port": 9090,
-              "path": "/metrics"
-            }
-          },
+          "default": {},
           "example": {
-            "profile_port": 6060,
-            "log_level": "debug",
-            "otel_traces_export": {
-              "endpoint": "http://collector:4317"
+            "file_format": "1.0",
+            "extensions": {
+              "obi": {
+                "version": "2.0"
+              }
             }
           }
         }
@@ -794,13 +769,12 @@
     "env": {
       "type": "object",
       "title": "Environment Variables",
-      "description": "Environment variables that will override configmap values. Keys are environment variable names, values are strings.",
+      "description": "Environment variables available to OBI configuration substitution. Config v2 values must reference them explicitly using ${VAR}.",
       "additionalProperties": {
         "type": "string"
       },
       "example": {
-        "OTEL_RESOURCE": "service.name=svc",
-        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc"
+        "OBI_CLUSTER_NAME": "production"
       }
     },
     "envValueFrom": {
@@ -944,7 +918,7 @@
     "dnsPolicy": {
       "type": "string",
       "title": "DNS Policy",
-      "description": "Determines how DNS resolution is handled for that pod. If preset is 'network' or config.data.network is enabled, eBPF Instrumentation requires hostNetwork access.",
+      "description": "Determines how DNS resolution is handled for that pod. Network capture or context propagation requires hostNetwork access.",
       "default": "ClusterFirstWithHostNet",
       "example": "ClusterFirstWithHostNet"
     },

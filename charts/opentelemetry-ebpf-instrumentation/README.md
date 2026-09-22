@@ -27,6 +27,34 @@ helm install my-opentelemetry-ebpf-instrumentation open-telemetry/opentelemetry-
 The [values.yaml](./values.yaml) file contains information about configuration
 options for this chart.
 
+### OBI Configuration Versions
+
+The chart uses OBI Config v2 by default. An empty `config.data` renders a v2
+configuration with OTLP trace and metric exporters, Prometheus metrics on port
+`9090`, Kubernetes enrichment, and the selected application or network preset.
+
+Config v2 overrides must include its required OBI marker:
+
+```yaml
+config:
+  data:
+    extensions:
+      obi:
+        version: "2.0"
+```
+
+The chart merges these overrides with its v2 defaults. Non-empty `config.data`
+without the marker is treated as Config v1 and merged with the legacy defaults.
+This allows existing Config v1 values to continue working while users migrate.
+
+When `config.name` selects an external ConfigMap, the chart neither converts nor
+validates its contents. Use explicit service target ports when that external
+configuration exposes ports that differ from the chart defaults.
+
+Config v2 does not automatically map legacy `OTEL_EBPF_*` environment
+variables. Add variables through `env` or `envValueFrom` and reference them
+explicitly from their canonical v2 field with `${VAR}`.
+
 ### Configuring Dynamic `cluster_name`
 
 The `cluster_name` configuration can be set dynamically from user-provided
@@ -41,7 +69,13 @@ Configure the cluster name directly in the chart values. The chart creates a
 config:
   create: true
   data:
-    cluster_name: "my-production-cluster"
+    extensions:
+      obi:
+        version: "2.0"
+        enrich:
+          enrichers:
+            kubernetes:
+              cluster_name: "my-production-cluster"
 ```
 
 This approach will automatically restart OBI pods on any configuration change
@@ -62,14 +96,24 @@ Use an existing `ConfigMap` managed outside the chart:
      cluster_name: "my-production-cluster"
    ```
 
-2. Configure the chart to reference the `cluster_name` key in the `ConfigMap`:
+2. Configure the chart to expose the value as an environment variable and
+   reference it from the Config v2 field:
 
    ```yaml
    envValueFrom:
-     OTEL_EBPF_KUBE_CLUSTER_NAME:
+     OBI_CLUSTER_NAME:
        configMapKeyRef:
          name: cluster-config
          key: cluster_name
+   config:
+     data:
+       extensions:
+         obi:
+           version: "2.0"
+           enrich:
+             enrichers:
+               kubernetes:
+                 cluster_name: "${OBI_CLUSTER_NAME}"
    ```
 
 This approach has the limitation that OBI pod restarts must be triggered
