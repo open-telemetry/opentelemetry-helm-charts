@@ -11,6 +11,111 @@ tests:
       - equal:
           path: spec.template.spec.hostPID
           value: true
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 9090
+
+  - it: does not use host networking when both network features are disabled
+    template: templates/daemonset.yaml
+    set:
+      contextPropagation:
+        enabled: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.hostNetwork
+      - notExists:
+          path: spec.template.spec.volumes[1]
+
+  - it: detects Config v2 network stats and adds unprivileged networking access
+    template: templates/daemonset.yaml
+    set:
+      privileged: false
+      contextPropagation:
+        enabled: false
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              capture:
+                network:
+                  stats:
+                    enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.hostNetwork
+          value: true
+      - contains:
+          path: spec.template.spec.containers[0].securityContext.capabilities.add
+          content: NET_ADMIN
+      - equal:
+          path: spec.template.spec.volumes[1].hostPath.path
+          value: /sys/fs/cgroup
+
+  - it: preserves an explicitly disabled Config v2 network preset
+    template: templates/daemonset.yaml
+    set:
+      preset: network
+      contextPropagation:
+        enabled: false
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              capture:
+                network:
+                  capture:
+                    enabled: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.hostNetwork
+      - notExists:
+          path: spec.template.spec.volumes[1]
+
+  - it: derives Config v2 internal metrics and profiling ports
+    template: templates/daemonset.yaml
+    set:
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              daemon:
+                internal_metrics:
+                  exporter: prometheus
+                  prometheus:
+                    port: 6060
+                    path: /internal/metrics
+                profiling:
+                  port: 6061
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[1].name
+          value: int-metrics
+      - equal:
+          path: spec.template.spec.containers[0].ports[1].containerPort
+          value: 6060
+      - equal:
+          path: spec.template.spec.containers[0].ports[2].name
+          value: profile
+      - equal:
+          path: spec.template.spec.containers[0].ports[2].containerPort
+          value: 6061
+
+  - it: retains Config v1 network detection
+    template: templates/daemonset.yaml
+    set:
+      contextPropagation:
+        enabled: false
+      config:
+        data:
+          network:
+            enable: true
+    asserts:
+      - equal:
+          path: spec.template.spec.hostNetwork
+          value: true
 
   - it: uses external configmap when configured
     template: templates/daemonset.yaml
@@ -18,6 +123,31 @@ tests:
       config:
         create: false
         name: external-config
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].configMap.name
+          value: external-config
+
+  - it: does not validate data when using an external configmap
+    template: templates/daemonset.yaml
+    set:
+      config:
+        create: false
+        name: external-config
+        data:
+          file_format: "unsupported"
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].configMap.name
+          value: external-config
+
+  - it: treats a named configmap as external when create retains its default
+    template: templates/daemonset.yaml
+    set:
+      config:
+        name: external-config
+        data:
+          file_format: "unsupported"
     asserts:
       - equal:
           path: spec.template.spec.volumes[0].configMap.name

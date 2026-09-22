@@ -112,8 +112,7 @@ service:
   loadBalancerSourceRanges: []
   # -- Prometheus metrics service port
   port: 80
-  # -- targetPort overrides the Prometheus metrics port. It defaults to the value of `prometheus_export.port`
-  # from the Opentelemetry eBPF Instrumentation configuration file.
+  # -- targetPort overrides the Prometheus metrics port derived from the OBI configuration.
   targetPort: null
   # -- name of the port for Prometheus metrics.
   portName: metrics
@@ -128,8 +127,7 @@ service:
   internalMetrics:
     # -- internal metrics service port
     port: 8080
-    # -- targetPort overrides the internal metrics port. It defaults to the value of `internal_metrics.prometheus.port`
-    # from the Opentelemetry eBPF Instrumentation configuration file.
+    # -- targetPort overrides the internal metrics port derived from the OBI configuration.
     targetPort: null
     # -- name of the port for internal metrics.
     portName: int-metrics
@@ -186,11 +184,11 @@ podLabels: {}
 
 ## https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
 # -- Determines how DNS resolution is handled for that pod.
-# If `.Values.preset` is set to `network` or `.Values.config.data.network` is enabled, Opentelemetry eBPF Instrumentation requires `hostNetwork` access, causing cluster service DNS resolution to fail.
+# If `.Values.preset` is set to `network` or network capture is enabled in `.Values.config.data`, Opentelemetry eBPF Instrumentation requires `hostNetwork` access, causing cluster service DNS resolution to fail.
 # It is recommended not to change this if Opentelemetry eBPF Instrumentation sends traces and metrics to Grafana components via k8s service.
 dnsPolicy: ClusterFirstWithHostNet
 
-## The below default configuration
+## The default Config v2 configuration
 ## 1. looks for ALL the services in the host
 ## 2. export metrics as prometheus metrics by default at 9090 port
 ## 3. enables kubernetes attribute
@@ -198,60 +196,26 @@ dnsPolicy: ClusterFirstWithHostNet
 config:
   # -- set to true, to skip the check around the ConfigMap creation
   skipConfigMapCheck: false
-  # -- set to true, to use the below default configurations
+  # -- set to true to create a ConfigMap from the effective OBI configuration
   create: true
   ## -- Provide the name of the external configmap containing the Opentelemetry eBPF Instrumentation configuration.
   ## To create configmap from configuration file, user can use the below command. Note: The name 'ebpf-instrument-config.yaml' is important.
   ## `kubectl create cm --from-file=ebpf-instrument-config.yaml=<name-of-config-file> -n <namespace>`
-  ## If empty, default configuration below is used.
+  ## If empty, the chart-managed ConfigMap is used.
   name: ""
-  # -- default value of Opentelemetry eBPF Instrumentation configuration
+  # -- OpenTelemetry eBPF Instrumentation configuration overrides.
+  # An empty map uses the chart's Config v2 defaults. Config v2 is detected by
+  # `extensions.obi.version: "2.0"`; non-empty data without that marker uses
+  # the legacy Config v1 defaults. This value is ignored for external ConfigMaps.
   # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
   # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
-  data:
-    # profile_port: 6060
-    # open_port: 8443
-    # routes:
-    #   unmatched: heuristic
-    # log_level: info
-    ## or alternatively use
-    # grafana:
-    #   otlp:
-    #     cloud_zone: prod-eu-west-0
-    #     cloud_instance_id: 123456
-    #     cloud_api_key:
-    otel_traces_export:
-      endpoint: "http://${HOST_IP}:4317"
-    otel_metrics_export:
-      endpoint: "http://${HOST_IP}:4318"
-    attributes:
-      kubernetes:
-        enable: true
-    filter:
-      network:
-        k8s_dst_owner_name:
-          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
-        k8s_src_owner_name:
-          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
-    ## to enable network metrics
-    # network:
-    #   enable: true
-    prometheus_export:
-      port: 9090
-      path: /metrics
-    ## to enable internal metrics
-    # internal_metrics:
-    #   prometheus:
-    #     port: 6060
-    #     path: /metrics
+  data: {}
 
-## Env variables that will override configmap values
-## For example:
-##   OTEL_EBPF_INTERNAL_METRICS_PROMETHEUS_PORT: 9090
-# -- extra environment variables
+## Config v2 does not automatically map legacy OTEL_EBPF_* environment variables.
+## Reference extra variables explicitly from config.data with `${VAR}`.
+# -- Extra environment variables available to the OBI configuration.
 env: {}
-  # OTEL_EBPF_INTERNAL_METRICS_PROMETHEUS_PORT: 9090
-# OTEL_EBPF_TRACE_PRINTER: "text"
+  # OBI_CLUSTER_NAME: my-cluster
 
 # -- extra environment variables to be set from resources such as k8s configMaps/secrets
 envValueFrom: {}
@@ -273,13 +237,13 @@ serviceMonitor:
   annotations: {}
   metrics:
     # -- ServiceMonitor Prometheus scraping endpoint.
-    # Target port and path is set based on service and `prometheus_export` values.
+    # Target port and path are derived from the effective OBI configuration.
     # For additional values, see the ServiceMonitor spec
     endpoint:
       interval: 15s
   internalMetrics:
     # -- ServiceMonitor internal metrics scraping endpoint.
-    # Target port and path is set based on service and `internal_metrics` values.
+    # Target port and path are derived from the effective OBI configuration.
     # For additional values, see the ServiceMonitor spec
     endpoint:
       interval: 15s
