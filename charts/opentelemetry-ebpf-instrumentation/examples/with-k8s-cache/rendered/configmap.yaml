@@ -6,7 +6,7 @@ metadata:
   name: example-opentelemetry-ebpf-instrumentation
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-ebpf-instrumentation-0.13.1
+    helm.sh/chart: opentelemetry-ebpf-instrumentation-0.14.0
     app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "v0.13.0"
@@ -15,24 +15,114 @@ metadata:
     app.kubernetes.io/component: config
 data:
   ebpf-instrument-config.yml: |
-    attributes:
-      kubernetes:
-        enable: true
-    discovery:
-      exclude_instrument:
-      - exe_path: '{*ebpf-instrument*,*otelcol*}'
-      instrument:
-      - k8s_namespace: '*'
-    filter:
-      network:
-        k8s_dst_owner_name:
-          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
-        k8s_src_owner_name:
-          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
-    otel_metrics_export:
-      endpoint: http://${HOST_IP}:4318
-    otel_traces_export:
-      endpoint: http://${HOST_IP}:4317
-    prometheus_export:
-      path: /metrics
-      port: 9090
+    extensions:
+      obi:
+        capture:
+          instrumentation:
+            dns:
+              enabled:
+                metrics: true
+                traces: false
+          network:
+            capture:
+              enabled: false
+              filters:
+                metrics:
+                  k8s_dst_owner_name:
+                    not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+                  k8s_src_owner_name:
+                    not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+                traces:
+                  k8s_dst_owner_name:
+                    not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+                  k8s_src_owner_name:
+                    not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+          policy:
+            default_action: exclude
+            match_order: first_match_wins
+          rules:
+          - action: exclude
+            description: Exclude OBI and collector binaries to avoid self-instrumentation
+              and collector recursion.
+            match:
+              process:
+                exe_path_glob:
+                - '{*/obi,obi,*otelcol,*otelcol-contrib,*otelcol-contrib[!/]*}'
+            name: exclude-obi-and-collectors
+          - action: exclude
+            description: Exclude common platform and system Kubernetes namespaces.
+            match:
+              kubernetes:
+                namespace_glob:
+                - kube-system
+                - kube-node-lease
+                - local-path-storage
+                - cert-manager
+                - monitoring
+                - gke-connect
+                - gke-gmp-system
+                - gke-managed-cim
+                - gke-managed-filestorecsi
+                - gke-managed-metrics-server
+                - gke-managed-system
+                - gke-system
+                - gke-managed-volumepopulator
+                - gatekeeper-system
+            name: exclude-system-namespaces
+          - action: exclude
+            description: Exclude services that already export OTLP to prevent duplicate
+              telemetry pipelines.
+            match:
+              process:
+                exports_otlp:
+                  port: 4317
+                  protocol: protobuf
+            name: exclude-otlp-exporters
+          - action: exclude
+            match:
+              process:
+                exe_path_glob:
+                - '{*ebpf-instrument*,*otelcol*}'
+            name: exclude-ebpf-instrument-and-otelcol
+          - action: include
+            match:
+              kubernetes:
+                namespace_glob:
+                - '*'
+              process:
+                exe_path_glob:
+                - '*'
+            name: include-all-kubernetes-applications
+        enrich:
+          enrichers:
+            kubernetes:
+              mode: enabled
+        version: "2.0"
+    file_format: "1.0"
+    log_level: info
+    meter_provider:
+      readers:
+      - periodic:
+          exporter:
+            otlp_http:
+              default_histogram_aggregation: explicit_bucket_histogram
+              encoding: protobuf
+              endpoint: http://${HOST_IP}:4318
+          interval: 60000
+      - pull:
+          exporter:
+            prometheus/development:
+              port: 9090
+    propagator: {}
+    resource: {}
+    tracer_provider:
+      processors:
+      - batch:
+          exporter:
+            otlp_grpc:
+              endpoint: http://${HOST_IP}:4317
+              tls:
+                insecure: true
+          max_export_batch_size: 4096
+          max_queue_size: 16384
+          schedule_delay: 15000
