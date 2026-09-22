@@ -2070,6 +2070,9 @@
         "enabled": {
           "type": "boolean"
         },
+        "denyFSAccessThroughSMs": {
+          "type": "boolean"
+        },
         "scrapeInterval": {
           "type": "string"
         },
@@ -2819,6 +2822,24 @@
       "required": [
         "key"
       ]
+    },
+    "SecretOrConfigMap": {
+      "properties": {
+        "secret": {
+          "$ref": "#/$defs/SecretKeySelector"
+        },
+        "configMap": {
+          "$ref": "#/$defs/ConfigMapKeySelector"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "not": {
+        "required": [
+          "secret",
+          "configMap"
+        ]
+      }
     },
     "SecretProjection": {
       "properties": {
@@ -3891,7 +3912,7 @@
           "type": "boolean"
         },
         "tlsConfig": {
-          "$ref": "#/$defs/TLSConfig"
+          "$ref": "#/$defs/SafeTLSConfig"
         },
         "serviceMonitor": {
           "$ref": "#/$defs/Monitor"
@@ -3904,25 +3925,61 @@
       ],
       "title": "KubeAPIServer"
     },
-    "TLSConfig": {
+    "SafeAuthorization": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "not": {
+            "pattern": "^[Bb][Aa][Ss][Ii][Cc]$"
+          }
+        },
+        "credentials": {
+          "$ref": "#/$defs/SecretKeySelector"
+        }
+      },
+      "title": "SafeAuthorization"
+    },
+    "SafeTLSConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ca": {
+          "$ref": "#/$defs/SecretOrConfigMap"
+        },
+        "cert": {
+          "$ref": "#/$defs/SecretOrConfigMap"
+        },
+        "keySecret": {
+          "$ref": "#/$defs/SecretKeySelector"
+        },
         "serverName": {
           "type": "string"
         },
         "insecureSkipVerify": {
           "type": "boolean"
         },
-        "ca": {
-          "type": "object"
+        "minVersion": {
+          "type": "string",
+          "enum": [
+            "TLS10",
+            "TLS11",
+            "TLS12",
+            "TLS13"
+          ]
+        },
+        "maxVersion": {
+          "type": "string",
+          "enum": [
+            "TLS10",
+            "TLS11",
+            "TLS12",
+            "TLS13"
+          ]
         }
       },
-      "required": [
-        "insecureSkipVerify",
-        "serverName"
-      ],
-      "title": "TLSConfig"
+      "title": "SafeTLSConfig"
     },
     "KubeDNS": {
       "type": "object",
@@ -4160,8 +4217,7 @@
         "authorization": {
           "anyOf": [
             {
-              "type": "object",
-              "additionalProperties": true
+              "$ref": "#/$defs/SafeAuthorization"
             },
             {
               "type": "null"
@@ -4169,8 +4225,7 @@
           ]
         },
         "tlsConfig": {
-          "type": "object",
-          "additionalProperties": true
+          "$ref": "#/$defs/SafeTLSConfig"
         },
         "https": {
           "anyOf": [
@@ -4265,6 +4320,16 @@
       "properties": {
         "enabled": {
           "type": "boolean"
+        },
+        "authorization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SafeAuthorization"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "interval": {
           "type": "string"

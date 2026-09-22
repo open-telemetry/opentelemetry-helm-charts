@@ -14,7 +14,7 @@ By default, the kube-apiserver, kube-controller-manager, and kube-scheduler Serv
 
 To manage the credential yourself, set `kubernetesServiceMonitors.authorization.create: false` and point each authenticated component's `serviceMonitor.authorization` at an existing Secret. Set `authorization: null` instead for an endpoint that does not require authentication. Chart rendering fails if a ServiceMonitor still references the chart-generated token Secret while its creation is disabled.
 
-The following settings have been removed or replaced. The `authorization` and `tlsConfig` objects are rendered in the Prometheus Operator `SafeAuthorization` and `SafeTLSConfig` formats.
+The following settings have been removed or replaced. The `authorization` and `tlsConfig` objects are rendered in the Prometheus Operator [`SafeAuthorization`](https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.SafeAuthorization) and [`SafeTLSConfig`](https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.SafeTLSConfig) formats.
 
 | Previous setting | Replacement |
 | --- | --- |
