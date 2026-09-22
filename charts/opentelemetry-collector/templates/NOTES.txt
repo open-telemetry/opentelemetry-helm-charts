@@ -75,6 +75,10 @@
 {{- fail "[ERROR] logsCollection and annotationDiscovery.logs are mutually exclusive" }}
 {{- end }}
 
+{{- if and .Values.presets.kubernetesEvents.enabled .Values.presets.kubernetesObjects.enabled .Values.presets.kubernetesObjects.events.enabled }}
+{{- fail "[ERROR] presets.kubernetesEvents and presets.kubernetesObjects.events are mutually exclusive. Both collect Kubernetes events, so enable only one of them." }}
+{{- end }}
+
 {{- $deprecations := include "opentelemetry-collector.deprecations" . -}}
 {{- if $deprecations }}
 {{ $deprecations }}
