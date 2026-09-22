@@ -1,5 +1,8 @@
 apiVersion: apps/v1
 kind: DaemonSet
+{{- $configMeta := include "obi.configMeta" . | fromYaml }}
+{{- $metricsPort := .Values.service.targetPort | default $configMeta.prometheusPort }}
+{{- $internalMetricsPort := .Values.service.internalMetrics.targetPort | default $configMeta.internalMetricsPort }}
 metadata:
   name: {{ include "obi.fullname" . }}
   namespace: {{ include "obi.namespace" .}}
@@ -34,7 +37,7 @@ spec:
       {{- if eq .Values.preset "application" }}
       hostPID: true
       {{- end }}
-      {{- $networkEnabled := or (eq .Values.preset "network") .Values.config.data.network }}
+      {{- $networkEnabled := $configMeta.networkEnabled }}
       {{- $contextPropagationEnabled := .Values.contextPropagation.enabled }}
       {{- if or $networkEnabled $contextPropagationEnabled }}
       hostNetwork: true
@@ -77,23 +80,19 @@ spec:
                 - ALL
           {{- end }}
           ports:
-          {{- if (or (.Values.service.targetPort) ((.Values.config.data.prometheus_export).port)) }}
+          {{- if $metricsPort }}
           - name: {{ .Values.service.portName }}
-            containerPort: {{ .Values.service.targetPort | default .Values.config.data.prometheus_export.port }}
+            containerPort: {{ $metricsPort }}
             protocol: TCP
           {{- end }}
-          {{- if (and
-                    (or .Values.service.internalMetrics.targetPort ((.Values.config.data.internal_metrics).prometheus).port)
-                    (ne ((.Values.config.data).prometheus_export).port ((.Values.config.data.internal_metrics).prometheus).port)
-                    (ne .Values.service.internalMetrics.targetPort .Values.service.targetPort)
-                  ) }}
+          {{- if and $internalMetricsPort (ne $metricsPort $internalMetricsPort) }}
           - name: {{ .Values.service.internalMetrics.portName }}
-            containerPort: {{ .Values.service.internalMetrics.targetPort | default .Values.config.data.internal_metrics.prometheus.port }}
+            containerPort: {{ $internalMetricsPort }}
             protocol: TCP
           {{- end }}
-          {{- if .Values.config.data.profile_port }}
+          {{- if $configMeta.profilePort }}
           - name: profile
-            containerPort: {{ .Values.config.data.profile_port }}
+            containerPort: {{ $configMeta.profilePort }}
             protocol: TCP
           {{- end }}
           {{- with .Values.resources }}
