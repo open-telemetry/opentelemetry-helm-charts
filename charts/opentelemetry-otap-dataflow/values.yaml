@@ -1,0 +1,208 @@
+# Default values for opentelemetry-otap-dataflow.
+# This is a YAML-formatted file.
+
+nameOverride: ""
+fullnameOverride: ""
+# Override the deployment namespace, defaults to .Release.Namespace
+namespaceOverride: ""
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/isitobservable/df_engine
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  # Overrides the image tag with an image digest ("sha256:..."). Takes precedence over tag.
+  digest: ""
+
+imagePullSecrets: []
+
+# Entrypoint of the df-engine container.
+command:
+  - /home/nonroot/df_engine
+
+# Arguments passed to the df-engine binary.
+# "--config" points at the mounted ConfigMap (see config.mountPath).
+extraArgs:
+  - --config
+  - /etc/otap/config.yaml
+  - --http-admin-bind
+  - 0.0.0.0:8080
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  labels: {}
+  # The name of the service account to use. Generated from the fullname template if not set.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+# Ports exposed by the container and the Service.
+ports:
+  otlp-grpc:
+    enabled: true
+    containerPort: 4317
+    servicePort: 4317
+    protocol: TCP
+  otlp-http:
+    enabled: true
+    containerPort: 4318
+    servicePort: 4318
+    protocol: TCP
+  admin:
+    enabled: true
+    containerPort: 8080
+    servicePort: 8080
+    protocol: TCP
+
+service:
+  type: ClusterIP
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 256Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
+
+livenessProbe: {}
+readinessProbe: {}
+
+# Extra environment variables. The engine resolves "${env:NAME}" references from its config
+# against these at runtime (for example DT_ENDPOINT and DT_API_TOKEN below).
+extraEnv: []
+#  - name: DT_ENDPOINT
+#    valueFrom:
+#      secretKeyRef:
+#        name: gateway-dynatrace
+#        key: DT_ENDPOINT
+#  - name: DT_API_TOKEN
+#    valueFrom:
+#      secretKeyRef:
+#        name: gateway-dynatrace
+#        key: DT_API_TOKEN
+
+extraEnvFrom: []
+
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+config:
+  # Create a ConfigMap from the data below. Set to false to use an existing ConfigMap via config.name.
+  create: true
+  # Name of an existing ConfigMap to mount. When empty and create is true, a ConfigMap named
+  # after the release is generated.
+  name: ""
+  # Directory where the ConfigMap is mounted. The config.yaml key lands at <mountPath>/config.yaml.
+  mountPath: /etc/otap
+  # OTAP dataflow engine configuration rendered into <mountPath>/config.yaml.
+  data:
+    version: otel_dataflow/v1
+    engine:
+      telemetry:
+        metrics:
+          provider: its
+      observability:
+        pipeline:
+          nodes:
+            internal_telemetry/engine:
+              type: receiver:internal_telemetry
+              config:
+                metrics: { interval: 30s }
+            otlp_http/dynatrace:
+              type: exporter:otlp_http
+              config:
+                endpoint: "${env:DT_ENDPOINT}/v2/otlp"
+                headers:
+                  Authorization: "Api-Token ${env:DT_API_TOKEN}"
+                http: {}
+          connections:
+            - { from: internal_telemetry/engine, to: otlp_http/dynatrace }
+    groups:
+      default:
+        pipelines:
+          main:
+            type: otap
+            policies:
+              channel_capacity:
+                control:
+                  node: 100
+                  pipeline: 100
+                pdata: 128
+            nodes:
+              otlp/ingest:
+                type: receiver:otlp
+                config:
+                  protocols:
+                    grpc:
+                      listening_addr: "0.0.0.0:4317"
+                    http:
+                      listening_addr: "0.0.0.0:4318"
+              attributes/enrich:
+                type: processor:attribute
+                config:
+                  actions:
+                    - key: k8s.cluster.name
+                      action: upsert
+                      value: unknown-k8s-cluster
+                    - key: telemetry.pipeline.engine
+                      action: upsert
+                      value: otap-dataflow
+                    - key: pipeline
+                      action: upsert
+                      value: otel-arrow
+              filter/drop_health:
+                type: processor:filter
+                config:
+                  traces:
+                    span:
+                      - 'attributes["url.path"] == "/health"'
+              router/by_signal:
+                type: processor:type_router
+                outputs: ["logs", "metrics", "traces"]
+                config: {}
+              transform/opl:
+                type: processor:transform
+                config:
+                  opl_query: |
+                    logs
+                    | if (contains(body, "error")) { set severity_text = "ERROR" } else { set severity_text = "CLEARED" }
+                    | if (matches(body, r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+")) { set attributes["pii.email.detected"] = "true", body = concat("REDACTED:", encode(sha256(body), "hex")) }
+              batch/logs: { type: processor:batch, config: { send_batch_size: 1000, timeout: 5s } }
+              batch/metrics: { type: processor:batch, config: { send_batch_size: 1000, timeout: 5s } }
+              batch/traces: { type: processor:batch, config: { send_batch_size: 1000, timeout: 5s } }
+              retry/export:
+                type: processor:retry
+                config:
+                  initial_interval: 1s
+                  max_interval: 30s
+              otlp_http/dynatrace:
+                type: exporter:otlp_http
+                config:
+                  endpoint: "${env:DT_ENDPOINT}/v2/otlp"
+                  headers:
+                    Authorization: "Api-Token ${env:DT_API_TOKEN}"
+                  http: {}
+            connections:
+              - { from: otlp/ingest, to: attributes/enrich }
+              - { from: attributes/enrich, to: filter/drop_health }
+              - { from: filter/drop_health, to: router/by_signal }
+              - { from: 'router/by_signal["logs"]', to: transform/opl }
+              - { from: transform/opl, to: batch/logs }
+              - { from: 'router/by_signal["metrics"]', to: batch/metrics }
+              - { from: 'router/by_signal["traces"]', to: batch/traces }
+              - { from: [batch/logs, batch/metrics, batch/traces], to: retry/export }
+              - { from: retry/export, to: otlp_http/dynatrace }
