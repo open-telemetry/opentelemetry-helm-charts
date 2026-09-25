@@ -174,7 +174,7 @@ When `k8sCache.replicas > 0` the chart deploys the cache `Deployment` and
 `Service`, and automatically points the OBI `DaemonSet` at it by setting
 `OTEL_EBPF_KUBE_META_CACHE_ADDRESS` to `<k8sCache.service.name>:<k8sCache.service.port>`.
 See the `k8sCache` block in [values.yaml](./values.yaml) for image, resource,
-and metrics settings, and the
+metrics and scheduling settings, and the
 [OBI Kubernetes setup guide](https://opentelemetry.io/docs/zero-code/obi/setup/kubernetes/#centralizing-kubernetes-metadata-with-k8s-cache)
 for background.
 

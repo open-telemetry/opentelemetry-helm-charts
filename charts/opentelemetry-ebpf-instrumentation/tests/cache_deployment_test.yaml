@@ -23,3 +23,63 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: renders scheduling options when set
+    set:
+      k8sCache:
+        replicas: 1
+        priorityClassName: system-cluster-critical
+        nodeSelector:
+          role: system
+        tolerations:
+          - key: role
+            operator: Equal
+            value: system
+            effect: NoSchedule
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: '{{ .Values.k8sCache.service.name }}'
+    asserts:
+      - equal:
+          path: spec.template.spec.priorityClassName
+          value: system-cluster-critical
+      - equal:
+          path: spec.template.spec.nodeSelector
+          value:
+            role: system
+      - equal:
+          path: spec.template.spec.tolerations
+          value:
+            - key: role
+              operator: Equal
+              value: system
+              effect: NoSchedule
+      - equal:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchLabels
+          value:
+            app.kubernetes.io/name: opentelemetry-ebpf-instrumentation-k8s-cache
+
+  - it: does not inherit top-level scheduling options
+    set:
+      priorityClassName: system-node-critical
+      nodeSelector:
+        role: worker
+      tolerations:
+        - operator: Exists
+      affinity:
+        nodeAffinity: {}
+      k8sCache:
+        replicas: 1
+    asserts:
+      - notExists:
+          path: spec.template.spec.priorityClassName
+      - notExists:
+          path: spec.template.spec.nodeSelector
+      - notExists:
+          path: spec.template.spec.tolerations
+      - notExists:
+          path: spec.template.spec.affinity
