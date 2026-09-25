@@ -1,4 +1,8 @@
 clusterName: demo
+opentelemetry-operator:
+  manager:
+    featureGatesMap:
+      operator.targetallocator.fallbackstrategy: true
 collectors:
   daemon:
     enabled: true
@@ -11,6 +15,9 @@ collectors:
       enabled: true
       image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
       allocationStrategy: per-node
+      mtls:
+        enabled: true
+        useCertManager: true
       prometheusCR:
         enabled: true
         podMonitorSelector: {}

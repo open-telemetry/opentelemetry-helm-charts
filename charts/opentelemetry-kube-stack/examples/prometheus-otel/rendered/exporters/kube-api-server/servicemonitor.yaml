@@ -7,15 +7,19 @@ metadata:
   namespace: default
   labels:
     app: opentelemetry-kube-stack-apiserver
-    helm.sh/chart: opentelemetry-kube-stack-0.23.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"
 spec:
   
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: https
+  - port: https
+    authorization:
+      credentials:
+        key: token
+        name: 'example-kubernetes-metrics-token'
+      type: Bearer
     scheme: https
     metricRelabelings:
       - action: drop
@@ -24,9 +28,12 @@ spec:
         - __name__
         - le
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      serverName: kubernetes
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: false
+      serverName: kubernetes
   jobLabel: component
   namespaceSelector:
     matchNames:

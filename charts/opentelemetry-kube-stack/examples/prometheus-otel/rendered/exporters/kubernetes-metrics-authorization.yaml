@@ -1,0 +1,62 @@
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kubernetes-metrics-authorization.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: example-kubernetes-metrics
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
+    app.kubernetes.io/version: "0.159.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kubernetes-metrics-authorization.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-kubernetes-metrics-token
+  namespace: default
+  annotations:
+    kubernetes.io/service-account.name: example-kubernetes-metrics
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
+    app.kubernetes.io/version: "0.159.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+type: kubernetes.io/service-account-token
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kubernetes-metrics-authorization.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: example-kubernetes-metrics
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
+    app.kubernetes.io/version: "0.159.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+---
+# Source: opentelemetry-kube-stack/templates/exporters/kubernetes-metrics-authorization.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: example-kubernetes-metrics
+  labels:
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
+    app.kubernetes.io/version: "0.159.0"
+    app.kubernetes.io/managed-by: Helm
+    release: "example"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: example-kubernetes-metrics
+subjects:
+  - kind: ServiceAccount
+    name: example-kubernetes-metrics
+    namespace: default

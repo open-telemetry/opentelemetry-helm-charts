@@ -287,6 +287,7 @@ defaultCRConfig:
   # # Configuration for Prometheus Custom Resources
   # prometheusCR:
   #   enabled: true
+  #   denyFSAccessThroughSMs: true
   #   scrapeInterval: 30s
   #   podMonitorSelector:
   #     key1: value1
@@ -308,6 +309,11 @@ defaultCRConfig:
   #   denyNamespaces:
   #     - namespace-3
   #     - namespace-4
+  #   # Namespaces whose Secret updates the target allocator watches. When omitted while
+  #   # kubernetesServiceMonitors is enabled, this defaults to the namespaces where those
+  #   # ServiceMonitors and their authorization Secrets are created.
+  #   secretNamespaces:
+  #     - namespace-1
   # # mTLS between the collector and the target allocator, requires cert-manager
   # mtls:
   #   enabled: true
@@ -1125,14 +1131,25 @@ opAMPBridge:
 # Prometheus Configuration #
 # (optional)               #
 ############################
-# This configuration sections allows for a direct replacement of the kube-prometheus-stack
-# chart where the collector scrapes the same metrics as the default prometheus installation.
+# These Kubernetes component scrape settings are based on kube-prometheus-stack 90.x, and most
+# corresponding component values can be reused when replacing its Prometheus scraper with an
+# OpenTelemetry Collector. The kubernetesServiceMonitors.authorization block is specific to this
+# chart because it manages a dedicated scrape credential instead of using a Prometheus identity.
+# This section does not provide full kube-prometheus-stack values compatibility.
 
 ## Flag to disable all the kubernetes component scrapers
 ##
 kubernetesServiceMonitors:
   enabled: false
   ignoreNamespaceSelectors: false
+  authorization:
+    ## Create a dedicated service account and long-lived service account token Secret used only
+    ## to authenticate Kubernetes component metrics scrapes. When false, configure each enabled
+    ## component's serviceMonitor.authorization with an existing Secret or set it to null.
+    create: true
+    ## Override the generated service account or Secret names.
+    serviceAccountName: ""
+    secretName: ""
 
 ## Component scraping the kube api server
 ##
@@ -1141,7 +1158,16 @@ kubeApiServer:
   tlsConfig:
     serverName: kubernetes
     insecureSkipVerify: false
+    ca:
+      configMap:
+        name: kube-root-ca.crt
+        key: ca.crt
   serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1267,6 +1293,11 @@ kubeControllerManager:
 
   serviceMonitor:
     enabled: true
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1310,11 +1341,12 @@ kubeControllerManager:
     ##
     https: null
 
-    # Skip TLS certificate validation when scraping
-    insecureSkipVerify: null
-
-    # Name of the server to use when validating TLS certificate
-    serverName: null
+    tlsConfig:
+      insecureSkipVerify: true
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
@@ -1353,6 +1385,8 @@ coreDns:
     #   k8s-app: kube-dns
   serviceMonitor:
     enabled: true
+    ## Configure authorization if the CoreDNS metrics endpoint requires it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1428,6 +1462,8 @@ kubeDns:
     # selector:
     #   k8s-app: kube-dns
   serviceMonitor:
+    ## Configure authorization if the kube-dns metrics endpoints require it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1525,19 +1561,30 @@ kubeEtcd:
     # selector:
     #   component: etcd
 
-  ## Configure secure access to the etcd cluster by loading a secret into prometheus and
-  ## specifying security configuration below. For example, with a secret named etcd-client-cert
+  ## Configure secure access to the etcd cluster with Secret references. For example, with a
+  ## secret named etcd-client-cert
   ##
   ## serviceMonitor:
   ##   scheme: https
-  ##   insecureSkipVerify: false
-  ##   serverName: localhost
-  ##   caFile: /etc/prometheus/secrets/etcd-client-cert/etcd-ca
-  ##   certFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client
-  ##   keyFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+  ##   tlsConfig:
+  ##     insecureSkipVerify: false
+  ##     serverName: localhost
+  ##     ca:
+  ##       secret:
+  ##         name: etcd-client-cert
+  ##         key: etcd-ca
+  ##     cert:
+  ##       secret:
+  ##         name: etcd-client-cert
+  ##         key: etcd-client
+  ##     keySecret:
+  ##       name: etcd-client-cert
+  ##       key: etcd-client-key
   ##
   serviceMonitor:
     enabled: true
+    ## Configure authorization if the etcd metrics endpoint requires it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1566,11 +1613,7 @@ kubeEtcd:
     ##
     proxyUrl: ""
     scheme: http
-    insecureSkipVerify: false
-    serverName: ""
-    caFile: ""
-    certFile: ""
-    keyFile: ""
+    tlsConfig: {}
 
     ## port: Name of the port the metrics will be scraped from
     ##
@@ -1631,6 +1674,11 @@ kubeScheduler:
 
   serviceMonitor:
     enabled: true
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1673,11 +1721,12 @@ kubeScheduler:
     #  matchLabels:
     #    component: kube-scheduler
 
-    ## Skip TLS certificate validation when scraping
-    insecureSkipVerify: null
-
-    ## Name of the server to use when validating TLS certificate
-    serverName: null
+    tlsConfig:
+      insecureSkipVerify: true
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
@@ -1724,6 +1773,8 @@ kubeProxy:
 
   serviceMonitor:
     enabled: true
+    ## Configure authorization if the kube-proxy metrics endpoint requires it.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1765,6 +1816,12 @@ kubeProxy:
     ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
     ##
     https: false
+
+    tlsConfig:
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig

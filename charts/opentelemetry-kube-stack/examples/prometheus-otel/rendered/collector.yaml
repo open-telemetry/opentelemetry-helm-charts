@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.23.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.0
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"    
@@ -93,10 +93,15 @@ spec:
     allocationStrategy: per-node
     enabled: true
     image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
+    mtls:
+      enabled: true
+      useCertManager: true
     prometheusCR:
       enabled: true
       podMonitorSelector: {}
       scrapeInterval: 30s
+      secretNamespaces:
+      - default
       serviceMonitorSelector: {}
   env:
   - name: K8S_NODE_NAME 
