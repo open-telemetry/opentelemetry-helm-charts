@@ -881,20 +881,16 @@ components:
         value: "8080"
       - name: PRODUCT_CATALOG_ADDR
         value: product-catalog:8080
-      - name: OTEL_PYTHON_LOG_CORRELATION
-        value: "true"
-      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-        value: python
-      - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
-        value: "true"
       - name: FLAGD_HOST
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317
+        value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=medium
+      - name: OTEL_EXPERIMENTAL_SDK_TELEMETRY_VERSION
+        value: latest
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
