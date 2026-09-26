@@ -1,7 +1,7 @@
 {{- define "opentelemetry-collector.pod" -}}
-{{- with .Values.imagePullSecrets }}
+{{- if .Values.imagePullSecrets }}
 imagePullSecrets:
-  {{- toYaml . | nindent 2 }}
+  {{- tpl (toYaml .Values.imagePullSecrets) . | nindent 2 }}
 {{- end }}
 serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}
 automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
@@ -277,7 +277,7 @@ volumes:
 {{- end }}
 {{- with $nodeSelector }}
 nodeSelector:
-  {{- toYaml . | nindent 2 }}
+  {{- tpl (toYaml .) $ | nindent 2 }}
 {{- end }}
 {{- with .Values.affinity }}
 affinity:
