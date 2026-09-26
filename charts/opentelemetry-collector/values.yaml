@@ -5,13 +5,13 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# Valid values are "daemonset", "deployment", and "statefulset".
+# -- Valid values are "daemonset", "deployment", and "statefulset".
 mode: ""
 
-# Override the default apiVersion for custom controllers or for testing new API versions.
+# -- Override the default apiVersion for custom controllers or for testing new API versions.
 apiVersion: "apps/v1"
 
-# Specify which namespace should be used to deploy the resources into
+# -- Specify which namespace should be used to deploy the resources into
 namespaceOverride: ""
 
 # Handles basic configuration of components that
@@ -32,10 +32,10 @@ presets:
   logsCollection:
     enabled: false
     includeCollectorLogs: false
-    # Enabling this writes checkpoints in /var/lib/otelcol/ host directory.
+    # -- Enabling this writes checkpoints in /var/lib/otelcol/ host directory.
     # Note this changes collector's user to root, so that it can write to host directory.
     storeCheckpoints: false
-    # The maximum bytes size of the recombined field.
+    # -- The maximum bytes size of the recombined field.
     # Once the size exceeds the limit, all received entries of the source will be combined and flushed.
     maxRecombineLogSize: 102400
   # Configures the collector to collect host metrics.
@@ -52,10 +52,10 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
   kubernetesAttributes:
     enabled: false
-    # When enabled the processor will extract all labels for an associated pod and add them as resource attributes.
+    # -- When enabled the processor will extract all labels for an associated pod and add them as resource attributes.
     # The label's exact name will be the key.
     extractAllPodLabels: false
-    # When enabled the processor will extract all annotations for an associated pod and add them as resource attributes.
+    # -- When enabled the processor will extract all annotations for an associated pod and add them as resource attributes.
     # The annotation's exact name will be the key.
     extractAllPodAnnotations: false
   # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet.
@@ -72,7 +72,7 @@ presets:
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
-    # When enabled, the preset uses the k8s_events receiver instead of k8sobjects. Will default to true in a future release.
+    # -- When enabled, the preset uses the k8s_events receiver instead of k8sobjects. Will default to true in a future release.
     useK8sEventsReceiver: false
   # Collects Kubernetes objects via the k8sobjects receiver in pull mode (default interval: 1h).
   # Can be used with mode = deployment, statefulset, or daemonset.
@@ -163,7 +163,7 @@ presets:
       enabled: false
 
 configMap:
-  # Specifies whether a configMap should be created (true by default)
+  # -- Specifies whether a configMap should be created (true by default)
   create: true
   # Specifies an existing ConfigMap to be mounted to the pod
   # The ConfigMap MUST include the collector configuration via a key named 'relay' or the collector will not start.
@@ -179,29 +179,29 @@ configMap:
 #
 # THIS OPTION IS EXPERIMENTAL AND SUBJECT TO BREAKING CHANGES
 internalTelemetryViaOTLP:
-  # The endpoint where the telemetry will be exported
+  # -- The endpoint where the telemetry will be exported
   endpoint: ""
-  # Optional headers to configure the exporters
+  # -- Optional headers to configure the exporters
   headers: []
     # - name: "x-dest-auth"
     #   value: "some auth key"
   traces:
     enabled: false
-    # overrides internalTelemetryViaOTLP.endpoint for traces
+    # -- overrides internalTelemetryViaOTLP.endpoint for traces
     endpoint: ""
-    # overrides internalTelemetryViaOTLP.headers for traces
+    # -- overrides internalTelemetryViaOTLP.headers for traces
     headers: []
   metrics:
     enabled: false
-    # overrides internalTelemetryViaOTLP.endpoint for metrics
+    # -- overrides internalTelemetryViaOTLP.endpoint for metrics
     endpoint: ""
-    # overrides internalTelemetryViaOTLP.headers for metrics
+    # -- overrides internalTelemetryViaOTLP.headers for metrics
     headers: []
   logs:
     enabled: false
-    # overrides internalTelemetryViaOTLP.endpoint for logs
+    # -- overrides internalTelemetryViaOTLP.endpoint for logs
     endpoint: ""
-    # overrides internalTelemetryViaOTLP.headers for logs
+    # -- overrides internalTelemetryViaOTLP.headers for logs
     headers: []
 
 # Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
@@ -213,6 +213,8 @@ rewriteDeprecatedComponentNames: true
 # Base collector configuration.
 # Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
 # For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
+# -- Base collector configuration. Supports templating; see the prose above this key in values.yaml.
+# @default -- OTLP receivers plus the debug exporter wired into logs, metrics and traces pipelines; see [values.yaml](./values.yaml)
 config:
   exporters:
     debug: {}
@@ -324,12 +326,12 @@ config:
 alternateConfig: {}
 
 image:
-  # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
+  # -- If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
   repository: ""
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- Overrides the image tag whose default is the chart appVersion.
   tag: ""
-  # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+  # -- When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
   digest: ""
 imagePullSecrets: []
 
@@ -339,14 +341,14 @@ command:
   extraArgs: []
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
-  # Automatically mount a ServiceAccount's API credentials?
+  # -- Automatically mount a ServiceAccount's API credentials?
   automountServiceAccountToken: true
 
 clusterRole:
@@ -354,7 +356,7 @@ clusterRole:
   # Some presets also trigger the creation of a cluster role and cluster role binding.
   # If using one of those presets, this field is no-op.
   create: false
-  # Annotations to add to the clusterRole
+  # -- Annotations to add to the clusterRole
   # Can be used in combination with presets that create a cluster role.
   annotations: {}
   # The name of the clusterRole to use.
@@ -375,7 +377,7 @@ clusterRole:
   #   - 'watch'
 
   clusterRoleBinding:
-    # Annotations to add to the clusterRoleBinding
+    # -- Annotations to add to the clusterRoleBinding
     # Can be used in combination with presets that create a cluster role binding.
     annotations: {}
     # The name of the clusterRoleBinding to use.
@@ -391,24 +393,24 @@ tolerations: []
 affinity: {}
 topologySpreadConstraints: []
 
-# Allows for pod scheduler prioritisation
+# -- Allows for pod scheduler prioritisation
 priorityClassName: ""
 
-# Allows for pod to use a specific runtime class, e.g. gvisor, kata-containers
+# -- Allows for pod to use a specific runtime class, e.g. gvisor, kata-containers
 # Also useful for the pod security admissions plugins that rely on runtimeClassName
 runtimeClassName: ""
 
 terminationGracePeriodSeconds: 30
 
-# This also supports template content, which will eventually be converted to yaml.
+# -- This also supports template content, which will eventually be converted to yaml.
 extraEnvs: []
-# This also supports template content, which will eventually be converted to yaml.
+# -- This also supports template content, which will eventually be converted to yaml.
 extraEnvsFrom: []
-# This also supports template content, which will eventually be converted to yaml.
+# -- This also supports template content, which will eventually be converted to yaml.
 extraVolumes: []
-# This also supports template content, which will eventually be converted to yaml.
+# -- This also supports template content, which will eventually be converted to yaml.
 extraVolumeMounts: []
-# This also supports template content, which will eventually be converted to yaml.
+# -- This also supports template content, which will eventually be converted to yaml.
 extraManifests: []
 
 # Configuration for ports
@@ -465,7 +467,7 @@ ports:
 # It is HIGHLY recommend to enable this setting and set a value for resources.limits.memory.
 useGOMEMLIMIT: true
 
-# Container resize policy for in-place resource resize (Kubernetes >= 1.27).
+# -- Container resize policy for in-place resource resize (Kubernetes >= 1.27).
 # https://kubernetes.io/docs/concepts/workloads/autoscaling/#in-place-resizing
 resizePolicy: []
 # resizePolicy:
@@ -474,7 +476,7 @@ resizePolicy: []
 #   - resourceName: memory
 #     restartPolicy: RestartContainer
 
-# Resource limits & requests.
+# -- Resource limits & requests.
 # It is HIGHLY recommended to set resource limits.
 resources: {}
 # resources:
@@ -487,41 +489,41 @@ podAnnotations: {}
 
 podLabels: {}
 
-# Common labels to add to all otel-collector resources. Evaluated as a template.
+# -- Common labels to add to all otel-collector resources. Evaluated as a template.
 additionalLabels: {}
 #  app.kubernetes.io/part-of: my-app
 
-# Host networking requested for this pod. Use the host's network namespace.
+# -- Host networking requested for this pod. Use the host's network namespace.
 hostNetwork: false
 
 # Enable sharing the host's PID namespace with the pod.
 # WARNING: This grants visibility into all host processes and should only be enabled when required.
 hostPID: false
 
-# Adding entries to Pod /etc/hosts with HostAliases
+# -- Adding entries to Pod /etc/hosts with HostAliases
 # https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
 hostAliases: []
   # - ip: "1.2.3.4"
   #   hostnames:
   #     - "my.host.com"
 
-# Pod DNS policy ClusterFirst, ClusterFirstWithHostNet, None, Default, None
+# -- Pod DNS policy ClusterFirst, ClusterFirstWithHostNet, None, Default, None
 dnsPolicy: ""
 
-# Custom DNS config. Required when DNS policy is None.
+# -- Custom DNS config. Required when DNS policy is None.
 dnsConfig: {}
 
-# Custom kube scheduler name.
+# -- Custom kube scheduler name.
 schedulerName: ""
 
-# only used with deployment mode
+# -- only used with deployment mode
 replicaCount: 1
 
 revisionHistoryLimit: 10
 
 annotations: {}
 
-# List of extra sidecars to add.
+# -- List of extra sidecars to add.
 # This also supports template content, which will eventually be converted to yaml.
 extraContainers: []
 # extraContainers:
@@ -561,7 +563,7 @@ initContainers: []
 #      - name: opentelemetry-collector-data # use the name of the volume used for persistence
 #        mountPath: /var/lib/storage/otc # use the path given as per `extensions.file_storage.directory` & `extraVolumeMounts[x].mountPath`
 
-# Pod lifecycle policies.
+# -- Pod lifecycle policies.
 lifecycleHooks: {}
 # lifecycleHooks:
 #   preStop:
@@ -712,33 +714,33 @@ httproute:
   rules: []
 
 podMonitor:
-  # The pod monitor by default scrapes the metrics port.
+  # -- The pod monitor by default scrapes the metrics port.
   # The metrics port needs to be enabled as well.
   enabled: false
   metricsEndpoints:
     - port: metrics
       # interval: 15s
 
-  # additional labels for the PodMonitor
+  # -- additional labels for the PodMonitor
   extraLabels: {}
   #   release: kube-prometheus-stack
 
 serviceMonitor:
-  # The service monitor by default scrapes the metrics port.
+  # -- The service monitor by default scrapes the metrics port.
   # The metrics port needs to be enabled as well.
   enabled: false
   metricsEndpoints:
     - port: metrics
       # interval: 15s
 
-  # additional labels for the ServiceMonitor
+  # -- additional labels for the ServiceMonitor
   extraLabels: {}
   #  release: kube-prometheus-stack
   # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
   # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
   relabelings: []
   metricRelabelings: []
-  # Sets a sample limit on the ServiceMonitor
+  # -- Sets a sample limit on the ServiceMonitor
   sampleLimit: 0
 
 # PodDisruptionBudget is used only if mode is "deployment" or "statefulset"
@@ -771,16 +773,16 @@ prometheusRule:
   # Create default rules for monitoring the collector
   defaultRules:
     enabled: false
-    ## Additional labels for PrometheusRule alerts
+    # -- Additional labels for PrometheusRule alerts
     additionalRuleLabels: {}
-    ## Additional annotations for PrometheusRule alerts
+    # -- Additional annotations for PrometheusRule alerts
     additionalRuleAnnotations: {}
 
-  # additional labels for the PrometheusRule
+  # -- additional labels for the PrometheusRule
   extraLabels: {}
 
 statefulset:
-  # volumeClaimTemplates for a statefulset
+  # -- volumeClaimTemplates for a statefulset
   volumeClaimTemplates: []
   podManagementPolicy: "Parallel"
   # Controls if and how PVCs created by the StatefulSet are deleted. Available in Kubernetes 1.23+.
@@ -792,7 +794,7 @@ statefulset:
 networkPolicy:
   enabled: false
 
-  # Annotations to add to the NetworkPolicy
+  # -- Annotations to add to the NetworkPolicy
   annotations: {}
 
   # Configure the 'from' clause of the NetworkPolicy.
@@ -841,5 +843,5 @@ networkPolicy:
   #      - port: 1234
   #        protocol: TCP
 
-# Allow containers to share processes across pod namespace
+# -- Allow containers to share processes across pod namespace
 shareProcessNamespace: false
