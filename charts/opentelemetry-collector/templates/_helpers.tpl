@@ -263,13 +263,31 @@ Hash only the data of a rendered ConfigMap, so that the chart labels on the mani
 components:
   receivers:
     filelog: file_log
-  processors:
-    k8sattributes: k8s_attributes
   exporters:
     otlp: otlp_grpc
     otlphttp: otlp_http
 detectors:
   k8snode: k8s_api
+{{- end -}}
+
+{{- define "opentelemetry-collector.failOnRemovedComponentNames" -}}
+{{- $removedProcessors := dict "k8sattributes" "k8s_attributes" -}}
+{{- range $old, $new := $removedProcessors }}
+  {{- range $key, $_ := ($.config.processors | default dict) }}
+    {{- if or (eq $key $old) (hasPrefix (printf "%s/" $old) $key) }}
+      {{- fail (printf "[ERROR] Processor '%s' is no longer supported by this chart. Rename it to '%s' in your configuration. See UPGRADING.md." $key ($key | replace (printf "%s/" $old) (printf "%s/" $new) | replace $old $new)) }}
+    {{- end }}
+  {{- end }}
+  {{- range $signal, $pipeline := (dig "service" "pipelines" dict $.config) }}
+    {{- if $pipeline }}
+      {{- range ((index $pipeline "processors") | default list) }}
+        {{- if or (eq . $old) (hasPrefix (printf "%s/" $old) .) }}
+          {{- fail (printf "[ERROR] Pipeline '%s' references processor '%s', which is no longer supported by this chart. Rename it to '%s' in your configuration. See UPGRADING.md." $signal . (. | replace (printf "%s/" $old) (printf "%s/" $new) | replace $old $new)) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 {{- end -}}
 
 {{- define "opentelemetry-collector.deprecations" -}}

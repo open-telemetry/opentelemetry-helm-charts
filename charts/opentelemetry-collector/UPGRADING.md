@@ -4,6 +4,15 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.173.1 to 0.174.0
+
+> [!WARNING]
+> The generated configuration requires OpenTelemetry Collector v0.146.0 or newer.
+
+The deprecated `k8sattributes` processor name is no longer supported by this chart. The `kubernetesAttributes` preset always generates the `k8s_attributes` processor name, and `k8sattributes` references in user-provided configuration are no longer rewritten automatically. `helm install` / `helm upgrade` now fails with an error if your `values.yaml` still references `k8sattributes` (including named variants like `k8sattributes/custom`) in `config.processors` or in any pipeline processor list. Rename all occurrences to `k8s_attributes` before upgrading.
+
+The `rewriteDeprecatedComponentNames` setting remains available for the other deprecated component renames (`filelog`, `otlp`/`otlphttp`, `k8snode`), but no longer has any effect on the `k8sattributes` processor name.
+
 ## 0.171.0 to 0.171.1
 
 The `extraEnvs` and `extraEnvsFrom` are now templated in the same manner other templated fields, e.g. `extraVolumes`. If you are using any `{{ }}` syntax in `extraEnvs` or `extraEnvsFrom` you will need to escape them using ``` {{` <original content> `}} ```.

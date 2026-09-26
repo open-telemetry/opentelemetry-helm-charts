@@ -86,7 +86,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesAttributes.enabled }}
-{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config "rewriteDeprecatedComponentNames" .Values.rewriteDeprecatedComponentNames) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesObjects.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesObjectsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -100,6 +100,7 @@ Build config file for daemonset OpenTelemetry Collector
 {{- if .Values.rewriteDeprecatedComponentNames }}
 {{- $config = (include "opentelemetry-collector.rewriteDeprecatedComponentNames" (dict "config" $config) | fromYaml) }}
 {{- end }}
+{{- include "opentelemetry-collector.failOnRemovedComponentNames" (dict "config" $config) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -126,7 +127,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- $config = (include "opentelemetry-collector.applyKubeletMetricsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesAttributes.enabled }}
-{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config "rewriteDeprecatedComponentNames" .Values.rewriteDeprecatedComponentNames) | fromYaml) }}
+{{- $config = (include "opentelemetry-collector.applyKubernetesAttributesConfig" (dict "Values" $data "config" $config) | fromYaml) }}
 {{- end }}
 {{- if .Values.presets.kubernetesEvents.enabled }}
 {{- $config = (include "opentelemetry-collector.applyKubernetesEventsConfig" (dict "Values" $data "config" $config) | fromYaml) }}
@@ -143,6 +144,7 @@ Build config file for deployment OpenTelemetry Collector
 {{- if .Values.rewriteDeprecatedComponentNames }}
 {{- $config = (include "opentelemetry-collector.rewriteDeprecatedComponentNames" (dict "config" $config) | fromYaml) }}
 {{- end }}
+{{- include "opentelemetry-collector.failOnRemovedComponentNames" (dict "config" $config) }}
 {{- tpl (toYaml $config) . }}
 {{- end }}
 
@@ -351,37 +353,31 @@ exporters:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
-{{- $processorName := "k8sattributes" }}
-{{- if .rewriteDeprecatedComponentNames }}
-{{- $processorName = "k8s_attributes" }}
-{{- end }}
-{{- $values := .Values.Values }}
-{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" (dict "Values" $values "rewriteDeprecatedComponentNames" .rewriteDeprecatedComponentNames) | fromYaml) .config }}
+{{- $config := mustMergeOverwrite (include "opentelemetry-collector.kubernetesAttributesConfig" .Values | fromYaml) .config }}
 {{- if $config.service.pipelines.logs }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "processors" list)))) $config }}
-  {{- if not (or (has "k8sattributes" $config.service.pipelines.logs.processors) (has "k8s_attributes" $config.service.pipelines.logs.processors)) }}
-    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors $processorName | uniq)  }}
+  {{- if not (has "k8s_attributes" $config.service.pipelines.logs.processors) }}
+    {{- $_ := set $config.service.pipelines.logs "processors" (prepend $config.service.pipelines.logs.processors "k8s_attributes" | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if and $config.service.pipelines.metrics }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "processors" list)))) $config }}
-  {{- if not (or (has "k8sattributes" $config.service.pipelines.metrics.processors) (has "k8s_attributes" $config.service.pipelines.metrics.processors)) }}
-    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors $processorName | uniq)  }}
+  {{- if not (has "k8s_attributes" $config.service.pipelines.metrics.processors) }}
+    {{- $_ := set $config.service.pipelines.metrics "processors" (prepend $config.service.pipelines.metrics.processors "k8s_attributes" | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if and $config.service.pipelines.traces }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "traces" (dict "processors" list)))) $config }}
-  {{- if not (or (has "k8sattributes" $config.service.pipelines.traces.processors) (has "k8s_attributes" $config.service.pipelines.traces.processors)) }}
-    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors $processorName | uniq)  }}
+  {{- if not (has "k8s_attributes" $config.service.pipelines.traces.processors) }}
+    {{- $_ := set $config.service.pipelines.traces "processors" (prepend $config.service.pipelines.traces.processors "k8s_attributes" | uniq)  }}
   {{- end }}
 {{- end }}
 {{- if $config.service.pipelines.profiles }}
   {{- $config = mustMergeOverwrite (dict "service" (dict "pipelines" (dict "profiles" (dict "processors" list)))) $config }}
-  {{- if not (or (has "k8sattributes" $config.service.pipelines.profiles.processors) (has "k8s_attributes" $config.service.pipelines.profiles.processors)) }}
-    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors $processorName | uniq)  }}
+  {{- if not (has "k8s_attributes" $config.service.pipelines.profiles.processors) }}
+    {{- $_ := set $config.service.pipelines.profiles "processors" (prepend $config.service.pipelines.profiles.processors "k8s_attributes" | uniq)  }}
   {{- end }}
-  {{- $processorBlock := index $config.processors $processorName }}
-  {{- $podAssoc := $processorBlock.pod_association }}
+  {{- $podAssoc := $config.processors.k8s_attributes.pod_association }}
   {{- $containerIdSource := dict "sources" (list (dict "from" "resource_attribute" "name" "container.id")) }}
   {{- $hasContainerId := false }}
   {{- range $podAssoc }}
@@ -392,19 +388,15 @@ exporters:
     {{- end }}
   {{- end }}
   {{- if not $hasContainerId }}
-    {{- $_ := set $processorBlock "pod_association" (prepend $podAssoc $containerIdSource) }}
+    {{- $_ := set $config.processors.k8s_attributes "pod_association" (prepend $podAssoc $containerIdSource) }}
   {{- end }}
 {{- end }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesAttributesConfig" -}}
-{{- $processorName := "k8sattributes" }}
-{{- if .rewriteDeprecatedComponentNames }}
-{{- $processorName = "k8s_attributes" }}
-{{- end }}
 processors:
-  {{ $processorName }}:
+  k8s_attributes:
   {{- if eq .Values.mode "daemonset" }}
     filter:
       node_from_env_var: K8S_NODE_NAME
