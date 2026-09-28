@@ -42,6 +42,7 @@ spec:
           imagePullPolicy: "IfNotPresent"
           args:
             - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.retention.size=500MB
             - --config.file=/etc/config/prometheus.yml
             - --storage.tsdb.path=/data
             - --web.console.libraries=/etc/prometheus/console_libraries
@@ -72,7 +73,7 @@ spec:
             successThreshold: 1
           resources:
             limits:
-              memory: 1Gi
+              memory: 400Mi
           volumeMounts:
             - name: config-volume
               mountPath: /etc/config
