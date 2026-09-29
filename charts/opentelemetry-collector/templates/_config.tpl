@@ -510,7 +510,7 @@ processors:
 {{- end -}}
 {{- $hasMultipleReplicas := gt (int $vals.replicaCount) 1 -}}
 {{- $useLeaderElection := and (or (eq $vals.mode "daemonset") $hasMultipleReplicas) (not $disableLeaderElection) -}}
-{{- $electorName := "k8s_cluster" }}
+{{- $electorName := "k8s_events" }}
 {{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useK8sEventsReceiver" $useK8sEventsReceiver "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) (include "opentelemetry-collector.kubernetesEventsConfig" $ctx | fromYaml) .config }}
 {{- if $useLeaderElection}}
