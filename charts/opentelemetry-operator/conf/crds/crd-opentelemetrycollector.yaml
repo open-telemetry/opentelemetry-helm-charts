@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ include "opentelemetry-operator.webhookCertAnnotation" . }}
-    controller-gen.kubebuilder.io/version: v0.21.0
+    controller-gen.kubebuilder.io/version: v0.22.0
     {{- with .Values.crds.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -6353,6 +6353,9 @@ spec:
                 type: object
               dnsPolicy:
                 type: string
+              enableServiceLinks:
+                default: true
+                type: boolean
               env:
                 items:
                   properties:
