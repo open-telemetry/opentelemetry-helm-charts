@@ -1161,16 +1161,14 @@ kubernetesServiceMonitors:
 ##
 kubeApiServer:
   enabled: false
-  ## TLS settings for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps; keySecret
-  ## references a Secret. caFile/certFile/keyFile reference files mounted in the Collector.
-  ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
-  ## ca/caFile, cert/certFile, and keySecret/keyFile are mutually exclusive; set the
-  ## file field to null when configuring a Secret or ConfigMap reference.
+  ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+  ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
   ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+  ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+  ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
   tlsConfig:
     serverName: kubernetes
     insecureSkipVerify: false
-    caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
   serviceMonitor:
     ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
     ## With false, collectors discovering this ServiceMonitor MUST leave
@@ -1365,15 +1363,13 @@ kubeControllerManager:
     insecureSkipVerify: null
     serverName: null
 
-    ## TLS settings for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps; keySecret
-    ## references a Secret. caFile/certFile/keyFile reference files mounted in the Collector.
-    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
-    ## ca/caFile, cert/certFile, and keySecret/keyFile are mutually exclusive; set the
-    ## file field to null when configuring a Secret or ConfigMap reference.
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
     ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
     tlsConfig:
       insecureSkipVerify: true
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
@@ -1669,18 +1665,13 @@ kubeEtcd:
     ## override the corresponding fields in serviceMonitor.tlsConfig.
     insecureSkipVerify: null
     serverName: null
-    ## When non-null, serviceMonitor.caFile, certFile, and keyFile override the
-    ## corresponding fields in serviceMonitor.tlsConfig.
-    caFile: null
-    certFile: null
-    keyFile: null
 
-    ## TLS settings for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps; keySecret
-    ## references a Secret. caFile/certFile/keyFile reference files mounted in the Collector.
-    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
-    ## ca/caFile, cert/certFile, and keySecret/keyFile are mutually exclusive; set the
-    ## file field to null when configuring a Secret or ConfigMap reference.
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
     ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Existing serviceMonitor.caFile/certFile/keyFile settings remain supported.
+    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false
+    ## and cannot be combined with the corresponding ca/cert/keySecret reference.
     tlsConfig:
       insecureSkipVerify: false
 
@@ -1800,15 +1791,13 @@ kubeScheduler:
     insecureSkipVerify: null
     serverName: null
 
-    ## TLS settings for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps; keySecret
-    ## references a Secret. caFile/certFile/keyFile reference files mounted in the Collector.
-    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
-    ## ca/caFile, cert/certFile, and keySecret/keyFile are mutually exclusive; set the
-    ## file field to null when configuring a Secret or ConfigMap reference.
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
     ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
     tlsConfig:
       insecureSkipVerify: true
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
@@ -1907,14 +1896,12 @@ kubeProxy:
     ##
     https: false
 
-    ## TLS settings for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps; keySecret
-    ## references a Secret. caFile/certFile/keyFile reference files mounted in the Collector.
-    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
-    ## ca/caFile, cert/certFile, and keySecret/keyFile are mutually exclusive; set the
-    ## file field to null when configuring a Secret or ConfigMap reference.
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
     ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
-    tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    tlsConfig: {}
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig

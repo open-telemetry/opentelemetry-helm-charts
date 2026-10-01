@@ -4,7 +4,7 @@
 
 This release adds opt-in Secret-backed authorization and Secret/ConfigMap TLS references for Kubernetes component ServiceMonitors. These allow scraping with `targetAllocator.prometheusCR.denyFSAccessThroughSMs: true` when all filesystem credential references are removed. The chart can also create a dedicated ServiceAccount and token Secret for metrics scraping.
 
-By default, `serviceMonitor.authorization: false` retains the existing bearer token file at `/var/run/secrets/kubernetes.io/serviceaccount/token`. Existing TLS fields remain supported; legacy settings directly under `serviceMonitor` override matching `tlsConfig` fields when explicitly set.
+By default, `serviceMonitor.authorization: false` retains the existing bearer token file at `/var/run/secrets/kubernetes.io/serviceaccount/token`. Existing direct `serviceMonitor` TLS settings remain supported; non-null `insecureSkipVerify` and `serverName` values override their nested equivalents. The nested interface uses `SafeTLSConfig` and does not accept `caFile`, `certFile`, or `keyFile`.
 
 > [!WARNING]
 > **If any discovered Kubernetes component ServiceMonitor has `authorization: false`, its Collectors CANNOT set `targetAllocator.prometheusCR.denyFSAccessThroughSMs: true`. Leave this setting `false`.** The Target Allocator rejects ServiceMonitors referencing filesystem credentials, so their targets will not be scraped. TLS file references (`caFile`, `certFile`, or `keyFile`) also require `denyFSAccessThroughSMs: false`, even with Secret-backed authorization.
@@ -12,7 +12,7 @@ By default, `serviceMonitor.authorization: false` retains the existing bearer to
 To opt in and enable `denyFSAccessThroughSMs: true`:
 
 - Configure `serviceMonitor.authorization` with `type: Bearer` and `credentials.name` / `credentials.key` referencing a token Secret. Use `authorization: null` for endpoints requiring no authentication; this omits the bearer token file too.
-- Replace TLS file paths with `tlsConfig.ca`, `.cert`, and `.keySecret` references. Use `kubeApiServer.tlsConfig` for kube-apiserver and `serviceMonitor.tlsConfig` for other components. Clear default file paths with `null` and remove legacy file overrides: `ca` / `caFile`, `cert` / `certFile`, and `keySecret` / `keyFile` are mutually exclusive.
+- Replace TLS file paths with `tlsConfig.ca`, `.cert`, and `.keySecret` references. Use `kubeApiServer.tlsConfig` for kube-apiserver and `serviceMonitor.tlsConfig` for other components. Configuring `ca` replaces the implicit service-account CA file fallback. Etcd has no implicit CA file. Remove any corresponding direct `serviceMonitor.caFile`, `.certFile`, or `.keyFile` settings; an explicit file path and its nested reference are mutually exclusive.
 - **You MUST enable `collectors.<name>.targetAllocator.mtls.enabled` for every Collector receiving Secret-backed credentials from the Target Allocator.** These credentials are transmitted to Collectors and require mTLS protection.
 
 The `prometheus-otel` example demonstrates this configuration.

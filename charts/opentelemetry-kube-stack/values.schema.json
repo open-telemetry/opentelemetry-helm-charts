@@ -3912,7 +3912,7 @@
           "type": "boolean"
         },
         "tlsConfig": {
-          "$ref": "#/$defs/TLSConfig"
+          "$ref": "#/$defs/SafeTLSConfig"
         },
         "serviceMonitor": {
           "$ref": "#/$defs/Monitor"
@@ -3941,7 +3941,7 @@
       },
       "title": "SafeAuthorization"
     },
-    "TLSConfig": {
+    "SafeTLSConfig": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -3977,59 +3977,9 @@
             "TLS12",
             "TLS13"
           ]
-        },
-        "caFile": {
-          "type": "string"
-        },
-        "certFile": {
-          "type": "string"
-        },
-        "keyFile": {
-          "type": "string"
         }
       },
-      "title": "TLSConfig",
-      "allOf": [
-        {
-          "not": {
-            "required": [
-              "ca",
-              "caFile"
-            ],
-            "properties": {
-              "caFile": {
-                "minLength": 1
-              }
-            }
-          }
-        },
-        {
-          "not": {
-            "required": [
-              "cert",
-              "certFile"
-            ],
-            "properties": {
-              "certFile": {
-                "minLength": 1
-              }
-            }
-          }
-        },
-        {
-          "not": {
-            "required": [
-              "keySecret",
-              "keyFile"
-            ],
-            "properties": {
-              "keyFile": {
-                "minLength": 1
-              }
-            }
-          }
-        }
-      ]
+      "title": "SafeTLSConfig"
     },
     "KubeDNS": {
       "type": "object",
@@ -4279,7 +4229,7 @@
           ]
         },
         "tlsConfig": {
-          "$ref": "#/$defs/TLSConfig"
+          "$ref": "#/$defs/SafeTLSConfig"
         },
         "https": {
           "anyOf": [

@@ -45,7 +45,7 @@ spec:
     {{- if .Values.kubeProxy.serviceMonitor.https }}
     scheme: https
     tlsConfig:
-      {{- toYaml .Values.kubeProxy.serviceMonitor.tlsConfig | nindent 6 }}
+      {{- include "opentelemetry-kube-stack.servicemonitor.tlsConfig" (dict "serviceMonitor" .Values.kubeProxy.serviceMonitor "defaultCAFile" "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt") | nindent 6 }}
     {{- end}}
 {{- if .Values.kubeProxy.serviceMonitor.metricRelabelings }}
     metricRelabelings:
