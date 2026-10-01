@@ -44,7 +44,7 @@ spec:
     {{- end }}
     {{- if eq .Values.kubeEtcd.serviceMonitor.scheme "https" }}
     scheme: https
-    {{- with (include "opentelemetry-kube-stack.servicemonitor.tlsConfig" .Values.kubeEtcd.serviceMonitor | fromYaml) }}
+    {{- with (include "opentelemetry-kube-stack.servicemonitor.tlsConfig" (dict "serviceMonitor" .Values.kubeEtcd.serviceMonitor "defaultCAFile" "") | fromYaml) }}
     tlsConfig:
       {{- toYaml . | nindent 6 }}
     {{- end }}

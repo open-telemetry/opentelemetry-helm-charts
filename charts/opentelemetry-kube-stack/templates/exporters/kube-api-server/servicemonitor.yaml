@@ -40,7 +40,7 @@ spec:
 {{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.relabelings | indent 6) . }}
 {{- end }}
     tlsConfig:
-      {{- toYaml .Values.kubeApiServer.tlsConfig | nindent 6 }}
+      {{- include "opentelemetry-kube-stack.servicemonitor.tlsConfig" (dict "serviceMonitor" (dict "tlsConfig" .Values.kubeApiServer.tlsConfig) "defaultCAFile" "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt") | nindent 6 }}
   jobLabel: {{ .Values.kubeApiServer.serviceMonitor.jobLabel }}
   namespaceSelector:
     matchNames:

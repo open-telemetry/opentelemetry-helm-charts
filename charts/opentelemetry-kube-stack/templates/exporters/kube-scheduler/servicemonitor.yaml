@@ -45,7 +45,7 @@ spec:
     {{- if eq (include "opentelemetry-kube-stack.kubeScheduler.insecureScrape" (list . false true .Values.kubeScheduler.serviceMonitor.https )) "true" }}
     scheme: https
     tlsConfig:
-      {{- include "opentelemetry-kube-stack.servicemonitor.tlsConfig" .Values.kubeScheduler.serviceMonitor | nindent 6 }}
+      {{- include "opentelemetry-kube-stack.servicemonitor.tlsConfig" (dict "serviceMonitor" .Values.kubeScheduler.serviceMonitor "defaultCAFile" "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt") | nindent 6 }}
     {{- end}}
 {{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
     metricRelabelings:
