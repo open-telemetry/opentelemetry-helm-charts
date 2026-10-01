@@ -3912,7 +3912,7 @@
           "type": "boolean"
         },
         "tlsConfig": {
-          "$ref": "#/$defs/SafeTLSConfig"
+          "$ref": "#/$defs/TLSConfig"
         },
         "serviceMonitor": {
           "$ref": "#/$defs/Monitor"
@@ -3941,7 +3941,7 @@
       },
       "title": "SafeAuthorization"
     },
-    "SafeTLSConfig": {
+    "TLSConfig": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -3977,9 +3977,59 @@
             "TLS12",
             "TLS13"
           ]
+        },
+        "caFile": {
+          "type": "string"
+        },
+        "certFile": {
+          "type": "string"
+        },
+        "keyFile": {
+          "type": "string"
         }
       },
-      "title": "SafeTLSConfig"
+      "title": "TLSConfig",
+      "allOf": [
+        {
+          "not": {
+            "required": [
+              "ca",
+              "caFile"
+            ],
+            "properties": {
+              "caFile": {
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "cert",
+              "certFile"
+            ],
+            "properties": {
+              "certFile": {
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "keySecret",
+              "keyFile"
+            ],
+            "properties": {
+              "keyFile": {
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "KubeDNS": {
       "type": "object",
@@ -4221,11 +4271,15 @@
             },
             {
               "type": "null"
+            },
+            {
+              "type": "boolean",
+              "const": false
             }
           ]
         },
         "tlsConfig": {
-          "$ref": "#/$defs/SafeTLSConfig"
+          "$ref": "#/$defs/TLSConfig"
         },
         "https": {
           "anyOf": [
@@ -4251,6 +4305,56 @@
         },
         "scheme": {
           "type": "string"
+        },
+        "insecureSkipVerify": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serverName": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "caFile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "certFile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyFile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -4328,6 +4432,10 @@
             },
             {
               "type": "null"
+            },
+            {
+              "type": "boolean",
+              "const": false
             }
           ]
         },

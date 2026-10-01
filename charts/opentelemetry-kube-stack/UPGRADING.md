@@ -2,34 +2,36 @@
 
 ## 0.23.x to 0.24.x
 
-The Kubernetes component ServiceMonitors (kube-apiserver, kube-controller-manager, kube-scheduler, kube-etcd, kube-proxy, coredns, and kube-dns) no longer reference service account bearer token or certificate authority files on the Collector's filesystem. This fixes an issue where they would get dropped by Target Allocators that have `spec.prometheusCR.denyFSAccessThroughSMs` set `true`. For authenticated endpoints, the bearer token now comes from a Secret, and the CA comes from the `kube-root-ca.crt` ConfigMap. This change is based on [kube-prometheus-stack prometheus-community/helm-charts#7238](https://github.com/prometheus-community/helm-charts/pull/7238).
+This release adds opt-in Secret-backed authorization and Secret/ConfigMap TLS references for Kubernetes component ServiceMonitors. These allow scraping with `targetAllocator.prometheusCR.denyFSAccessThroughSMs: true` when all filesystem credential references are removed. The chart can also create a dedicated ServiceAccount and token Secret for metrics scraping.
 
-The chart creates a dedicated ServiceAccount and a long-lived `kubernetes.io/service-account-token` Secret for authenticated Kubernetes component ServiceMonitors to reference when `kubernetesServiceMonitors.enabled` and `kubernetesServiceMonitors.authorization.create` are both `true`. The ServiceAccount is bound to RBAC that limits it to `GET` requests against the `/metrics` non-resource URL. The generated names can be overridden with `kubernetesServiceMonitors.authorization.serviceAccountName` and `kubernetesServiceMonitors.authorization.secretName`.
+By default, `serviceMonitor.authorization: false` retains the existing bearer token file at `/var/run/secrets/kubernetes.io/serviceaccount/token`. Existing TLS fields remain supported; legacy settings directly under `serviceMonitor` override matching `tlsConfig` fields when explicitly set.
 
-An authorization Secret must be in the same namespace as its ServiceMonitor. Normally that is the chart's release namespace. When `kubernetesServiceMonitors.ignoreNamespaceSelectors` is `true`, the chart creates ServiceAccounts and token Secrets only in `default` and `kube-system`, where the Kubernetes component ServiceMonitors are placed.
+> [!WARNING]
+> **If any discovered Kubernetes component ServiceMonitor has `authorization: false`, its Collectors CANNOT set `targetAllocator.prometheusCR.denyFSAccessThroughSMs: true`. Leave this setting `false`.** The Target Allocator rejects ServiceMonitors referencing filesystem credentials, so their targets will not be scraped. TLS file references (`caFile`, `certFile`, or `keyFile`) also require `denyFSAccessThroughSMs: false`, even with Secret-backed authorization.
 
-For collectors with Prometheus CR discovery enabled, the chart defaults `targetAllocator.prometheusCR.secretNamespaces` to these same namespaces so the Target Allocator watches the authorization Secrets for changes. An explicitly configured `secretNamespaces` value is preserved.
+To opt in and enable `denyFSAccessThroughSMs: true`:
 
-By default, the kube-apiserver, kube-controller-manager, and kube-scheduler ServiceMonitors reference this credential. CoreDNS, kube-dns, kube-etcd, and kube-proxy do not configure authorization by default because their default metrics endpoints do not use bearer-token authentication. Their `serviceMonitor.authorization` settings remain configurable for clusters that secure these endpoints separately.
+- Configure `serviceMonitor.authorization` with `type: Bearer` and `credentials.name` / `credentials.key` referencing a token Secret. Use `authorization: null` for endpoints requiring no authentication; this omits the bearer token file too.
+- Replace TLS file paths with `tlsConfig.ca`, `.cert`, and `.keySecret` references. Use `kubeApiServer.tlsConfig` for kube-apiserver and `serviceMonitor.tlsConfig` for other components. Clear default file paths with `null` and remove legacy file overrides: `ca` / `caFile`, `cert` / `certFile`, and `keySecret` / `keyFile` are mutually exclusive.
+- **You MUST enable `collectors.<name>.targetAllocator.mtls.enabled` for every Collector receiving Secret-backed credentials from the Target Allocator.** These credentials are transmitted to Collectors and require mTLS protection.
 
-To manage the credential yourself, set `kubernetesServiceMonitors.authorization.create: false` and point each authenticated component's `serviceMonitor.authorization` at an existing Secret. Set `authorization: null` instead for an endpoint that does not require authentication. Chart rendering fails if a ServiceMonitor still references the chart-generated token Secret while its creation is disabled.
+The `prometheus-otel` example demonstrates this configuration.
 
-The following settings have been removed or replaced. The `authorization` and `tlsConfig` objects are rendered in the Prometheus Operator [`SafeAuthorization`](https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.SafeAuthorization) and [`SafeTLSConfig`](https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.SafeTLSConfig) formats.
+For a chart-managed token Secret, enable `kubernetesServiceMonitors.enabled` and `kubernetesServiceMonitors.authorization.create` (defaults to `false`). This creates a dedicated ServiceAccount, a long-lived token Secret, and RBAC allowing `GET /metrics`. Configure each authenticated component explicitly:
 
-| Previous setting | Replacement |
-| --- | --- |
-| Hard-coded `bearerTokenFile` on every exporter ServiceMonitor | `<component>.serviceMonitor.authorization` |
-| Hard-coded kube-apiserver `tlsConfig.caFile` | `kubeApiServer.tlsConfig.ca` |
-| `kubeControllerManager.serviceMonitor.insecureSkipVerify` / `.serverName` and hard-coded `.caFile` | `kubeControllerManager.serviceMonitor.tlsConfig` |
-| `kubeScheduler.serviceMonitor.insecureSkipVerify` / `.serverName` and hard-coded `.caFile` | `kubeScheduler.serviceMonitor.tlsConfig` |
-| Hard-coded kube-proxy `tlsConfig.caFile` | `kubeProxy.serviceMonitor.tlsConfig.ca` |
-| `kubeEtcd.serviceMonitor.insecureSkipVerify` / `.serverName` / `.caFile` / `.certFile` / `.keyFile` | `kubeEtcd.serviceMonitor.tlsConfig` |
+```yaml
+kubeApiServer:
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
+```
 
-`kubeControllerManager` and `kubeScheduler` now default to a literal `tlsConfig.insecureSkipVerify: true`. This matches the value that the previous Kubernetes-version-dependent logic selected for every Kubernetes version supported by the chart.
+Override generated names with `kubernetesServiceMonitors.authorization.serviceAccountName` and `.secretName`, or leave `create: false` and reference your own Secret. Rendering fails if a ServiceMonitor references the chart-managed Secret while its creation is disabled.
 
-Helm deep-merges values. When replacing a default `tlsConfig.ca.configMap` with a Secret, explicitly set `tlsConfig.ca.configMap: null` in addition to configuring `tlsConfig.ca.secret`.
-
-The Target Allocator reads Secret-backed endpoint credentials and sends them to Collectors. Its ServiceAccount must have permission to read the referenced Secrets; the chart's default ClusterRole already provides that access. Enable `collectors.<name>.targetAllocator.mtls.enabled`, as in the `prometheus-otel` example, to protect credentials in transit. Alternatively, use `allowInsecureAuthSecrets` only when transport security is provided separately.
+Secrets must share their ServiceMonitor's namespace, normally the release namespace. With `ignoreNamespaceSelectors: true`, chart-managed credentials are created in `default` and `kube-system`. The chart defaults `targetAllocator.prometheusCR.secretNamespaces` to these namespaces unless explicitly configured. The default ClusterRole permits the Target Allocator to read these Secrets.
 
 ## 0.19.0 to 0.19.1
 

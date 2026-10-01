@@ -36,9 +36,11 @@ spec:
     {{- if .Values.coreDns.serviceMonitor.proxyUrl }}
     proxyUrl: {{ .Values.coreDns.serviceMonitor.proxyUrl}}
     {{- end }}
-    {{- with .Values.coreDns.serviceMonitor.authorization }}
+    {{- if .Values.coreDns.serviceMonitor.authorization }}
     authorization:
-      {{- tpl (toYaml .) $ | nindent 6 }}
+      {{- tpl (toYaml .Values.coreDns.serviceMonitor.authorization) $ | nindent 6 }}
+    {{- else if eq (toJson .Values.coreDns.serviceMonitor.authorization) "false" }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- end }}
 {{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
     metricRelabelings:

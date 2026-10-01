@@ -164,7 +164,7 @@ Create the name of the clusterRoleBinding to use
 
 {{- define "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" -}}
 {{- if not (and .Values.kubernetesServiceMonitors.enabled .Values.kubernetesServiceMonitors.authorization.create) -}}
-{{- fail "The Kubernetes component ServiceMonitors authenticate by default with the Secret created by kubernetesServiceMonitors.authorization.create, which is only rendered when kubernetesServiceMonitors.enabled is also true. Enable both settings, or set the serviceMonitor.authorization of each enabled Kubernetes component to a Secret you manage yourself, or to null to scrape without authentication." -}}
+{{- fail "The Kubernetes component ServiceMonitors reference the Secret created by kubernetesServiceMonitors.authorization.create, which is only rendered when kubernetesServiceMonitors.enabled is also true. Enable both settings, or set the serviceMonitor.authorization of each enabled Kubernetes component to a Secret you manage yourself, or to false to use the Collector service account token file (requires denyFSAccessThroughSMs: false), or to null to scrape without authentication." -}}
 {{- end -}}
 {{- default (printf "%s-token" (include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . | trunc 57 | trimSuffix "-") | trunc 63 | trimSuffix "-") .Values.kubernetesServiceMonitors.authorization.secretName -}}
 {{- end }}
@@ -543,4 +543,19 @@ labelNameLengthLimit: {{ . }}
 {{- with .labelValueLengthLimit }}
 labelValueLengthLimit: {{ . }}
 {{- end }}
+{{- end -}}
+
+{{- define "opentelemetry-kube-stack.servicemonitor.tlsConfig" -}}
+{{- $tls := deepCopy (default dict .tlsConfig) -}}
+{{- range $key := list "insecureSkipVerify" "serverName" "caFile" "certFile" "keyFile" -}}
+{{- if and (hasKey $ $key) (ne (toJson (get $ $key)) "null") -}}
+{{- $_ := set $tls $key (get $ $key) -}}
+{{- end -}}
+{{- end -}}
+{{- range $pair := list (list "ca" "caFile") (list "cert" "certFile") (list "keySecret" "keyFile") -}}
+{{- if and (get $tls (index $pair 0)) (get $tls (index $pair 1)) -}}
+{{- fail (printf "ServiceMonitor TLSConfig cannot specify both %s and %s; set the file field to null when using a Secret or ConfigMap reference" (index $pair 0) (index $pair 1)) -}}
+{{- end -}}
+{{- end -}}
+{{- toYaml $tls -}}
 {{- end -}}

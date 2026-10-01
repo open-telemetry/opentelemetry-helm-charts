@@ -20,6 +20,7 @@ collectors:
         useCertManager: true
       prometheusCR:
         enabled: true
+        denyFSAccessThroughSMs: true
         podMonitorSelector: {}
         scrapeInterval: "30s"
         serviceMonitorSelector: {}
@@ -59,21 +60,68 @@ opAMPBridge:
   enabled: false
 kubernetesServiceMonitors:
   enabled: true
+  authorization:
+    create: true
 kubeApiServer:
   enabled: true
+  tlsConfig:
+    caFile: null
+    ca:
+      configMap:
+        name: kube-root-ca.crt
+        key: ca.crt
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
 kubelet:
   enabled: true
 kubeControllerManager:
   enabled: true
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
+    tlsConfig:
+      caFile: null
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 kubeDns:
   enabled: true
+  serviceMonitor:
+    authorization: null
 kubeEtcd:
   enabled: true
+  serviceMonitor:
+    authorization: null
 kubeScheduler:
   enabled: true
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
+    tlsConfig:
+      caFile: null
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 kubeProxy:
   enabled: true
+  serviceMonitor:
+    authorization: null
 kubeStateMetrics:
   enabled: true
 nodeExporter:
   enabled: true
+coreDns:
+  serviceMonitor:
+    authorization: null
