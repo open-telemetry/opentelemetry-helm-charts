@@ -18,9 +18,11 @@ spec:
   {{- include "opentelemetry-kube-stack.servicemonitor.scrapeLimits" .Values.kubeApiServer.serviceMonitor | nindent 2 }}
   endpoints:
   - port: https
-    {{- with .Values.kubeApiServer.serviceMonitor.authorization }}
+    {{- if .Values.kubeApiServer.serviceMonitor.authorization }}
     authorization:
-      {{- tpl (toYaml .) $ | nindent 6 }}
+      {{- tpl (toYaml .Values.kubeApiServer.serviceMonitor.authorization) $ | nindent 6 }}
+    {{- else if eq (toJson .Values.kubeApiServer.serviceMonitor.authorization) "false" }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- end }}
     {{- if .Values.kubeApiServer.serviceMonitor.interval }}
     interval: {{ .Values.kubeApiServer.serviceMonitor.interval }}

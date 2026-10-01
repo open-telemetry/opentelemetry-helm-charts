@@ -33,9 +33,11 @@ spec:
     {{- if .Values.kubeControllerManager.serviceMonitor.interval }}
     interval: {{ .Values.kubeControllerManager.serviceMonitor.interval }}
     {{- end }}
-    {{- with .Values.kubeControllerManager.serviceMonitor.authorization }}
+    {{- if .Values.kubeControllerManager.serviceMonitor.authorization }}
     authorization:
-      {{- tpl (toYaml .) $ | nindent 6 }}
+      {{- tpl (toYaml .Values.kubeControllerManager.serviceMonitor.authorization) $ | nindent 6 }}
+    {{- else if eq (toJson .Values.kubeControllerManager.serviceMonitor.authorization) "false" }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- end }}
     {{- if .Values.kubeControllerManager.serviceMonitor.proxyUrl }}
     proxyUrl: {{ .Values.kubeControllerManager.serviceMonitor.proxyUrl}}
@@ -43,7 +45,7 @@ spec:
     {{- if eq (include "opentelemetry-kube-stack.kubeControllerManager.insecureScrape" (list . false true .Values.kubeControllerManager.serviceMonitor.https )) "true" }}
     scheme: https
     tlsConfig:
-      {{- toYaml .Values.kubeControllerManager.serviceMonitor.tlsConfig | nindent 6 }}
+      {{- include "opentelemetry-kube-stack.servicemonitor.tlsConfig" .Values.kubeControllerManager.serviceMonitor | nindent 6 }}
     {{- end }}
 {{- if .Values.kubeControllerManager.serviceMonitor.metricRelabelings }}
     metricRelabelings:

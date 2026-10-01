@@ -33,9 +33,11 @@ spec:
     {{- if .Values.kubeDns.serviceMonitor.interval }}
     interval: {{ .Values.kubeDns.serviceMonitor.interval }}
     {{- end }}
-    {{- with .Values.kubeDns.serviceMonitor.authorization }}
+    {{- if .Values.kubeDns.serviceMonitor.authorization }}
     authorization:
-      {{- tpl (toYaml .) $ | nindent 6 }}
+      {{- tpl (toYaml .Values.kubeDns.serviceMonitor.authorization) $ | nindent 6 }}
+    {{- else if eq (toJson .Values.kubeDns.serviceMonitor.authorization) "false" }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- end }}
     {{- if .Values.kubeDns.serviceMonitor.proxyUrl }}
     proxyUrl: {{ .Values.kubeDns.serviceMonitor.proxyUrl}}
@@ -52,9 +54,11 @@ spec:
     {{- if .Values.kubeDns.serviceMonitor.interval }}
     interval: {{ .Values.kubeDns.serviceMonitor.interval }}
     {{- end }}
-    {{- with .Values.kubeDns.serviceMonitor.authorization }}
+    {{- if .Values.kubeDns.serviceMonitor.authorization }}
     authorization:
-      {{- tpl (toYaml .) $ | nindent 6 }}
+      {{- tpl (toYaml .Values.kubeDns.serviceMonitor.authorization) $ | nindent 6 }}
+    {{- else if eq (toJson .Values.kubeDns.serviceMonitor.authorization) "false" }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- end }}
 {{- if .Values.kubeDns.serviceMonitor.metricRelabelings }}
     metricRelabelings:
