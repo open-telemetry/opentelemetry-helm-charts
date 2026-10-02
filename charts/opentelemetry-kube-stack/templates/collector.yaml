@@ -47,6 +47,9 @@ spec:
   {{- if $collector.priorityClassName }}
   priorityClassName: {{ $collector.priorityClassName }}
   {{- end }}
+  {{- if $collector.trafficDistribution }}
+  trafficDistribution: {{ $collector.trafficDistribution }}
+  {{- end }}
   terminationGracePeriodSeconds: {{ $collector.terminationGracePeriodSeconds }}
   {{- with $collector.resources }}
   resources:
@@ -56,7 +59,11 @@ spec:
   resizePolicy:
   {{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with $collector.nodeSelector }}
+  {{- $nodeSelector := $collector.nodeSelector }}
+  {{- if (dig "presets" "profiling" "enabled" false $collector) }}
+  {{- $nodeSelector = mustMergeOverwrite (dict "kubernetes.io/os" "linux") ($nodeSelector | default dict) }}
+  {{- end }}
+  {{- with $nodeSelector }}
   nodeSelector:
   {{- toYaml . | nindent 4}}
   {{- end }}

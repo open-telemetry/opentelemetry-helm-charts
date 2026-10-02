@@ -217,6 +217,10 @@ extensions:
       enrichers:
         kubernetes:
           mode: enabled
+          {{- if .Values.k8sCache.replicas }}
+          metadata_cache:
+            address: {{ .Values.k8sCache.service.name }}:{{ .Values.k8sCache.service.port }}
+          {{- end }}
 {{- end }}
 
 {{/* Config v2 rules used by the application preset. */}}

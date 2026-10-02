@@ -194,3 +194,60 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: sets the metadata cache address when the k8s cache is enabled
+    set:
+      k8sCache:
+        replicas: 1
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'address: opentelemetry-ebpf-instrumentation-k8s-cache:50055'
+
+  - it: omits the metadata cache address when the k8s cache is disabled
+    set:
+      k8sCache:
+        replicas: 0
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)[[:space:]]+metadata_cache:'
+
+  - it: preserves a user-provided metadata cache address
+    set:
+      k8sCache:
+        replicas: 1
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              enrich:
+                enrichers:
+                  kubernetes:
+                    metadata_cache:
+                      address: custom-cache:50055
+    asserts:
+      - matchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'address: custom-cache:50055'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: 'address: opentelemetry-ebpf-instrumentation-k8s-cache:50055'
+
+  - it: does not set the metadata cache address in a Config v1 document
+    set:
+      k8sCache:
+        replicas: 1
+      config:
+        data:
+          attributes:
+            kubernetes:
+              enable: true
+    asserts:
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)[[:space:]]*meta_cache_address:'
+      - notMatchRegex:
+          path: data["ebpf-instrument-config.yml"]
+          pattern: '(^|\n)[[:space:]]+metadata_cache:'

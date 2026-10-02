@@ -194,6 +194,10 @@ defaultCRConfig:
   # Priority class name for the collector
   priorityClassName: ""
 
+  # Traffic distribution preference for the collector Services (e.g. PreferSameZone)
+  # https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
+  trafficDistribution: ""
+
   # Termination grace period for the collector
   terminationGracePeriodSeconds: 30
 
@@ -503,6 +507,8 @@ defaultCRConfig:
     # so it should be used with a dedicated collector distribution (e.g. otelcol-ebpf-profiler)
     # rather than the general-purpose k8s distribution. This avoids granting elevated privileges
     # to the same collector that handles metrics, traces, and logs.
+    # When enabled, the collector is also scheduled on Linux nodes only
+    # (nodeSelector kubernetes.io/os: linux, merged with any user-provided nodeSelector).
     # See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler for more details.
     profiling:
       enabled: false

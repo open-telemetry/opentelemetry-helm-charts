@@ -2,10 +2,13 @@ TMP_DIRECTORY = ./tmp
 CHARTS ?= opentelemetry-collector opentelemetry-operator opentelemetry-demo opentelemetry-ebpf opentelemetry-kube-stack opentelemetry-target-allocator opentelemetry-ebpf-instrumentation
 OPERATOR_APP_VERSION ?= "$(shell cat ./charts/opentelemetry-operator/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')"
 KUBE_STACK_OPERATOR_APP_VERSION ?= $(shell cat ./charts/opentelemetry-kube-stack/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
+DEMO_APP_VERSION ?= $(shell cat ./charts/opentelemetry-demo/Chart.yaml | sed -nr 's/appVersion: ([0-9]+\.[0-9]+\.[0-9]+)/\1/p')
 
 KUBE_VERSION ?= 1.29
 OPERATOR_SCHEMA = ./charts/opentelemetry-operator/values.schema.json
 OPERATOR_FEATUREGATE_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/pkg/featuregate/featuregate.go
+DEMO_AGENT_FIXTURES_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/src/agent/fixtures/vcr_cassettes
+DEMO_FIXTURES_DIR = ./charts/opentelemetry-demo/agent-fixtures
 
 .PHONY: generate-examples
 generate-examples:
@@ -134,6 +137,29 @@ check-operator-feature-gates:
 		echo "Failed. manager.featureGatesMap in charts/opentelemetry-operator/values.schema.json is out of sync with operator v$(OPERATOR_APP_VERSION)."; \
 		if [ -n "$$missing" ]; then echo "Add these feature gates to the schema:"; echo "$$missing" | sed 's/^/  /'; fi; \
 		if [ -n "$$extra" ]; then echo "Remove these feature gates from the schema:"; echo "$$extra" | sed 's/^/  /'; fi; \
+		exit 1; \
+	fi
+
+.PHONY: update-demo-agent-fixtures
+update-demo-agent-fixtures:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/azure_gpt-5.5_cassette.yaml $(DEMO_AGENT_FIXTURES_URL)/azure_gpt-5.5_cassette.yaml && \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/claude-opus-4-7_cassette.yaml $(DEMO_AGENT_FIXTURES_URL)/claude-opus-4-7_cassette.yaml && \
+	cp $$TMP_DEMO_DIR/azure_gpt-5.5_cassette.yaml $(DEMO_FIXTURES_DIR)/azure_gpt-5.5_cassette.yaml && \
+	cp $$TMP_DEMO_DIR/claude-opus-4-7_cassette.yaml $(DEMO_FIXTURES_DIR)/claude-opus-4-7_cassette.yaml
+
+.PHONY: check-demo-agent-fixtures
+check-demo-agent-fixtures:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/azure_gpt-5.5_cassette.yaml $(DEMO_AGENT_FIXTURES_URL)/azure_gpt-5.5_cassette.yaml && \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/claude-opus-4-7_cassette.yaml $(DEMO_AGENT_FIXTURES_URL)/claude-opus-4-7_cassette.yaml && \
+	if diff -r $$TMP_DEMO_DIR $(DEMO_FIXTURES_DIR) > /dev/null 2>&1; then \
+		echo "Passed: demo agent fixtures are in sync with upstream $(DEMO_APP_VERSION)"; \
+	else \
+		echo "Failed: demo agent fixtures are out of sync with upstream $(DEMO_APP_VERSION)"; \
+		echo "Run 'make update-demo-agent-fixtures' to update the cassettes"; \
 		exit 1; \
 	fi
 

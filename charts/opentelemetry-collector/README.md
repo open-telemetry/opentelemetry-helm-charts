@@ -305,6 +305,8 @@ presets:
 
 This flag defaults to `false` today, will default to `true` in a future release, and will then be removed.
 
+The `kubernetesObjects` preset can also collect events through its `presets.kubernetesObjects.events.enabled` option. Only that option overlaps with `presets.kubernetesEvents`: the chart fails to render when both are enabled, since every event would be collected twice. `kubernetesObjects` can still collect other objects alongside `kubernetesEvents`.
+
 ### Configuration for Host Metrics
 
 The collector can be configured to collect host metrics for Kubernetes nodes.
