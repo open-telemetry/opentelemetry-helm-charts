@@ -291,6 +291,9 @@ defaultCRConfig:
   # # Configuration for Prometheus Custom Resources
   # prometheusCR:
   #   enabled: true
+  #   # Enable only when every discovered ServiceMonitor uses no token or TLS file paths.
+  #   # Kubernetes component serviceMonitor.authorization: false requires this to stay false.
+  #   denyFSAccessThroughSMs: false
   #   scrapeInterval: 30s
   #   podMonitorSelector:
   #     key1: value1
@@ -312,7 +315,13 @@ defaultCRConfig:
   #   denyNamespaces:
   #     - namespace-3
   #     - namespace-4
-  # # mTLS between the collector and the target allocator, requires cert-manager
+  #   # Namespaces whose Secret updates the target allocator watches. When omitted while
+  #   # kubernetesServiceMonitors is enabled, this defaults to the namespaces where those
+  #   # ServiceMonitors and their authorization Secrets are created.
+  #   secretNamespaces:
+  #     - namespace-1
+  # # mTLS between the Collector and Target Allocator is REQUIRED for Secret-backed credentials.
+  # # useCertManager: true requires cert-manager.
   # mtls:
   #   enabled: true
   #   useCertManager: true
@@ -1131,23 +1140,50 @@ opAMPBridge:
 # Prometheus Configuration #
 # (optional)               #
 ############################
-# This configuration sections allows for a direct replacement of the kube-prometheus-stack
-# chart where the collector scrapes the same metrics as the default prometheus installation.
+# These Kubernetes component scrape settings are based on kube-prometheus-stack 90.x, and most
+# corresponding component values can be reused when replacing its Prometheus scraper with an
+# OpenTelemetry Collector. The kubernetesServiceMonitors.authorization block is specific to this
+# chart because it manages a dedicated scrape credential instead of using a Prometheus identity.
+# This section does not provide full kube-prometheus-stack values compatibility.
 
 ## Flag to disable all the kubernetes component scrapers
 ##
 kubernetesServiceMonitors:
   enabled: false
   ignoreNamespaceSelectors: false
+  authorization:
+    ## Create a dedicated ServiceAccount and long-lived token Secret with GET /metrics access.
+    ## Requires kubernetesServiceMonitors.enabled: true. This does not change authentication;
+    ## configure each component's serviceMonitor.authorization to reference the generated Secret.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    create: false
+    ## Override the generated service account or Secret names.
+    serviceAccountName: ""
+    secretName: ""
 
 ## Component scraping the kube api server
 ##
 kubeApiServer:
   enabled: false
+  ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+  ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+  ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+  ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+  ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
   tlsConfig:
     serverName: kubernetes
     insecureSkipVerify: false
   serviceMonitor:
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1273,6 +1309,16 @@ kubeControllerManager:
 
   serviceMonitor:
     enabled: true
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1316,11 +1362,18 @@ kubeControllerManager:
     ##
     https: null
 
-    # Skip TLS certificate validation when scraping
+    ## When non-null, serviceMonitor.insecureSkipVerify and serviceMonitor.serverName
+    ## override the corresponding fields in serviceMonitor.tlsConfig.
     insecureSkipVerify: null
-
-    # Name of the server to use when validating TLS certificate
     serverName: null
+
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    tlsConfig:
+      insecureSkipVerify: true
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
@@ -1359,6 +1412,16 @@ coreDns:
     #   k8s-app: kube-dns
   serviceMonitor:
     enabled: true
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1434,6 +1497,16 @@ kubeDns:
     # selector:
     #   k8s-app: kube-dns
   serviceMonitor:
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1531,19 +1604,39 @@ kubeEtcd:
     # selector:
     #   component: etcd
 
-  ## Configure secure access to the etcd cluster by loading a secret into prometheus and
-  ## specifying security configuration below. For example, with a secret named etcd-client-cert
+  ## Configure secure access to the etcd cluster with Secret references. For example, with a
+  ## Secret named etcd-client-cert. Secret-backed credentials REQUIRE
+  ## collectors.<name>.targetAllocator.mtls.enabled: true.
   ##
   ## serviceMonitor:
   ##   scheme: https
-  ##   insecureSkipVerify: false
-  ##   serverName: localhost
-  ##   caFile: /etc/prometheus/secrets/etcd-client-cert/etcd-ca
-  ##   certFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client
-  ##   keyFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+  ##   tlsConfig:
+  ##     insecureSkipVerify: false
+  ##     serverName: localhost
+  ##     ca:
+  ##       secret:
+  ##         name: etcd-client-cert
+  ##         key: etcd-ca
+  ##     cert:
+  ##       secret:
+  ##         name: etcd-client-cert
+  ##         key: etcd-client
+  ##     keySecret:
+  ##       name: etcd-client-cert
+  ##       key: etcd-client-key
   ##
   serviceMonitor:
     enabled: true
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1572,11 +1665,19 @@ kubeEtcd:
     ##
     proxyUrl: ""
     scheme: http
-    insecureSkipVerify: false
-    serverName: ""
-    caFile: ""
-    certFile: ""
-    keyFile: ""
+    ## When non-null, serviceMonitor.insecureSkipVerify and serviceMonitor.serverName
+    ## override the corresponding fields in serviceMonitor.tlsConfig.
+    insecureSkipVerify: null
+    serverName: null
+
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Existing serviceMonitor.caFile/certFile/keyFile settings remain supported.
+    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false
+    ## and cannot be combined with the corresponding ca/cert/keySecret reference.
+    tlsConfig:
+      insecureSkipVerify: false
 
     ## port: Name of the port the metrics will be scraped from
     ##
@@ -1637,6 +1738,16 @@ kubeScheduler:
 
   serviceMonitor:
     enabled: true
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1679,11 +1790,18 @@ kubeScheduler:
     #  matchLabels:
     #    component: kube-scheduler
 
-    ## Skip TLS certificate validation when scraping
+    ## When non-null, serviceMonitor.insecureSkipVerify and serviceMonitor.serverName
+    ## override the corresponding fields in serviceMonitor.tlsConfig.
     insecureSkipVerify: null
-
-    ## Name of the server to use when validating TLS certificate
     serverName: null
+
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    tlsConfig:
+      insecureSkipVerify: true
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
@@ -1730,6 +1848,16 @@ kubeProxy:
 
   serviceMonitor:
     enabled: true
+    ## false uses bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token.
+    ## With false, collectors discovering this ServiceMonitor MUST leave
+    ## targetAllocator.prometheusCR.denyFSAccessThroughSMs: false; true rejects its targets.
+    ## Set an object with type: Bearer and credentials.name/key to use a token Secret in
+    ## the ServiceMonitor's namespace, or null to omit bearer-token authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: false
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1771,6 +1899,13 @@ kubeProxy:
     ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
     ##
     https: false
+
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    tlsConfig: {}
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig

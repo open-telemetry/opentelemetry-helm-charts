@@ -2079,6 +2079,9 @@
         "enabled": {
           "type": "boolean"
         },
+        "denyFSAccessThroughSMs": {
+          "type": "boolean"
+        },
         "scrapeInterval": {
           "type": "string"
         },
@@ -2107,6 +2110,13 @@
             "type": "string"
           },
           "description": "List of namespaces to exclude from scraping"
+        },
+        "secretNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of namespaces to watch for Secret changes"
         }
       },
       "additionalProperties": false,
@@ -2821,6 +2831,24 @@
       "required": [
         "key"
       ]
+    },
+    "SecretOrConfigMap": {
+      "properties": {
+        "secret": {
+          "$ref": "#/$defs/SecretKeySelector"
+        },
+        "configMap": {
+          "$ref": "#/$defs/ConfigMapKeySelector"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "not": {
+        "required": [
+          "secret",
+          "configMap"
+        ]
+      }
     },
     "SecretProjection": {
       "properties": {
@@ -3893,7 +3921,7 @@
           "type": "boolean"
         },
         "tlsConfig": {
-          "$ref": "#/$defs/TLSConfig"
+          "$ref": "#/$defs/SafeTLSConfig"
         },
         "serviceMonitor": {
           "$ref": "#/$defs/Monitor"
@@ -3906,22 +3934,61 @@
       ],
       "title": "KubeAPIServer"
     },
-    "TLSConfig": {
+    "SafeAuthorization": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "not": {
+            "pattern": "^[Bb][Aa][Ss][Ii][Cc]$"
+          }
+        },
+        "credentials": {
+          "$ref": "#/$defs/SecretKeySelector"
+        }
+      },
+      "title": "SafeAuthorization"
+    },
+    "SafeTLSConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ca": {
+          "$ref": "#/$defs/SecretOrConfigMap"
+        },
+        "cert": {
+          "$ref": "#/$defs/SecretOrConfigMap"
+        },
+        "keySecret": {
+          "$ref": "#/$defs/SecretKeySelector"
+        },
         "serverName": {
           "type": "string"
         },
         "insecureSkipVerify": {
           "type": "boolean"
+        },
+        "minVersion": {
+          "type": "string",
+          "enum": [
+            "TLS10",
+            "TLS11",
+            "TLS12",
+            "TLS13"
+          ]
+        },
+        "maxVersion": {
+          "type": "string",
+          "enum": [
+            "TLS10",
+            "TLS11",
+            "TLS12",
+            "TLS13"
+          ]
         }
       },
-      "required": [
-        "insecureSkipVerify",
-        "serverName"
-      ],
-      "title": "TLSConfig"
+      "title": "SafeTLSConfig"
     },
     "KubeDNS": {
       "type": "object",
@@ -4156,6 +4223,23 @@
         "additionalLabels": {
           "$ref": "#/$defs/AdditionalLabels"
         },
+        "authorization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SafeAuthorization"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean",
+              "const": false
+            }
+          ]
+        },
+        "tlsConfig": {
+          "$ref": "#/$defs/SafeTLSConfig"
+        },
         "https": {
           "anyOf": [
             {
@@ -4165,6 +4249,21 @@
               "type": "null"
             }
           ]
+        },
+        "dnsmasqMetricRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
+        },
+        "dnsmasqRelabelings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricRelabeling"
+          }
+        },
+        "scheme": {
+          "type": "string"
         },
         "insecureSkipVerify": {
           "anyOf": [
@@ -4186,29 +4285,35 @@
             }
           ]
         },
-        "dnsmasqMetricRelabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MetricRelabeling"
-          }
-        },
-        "dnsmasqRelabelings": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MetricRelabeling"
-          }
-        },
-        "scheme": {
-          "type": "string"
-        },
         "caFile": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "certFile": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "keyFile": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -4278,6 +4383,20 @@
       "properties": {
         "enabled": {
           "type": "boolean"
+        },
+        "authorization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SafeAuthorization"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean",
+              "const": false
+            }
+          ]
         },
         "interval": {
           "type": "string"
@@ -4627,9 +4746,30 @@
         },
         "ignoreNamespaceSelectors": {
           "type": "boolean"
+        },
+        "authorization": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "type": "boolean"
+            },
+            "serviceAccountName": {
+              "type": "string"
+            },
+            "secretName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "serviceAccountName",
+            "secretName"
+          ]
         }
       },
       "required": [
+        "authorization",
         "enabled",
         "ignoreNamespaceSelectors"
       ]
