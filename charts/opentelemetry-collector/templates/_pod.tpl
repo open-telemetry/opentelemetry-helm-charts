@@ -1,7 +1,7 @@
 {{- define "opentelemetry-collector.pod" -}}
-{{- with .Values.imagePullSecrets }}
+{{- if .Values.imagePullSecrets }}
 imagePullSecrets:
-  {{- toYaml . | nindent 2 }}
+  {{- tpl (toYaml .Values.imagePullSecrets) . | nindent 2 }}
 {{- end }}
 serviceAccountName: {{ include "opentelemetry-collector.serviceAccountName" . }}
 automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
@@ -271,9 +271,13 @@ volumes:
   {{- if .Values.extraVolumes }}
   {{- tpl (toYaml .Values.extraVolumes) . | nindent 2 }}
   {{- end }}
-{{- with .Values.nodeSelector }}
+{{- $nodeSelector := .Values.nodeSelector }}
+{{- if .Values.presets.profiling.enabled }}
+{{- $nodeSelector = mustMergeOverwrite (dict "kubernetes.io/os" "linux") ($nodeSelector | default dict) }}
+{{- end }}
+{{- with $nodeSelector }}
 nodeSelector:
-  {{- toYaml . | nindent 2 }}
+  {{- tpl (toYaml .) $ | nindent 2 }}
 {{- end }}
 {{- with .Values.affinity }}
 affinity:
