@@ -9,6 +9,8 @@ OPERATOR_SCHEMA = ./charts/opentelemetry-operator/values.schema.json
 OPERATOR_FEATUREGATE_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/v$(OPERATOR_APP_VERSION)/pkg/featuregate/featuregate.go
 DEMO_AGENT_FIXTURES_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/src/agent/fixtures/vcr_cassettes
 DEMO_FIXTURES_DIR = ./charts/opentelemetry-demo/agent-fixtures
+DEMO_POSTGRESQL_INIT_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/src/postgresql/init.sql
+DEMO_POSTGRESQL_INIT = ./charts/opentelemetry-demo/postgresql/init.sql
 
 .PHONY: generate-examples
 generate-examples:
@@ -160,6 +162,28 @@ check-demo-agent-fixtures:
 	else \
 		echo "Failed: demo agent fixtures are out of sync with upstream $(DEMO_APP_VERSION)"; \
 		echo "Run 'make update-demo-agent-fixtures' to update the cassettes"; \
+		exit 1; \
+	fi
+
+.PHONY: update-demo-postgresql-init
+update-demo-postgresql-init:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/init.sql $(DEMO_POSTGRESQL_INIT_URL) && \
+	test -s $$TMP_DEMO_DIR/init.sql && \
+	cp $$TMP_DEMO_DIR/init.sql $(DEMO_POSTGRESQL_INIT)
+
+.PHONY: check-demo-postgresql-init
+check-demo-postgresql-init:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/init.sql $(DEMO_POSTGRESQL_INIT_URL) && \
+	test -s $$TMP_DEMO_DIR/init.sql && \
+	if diff $$TMP_DEMO_DIR/init.sql $(DEMO_POSTGRESQL_INIT) > /dev/null 2>&1; then \
+		echo "Passed: demo postgresql init.sql is in sync with upstream $(DEMO_APP_VERSION)"; \
+	else \
+		echo "Failed: demo postgresql init.sql is out of sync with upstream $(DEMO_APP_VERSION)"; \
+		echo "Run 'make update-demo-postgresql-init' to update init.sql"; \
 		exit 1; \
 	fi
 
