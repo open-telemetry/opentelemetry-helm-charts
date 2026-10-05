@@ -4,6 +4,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: example-collector
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.159.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.1
+    installer.example.com/name: my-otel-kube-stack-installer
+    installer.example.com/version: 1.2.3
+    release: example
 rules:
 - apiGroups: [""]
   resources:
@@ -136,6 +143,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: example-daemon
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.159.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.1
+    installer.example.com/name: my-otel-kube-stack-installer
+    installer.example.com/version: 1.2.3
+    release: example
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

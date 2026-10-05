@@ -11,8 +11,13 @@ metadata:
   namespace: {{ include "opentelemetry-kube-stack.namespace" $ }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.renderkv" $collector.labels | indent 4 }}
-    {{- include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values | indent 4 }}
+    {{- with $collector.labels }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
+    {{- end }}
+    {{- $opampLabels := include "opentelemetry-kube-stack.collectorOpAMPLabels" $.Values -}}
+    {{- if $opampLabels }}
+    {{- $opampLabels | indent 4 }}
+    {{- end }}
   {{- with $collector.annotations }}
   annotations:
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
