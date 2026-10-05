@@ -201,15 +201,6 @@ defaultCRConfig:
   # Termination grace period for the collector
   terminationGracePeriodSeconds: 30
 
-  # Resource requests and limits for the collector
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "250m"
-    limits:
-      memory: "128Mi"
-      cpu: "250m"
-
   # Resize policy for the collector container, controlling how it responds to
   # in-place resource resizes. Requires the InPlacePodVerticalScaling feature
   # gate (enabled by default since Kubernetes 1.33).
@@ -689,13 +680,6 @@ collectors:
     suffix: daemon
     mode: daemonset
     enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 500Mi
-      requests:
-        cpu: 100m
-        memory: 250Mi
     # A scrape config file loaded into the daemon collector's prometheus receiver. The
     # default `daemon_scrape_configs.yaml` scrapes node-exporter on the same host, kubelet
     # cAdvisor metrics, and pods on the same node carrying `prometheus.io/scrape=true`.
