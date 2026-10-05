@@ -1,4 +1,8 @@
 clusterName: demo
+opentelemetry-operator:
+  manager:
+    featureGatesMap:
+      operator.targetallocator.fallbackstrategy: true
 collectors:
   daemon:
     enabled: true
@@ -11,8 +15,12 @@ collectors:
       enabled: true
       image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
       allocationStrategy: per-node
+      mtls:
+        enabled: true
+        useCertManager: true
       prometheusCR:
         enabled: true
+        denyFSAccessThroughSMs: true
         podMonitorSelector: {}
         scrapeInterval: "30s"
         serviceMonitorSelector: {}
@@ -52,21 +60,65 @@ opAMPBridge:
   enabled: false
 kubernetesServiceMonitors:
   enabled: true
+  authorization:
+    create: true
 kubeApiServer:
   enabled: true
+  tlsConfig:
+    ca:
+      configMap:
+        name: kube-root-ca.crt
+        key: ca.crt
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
 kubelet:
   enabled: true
 kubeControllerManager:
   enabled: true
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
+    tlsConfig:
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 kubeDns:
   enabled: true
+  serviceMonitor:
+    authorization: null
 kubeEtcd:
   enabled: true
+  serviceMonitor:
+    authorization: null
 kubeScheduler:
   enabled: true
+  serviceMonitor:
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
+    tlsConfig:
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 kubeProxy:
   enabled: true
+  serviceMonitor:
+    authorization: null
 kubeStateMetrics:
   enabled: true
 nodeExporter:
   enabled: true
+coreDns:
+  serviceMonitor:
+    authorization: null

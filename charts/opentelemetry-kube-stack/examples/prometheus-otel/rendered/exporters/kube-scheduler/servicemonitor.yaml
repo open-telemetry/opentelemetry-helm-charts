@@ -23,8 +23,15 @@ spec:
       - "kube-system"
   endpoints:
   - port: http-metrics
-    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    authorization:
+      credentials:
+        key: token
+        name: 'example-kubernetes-metrics-token'
+      type: Bearer
     scheme: https
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: true

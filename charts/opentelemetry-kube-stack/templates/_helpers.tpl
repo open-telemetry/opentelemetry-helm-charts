@@ -158,6 +158,17 @@ Create the name of the clusterRoleBinding to use
 {{- default (include "opentelemetry-kube-stack.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
 
+{{- define "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" -}}
+{{- default (printf "%s-kubernetes-metrics" .Release.Name | trunc 63 | trimSuffix "-") .Values.kubernetesServiceMonitors.authorization.serviceAccountName -}}
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" -}}
+{{- if not (and .Values.kubernetesServiceMonitors.enabled .Values.kubernetesServiceMonitors.authorization.create) -}}
+{{- fail "The Kubernetes component ServiceMonitors reference the Secret created by kubernetesServiceMonitors.authorization.create, which is only rendered when kubernetesServiceMonitors.enabled is also true. Enable both settings, or set the serviceMonitor.authorization of each enabled Kubernetes component to a Secret you manage yourself, or to false to use the Collector service account token file (requires denyFSAccessThroughSMs: false), or to null to scrape without authentication." -}}
+{{- end -}}
+{{- default (printf "%s-token" (include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . | trunc 57 | trimSuffix "-") | trunc 63 | trimSuffix "-") .Values.kubernetesServiceMonitors.authorization.secretName -}}
+{{- end }}
+
 {{/*
 Optionally include the RBAC for the k8sCluster receiver
 */}}
@@ -487,6 +498,16 @@ Callers must use fromYaml to get a dict.
 {{- $collector = (mergeOverwrite $base $collector) -}}
 
 {{- end -}}
+{{- if and $root.Values.kubernetesServiceMonitors.enabled (dig "targetAllocator" "prometheusCR" "enabled" false $collector) -}}
+{{- $prometheusCR := get (get $collector "targetAllocator") "prometheusCR" -}}
+{{- if not (hasKey $prometheusCR "secretNamespaces") -}}
+{{- if $root.Values.kubernetesServiceMonitors.ignoreNamespaceSelectors -}}
+{{- $_ := set $prometheusCR "secretNamespaces" (list "default" "kube-system") -}}
+{{- else -}}
+{{- $_ := set $prometheusCR "secretNamespaces" (list (include "opentelemetry-kube-stack.namespace" $root)) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
 {{- $collector | toYaml -}}
 {{- end }}
 
@@ -522,4 +543,23 @@ labelNameLengthLimit: {{ . }}
 {{- with .labelValueLengthLimit }}
 labelValueLengthLimit: {{ . }}
 {{- end }}
+{{- end -}}
+
+{{- define "opentelemetry-kube-stack.servicemonitor.tlsConfig" -}}
+{{- $monitor := .serviceMonitor -}}
+{{- $tls := deepCopy (default dict $monitor.tlsConfig) -}}
+{{- range $key := list "insecureSkipVerify" "serverName" "caFile" "certFile" "keyFile" -}}
+{{- if and (hasKey $monitor $key) (ne (toJson (get $monitor $key)) "null") -}}
+{{- $_ := set $tls $key (get $monitor $key) -}}
+{{- end -}}
+{{- end -}}
+{{- range $pair := list (list "ca" "caFile") (list "cert" "certFile") (list "keySecret" "keyFile") -}}
+{{- if and (get $tls (index $pair 0)) (get $tls (index $pair 1)) -}}
+{{- fail (printf "ServiceMonitor TLS configuration cannot specify both tlsConfig.%s and serviceMonitor.%s; remove the file setting when using a Secret or ConfigMap reference" (index $pair 0) (index $pair 1)) -}}
+{{- end -}}
+{{- end -}}
+{{- if and .defaultCAFile (not (get $tls "ca")) (not (hasKey $tls "caFile")) -}}
+{{- $_ := set $tls "caFile" .defaultCAFile -}}
+{{- end -}}
+{{- toYaml $tls -}}
 {{- end -}}
