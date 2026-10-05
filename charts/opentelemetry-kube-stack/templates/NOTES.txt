@@ -40,6 +40,11 @@ https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annot
 [WARNING] Collector '{{ $name }}': the 'updateStrategy' value is no longer supported in OpenTelemetryCollector v1beta1.
           Please migrate to use the `daemonSetUpdateStrategy` value.
 {{- end }}
+{{- if and $collector.enabled (not $collector.resources) }}
+
+[WARNING] Collector '{{ $name }}': no resource requests or limits were set.
+          Consider setting resources under `defaultCRConfig` or this collector's configuration.
+{{- end }}
 {{- end }}
 
 {{- $operatorValues := index .Values "opentelemetry-operator" }}
