@@ -11,6 +11,9 @@ DEMO_AGENT_FIXTURES_URL = https://raw.githubusercontent.com/open-telemetry/opent
 DEMO_FIXTURES_DIR = ./charts/opentelemetry-demo/agent-fixtures
 DEMO_POSTGRESQL_INIT_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/src/postgresql/init.sql
 DEMO_POSTGRESQL_INIT = ./charts/opentelemetry-demo/postgresql/init.sql
+DEMO_DASHBOARDS_SOURCE_PATH = src/grafana/provisioning/dashboards/demo
+DEMO_DASHBOARD_FILES_URL = https://api.github.com/repos/open-telemetry/opentelemetry-demo/contents/$(DEMO_DASHBOARDS_SOURCE_PATH)?ref=$(DEMO_APP_VERSION)
+DEMO_DASHBOARDS_DIR = ./charts/opentelemetry-demo/grafana/provisioning/dashboards
 
 .PHONY: generate-examples
 generate-examples:
@@ -150,6 +153,46 @@ update-demo-agent-fixtures:
 	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/claude-opus-4-7_cassette.yaml $(DEMO_AGENT_FIXTURES_URL)/claude-opus-4-7_cassette.yaml && \
 	cp $$TMP_DEMO_DIR/azure_gpt-5.5_cassette.yaml $(DEMO_FIXTURES_DIR)/azure_gpt-5.5_cassette.yaml && \
 	cp $$TMP_DEMO_DIR/claude-opus-4-7_cassette.yaml $(DEMO_FIXTURES_DIR)/claude-opus-4-7_cassette.yaml
+
+.PHONY: update-demo-dashboards
+update-demo-dashboards:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/manifest "$(DEMO_DASHBOARD_FILES_URL)" || { echo "Failed to list demo dashboards for appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+	jq -e 'type == "array"' $$TMP_DEMO_DIR/manifest > /dev/null || { echo "Invalid dashboard listing for demo appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+	jq -r '.[] | select(.type == "file" and (.name | endswith(".json"))) | .name' $$TMP_DEMO_DIR/manifest > $$TMP_DEMO_DIR/files; \
+	test -s $$TMP_DEMO_DIR/files || { echo "No dashboard JSON files found for demo appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+	mkdir $$TMP_DEMO_DIR/source; \
+	while IFS= read -r dashboard; do \
+		curl --fail --silent --show-error --location --max-time 30 -o "$$TMP_DEMO_DIR/source/$$dashboard" "https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/$(DEMO_DASHBOARDS_SOURCE_PATH)/$$dashboard" || { echo "Failed to download demo dashboard $$dashboard for appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+		test -s "$$TMP_DEMO_DIR/source/$$dashboard" || { echo "Downloaded demo dashboard $$dashboard for appVersion $(DEMO_APP_VERSION) is empty" >&2; exit 1; }; \
+	done < $$TMP_DEMO_DIR/files; \
+	for dashboard in $(DEMO_DASHBOARDS_DIR)/*.json; do \
+		[ -f "$$dashboard" ] || continue; \
+		if [ ! -f "$$TMP_DEMO_DIR/source/$${dashboard##*/}" ]; then rm "$$dashboard"; fi; \
+	done; \
+	cp $$TMP_DEMO_DIR/source/*.json $(DEMO_DASHBOARDS_DIR)/
+
+.PHONY: check-demo-dashboards
+check-demo-dashboards:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/manifest "$(DEMO_DASHBOARD_FILES_URL)" || { echo "Failed to list demo dashboards for appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+	jq -e 'type == "array"' $$TMP_DEMO_DIR/manifest > /dev/null || { echo "Invalid dashboard listing for demo appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+	jq -r '.[] | select(.type == "file" and (.name | endswith(".json"))) | .name' $$TMP_DEMO_DIR/manifest > $$TMP_DEMO_DIR/files; \
+	test -s $$TMP_DEMO_DIR/files || { echo "No dashboard JSON files found for demo appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+	mkdir $$TMP_DEMO_DIR/source; \
+	while IFS= read -r dashboard; do \
+		curl --fail --silent --show-error --location --max-time 30 -o "$$TMP_DEMO_DIR/source/$$dashboard" "https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/$(DEMO_DASHBOARDS_SOURCE_PATH)/$$dashboard" || { echo "Failed to download demo dashboard $$dashboard for appVersion $(DEMO_APP_VERSION)" >&2; exit 1; }; \
+		test -s "$$TMP_DEMO_DIR/source/$$dashboard" || { echo "Downloaded demo dashboard $$dashboard for appVersion $(DEMO_APP_VERSION) is empty" >&2; exit 1; }; \
+	done < $$TMP_DEMO_DIR/files; \
+	if diff -r $$TMP_DEMO_DIR/source $(DEMO_DASHBOARDS_DIR) > /dev/null 2>&1; then \
+		echo "Passed: demo dashboards are in sync with upstream appVersion $(DEMO_APP_VERSION)"; \
+	else \
+		echo "Failed: demo dashboards are out of sync with upstream appVersion $(DEMO_APP_VERSION)"; \
+		echo "Run 'make update-demo-dashboards' to update the dashboards"; \
+		exit 1; \
+	fi
 
 .PHONY: check-demo-agent-fixtures
 check-demo-agent-fixtures:
