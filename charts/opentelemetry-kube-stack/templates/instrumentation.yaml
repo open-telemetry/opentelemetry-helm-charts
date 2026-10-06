@@ -13,6 +13,10 @@ metadata:
     {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.instrumentation.defaults.useLabelsForResourceAttributes }}
+  defaults:
+    useLabelsForResourceAttributes: true
+  {{- end }}
   exporter:
     endpoint: {{ .Values.instrumentation.exporter.endpoint }}
   propagators:
