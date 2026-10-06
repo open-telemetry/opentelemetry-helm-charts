@@ -528,3 +528,23 @@ labelNameLengthLimit: {{ . }}
 labelValueLengthLimit: {{ . }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Builds the OTEL_RESOURCE_ATTRIBUTES value for a collector from the k8s downward API
+attributes, the top-level and per-collector resourceAttributes, and clusterName.
+A k8s.cluster.name set in resourceAttributes takes precedence over clusterName.
+*/}}
+{{- define "opentelemetry-kube-stack.collector.resourceAttributesEnv" -}}
+{{- $reserved := list "k8s.pod.name" "k8s.namespace.name" "k8s.node.name" "host.name" "k8s.node.ip" "k8s.pod.ip" }}
+{{- $attributes := list "k8s.pod.name=$(OTEL_K8S_POD_NAME)" "k8s.namespace.name=$(OTEL_K8S_NAMESPACE)" "k8s.node.name=$(OTEL_K8S_NODE_NAME)" "host.name=$(OTEL_K8S_NODE_NAME)" "k8s.node.ip=$(OTEL_K8S_NODE_IP)" "k8s.pod.ip=$(OTEL_K8S_POD_IP)" }}
+{{- $resourceAttributes := mustMergeOverwrite (deepCopy (.root.Values.resourceAttributes | default dict)) (.collector.resourceAttributes | default dict) }}
+{{- if and .root.Values.clusterName (not (hasKey $resourceAttributes "k8s.cluster.name")) }}
+{{- $attributes = append $attributes (printf "k8s.cluster.name=%s" .root.Values.clusterName) }}
+{{- end }}
+{{- range $key := keys $resourceAttributes | sortAlpha }}
+{{- if not (has $key $reserved) }}
+{{- $attributes = append $attributes (printf "%s=%v" $key (get $resourceAttributes $key)) }}
+{{- end }}
+{{- end }}
+{{- join "," $attributes }}
+{{- end }}
