@@ -12,8 +12,9 @@ clusterName: "unknown_k8s_cluster"
 
 # Default resource attributes applied to every collector pipeline (as a
 # `resource/global` upsert processor) and merged into the Instrumentation CR's
-# `resource.resourceAttributes`. Override per collector via
-# `collectors.<name>.resourceAttributes`.
+# `resource.resourceAttributes`. Also added to each collector's own
+# `OTEL_RESOURCE_ATTRIBUTES`; a `k8s.cluster.name` set here takes precedence over
+# `clusterName`. Override per collector via `collectors.<name>.resourceAttributes`.
 resourceAttributes: {}
 #   deployment.environment.name: production
 #   k8s.cluster.name: unknown_k8s_cluster
