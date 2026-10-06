@@ -1745,7 +1745,7 @@
           "default": ""
         },
         "resourceAttributes": {
-          "description": "Per-collector resource attributes. Merged over the top-level `resourceAttributes` map (per-collector keys win on conflict) and rendered as a `resource/global` processor appended to every pipeline.",
+          "description": "Per-collector resource attributes. Merged over the top-level `resourceAttributes` map (per-collector keys win on conflict), rendered as a `resource/global` processor appended to every pipeline, and added to the collector's `OTEL_RESOURCE_ATTRIBUTES` env var.",
           "type": "object",
           "additionalProperties": {
             "type": [
@@ -4559,7 +4559,7 @@
       "type": "string"
     },
     "resourceAttributes": {
-      "description": "Default resource attributes merged into every collector pipeline (as a `resource/global` processor with `upsert` action) and into the Instrumentation CR's `resource.resourceAttributes`.",
+      "description": "Default resource attributes merged into every collector pipeline (as a `resource/global` processor with `upsert` action), into each collector's `OTEL_RESOURCE_ATTRIBUTES` env var, and into the Instrumentation CR's `resource.resourceAttributes`. A `k8s.cluster.name` set here takes precedence over `clusterName`.",
       "type": "object",
       "additionalProperties": {
         "type": [
