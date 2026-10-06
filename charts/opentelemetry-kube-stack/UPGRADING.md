@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.24.0 to 0.24.1
+## 0.24.1 to 0.24.2
 
 Default resource requests and limits were removed from `defaultCRConfig.resources` and `collectors.daemon.resources`. If you relied on these defaults, set them explicitly in your values. To retain the previous defaults:
 
