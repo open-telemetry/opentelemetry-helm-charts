@@ -116,12 +116,17 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "opentelemetry-kube-stack.labels" -}}
-helm.sh/chart: {{ include "opentelemetry-kube-stack.chart" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-release: {{ .Release.Name | quote }}
+{{- $labels := dict -}}
+{{- with .Values.commonLabels -}}
+{{- $labels = mustMergeOverwrite $labels . -}}
+{{- end -}}
+{{- $_ := set $labels "helm.sh/chart" (include "opentelemetry-kube-stack.chart" .) -}}
+{{- if .Chart.AppVersion -}}
+{{- $_ := set $labels "app.kubernetes.io/version" .Chart.AppVersion -}}
+{{- end -}}
+{{- $_ := set $labels "app.kubernetes.io/managed-by" .Release.Service -}}
+{{- $_ := set $labels "release" .Release.Name -}}
+{{- toYaml $labels -}}
 {{- end }}
 
 {{/*

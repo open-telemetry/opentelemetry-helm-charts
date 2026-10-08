@@ -1,0 +1,104 @@
+---
+# Source: opentelemetry-kube-stack/templates/hooks.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: delete-resources-sa
+  namespace: default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.159.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.4
+    installer.example.com/name: my-otel-kube-stack-installer
+    installer.example.com/version: 1.2.3
+    release: example
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+# Source: opentelemetry-kube-stack/templates/hooks.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: delete-resources-role
+  namespace: default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.159.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.4
+    installer.example.com/name: my-otel-kube-stack-installer
+    installer.example.com/version: 1.2.3
+    release: example
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - instrumentations
+      - opampbridges
+      - opentelemetrycollectors
+    verbs:
+      - get
+      - list
+      - delete
+---
+# Source: opentelemetry-kube-stack/templates/hooks.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: delete-resources-rolebinding
+  namespace: default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.159.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.4
+    installer.example.com/name: my-otel-kube-stack-installer
+    installer.example.com/version: 1.2.3
+    release: example
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: delete-resources-role
+subjects:
+  - kind: ServiceAccount
+    name: delete-resources-sa
+---
+# Source: opentelemetry-kube-stack/templates/hooks.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: opentelemetry-kube-stack-pre-delete-job
+  namespace: default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.159.0
+    helm.sh/chart: opentelemetry-kube-stack-0.24.4
+    installer.example.com/name: my-otel-kube-stack-installer
+    installer.example.com/version: 1.2.3
+    release: example
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/version: 0.159.0
+        helm.sh/chart: opentelemetry-kube-stack-0.24.4
+        installer.example.com/name: my-otel-kube-stack-installer
+        installer.example.com/version: 1.2.3
+        release: example
+    spec:
+      restartPolicy: Never
+      serviceAccountName: delete-resources-sa
+      containers:
+      - name: delete-resources
+        image: "rancher/kubectl:v1.34.1"
+        args:
+          - "delete"
+          - "instrumentations,opampbridges,opentelemetrycollectors"
+          - "-l"
+          - "helm.sh/chart=opentelemetry-kube-stack-0.24.4"

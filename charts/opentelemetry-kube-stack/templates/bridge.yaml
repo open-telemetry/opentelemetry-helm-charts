@@ -7,7 +7,9 @@ metadata:
   name: {{ include "opentelemetry-opamp-bridge.fullname" $merged }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.renderkv" .Values.opAMPBridge.labels | indent 4 }}
+    {{- with .Values.opAMPBridge.labels }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
+    {{- end }}
   {{- with .Values.opAMPBridge.annotations }}
   annotations:
     {{- include "opentelemetry-kube-stack.renderkv" . | nindent 4 }}
