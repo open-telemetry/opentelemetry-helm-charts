@@ -6,7 +6,7 @@ metadata:
   name: example-daemon
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.24.3
+    helm.sh/chart: opentelemetry-kube-stack-0.24.4
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
@@ -100,6 +100,7 @@ spec:
         - env
         - k8s_api
         override: false
+        timeout: 2s
       transform/insert_cluster_name:
         metric_statements:
         - set(resource.attributes["k8s.cluster.name"], "${env:CLUSTER_NAME}")
@@ -518,7 +519,7 @@ metadata:
   name: example-profiler
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.24.3
+    helm.sh/chart: opentelemetry-kube-stack-0.24.4
     app.kubernetes.io/version: "0.159.0"
     app.kubernetes.io/managed-by: Helm
     release: "example"        
