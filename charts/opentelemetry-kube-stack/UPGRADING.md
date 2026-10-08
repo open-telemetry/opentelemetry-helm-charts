@@ -1,5 +1,30 @@
 # Upgrade guidelines
 
+## 0.24.2 to 0.24.3
+
+Default resource requests and limits were removed from `defaultCRConfig.resources` and `collectors.daemon.resources`. If you relied on these defaults, set them explicitly in your values. To retain the previous defaults:
+
+```yaml
+defaultCRConfig:
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "128Mi"
+      cpu: "250m"
+
+collectors:
+  daemon:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 250Mi
+```
+
 ## 0.19.0 to 0.19.1
 
 > [!WARNING]
