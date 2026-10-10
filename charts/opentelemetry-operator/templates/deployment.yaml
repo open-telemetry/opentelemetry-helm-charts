@@ -53,6 +53,13 @@ spec:
         - args:
             - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
             - --metrics-secure={{ .Values.manager.metrics.secure }}
+            {{- if and .Values.manager.metrics.tls (or .Values.manager.metrics.tls.certFile .Values.manager.metrics.tls.keyFile) }}
+              {{- if not (and .Values.manager.metrics.tls.certFile .Values.manager.metrics.tls.keyFile) }}
+                {{- fail "Both manager.metrics.tls.certFile and manager.metrics.tls.keyFile must be configured, or neither." }}
+              {{- end }}
+            - --metrics-tls-cert-file={{ .Values.manager.metrics.tls.certFile }}
+            - --metrics-tls-key-file={{ .Values.manager.metrics.tls.keyFile }}
+            {{- end }}
             {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
             {{- end }}
@@ -158,7 +165,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{ toYaml .Values.manager.resources | nindent 12 }}
-          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount .Values.manager.config }}
+          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount .Values.manager.config .Values.manager.extraVolumeMounts }}
           volumeMounts:
             {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - mountPath: /tmp/k8s-webhook-server/serving-certs
@@ -174,6 +181,9 @@ spec:
             - mountPath: /etc/opentelemetry-operator
               name: config
               readOnly: true
+            {{- end }}
+            {{- with .Values.manager.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
           {{- with .Values.manager.securityContext }}
@@ -197,7 +207,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
-      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount .Values.manager.config }}
+      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount .Values.manager.config .Values.manager.extraVolumes }}
       volumes:
         {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
         - name: cert
@@ -228,6 +238,9 @@ spec:
         - name: config
           configMap:
             name: {{ include "opentelemetry-operator.fullname" . }}-config
+        {{- end }}
+        {{- with .Values.manager.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- end }}
       securityContext:
