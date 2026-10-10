@@ -133,6 +133,26 @@ rules:
 ---
 # Source: opentelemetry-kube-stack/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: example-bridge
+rules:
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opentelemetrycollectors
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - 'list'
+      - 'get'
+---
+# Source: opentelemetry-kube-stack/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: example-collector
@@ -160,3 +180,18 @@ subjects:
   # quirk of the Operator
   name: "example-daemon-collector"
   namespace: default
+---
+# Source: opentelemetry-kube-stack/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: example
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "example-bridge"
+subjects:
+  - kind: ServiceAccount
+    # quirk of the Operator
+    name: "example-opamp-bridge"
+    namespace: "default"
