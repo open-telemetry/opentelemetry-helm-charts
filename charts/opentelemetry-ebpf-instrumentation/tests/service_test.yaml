@@ -51,3 +51,32 @@ tests:
       - equal:
           path: spec.ports[1].port
           value: 8080
+
+  - it: derives Prometheus and internal metrics ports from Config v2
+    set:
+      service:
+        enabled: true
+      config:
+        data:
+          meter_provider:
+            readers:
+              - pull:
+                  exporter:
+                    prometheus/development:
+                      port: 9191
+          extensions:
+            obi:
+              version: "2.0"
+              daemon:
+                internal_metrics:
+                  exporter: prometheus
+                  prometheus:
+                    port: 6060
+                    path: /internal/metrics
+    asserts:
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 9191
+      - equal:
+          path: spec.ports[1].targetPort
+          value: 6060
