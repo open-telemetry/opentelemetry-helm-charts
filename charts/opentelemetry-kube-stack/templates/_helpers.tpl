@@ -543,3 +543,21 @@ A k8s.cluster.name set in resourceAttributes takes precedence over clusterName.
 {{- end }}
 {{- join "," $attributes }}
 {{- end }}
+
+{{/*
+Builds the OTEL_RESOURCE_ATTRIBUTES value for the OpAMP Bridge from top-level
+resourceAttributes and clusterName. A k8s.cluster.name set in resourceAttributes
+takes precedence over clusterName. When resourceAttributes is empty, output matches
+the previous hardcoded k8s.cluster.name={{ clusterName }} string.
+*/}}
+{{- define "opentelemetry-kube-stack.bridge.resourceAttributesEnv" -}}
+{{- $attributes := list }}
+{{- $resourceAttributes := .Values.resourceAttributes | default dict }}
+{{- if and .Values.clusterName (not (hasKey $resourceAttributes "k8s.cluster.name")) }}
+{{- $attributes = append $attributes (printf "k8s.cluster.name=%s" .Values.clusterName) }}
+{{- end }}
+{{- range $key := keys $resourceAttributes | sortAlpha }}
+{{- $attributes = append $attributes (printf "%s=%v" $key (get $resourceAttributes $key)) }}
+{{- end }}
+{{- join "," $attributes }}
+{{- end }}
