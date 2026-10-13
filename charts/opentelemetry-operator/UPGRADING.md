@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.124.1 to 0.124.2
+## 0.124.1 to 0.125.0
 
 `manager.targetAllocatorImage` now defaults to `repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator` and `tag: 0.160.0`, so by default the chart passes `--target-allocator-image` to the Operator. You can now override only `manager.targetAllocatorImage.repository`, for example to use a private registry, and keep the default tag.
 
