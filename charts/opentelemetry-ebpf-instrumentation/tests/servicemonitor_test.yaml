@@ -8,11 +8,6 @@ tests:
         enabled: true
       serviceMonitor:
         enabled: true
-      config:
-        data:
-          prometheus_export:
-            port: 9090
-            path: /metrics
     asserts:
       - isKind:
           of: ServiceMonitor
@@ -25,6 +20,20 @@ tests:
       - equal:
           path: spec.jobLabel
           value: RELEASE-NAME-opentelemetry-ebpf-instrumentation
+
+  - it: allows overriding the Config v2 Prometheus endpoint path
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+        metrics:
+          endpoint:
+            path: /custom-metrics
+    asserts:
+      - equal:
+          path: spec.endpoints[0].path
+          value: /custom-metrics
 
   - it: adds internal metrics endpoint when configured
     set:
@@ -56,3 +65,28 @@ tests:
       - equal:
           path: spec.jobLabel
           value: ebpf-int
+
+  - it: derives the internal metrics endpoint from Config v2
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              daemon:
+                internal_metrics:
+                  exporter: prometheus
+                  prometheus:
+                    port: 6060
+                    path: /obi-internal
+    asserts:
+      - equal:
+          path: spec.endpoints[1].port
+          value: int-metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /obi-internal

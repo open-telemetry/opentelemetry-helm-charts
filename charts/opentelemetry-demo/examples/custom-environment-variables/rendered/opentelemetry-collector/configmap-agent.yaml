@@ -6,10 +6,10 @@ metadata:
   name: otel-collector-agent
   namespace: default
   labels:
-    helm.sh/chart: opentelemetry-collector-0.165.0
+    helm.sh/chart: opentelemetry-collector-0.173.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
-    app.kubernetes.io/version: "0.156.0"
+    app.kubernetes.io/version: "0.160.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opentelemetry-collector
     app.kubernetes.io/component: agent-collector
@@ -131,15 +131,36 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
+      redaction:
+        allow_all_keys: true
+        blocked_key_patterns:
+        - demo\.payment\.card_pin
+        - password
+        - secret
+        ignored_keys:
+        - demo.payment.card_number
+        summary: info
       resource:
         attributes:
         - action: insert
           from_attribute: k8s.pod.uid
           key: service.instance.id
-      resourcedetection:
+      resource_detection:
         detectors:
         - env
         - system
+      transform/redact_sensitive_data:
+        error_mode: ignore
+        trace_statements:
+        - context: span
+          statements:
+          - delete_key(attributes, "demo.payment.card_cvv") where attributes["demo.payment.card_cvv"]
+            != nil
+          - set(attributes["user.hash"], SHA256(attributes["user.email"])) where attributes["user.email"]
+            != nil
+          - delete_key(attributes, "user.email") where attributes["user.email"] != nil
+          - replace_pattern(attributes["demo.payment.card_number"], "^\\d{4}-\\d{4}-\\d{4}-",
+            "****-****-****-") where attributes["demo.payment.card_number"] != nil
       transform/sanitize_logs:
         error_mode: ignore
         log_statements:
@@ -152,24 +173,9 @@ data:
       transform/sanitize_spans:
         error_mode: ignore
         trace_statements:
-        - conditions:
-          - span.kind == SPAN_KIND_SERVER and resource.attributes["service.name"] == "frontend"
-            and span.attributes["http.route"] == nil
-          context: span
-          statements:
-          - set(span.attributes["http.route"], "/api/cart") where IsMatch(span.attributes["http.target"],
-            "\\/api\\/cart")
-          - set(span.attributes["http.route"], "/api/checkout") where IsMatch(span.attributes["http.target"],
-            "\\/api\\/checkout")
-          - set(span.attributes["http.route"], "/api/products/{productId}") where IsMatch(span.attributes["http.target"],
-            "\\/api\\/products\\/.*")
-          - set(span.attributes["http.route"], "/api/recommendations") where IsMatch(span.attributes["http.target"],
-            "\\/api\\/recommendations")
-          - set(span.attributes["http.route"], "/api/data") where IsMatch(span.attributes["http.target"],
-            "\\/api\\/data.*")
         - context: span
           statements:
-          - set_semconv_span_name("1.37.0", "unsanitized_span_name")
+          - set_semconv_span_name("1.43.0", "original_span_name")
     receivers:
       hostmetrics:
         collection_interval: 10s
@@ -291,7 +297,7 @@ data:
           processors:
           - k8s_attributes
           - memory_limiter
-          - resourcedetection
+          - resource_detection
           - resource
           - transform/sanitize_logs
           receivers:
@@ -303,7 +309,7 @@ data:
           processors:
           - k8s_attributes
           - memory_limiter
-          - resourcedetection
+          - resource_detection
           - resource
           receivers:
           - otlp
@@ -321,7 +327,7 @@ data:
           processors:
           - k8s_attributes
           - memory_limiter
-          - resourcedetection
+          - resource_detection
           - resource
           - filter/sanitize_profiles
           receivers:

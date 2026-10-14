@@ -24,7 +24,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Setup
-        uses: ./.github/actions/setup
+        uses: $/.github/actions/setup
         with:
           create-kind-cluster: "true"
           helm-version: ${{ matrix.helm-version }}
@@ -86,7 +86,7 @@ jobs:
 
   operator-test:
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [operator-test-matrix]
     steps:
       - name: Check matrix result
@@ -111,7 +111,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Setup
-        uses: ./.github/actions/setup
+        uses: $/.github/actions/setup
         with:
           create-kind-cluster: "true"
           helm-version: ${{ matrix.helm-version }}
@@ -168,7 +168,7 @@ jobs:
 
   operator-test-no-certmanager:
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [operator-test-no-certmanager-matrix]
     steps:
       - name: Check matrix result

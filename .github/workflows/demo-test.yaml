@@ -24,10 +24,16 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Setup
-        uses: ./.github/actions/setup
+        uses: $/.github/actions/setup
         with:
           create-kind-cluster: "true"
           helm-version: ${{ matrix.helm-version }}
+
+      - name: Check demo agent fixtures
+        run: make check-demo-agent-fixtures
+
+      - name: Check demo postgresql init
+        run: make check-demo-postgresql-init
 
       - name: Run chart-testing (install)
         run: "ct install --charts charts/opentelemetry-demo
@@ -39,7 +45,7 @@ jobs:
 
   demo-test:
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [demo-test-matrix]
     steps:
       - name: Check matrix result

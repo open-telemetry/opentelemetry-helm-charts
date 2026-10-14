@@ -4,6 +4,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: {{ include "opentelemetry-kube-stack.instrumentation" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
     {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | indent 4 }}

@@ -38,8 +38,8 @@ spec:
   {{- if $collector.hostNetwork }}
   hostNetwork: {{ $collector.hostNetwork }}
   {{- end }}
-  {{- if $collector.hostPID }}
-  hostPID: {{ $collector.hostPID }}
+  {{- if or $collector.hostPID (dig "presets" "profiling" "enabled" false $collector) }}
+  hostPID: {{ or $collector.hostPID (dig "presets" "profiling" "enabled" false $collector) }}
   {{- end }}
   {{- if $collector.shareProcessNamespace }}
   shareProcessNamespace: {{ $collector.shareProcessNamespace }}
@@ -47,12 +47,23 @@ spec:
   {{- if $collector.priorityClassName }}
   priorityClassName: {{ $collector.priorityClassName }}
   {{- end }}
+  {{- if $collector.trafficDistribution }}
+  trafficDistribution: {{ $collector.trafficDistribution }}
+  {{- end }}
   terminationGracePeriodSeconds: {{ $collector.terminationGracePeriodSeconds }}
   {{- with $collector.resources }}
   resources:
   {{- toYaml . | nindent 4}}
   {{- end }}
-  {{- with $collector.nodeSelector }}
+  {{- with $collector.resizePolicy }}
+  resizePolicy:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- $nodeSelector := $collector.nodeSelector }}
+  {{- if (dig "presets" "profiling" "enabled" false $collector) }}
+  {{- $nodeSelector = mustMergeOverwrite (dict "kubernetes.io/os" "linux") ($nodeSelector | default dict) }}
+  {{- end }}
+  {{- with $nodeSelector }}
   nodeSelector:
   {{- toYaml . | nindent 4}}
   {{- end }}
@@ -73,7 +84,23 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   securityContext:
-  {{- if and (not ($collector.securityContext)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) }}
+  {{- if and (not ($collector.securityContext)) ((dig "presets" "profiling" "enabled" false $collector)) }}
+    runAsUser: 0
+    runAsGroup: 0
+    privileged: false
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: Unconfined
+    {{- if semverCompare ">= 1.30-0" (include "opentelemetry-kube-stack.kubeVersion" $) }}
+    appArmorProfile:
+      type: Unconfined
+    {{- end }}
+    seLinuxOptions:
+      type: spc_t
+    capabilities:
+      drop: [ALL]
+      add: ["BPF", "PERFMON", "SYS_PTRACE", "SYS_RESOURCE", "DAC_READ_SEARCH", "SYSLOG", "CHECKPOINT_RESTORE", "IPC_LOCK"]
+  {{- else if and (not ($collector.securityContext)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) }}
     runAsUser: 0
     runAsGroup: 0
   {{- else -}}
@@ -83,9 +110,15 @@ spec:
   podSecurityContext:
   {{- toYaml . | nindent 4}}
   {{- end }}
+  {{- if and ((dig "presets" "profiling" "enabled" false $collector)) (not ($collector.securityContext)) (semverCompare "< 1.30-0" (include "opentelemetry-kube-stack.kubeVersion" $)) }}
+  {{- $podAnnotations := mergeOverwrite ($collector.podAnnotations | default dict) (dict "container.apparmor.security.beta.kubernetes.io/otc-container" "unconfined") }}
+  podAnnotations:
+  {{- toYaml $podAnnotations | nindent 4 }}
+  {{- else }}
   {{- with $collector.podAnnotations }}
   podAnnotations:
-  {{- toYaml . | nindent 4}}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- with $collector.targetAllocator }}
   targetAllocator:
@@ -133,7 +166,7 @@ spec:
   {{- toYaml . | nindent 4}}
   {{- end }}
   {{- end }}
-  {{- if or ((dig "presets" "logsCollection" "enabled" false $collector)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) ((dig "presets" "hostMetrics" "enabled" false $collector)) ($collector.volumeMounts) }}
+  {{- if or ((dig "presets" "logsCollection" "enabled" false $collector)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) ((dig "presets" "hostMetrics" "enabled" false $collector)) ((dig "presets" "profiling" "enabled" false $collector)) ($collector.volumeMounts) }}
   volumeMounts:
   {{- if (dig "presets" "logsCollection" "enabled" false $collector) }}
   - name: varlogpods
@@ -152,6 +185,11 @@ spec:
     mountPath: /hostfs
     readOnly: true
     mountPropagation: HostToContainer
+  {{- end }}
+  {{- if (dig "presets" "profiling" "enabled" false $collector) }}
+  - name: tracefs
+    mountPath: /sys/kernel/tracing
+    readOnly: true
   {{- end }}
   {{- with $collector.volumeMounts }}
   {{- tpl (toYaml .) $merged | nindent 2 }}
@@ -190,7 +228,7 @@ spec:
         apiVersion: v1
         fieldPath: status.podIP
   - name: OTEL_RESOURCE_ATTRIBUTES
-    value: "k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),host.name=$(OTEL_K8S_NODE_NAME),k8s.node.ip=$(OTEL_K8S_NODE_IP),k8s.pod.ip=$(OTEL_K8S_POD_IP){{- if $.Values.clusterName }},k8s.cluster.name={{ $.Values.clusterName }}{{- end }}"
+    value: {{ include "opentelemetry-kube-stack.collector.resourceAttributesEnv" (dict "root" $ "collector" $collector) | quote }}
   {{- include "opentelemetry-kube-stack.renderenvs" (dict "extraEnvs" $.Values.extraEnvs "env" $collector.env) | nindent 2 }}
   {{- with $collector.envFrom }}
   envFrom:
@@ -204,7 +242,7 @@ spec:
   tolerations:
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- if or ((dig "presets" "logsCollection" "enabled" false $collector)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) ((dig "presets" "hostMetrics" "enabled" false $collector)) ($collector.volumes) }}
+  {{- if or ((dig "presets" "logsCollection" "enabled" false $collector)) ((dig "presets" "logsCollection" "storeCheckpoints" false $collector)) ((dig "presets" "hostMetrics" "enabled" false $collector)) ((dig "presets" "profiling" "enabled" false $collector)) ($collector.volumes) }}
   volumes:
   {{- if (dig "presets" "logsCollection" "enabled" false $collector) }}
   - name: varlogpods
@@ -224,6 +262,11 @@ spec:
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
+  {{- if (dig "presets" "profiling" "enabled" false $collector) }}
+  - name: tracefs
+    hostPath:
+      path: /sys/kernel/tracing
   {{- end }}
   {{- with $collector.volumes }}
   {{- tpl (toYaml .) $merged | nindent 2 }}

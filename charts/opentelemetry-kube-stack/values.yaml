@@ -2,6 +2,8 @@
 fullnameOverride: ""
 # Top level field indicating an override for the namespace
 namespaceOverride: ""
+# Top level field indicating an override for the chart name
+nameOverride: ""
 
 # Top level field specifying the name of the Kubernetes cluster.
 # When using a Managed Kubernetes Service, it's recommended to use the cluster name assigned by the service for
@@ -10,7 +12,9 @@ clusterName: "unknown_k8s_cluster"
 
 # Default resource attributes applied to every collector pipeline (as a
 # `resource/global` upsert processor) and merged into the Instrumentation CR's
-# `resource.resourceAttributes`. Override per collector via
+# `resource.resourceAttributes`. Also added to each collector's and the OpAMP
+# Bridge's own `OTEL_RESOURCE_ATTRIBUTES`; a `k8s.cluster.name` set here takes
+# precedence over `clusterName`. Override per collector via
 # `collectors.<name>.resourceAttributes`.
 resourceAttributes: {}
 #   deployment.environment.name: production
@@ -194,17 +198,21 @@ defaultCRConfig:
   # Priority class name for the collector
   priorityClassName: ""
 
+  # Traffic distribution preference for the collector Services (e.g. PreferSameZone)
+  # https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
+  trafficDistribution: ""
+
   # Termination grace period for the collector
   terminationGracePeriodSeconds: 30
 
-  # Resource requests and limits for the collector
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "250m"
-    limits:
-      memory: "128Mi"
-      cpu: "250m"
+  # Resize policy for the collector container, controlling how it responds to
+  # in-place resource resizes. Requires the InPlacePodVerticalScaling feature
+  # gate (enabled by default since Kubernetes 1.33).
+  resizePolicy: []
+  # - resourceName: cpu
+  #   restartPolicy: NotRequired
+  # - resourceName: memory
+  #   restartPolicy: RestartContainer
 
   # Node selector for the collector
   nodeSelector: {}
@@ -486,6 +494,19 @@ defaultCRConfig:
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
     hostMetrics:
       enabled: false
+    # Configures the collector to collect profiling data.
+    # Adds profiles pipeline with the profiling receiver,
+    # and adds the necessary volumes, security context and host PID access.
+    #
+    # Warning: The profiling receiver requires elevated capabilities and hostPID,
+    # so it should be used with a dedicated collector distribution (e.g. otelcol-ebpf-profiler)
+    # rather than the general-purpose k8s distribution. This avoids granting elevated privileges
+    # to the same collector that handles metrics, traces, and logs.
+    # When enabled, the collector is also scheduled on Linux nodes only
+    # (nodeSelector kubernetes.io/os: linux, merged with any user-provided nodeSelector).
+    # See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler for more details.
+    profiling:
+      enabled: false
     # Configures the Kubernetes Processor to add Kubernetes metadata.
     # Adds the k8s_attributes processor to all the pipelines
     # and adds the necessary rules to ClusteRole.
@@ -663,13 +684,6 @@ collectors:
     suffix: daemon
     mode: daemonset
     enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 500Mi
-      requests:
-        cpu: 100m
-        memory: 250Mi
     # A scrape config file loaded into the daemon collector's prometheus receiver. The
     # default `daemon_scrape_configs.yaml` scrapes node-exporter on the same host, kubelet
     # cAdvisor metrics, and pods on the same node carrying `prometheus.io/scrape=true`.

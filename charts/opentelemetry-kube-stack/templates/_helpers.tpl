@@ -490,6 +490,21 @@ Callers must use fromYaml to get a dict.
 {{- $collector | toYaml -}}
 {{- end }}
 
+{{/*
+List of upstream community OpenTelemetry Collector distributions that do NOT include
+the profiling receiver. Among community images only `opentelemetry-collector-ebpf-profiler`
+ships the receiver; custom/vendor distributions pass through.
+Consumed by NOTES.txt to fail-fast when the profiling preset
+is enabled with an incompatible community image.
+See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions
+*/}}
+{{- define "opentelemetry-kube-stack.profilingUnsupportedImages" -}}
+- opentelemetry-collector
+- opentelemetry-collector-contrib
+- opentelemetry-collector-k8s
+- opentelemetry-collector-otlp
+{{- end }}
+
 {{/* Sets default scrape limits for servicemonitor */}}
 {{- define "opentelemetry-kube-stack.servicemonitor.scrapeLimits" -}}
 {{- with .sampleLimit }}
@@ -508,3 +523,41 @@ labelNameLengthLimit: {{ . }}
 labelValueLengthLimit: {{ . }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Builds the OTEL_RESOURCE_ATTRIBUTES value for a collector from the k8s downward API
+attributes, the top-level and per-collector resourceAttributes, and clusterName.
+A k8s.cluster.name set in resourceAttributes takes precedence over clusterName.
+*/}}
+{{- define "opentelemetry-kube-stack.collector.resourceAttributesEnv" -}}
+{{- $reserved := list "k8s.pod.name" "k8s.namespace.name" "k8s.node.name" "host.name" "k8s.node.ip" "k8s.pod.ip" }}
+{{- $attributes := list "k8s.pod.name=$(OTEL_K8S_POD_NAME)" "k8s.namespace.name=$(OTEL_K8S_NAMESPACE)" "k8s.node.name=$(OTEL_K8S_NODE_NAME)" "host.name=$(OTEL_K8S_NODE_NAME)" "k8s.node.ip=$(OTEL_K8S_NODE_IP)" "k8s.pod.ip=$(OTEL_K8S_POD_IP)" }}
+{{- $resourceAttributes := mustMergeOverwrite (deepCopy (.root.Values.resourceAttributes | default dict)) (.collector.resourceAttributes | default dict) }}
+{{- if and .root.Values.clusterName (not (hasKey $resourceAttributes "k8s.cluster.name")) }}
+{{- $attributes = append $attributes (printf "k8s.cluster.name=%s" .root.Values.clusterName) }}
+{{- end }}
+{{- range $key := keys $resourceAttributes | sortAlpha }}
+{{- if not (has $key $reserved) }}
+{{- $attributes = append $attributes (printf "%s=%v" $key (get $resourceAttributes $key)) }}
+{{- end }}
+{{- end }}
+{{- join "," $attributes }}
+{{- end }}
+
+{{/*
+Builds the OTEL_RESOURCE_ATTRIBUTES value for the OpAMP Bridge from top-level
+resourceAttributes and clusterName. A k8s.cluster.name set in resourceAttributes
+takes precedence over clusterName. When resourceAttributes is empty, output matches
+the previous hardcoded k8s.cluster.name={{ clusterName }} string.
+*/}}
+{{- define "opentelemetry-kube-stack.bridge.resourceAttributesEnv" -}}
+{{- $attributes := list }}
+{{- $resourceAttributes := .Values.resourceAttributes | default dict }}
+{{- if and .Values.clusterName (not (hasKey $resourceAttributes "k8s.cluster.name")) }}
+{{- $attributes = append $attributes (printf "k8s.cluster.name=%s" .Values.clusterName) }}
+{{- end }}
+{{- range $key := keys $resourceAttributes | sortAlpha }}
+{{- $attributes = append $attributes (printf "%s=%v" $key (get $resourceAttributes $key)) }}
+{{- end }}
+{{- join "," $attributes }}
+{{- end }}

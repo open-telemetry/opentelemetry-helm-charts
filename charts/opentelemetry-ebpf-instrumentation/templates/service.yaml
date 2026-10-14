@@ -1,5 +1,8 @@
 {{- if .Values.service.enabled }}
 {{- $root := . }}
+{{- $configMeta := include "obi.configMeta" . | fromYaml }}
+{{- $metricsPort := .Values.service.targetPort | default $configMeta.prometheusPort }}
+{{- $internalMetricsPort := .Values.service.internalMetrics.targetPort | default $configMeta.internalMetricsPort }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -44,11 +47,11 @@ spec:
   externalTrafficPolicy: {{ . }}
   {{- end }}
   ports:
-    {{- if or (.Values.service.targetPort) (.Values.config.data.prometheus_export) }}
+    {{- if $metricsPort }}
     - name: {{ .Values.service.portName }}
       port: {{ .Values.service.port }}
       protocol: TCP
-      targetPort: {{ .Values.service.targetPort | default .Values.config.data.prometheus_export.port }}
+      targetPort: {{ $metricsPort }}
       {{- with .Values.service.appProtocol }}
       appProtocol: {{ . }}
       {{- end }}
@@ -56,11 +59,11 @@ spec:
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
     {{- end }}
-    {{- if (and (or (.Values.service.internalMetrics.targetPort) (.Values.config.data.internal_metrics)) (not (eq .Values.config.data.prometheus_export.port .Values.config.data.internal_metrics.prometheus.port))) }}
+    {{- if and $internalMetricsPort (ne $metricsPort $internalMetricsPort) }}
     - name: {{ .Values.service.internalMetrics.portName }}
       port: {{ .Values.service.internalMetrics.port }}
       protocol: TCP
-      targetPort: {{ .Values.service.internalMetrics.targetPort | default .Values.config.data.internal_metrics.prometheus.port }}
+      targetPort: {{ $internalMetricsPort }}
       {{- with .Values.service.internalMetrics.appProtocol }}
       appProtocol: {{ . }}
       {{- end }}
