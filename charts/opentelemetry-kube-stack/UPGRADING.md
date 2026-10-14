@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.23.x to 0.24.x
+## 0.24.x to 0.25.x
 
 This release adds opt-in Secret-backed authorization and Secret/ConfigMap TLS references for Kubernetes component ServiceMonitors. These allow scraping with `targetAllocator.prometheusCR.denyFSAccessThroughSMs: true` when all filesystem credential references are removed. The chart can also create a dedicated ServiceAccount and token Secret for metrics scraping.
 
