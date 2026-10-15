@@ -33,20 +33,19 @@ spec:
     {{- if .Values.kubeScheduler.serviceMonitor.interval }}
     interval: {{ .Values.kubeScheduler.serviceMonitor.interval }}
     {{- end }}
+    {{- if .Values.kubeScheduler.serviceMonitor.authorization }}
+    authorization:
+      {{- tpl (toYaml .Values.kubeScheduler.serviceMonitor.authorization) $ | nindent 6 }}
+    {{- else if eq (toJson .Values.kubeScheduler.serviceMonitor.authorization) "false" }}
     bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    {{- end }}
     {{- if .Values.kubeScheduler.serviceMonitor.proxyUrl }}
     proxyUrl: {{ .Values.kubeScheduler.serviceMonitor.proxyUrl}}
     {{- end }}
     {{- if eq (include "opentelemetry-kube-stack.kubeScheduler.insecureScrape" (list . false true .Values.kubeScheduler.serviceMonitor.https )) "true" }}
     scheme: https
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      {{- if eq (include "opentelemetry-kube-stack.kubeScheduler.insecureScrape" (list . nil true .Values.kubeScheduler.serviceMonitor.insecureSkipVerify)) "true" }}
-      insecureSkipVerify: true
-      {{- end }}
-      {{- if .Values.kubeScheduler.serviceMonitor.serverName }}
-      serverName: {{ .Values.kubeScheduler.serviceMonitor.serverName }}
-      {{- end}}
+      {{- include "opentelemetry-kube-stack.servicemonitor.tlsConfig" (dict "serviceMonitor" .Values.kubeScheduler.serviceMonitor "defaultCAFile" "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt") | nindent 6 }}
     {{- end}}
 {{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
     metricRelabelings:
