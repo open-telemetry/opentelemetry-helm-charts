@@ -47,6 +47,12 @@ https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#add-annot
 {{- end }}
 {{- end }}
 
+{{- if and .Values.instrumentation.enabled .Values.instrumentation.php .Values.crds.installOtel }}
+
+[WARNING] `instrumentation.php` is configured, but the bundled Instrumentation CRD does not currently support `spec.php`.
+          Kubernetes may reject this resource with strict field validation or prune this field when unknown fields are ignored. Use a CRD version that supports PHP auto-instrumentation.
+{{- end }}
+
 {{- $operatorValues := index .Values "opentelemetry-operator" }}
 {{- $operatorEnabled := dig "enabled" true $operatorValues }}
 {{- $certManagerEnabled := dig "admissionWebhooks" "certManager" "enabled" true $operatorValues }}
