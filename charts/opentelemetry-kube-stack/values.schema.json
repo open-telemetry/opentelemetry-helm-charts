@@ -2866,6 +2866,21 @@
         "capabilities": {
           "$ref": "#/$defs/Capabilities"
         },
+        "appArmorProfile": {
+          "properties": {
+            "localhostProfile": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false,
+          "type": "object"
+        },
         "privileged": {
           "type": "boolean"
         },
@@ -3403,6 +3418,17 @@
         "exporter": {
           "$ref": "#/$defs/Exporter"
         },
+        "imagePullPolicy": {
+          "enum": [
+            "Always",
+            "Never",
+            "IfNotPresent"
+          ],
+          "type": "string"
+        },
+        "initContainerSecurityContext": {
+          "$ref": "#/$defs/SecurityContext"
+        },
         "resource": {
           "$ref": "#/$defs/Resource"
         },
@@ -3646,6 +3672,27 @@
       "properties": {
         "endpoint": {
           "type": "string"
+        },
+        "tls": {
+          "properties": {
+            "ca_file": {
+              "type": "string"
+            },
+            "cert_file": {
+              "type": "string"
+            },
+            "configMapName": {
+              "type": "string"
+            },
+            "key_file": {
+              "type": "string"
+            },
+            "secretName": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "type": "object"
         }
       },
       "additionalProperties": false,
