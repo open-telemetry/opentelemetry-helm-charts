@@ -7,13 +7,14 @@ The chart now installs Operator 0.161.0. Since Operator 0.160.0, the `operator.n
 Upgrading does not remove the NetworkPolicies that earlier versions created:
 
 - The `opentelemetry-operator` NetworkPolicy keeps the API server IPs from when it was created. If those IPs change, the Operator can no longer reach the API server.
-- A collector keeps its NetworkPolicy if the Operator webhook set `spec.networkPolicy.enabled: true` on it.
+- A collector or TargetAllocator keeps its NetworkPolicy if the Operator webhook set `spec.networkPolicy.enabled: true` on it.
 
 To remove them:
 
 ```sh
 kubectl delete networkpolicy opentelemetry-operator -n <operator-namespace>
 kubectl patch opentelemetrycollector <name> -n <namespace> --type merge -p '{"spec":{"networkPolicy":{"enabled":false}}}'
+kubectl patch targetallocator <name> -n <namespace> --type merge -p '{"spec":{"networkPolicy":{"enabled":false}}}'
 ```
 
 To keep creating NetworkPolicies, enable the feature gates:
