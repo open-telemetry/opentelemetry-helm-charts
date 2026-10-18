@@ -173,9 +173,13 @@ manager:
         bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
         tlsConfig:
           insecureSkipVerify: true
-    # -- Used to set relabeling and metricRelabeling configs on the ServiceMonitor
+    # -- Relabeling configs (`relabelings`) added to the last entry of `metricsEndpoints`.
+    # They are applied to the scrape target before scraping.
     # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
     relabelings: []
+    # -- Metric relabeling configs (`metricRelabelings`) added to the last entry of `metricsEndpoints`.
+    # They are applied to the scraped samples before ingestion.
+    # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
     metricRelabelings: []
 
   # -- Adds additional annotations to the manager Deployment
@@ -312,8 +316,9 @@ admissionWebhooks:
     issuerRef: {}
     # kind:
     # name:
-    # -- Annotations for the cert and issuer if cert-manager is enabled.
+    # -- Annotations for the webhook Certificate if cert-manager is enabled.
     certificateAnnotations: {}
+    # -- Annotations for the self-signed Issuer, which is created if cert-manager is enabled and `issuerRef` is empty.
     issuerAnnotations: {}
     # -- duration must be specified by a Go time.Duration (ending in s, m or h)
     duration: ""

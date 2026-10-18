@@ -397,8 +397,8 @@ EOF
 | manager.serviceMonitor.extraLabels | object | `{}` | additional labels on the ServiceMonitor |
 | manager.serviceMonitor.annotations | object | `{}` | add annotations on the ServiceMonitor |
 | manager.serviceMonitor.metricsEndpoints | list | `[{"bearerTokenFile":"/var/run/secrets/kubernetes.io/serviceaccount/token","port":"metrics","scheme":"https","tlsConfig":{"insecureSkipVerify":true}}]` | Endpoints of the ServiceMonitor. |
-| manager.serviceMonitor.relabelings | list | `[]` | Used to set relabeling and metricRelabeling configs on the ServiceMonitor https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config |
-| manager.serviceMonitor.metricRelabelings | list | `[]` |  |
+| manager.serviceMonitor.relabelings | list | `[]` | Relabeling configs (`relabelings`) added to the last entry of `metricsEndpoints`. They are applied to the scrape target before scraping. https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config |
+| manager.serviceMonitor.metricRelabelings | list | `[]` | Metric relabeling configs (`metricRelabelings`) added to the last entry of `metricsEndpoints`. They are applied to the scraped samples before ingestion. https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config |
 | manager.deploymentAnnotations | object | `{}` | Adds additional annotations to the manager Deployment |
 | manager.serviceAnnotations | object | `{}` | Adds additional annotations to the manager Service |
 | manager.podAnnotations | object | `{}` |  |
@@ -436,7 +436,8 @@ EOF
 | admissionWebhooks.objectSelector | object | `{}` |  |
 | admissionWebhooks.certManager | object | `{"certificateAnnotations":{},"duration":"","enabled":true,"issuerAnnotations":{},"issuerRef":{},"renewBefore":""}` | TLS Certificate Option 1: Use certManager to generate self-signed certificate. certManager must be enabled. If enabled, always takes precedence over options 2 and 3. |
 | admissionWebhooks.certManager.issuerRef | object | `{}` | Provide the issuer kind and name to do the cert auth job. By default, OpenTelemetry Operator will use self-signer issuer. |
-| admissionWebhooks.certManager.certificateAnnotations | object | `{}` | Annotations for the cert and issuer if cert-manager is enabled. |
+| admissionWebhooks.certManager.certificateAnnotations | object | `{}` | Annotations for the webhook Certificate if cert-manager is enabled. |
+| admissionWebhooks.certManager.issuerAnnotations | object | `{}` | Annotations for the self-signed Issuer, which is created if cert-manager is enabled and `issuerRef` is empty. |
 | admissionWebhooks.certManager.duration | string | `""` | duration must be specified by a Go time.Duration (ending in s, m or h) |
 | admissionWebhooks.certManager.renewBefore | string | `""` | renewBefore must be specified by a Go time.Duration (ending in s, m or h) Take care when setting the renewBefore field to be very close to the duration as this can lead to a renewal loop, where the Certificate is always in the renewal period. |
 | admissionWebhooks.autoGenerateCert | object | `{"certPeriodDays":365,"enabled":true,"recreate":true}` | TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate. certManager must be disabled and autoGenerateCert must be enabled. If true and certManager.enabled is false, Helm will automatically create a self-signed cert and secret for you. |
