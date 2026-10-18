@@ -103,12 +103,8 @@ the demo
 
 ### Default parameters (applied to all demo components)
 
-| Property                               | Description                                                                               | Default                                              |
-|----------------------------------------|-------------------------------------------------------------------------------------------|------------------------------------------------------|
-| `default.image.repository`             | Demo components image name                                                                | `otel/demo`                                          |
-| `default.image.tag`                    | Demo components image tag (leave blank to use app version)                                | `nil`                                                |
-
-The other default parameters are documented in the [Values](#values) section.
+The default parameters (`default.*`), including `default.image.repository` and
+`default.image.tag`, are documented in the [Values](#values) section.
 
 ### Component parameters
 
@@ -286,7 +282,7 @@ parameters by default. The overriden parameters are specified below.
 | default.securityContext | object | `{}` | Default securityContext for all components |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
-| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| serviceAccount.name | string | `""` | The name of the service account to use. If set, this name is used. If not set and create is true, the `otel-demo.name` template is used, which is the release name truncated to 63 characters. If not set and create is false, `default` is used. |
 | components | object | One entry per demo component, see [values.yaml](./values.yaml) | Used to configure the individual components (microservices) for the demo. All components will be defined within `components.[NAME]` where `[NAME]` is the name of the demo component, see [Component parameters](#component-parameters). |
 | components.accounting.enabled | bool | `true` | Is this component enabled |
 | components.ad.enabled | bool | `true` | Is this component enabled |
