@@ -497,7 +497,7 @@ For more examples see [Examples](examples).
 | dnsPolicy | string | `""` | Pod DNS policy ClusterFirst, ClusterFirstWithHostNet, None, Default, None |
 | dnsConfig | object | `{}` | Custom DNS config. Required when DNS policy is None. |
 | schedulerName | string | `""` | Custom kube scheduler name. |
-| replicaCount | int | `1` | only used with deployment mode |
+| replicaCount | int | `1` | only used with deployment and statefulset modes. |
 | revisionHistoryLimit | int | `10` |  |
 | annotations | object | `{}` |  |
 | extraContainers | list | `[]` | List of extra sidecars to add. This also supports template content, which will eventually be converted to yaml. |
