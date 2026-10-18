@@ -1,16 +1,16 @@
-# Top level field indicating an override for fullname
+# -- Top level field indicating an override for fullname
 fullnameOverride: ""
-# Top level field indicating an override for the namespace
+# -- Top level field indicating an override for the namespace
 namespaceOverride: ""
-# Top level field indicating an override for the chart name
+# -- Top level field indicating an override for the chart name
 nameOverride: ""
 
-# Top level field specifying the name of the Kubernetes cluster.
+# -- Top level field specifying the name of the Kubernetes cluster.
 # When using a Managed Kubernetes Service, it's recommended to use the cluster name assigned by the service for
 # better integration.
 clusterName: "unknown_k8s_cluster"
 
-# Default resource attributes applied to every collector pipeline (as a
+# -- Default resource attributes applied to every collector pipeline (as a
 # `resource/global` upsert processor) and merged into the Instrumentation CR's
 # `resource.resourceAttributes`. Also added to each collector's and the OpAMP
 # Bridge's own `OTEL_RESOURCE_ATTRIBUTES`; a `k8s.cluster.name` set here takes
@@ -20,18 +20,18 @@ resourceAttributes: {}
 #   deployment.environment.name: production
 #   k8s.cluster.name: unknown_k8s_cluster
 
-# Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
+# -- Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
 # processor, hostmetrics -> host_metrics receiver) in the generated config.
 # Set to false if using older Collector images that do not recognize the new
 # names.
 rewriteDeprecatedComponentNames: true
 
-# Extra environment variables to add to each collector, bridge and instrumentation
+# -- Extra environment variables to add to each collector, bridge and instrumentation
 extraEnvs: []
 
 # Enables a cleanup job to make sure the CRs are uninstalled before the operator
 cleanupJob:
-  # It is recommended to always keep this enabled so that running helm uninstall works properly.
+  # -- It is recommended to always keep this enabled so that running helm uninstall works properly.
   # For non-helm installations i.e. ones created via helm template, it may make sense to disable this.
   # For those installations, ensure that uninstallation for the operator happens _after_ the deletion of the CRs.
   enabled: true
@@ -39,18 +39,18 @@ cleanupJob:
   image:
     repository: rancher/kubectl
     tag: v1.34.1
-    # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+    # -- When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
     digest: ""
-  # To use the existingServiceAccount
+  # -- To use the existingServiceAccount
   existingServiceAccount: ""
 
-  # Pod-level securityContext for the cleanup Job (Pod spec field name; PSA restricted needs seccomp).
+  # -- Pod-level securityContext for the cleanup Job (Pod spec field name; PSA restricted needs seccomp).
   podSecurityContext: {}
   #   runAsNonRoot: true
   #   seccompProfile:
   #     type: RuntimeDefault
 
-  # Container security context for the cleanup Job.
+  # -- Container security context for the cleanup Job.
   securityContext: {}
   #   allowPrivilegeEscalation: false
   #   capabilities:
@@ -62,25 +62,25 @@ cleanupJob:
 
 # Should the CRDs be installed by this chart.
 crds:
-  # Control whether the opentelemetry.io CRDS should be installed.
+  # -- Control whether the opentelemetry.io CRDS should be installed.
   installOtel: true
-  # Control whether the monitoring.coreos CRDS should be installed.
+  # -- Control whether the monitoring.coreos CRDS should be installed.
   installPrometheus: true
 
 # Top level field related to the OpenTelemetry Operator
 opentelemetry-operator:
-  # Field indicating whether the operator is enabled or not
+  # -- Field indicating whether the operator is enabled or not
   enabled: true
   manager:
     collectorImage:
       repository: otel/opentelemetry-collector-k8s
   # Sub-field for admission webhooks configuration
   admissionWebhooks:
-    # Policy for handling failures
+    # -- Policy for handling failures
     # Setting this allows for an installation of the otel operator at the same time as the custom resources it manages.
     failurePolicy: "Ignore"
 
-  # This is disabled by default, as doing so creates a race condition with helm.
+  # -- This is disabled by default, as doing so creates a race condition with helm.
   # https://github.com/open-telemetry/opentelemetry-helm-charts/issues/677
   # Users of this chart should _never_ set this to be true. If a user wishes
   # to install the CRDs through the opentelemetry-operator chart, it is recommended
@@ -94,21 +94,21 @@ opentelemetry-operator:
 defaultCRConfig:
   enabled: true
 
-  # Suffix for the collector pool, by default the release name is prepended
+  # -- Suffix for the collector pool, by default the release name is prepended
   suffix: "collector"
 
-  # fullnameOverride allows overriding the collector's name
+  # -- fullnameOverride allows overriding the collector's name
   fullnameOverride: ""
 
-  # Annotations for the collector
+  # -- Annotations for the collector
   annotations: {}
   #   io.opentelemetry.com/resource: hello
 
-  # Labels for the collector
+  # -- Labels for the collector
   labels: {}
   #   app: otc
 
-  # scrape_configs_file allows the user to load an external file into
+  # -- scrape_configs_file allows the user to load an external file into
   # the collector's prometheus scrape_configs. This is added to assist users
   # coming from the prometheus ecosystem by allowing users to simply copy and paste
   # directly from prometheus into this file to use the same config.
@@ -118,10 +118,10 @@ defaultCRConfig:
   # fails the chart render.
   scrape_configs_file: ""
 
-  # Management state of the collector
+  # -- Management state of the collector
   managementState: managed
 
-  # Configuration for cluster role binding
+  # -- Configuration for cluster role binding
   clusterRoleBinding:
     enabled: true
     clusterRoleName: ""
@@ -129,26 +129,26 @@ defaultCRConfig:
   # Number of replicas for the collector
   # replicas: 1
 
-  # Mode of deployment for the collector
+  # -- Mode of deployment for the collector
   mode: deployment
 
-  # Service account associated with the collector
+  # -- Service account associated with the collector
   serviceAccount: ""
 
   # Image details for the collector
   image:
-    # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
+    # -- If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
     repository: otel/opentelemetry-collector-k8s
     pullPolicy: IfNotPresent
-    # By default, the version set for the collector will match the version of the operator being run.
+    # -- By default, the version set for the collector will match the version of the operator being run.
     tag: ""
-    # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+    # -- When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
     digest: ""
 
-  # Upgrade strategy for the collector
+  # -- Upgrade strategy for the collector
   upgradeStrategy: automatic
 
-  # Configuration options for the collector
+  # -- Configuration options for the collector
   config: {}
   # receivers:
   #   otlp:
@@ -185,27 +185,27 @@ defaultCRConfig:
   #       processors: [memory_limiter, batch]
   #       exporters: [otlp]
 
-  # Whether to use host network for the collector
+  # -- Whether to use host network for the collector
   hostNetwork: false
 
-  # Enable sharing the host's PID namespace with the pod.
+  # -- Enable sharing the host's PID namespace with the pod.
   # WARNING: This grants visibility into all host processes and should only be enabled when required.
   hostPID: false
 
-  # Whether to share process namespace for the collector
+  # -- Whether to share process namespace for the collector
   shareProcessNamespace: false
 
-  # Priority class name for the collector
+  # -- Priority class name for the collector
   priorityClassName: ""
 
-  # Traffic distribution preference for the collector Services (e.g. PreferSameZone)
+  # -- Traffic distribution preference for the collector Services (e.g. PreferSameZone)
   # https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
   trafficDistribution: ""
 
-  # Termination grace period for the collector
+  # -- Termination grace period for the collector
   terminationGracePeriodSeconds: 30
 
-  # Resize policy for the collector container, controlling how it responds to
+  # -- Resize policy for the collector container, controlling how it responds to
   # in-place resource resizes. Requires the InPlacePodVerticalScaling feature
   # gate (enabled by default since Kubernetes 1.33).
   resizePolicy: []
@@ -214,11 +214,11 @@ defaultCRConfig:
   # - resourceName: memory
   #   restartPolicy: RestartContainer
 
-  # Node selector for the collector
+  # -- Node selector for the collector
   nodeSelector: {}
   #   nodeType: worker
 
-  # Command to override the collector's entrypoint
+  # -- Command to override the collector's entrypoint
   command: []
   #   - /bin/sh
   #   - -c
@@ -226,37 +226,37 @@ defaultCRConfig:
   #     . /node-env/env.sh
   #     exec /otelcol-contrib --config=/conf/collector.yaml
 
-  # Arguments for the collector
+  # -- Arguments for the collector
   args: {}
   #   arg1: value1
   #   arg2: value2
 
-  # Autoscaler configuration for the collector
+  # -- Autoscaler configuration for the collector
   autoscaler: {}
   #   minReplicas: 1
   #   maxReplicas: 10
   #   targetCPUUtilization: 50
 
-  # Pod disruption budget for the collector
+  # -- Pod disruption budget for the collector
   podDisruptionBudget: {}
   #   maxUnavailable: 1
 
-  # Security context for the collector
+  # -- Security context for the collector
   securityContext: {}
   #   runAsUser: 1000
   #   capabilities:
   #     drop:
   #       - ALL
 
-  # Pod security context for the collector
+  # -- Pod security context for the collector
   podSecurityContext: {}
   #   runAsUser: 1000
 
-  # Annotations for the collector's pods
+  # -- Annotations for the collector's pods
   podAnnotations: {}
   #   prometheus.io/scrape: "true"
 
-  # Target allocator configuration
+  # -- Target allocator configuration
   targetAllocator: {}
   # replicas: 1
   # nodeSelector:
@@ -340,7 +340,7 @@ defaultCRConfig:
   #   metrics:
   #     enableMetrics: true
 
-  # Affinity configuration for the collector
+  # -- Affinity configuration for the collector
   affinity: {}
   #   nodeAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -352,7 +352,7 @@ defaultCRConfig:
   #                 - e2e-az1
   #                 - e2e-az2
 
-  # Lifecycle configuration for the collector
+  # -- Lifecycle configuration for the collector
   lifecycle: {}
   #   preStop:
   #     exec:
@@ -363,41 +363,41 @@ defaultCRConfig:
   #           "echo Hello from the preStop handler > /dev/termination-log",
   #         ]
 
-  # Liveness probe configuration for the collector
+  # -- Liveness probe configuration for the collector
   livenessProbe: {}
   #   initialDelaySeconds: 3
   #   periodSeconds: 5
   #   timeoutSeconds: 2
   #   failureThreshold: 5
 
-  # Observability configuration for the collector
+  # -- Observability configuration for the collector
   observability: {}
   #   metrics:
   #     enableMetrics: true
 
-  # NOTE: the updateStrategy value is deprecated. Use daemonSetUpdateStrategy instead.
+  # -- NOTE: the updateStrategy value is deprecated. Use daemonSetUpdateStrategy instead.
   updateStrategy: {}
   #   type: RollingUpdate
 
-  # Update strategy for the DaemonSet collector
+  # -- Update strategy for the DaemonSet collector
   daemonSetUpdateStrategy: {}
   #   type: RollingUpdate
 
-  # Update strategy for the Deployment collector
+  # -- Update strategy for the Deployment collector
   deploymentUpdateStrategy: {}
   #   type: RollingUpdate
 
-  # Retention policy for the PersistentVolumeClaim https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention
+  # -- Retention policy for the PersistentVolumeClaim https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention
   persistentVolumeClaimRetentionPolicy: {}
     # whenDeleted: Retain
     # whenScaled: Retain
 
-  # Volume mounts for the collector
+  # -- Volume mounts for the collector
   volumeMounts: []
   #   - name: data
   #     mountPath: /data
 
-  # Ports configuration for the collector
+  # -- Ports configuration for the collector
   # The operator automatically calculates ports for known receivers and exporters
   # Set any custom ports here.
   ports: []
@@ -406,14 +406,14 @@ defaultCRConfig:
   #   port: 80
   #   targetPort: 8080
 
-  # Environment variables for the collector
+  # -- Environment variables for the collector
   env: []
   # - name: ENV_VAR1
   #   value: value1
   # - name: ENV_VAR2
   #   value: value2
 
-  # Volume claim templates for the collector
+  # -- Volume claim templates for the collector
   volumeClaimTemplates: []
   # - metadata:
   #     name: storage
@@ -423,33 +423,33 @@ defaultCRConfig:
   #       requests:
   #         storage: 1Gi
 
-  # Tolerations for the collector
+  # -- Tolerations for the collector
   tolerations: []
   # - key: "key"
   #   operator: "Equal"
   #   value: "value"
   #   effect: "NoSchedule"
 
-  # Volumes for the collector
+  # -- Volumes for the collector
   volumes: []
   # - name: config-volume
   #   configMap:
   #     name: config
 
-  # Init containers for the collector. Rendered as Helm templates with the
+  # -- Init containers for the collector. Rendered as Helm templates with the
   # merged collector context, so entries can reference collector fields, e.g.
   # image: "{{ .collector.image.repository }}:{{ .collector.image.tag }}".
   initContainers: []
   # - name: init-nginx
   #   image: nginx
 
-  # Additional containers for the collector. Rendered as Helm templates with
+  # -- Additional containers for the collector. Rendered as Helm templates with
   # the merged collector context, like initContainers.
   additionalContainers: []
   # - name: additional-container
   #   image: busybox
 
-  # Topology spread constraints for the collector
+  # -- Topology spread constraints for the collector
   topologySpreadConstraints: []
   # - maxSkew: 1
   #   topologyKey: kubernetes.io/hostname
@@ -458,7 +458,7 @@ defaultCRConfig:
   #     matchLabels:
   #       app: my-app
 
-  # Config maps for the collector
+  # -- Config maps for the collector
   configmaps: []
   # - name: config
   #   mountPath: /etc/config
@@ -473,7 +473,7 @@ defaultCRConfig:
   # .Values.config and use the other fields supplied in the
   # values.yaml to configure k8s as necessary.
   presets:
-    # Configures the collector to collect logs.
+    # -- Configures the collector to collect logs.
     # Adds the file_log receiver to the logs pipeline
     # and adds the necessary volumes and volume mounts.
     # Best used with mode = daemonset.
@@ -481,20 +481,20 @@ defaultCRConfig:
     logsCollection:
       enabled: false
       includeCollectorLogs: true
-      # Enabling this writes checkpoints in /var/lib/otelcol/ host directory.
+      # -- Enabling this writes checkpoints in /var/lib/otelcol/ host directory.
       # Note this changes collector's user to root, so that it can write to host directory.
       storeCheckpoints: false
-      # The maximum bytes size of the recombined field.
+      # -- The maximum bytes size of the recombined field.
       # Once the size exceeds the limit, all received entries of the source will be combined and flushed.
       maxRecombineLogSize: 102400
-    # Configures the collector to collect host metrics.
+    # -- Configures the collector to collect host metrics.
     # Adds the host_metrics receiver to the metrics pipeline
     # and adds the necessary volumes and volume mounts.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
     hostMetrics:
       enabled: false
-    # Configures the collector to collect profiling data.
+    # -- Configures the collector to collect profiling data.
     # Adds profiles pipeline with the profiling receiver,
     # and adds the necessary volumes, security context and host PID access.
     #
@@ -507,27 +507,27 @@ defaultCRConfig:
     # See https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler for more details.
     profiling:
       enabled: false
-    # Configures the Kubernetes Processor to add Kubernetes metadata.
+    # -- Configures the Kubernetes Processor to add Kubernetes metadata.
     # Adds the k8s_attributes processor to all the pipelines
     # and adds the necessary rules to ClusteRole.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-attributes-processor for details on the receiver.
     kubernetesAttributes:
       enabled: false
-      # When enabled the processor will extra all labels for an associated pod and add them as resource attributes.
+      # -- When enabled the processor will extra all labels for an associated pod and add them as resource attributes.
       # The label's exact name will be the key.
       extractAllPodLabels: false
-      # When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
+      # -- When enabled the processor will extra all annotations for an associated pod and add them as resource attributes.
       # The annotation's exact name will be the key.
       extractAllPodAnnotations: false
-    # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
+    # -- Configures the collector to collect node, pod, and container metrics from the API server on a kubelet..
     # Adds the kubelet_stats receiver to the metrics pipeline
     # and adds the necessary rules to ClusteRole.
     # Best used with mode = daemonset.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
     kubeletMetrics:
       enabled: false
-    # Configures the collector to collect kubernetes events.
+    # -- Configures the collector to collect kubernetes events.
     # Adds the k8s_objects receiver to the logs pipeline
     # and collects kubernetes events by default.
     # Best used with mode = deployment or statefulset.
@@ -535,43 +535,44 @@ defaultCRConfig:
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
     kubernetesEvents:
       enabled: false
-    # Configures the collector to collect Kubernetes objects as logs using the k8s_objects receiver in pull mode (default interval: 1h).
+    # -- Configures the collector to collect Kubernetes objects as logs using the k8s_objects receiver in pull mode (default interval: 1h).
     # Adds the k8s_objects receiver to the logs pipeline and adds the necessary rules to ClusterRole.
     # Compatible with kubernetesEvents preset — object lists are merged when both are enabled.
     # Best used with mode = deployment or statefulset.
     # MUST be used by a collector with a single replica.
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
+    # @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
     kubernetesObjects:
       enabled: false
       # When enabled, disables leader election for collecting Kubernetes objects.
       # disableLeaderElection: false
-      # When enabled, watch mode is added alongside pull to stream real-time changes.
+      # -- When enabled, watch mode is added alongside pull to stream real-time changes.
       watch: false
-      # Core Kubernetes workload resources: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
+      # -- Core Kubernetes workload resources: pods, nodes, namespaces, services, serviceaccounts, deployments, replicasets, daemonsets, statefulsets, jobs, cronjobs
       core:
         enabled: true
-      # RBAC resources: roles, rolebindings, clusterroles, clusterrolebindings
+      # -- RBAC resources: roles, rolebindings, clusterroles, clusterrolebindings
       rbac:
         enabled: true
-      # Storage resources: storageclasses, persistentvolumes, persistentvolumeclaims
+      # -- Storage resources: storageclasses, persistentvolumes, persistentvolumeclaims
       storage:
         enabled: true
-      # Networking resources: ingresses, networkpolicies
+      # -- Networking resources: ingresses, networkpolicies
       networking:
         enabled: true
-      # Autoscaling resources: horizontalpodautoscalers
+      # -- Autoscaling resources: horizontalpodautoscalers
       autoscaling:
         enabled: true
-        # VPA resources: verticalpodautoscalers (requires VPA CRD to be installed)
+        # -- VPA resources: verticalpodautoscalers (requires VPA CRD to be installed)
         vpa:
           enabled: false
-      # Policy resources: poddisruptionbudgets
+      # -- Policy resources: poddisruptionbudgets
       policy:
         enabled: true
-      # API extensions resources: customresourcedefinitions
+      # -- API extensions resources: customresourcedefinitions
       apiExtensions:
         enabled: true
-    # Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
+    # -- Configures the Kubernetes Cluster Receiver to collect cluster-level metrics.
     # Adds the k8s_cluster receiver to the metrics pipeline
     # and adds the necessary rules to ClusteRole.
     # Best used with mode = deployment or statefulset.
@@ -579,7 +580,7 @@ defaultCRConfig:
     # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-cluster-receiver for details on the receiver.
     clusterMetrics:
       enabled: false
-    # Configures the collector to collect logs and metrics from pods with specific annotations.
+    # -- Configures the collector to collect logs and metrics from pods with specific annotations.
     # This preset can not be used together with the `logsCollection` preset.
     # Adds the receiver_creator receiver to the logs and metrics pipelines
     # and adds the necessary rules to ClusterRole.
@@ -607,17 +608,17 @@ defaultCRConfig:
     # prometheus-node-exporter subchart is installed.
     #
     prometheus:
-      # Scrapes a Prometheus Node Exporter on the local node via a static_config targeting
+      # -- Scrapes a Prometheus Node Exporter on the local node via a static_config targeting
       # `${OTEL_K8S_NODE_IP}:<port>`. Adds a `prometheus/node_exporter` receiver.
       nodeExporter:
         enabled: false
-        # Port where the Prometheus Node Exporter is listening on each node.
+        # -- Port where the Prometheus Node Exporter is listening on each node.
         port: 9100
-        # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+        # -- Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
         scrapeInterval: 30s
-        # Scrape timeout, as a duration string accepted by Prometheus.
+        # -- Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
-      # Scrapes cAdvisor metrics from the local node's kubelet via a static_config targeting
+      # -- Scrapes cAdvisor metrics from the local node's kubelet via a static_config targeting
       # `https://${OTEL_K8S_NODE_IP}:<port>/metrics/cadvisor` with bearer-token auth from the
       # collector's service account. Adds a `prometheus/cadvisor` receiver.
       #
@@ -625,13 +626,13 @@ defaultCRConfig:
       # (container_cpu_load_average_10s, container_spec_*, container_fs_io_current, ...).
       cadvisor:
         enabled: false
-        # Port where the kubelet HTTPS endpoint serves /metrics/cadvisor.
+        # -- Port where the kubelet HTTPS endpoint serves /metrics/cadvisor.
         port: 10250
-        # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+        # -- Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
         scrapeInterval: 30s
-        # Scrape timeout, as a duration string accepted by Prometheus.
+        # -- Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
-      # Scrapes pods on the local node carrying classic Prometheus annotations:
+      # -- Scrapes pods on the local node carrying classic Prometheus annotations:
       # prometheus.io/scrape=true (required), prometheus.io/port, prometheus.io/path,
       # prometheus.io/scheme. Adds a `prometheus/pod_annotations` receiver that uses
       # Kubernetes pod service discovery + Prometheus relabel rules.
@@ -643,9 +644,9 @@ defaultCRConfig:
       # built on those labels keep working when migrating from `scrape_configs_file`.
       podAnnotations:
         enabled: false
-        # Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
+        # -- Scrape interval, as a duration string accepted by Prometheus (e.g. "30s", "1m").
         scrapeInterval: 30s
-        # Scrape timeout, as a duration string accepted by Prometheus.
+        # -- Scrape timeout, as a duration string accepted by Prometheus.
         scrapeTimeout: 10s
     resourceDetection:
       env:
@@ -684,7 +685,7 @@ collectors:
     suffix: daemon
     mode: daemonset
     enabled: true
-    # A scrape config file loaded into the daemon collector's prometheus receiver. The
+    # -- A scrape config file loaded into the daemon collector's prometheus receiver. The
     # default `daemon_scrape_configs.yaml` scrapes node-exporter on the same host, kubelet
     # cAdvisor metrics, and pods on the same node carrying `prometheus.io/scrape=true`.
     #
@@ -714,6 +715,8 @@ collectors:
           enabled: true
         k8s_api:
           enabled: true
+    # -- Configuration options for the collector, layered on top of `defaultCRConfig.config`.
+    # @default -- OTLP receiver, `resourcedetection/env`, `resource/hostname` and `batch` processors, `debug` exporter for traces, metrics and logs, see [values.yaml](./values.yaml)
     config:
       receivers:
         otlp:
@@ -770,40 +773,40 @@ collectors:
 
 # Cluster role configuration
 clusterRole:
-  # Whether the cluster role is enabled or not
+  # -- Whether the cluster role is enabled or not
   enabled: true
 
-  # Annotations for the cluster role
+  # -- Annotations for the cluster role
   annotations: {}
 
-  # Rules for the cluster role
+  # -- Rules for the cluster role
   rules: []
 
 # Instrumentation configuration
 instrumentation:
-  # Whether instrumentation is enabled or not
+  # -- Whether instrumentation is enabled or not
   enabled: false
   labels: {}
   annotations: {}
 
   # Exporter configuration
   exporter:
-    # This is the default collector's service
+    # -- This is the default collector's service
     # Upon creation of a tracing collector, edit this endpoint.
     endpoint: http://collector-collector:4317
 
-  # Resource configuration
+  # -- Resource configuration
   resource:
     resourceAttributes: {}
     # environment: dev
     addK8sUIDAttributes: true
 
-  # Default auto-instrumentation behavior
+  # -- Default auto-instrumentation behavior
   # See https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/instrumentations.md
   defaults: {}
   # useLabelsForResourceAttributes: true
 
-  # Propagators configuration
+  # -- Propagators configuration
   propagators:
     - tracecontext
     - baggage
@@ -813,19 +816,19 @@ instrumentation:
     - xray
     - ottrace
 
-  # Sampler configuration
+  # -- Sampler configuration
   sampler: {}
   # type: parentbased_always_on
   # argument: "0.25"
 
-  # Environment variables for instrumentation
+  # -- Environment variables for instrumentation
   env: []
   # - name: ENV_VAR1
   #   value: value1
   # - name: ENV_VAR2
   #   value: value2
 
-  # Java agent configuration
+  # -- Java agent configuration
   java: {}
   # image: myregistry/java-agent:latest
   # volumeLimitSize: 200Mi
@@ -840,7 +843,7 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-  # NodeJS agent configuration
+  # -- NodeJS agent configuration
   nodejs: {}
   # image: myregistry/nodejs-agent:latest
   # volumeLimitSize: 200Mi
@@ -855,7 +858,7 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-  # Python agent configuration
+  # -- Python agent configuration
   python: {}
   # image: myregistry/python-agent:latest
   # volumeLimitSize: 200Mi
@@ -875,7 +878,7 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-  # .NET agent configuration
+  # -- .NET agent configuration
   dotnet: {}
   # image: myregistry/dotnet-agent:latest
   # volumeLimitSize: 200Mi
@@ -895,7 +898,7 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-  # Go agent configuration
+  # -- Go agent configuration
   go: {}
   # image: myregistry/go-agent:latest
   # volumeLimitSize: 200Mi
@@ -915,7 +918,7 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-  # Apache HTTPd agent configuration
+  # -- Apache HTTPd agent configuration
   apacheHttpd: {}
   # image: myregistry/apache-agent:latest
   # volumeLimitSize: 200Mi
@@ -935,7 +938,7 @@ instrumentation:
   #     memory: "128Mi"
   #     cpu: "500m"
 
-  # NGINX agent configuration
+  # -- NGINX agent configuration
   nginx: {}
   # image: myregistry/nginx-agent:latest
   # volumeLimitSize: 200Mi
@@ -964,28 +967,29 @@ instrumentation:
 # You can learn more about the Bridge's design here:
 # https://docs.google.com/document/d/1M8VLNe_sv1MIfu5bUR5OV_vrMBnAI7IJN-7-IAr37JY
 opAMPBridge:
-  # Whether OpAMP bridge is enabled or not
+  # -- Whether OpAMP bridge is enabled or not
   enabled: false
 
-  # Adds `opentelemetry.io/opamp-reporting: true` to all collectors
+  # -- Adds `opentelemetry.io/opamp-reporting: true` to all collectors
   addReportingLabel: true
-  # Adds `opentelemetry.io/opamp-managed: true` to all collectors
+  # -- Adds `opentelemetry.io/opamp-managed: true` to all collectors
   addManagedLabel: false
 
-  # Endpoint for OpAMP server
+  # -- Endpoint for OpAMP server
   endpoint: http://opamp-server:8080
 
-  # Description for additional information like non_identifying_attributes
+  # -- Description for additional information like non_identifying_attributes
   description: {}
 
-  # Headers configuration for OpAMP bridge
+  # -- Headers configuration for OpAMP bridge
   headers: {}
   # Authorization: Bearer your_access_token
   # Custom-Header: Custom-Value
 
-  # Capabilities of OpAMP bridge
+  # -- Capabilities of OpAMP bridge
   # You can learn more about OpAMP's capabilities here:
   # https://github.com/open-telemetry/opamp-spec/blob/main/specification.md#agenttoservercapabilities
+  # @default -- all capabilities `true`, see [values.yaml](./values.yaml)
   capabilities:
     AcceptsOpAMPConnectionSettings: true
     AcceptsOtherConnectionSettings: true
@@ -999,7 +1003,7 @@ opAMPBridge:
     ReportsRemoteConfig: true
     ReportsStatus: true
 
-  # Components allowed for OpAMP bridge
+  # -- Components allowed for OpAMP bridge
   componentsAllowed: {}
   # receiver:
   #   - otlp
@@ -1010,7 +1014,7 @@ opAMPBridge:
   # exporter:
   #   - prometheusremotewrite
 
-  # Resources configuration for OpAMP bridge
+  # -- Resources configuration for OpAMP bridge
   resources:
     limits:
       cpu: "250m"
@@ -1019,75 +1023,75 @@ opAMPBridge:
       cpu: "250m"
       memory: "256Mi"
 
-  # Security context for OpAMP bridge
+  # -- Security context for OpAMP bridge
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
 
-  # Pod security context for OpAMP bridge
+  # -- Pod security context for OpAMP bridge
   podSecurityContext:
     fsGroup: 1000
 
-  # Pod annotations for OpAMP bridge
+  # -- Pod annotations for OpAMP bridge
   podAnnotations: {}
   # prometheus.io/scrape: "true"
   # prometheus.io/port: "8080"
 
-  # Service account for OpAMP bridge
+  # -- Service account for OpAMP bridge
   serviceAccount: ""
 
   # Image for OpAMP bridge
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/operator-opamp-bridge
     pullPolicy: IfNotPresent
-    # By default, the version set for the bridge will match the version of the operator being run.
+    # -- By default, the version set for the bridge will match the version of the operator being run.
     tag: ""
-    # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+    # -- When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
     digest: ""
 
-  # Upgrade strategy for OpAMP bridge
+  # -- Upgrade strategy for OpAMP bridge
   upgradeStrategy: automatic
 
-  # Volume mounts for OpAMP bridge
+  # -- Volume mounts for OpAMP bridge
   volumeMounts: []
   # - name: data
   #   mountPath: /data
 
-  # Ports configuration for OpAMP bridge
+  # -- Ports configuration for OpAMP bridge
   ports: []
   # - name: http
   #   port: 8080
   #   protocol: TCP
 
-  # Environment variables for OpAMP bridge
+  # -- Environment variables for OpAMP bridge
   env: []
   # - name: ENVIRONMENT
   #   value: production
 
-  # Environment variables from config map for OpAMP bridge
+  # -- Environment variables from config map for OpAMP bridge
   envFrom: []
   # - configMapRef:
   #     name: opamp-config
 
-  # Tolerations for OpAMP bridge
+  # -- Tolerations for OpAMP bridge
   tolerations: []
   # - key: "opamp"
   #   operator: "Equal"
   #   value: "true"
   #   effect: "NoSchedule"
 
-  # Volumes for OpAMP bridge
+  # -- Volumes for OpAMP bridge
   volumes: []
   # - name: data
   #   emptyDir: {}
 
-  # Whether to use host network for OpAMP bridge
+  # -- Whether to use host network for OpAMP bridge
   hostNetwork: false
 
-  # Priority class name for OpAMP bridge
+  # -- Priority class name for OpAMP bridge
   priorityClassName: ""
 
-  # Affinity configuration for OpAMP bridge
+  # -- Affinity configuration for OpAMP bridge
   affinity: {}
   # nodeAffinity:
   #   requiredDuringSchedulingIgnoredDuringExecution:
@@ -1098,7 +1102,7 @@ opAMPBridge:
   #             values:
   #               - "true"
 
-  # Topology spread constraints for OpAMP bridge
+  # -- Topology spread constraints for OpAMP bridge
   topologySpreadConstraints: []
   # - maxSkew: 1
   #   topologyKey: "kubernetes.io/hostname"
@@ -1111,13 +1115,13 @@ opAMPBridge:
   # In order to function the bridge is given its default role to
   # list and get pods and opentelemetry collectors
   clusterRole:
-    # Whether the bridge cluster role is enabled or not
+    # -- Whether the bridge cluster role is enabled or not
     enabled: true
 
-    # Annotations for the bridge cluster role
+    # -- Annotations for the bridge cluster role
     annotations: {}
 
-    # Rules for the bridge cluster role
+    # -- Rules for the bridge cluster role
     rules: []
 
 ############################
@@ -1127,14 +1131,14 @@ opAMPBridge:
 # This configuration sections allows for a direct replacement of the kube-prometheus-stack
 # chart where the collector scrapes the same metrics as the default prometheus installation.
 
-## Flag to disable all the kubernetes component scrapers
-##
+# -- Flag to disable all the kubernetes component scrapers
+#
 kubernetesServiceMonitors:
   enabled: false
   ignoreNamespaceSelectors: false
 
-## Component scraping the kube api server
-##
+# -- Component scraping the kube api server
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeApiServer:
   enabled: false
   tlsConfig:
@@ -1207,9 +1211,10 @@ kubeApiServer:
     additionalLabels: {}
     #  foo: bar
 
-## Component scraping the kubelet and kubelet-hosted cAdvisor
-## the configuration for this is currently only in kubelet_scrape_configs.yaml
-## This is because kubelet doesn't have a service and can only be scraped manually.
+# -- Component scraping the kubelet and kubelet-hosted cAdvisor
+# the configuration for this is currently only in kubelet_scrape_configs.yaml
+# This is because kubelet doesn't have a service and can only be scraped manually.
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubelet:
   enabled: false
   namespace: kube-system
@@ -1240,8 +1245,8 @@ kubelet:
     ##
     probes: true
 
-## Component scraping the kube controller manager
-##
+# -- Component scraping the kube controller manager
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeControllerManager:
   enabled: false
 
@@ -1339,8 +1344,8 @@ kubeControllerManager:
     additionalLabels: {}
     #  foo: bar
 
-## Component scraping coreDns. Use either this or kubeDns
-##
+# -- Component scraping coreDns. Use either this or kubeDns
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 coreDns:
   enabled: false
   endpoints: []
@@ -1413,8 +1418,8 @@ coreDns:
     additionalLabels: {}
     #  foo: bar
 
-## Component scraping kubeDns. Use either this or coreDns
-##
+# -- Component scraping kubeDns. Use either this or coreDns
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeDns:
   enabled: false
   service:
@@ -1503,8 +1508,8 @@ kubeDns:
     additionalLabels: {}
     #  foo: bar
 
-## Component scraping etcd
-##
+# -- Component scraping etcd
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeEtcd:
   enabled: false
 
@@ -1604,8 +1609,8 @@ kubeEtcd:
     additionalLabels: {}
     #  foo: bar
 
-## Component scraping kube scheduler
-##
+# -- Component scraping kube scheduler
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeScheduler:
   enabled: false
 
@@ -1702,8 +1707,8 @@ kubeScheduler:
     additionalLabels: {}
     #  foo: bar
 
-## Component scraping kube proxy
-##
+# -- Component scraping kube proxy
+# @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeProxy:
   enabled: false
 
@@ -1786,15 +1791,16 @@ kubeProxy:
     additionalLabels: {}
     #  foo: bar
 
-## Controls whether the kube-state-metrics chart should be created.
-## This block matches the configuration for the kube-prometheus-stack chart for compatibility.
+# -- Controls whether the kube-state-metrics chart should be created.
+# This block matches the configuration for the kube-prometheus-stack chart for compatibility.
 kubeStateMetrics:
   enabled: false
 
-## Configuration for kube-state-metrics subchart
-## The Kube-State-Metrics agent collects cluster-level metrics
-## Read more here about the chart:
-## https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics
+# -- Configuration for kube-state-metrics subchart
+# The Kube-State-Metrics agent collects cluster-level metrics
+# Read more here about the chart:
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics
+# @default -- subchart values, see [values.yaml](./values.yaml)
 kube-state-metrics:
   namespaceOverride: ""
   rbac:
@@ -1862,15 +1868,16 @@ kube-state-metrics:
   selfMonitor:
     enabled: false
 
-## Controls whether the prometheus-node-exporter chart should be created.
-## This block matches the configuration for the kube-prometheus-stack chart for compatibility.
+# -- Controls whether the prometheus-node-exporter chart should be created.
+# This block matches the configuration for the kube-prometheus-stack chart for compatibility.
 nodeExporter:
   enabled: false
 
-## Configuration for prometheus-node-exporter subchart
-## This will install a daemonset that pulls metric data from each node
-## Read more here about the chart:
-## https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
+# -- Configuration for prometheus-node-exporter subchart
+# This will install a daemonset that pulls metric data from each node
+# Read more here about the chart:
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
+# @default -- subchart values, see [values.yaml](./values.yaml)
 prometheus-node-exporter:
   namespaceOverride: ""
   podLabels:
@@ -1947,8 +1954,8 @@ prometheus-node-exporter:
     ##
     pspEnabled: false
 
-## Array of extra manifests to deploy
-## This will deploy arbitrary manifests as part of the helm relase
+# -- Array of extra manifests to deploy
+# This will deploy arbitrary manifests as part of the helm relase
 extraObjects: []
 # - apiVersion: secrets-store.csi.x-k8s.io/v1
 #   kind: SecretProviderClass
