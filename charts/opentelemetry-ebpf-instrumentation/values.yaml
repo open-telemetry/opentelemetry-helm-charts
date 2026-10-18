@@ -65,8 +65,8 @@ podSecurityContext: {}
 # -- If set to false, deploys an unprivileged / less privileged setup.
 privileged: true
 
-# -- Enables context propagation support.
 contextPropagation:
+  # -- Enables context propagation support.
   enabled: true
 
 # -- Extra capabilities for unprivileged / less privileged setup.
@@ -85,6 +85,7 @@ securityContext:
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Priority class name for the Opentelemetry eBPF Instrumentation Pods.
 priorityClassName: ""
   # system-node-critical
 # system-cluster-critical
@@ -136,6 +137,7 @@ service:
     # -- NodePort for internal metrics when type is NodePort. Requires service.type: NodePort
     nodePort: null
 
+# -- Resource requests and limits for the Opentelemetry eBPF Instrumentation container.
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -198,10 +200,10 @@ config:
   skipConfigMapCheck: false
   # -- set to true to create a ConfigMap from the effective OBI configuration
   create: true
-  ## -- Provide the name of the external configmap containing the Opentelemetry eBPF Instrumentation configuration.
   ## To create configmap from configuration file, user can use the below command. Note: The name 'ebpf-instrument-config.yaml' is important.
   ## `kubectl create cm --from-file=ebpf-instrument-config.yaml=<name-of-config-file> -n <namespace>`
-  ## If empty, the chart-managed ConfigMap is used.
+  # -- Provide the name of the external configmap containing the Opentelemetry eBPF Instrumentation configuration.
+  # If empty, the chart-managed ConfigMap is used.
   name: ""
   # -- OpenTelemetry eBPF Instrumentation configuration overrides.
   # An empty map uses the chart's Config v2 defaults. Config v2 is detected by
@@ -228,8 +230,8 @@ envValueFrom: {}
 # Accepted values are "network" or "application".
 preset: application
 
-# -- Enable creation of ServiceMonitor for scraping of prometheus HTTP endpoint
 serviceMonitor:
+  # -- Enable creation of ServiceMonitor for scraping of prometheus HTTP endpoint
   enabled: false
   # -- Add custom labels to the ServiceMonitor resource
   additionalLabels: {}
@@ -252,6 +254,7 @@ serviceMonitor:
   jobLabel: ""
 
 # -- Options to deploy the Kubernetes metadata cache as a separate service
+# @default -- disabled (`replicas: 0`), see [values.yaml](./values.yaml)
 k8sCache:
   # -- Number of replicas for the Kubernetes metadata cache service. 0 disables the service.
   replicas: 0
@@ -270,6 +273,7 @@ k8sCache:
     #    secretKeyRef:
   #      name: secret-name
   #      key: value_key
+  # -- Resource requests and limits for the Kubernetes metadata cache container.
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -304,9 +308,11 @@ k8sCache:
     # -- Service labels.
     labels: {}
   internalMetrics:
+    # -- Prometheus internal metrics port of the Kubernetes metadata cache.
     # 0: disabled by default
     port: 0
     path: /metrics
+    # -- Name of the internal metrics container port of the Kubernetes metadata cache.
     portName: metrics
     #  prometheus:
     #     port: 6060
