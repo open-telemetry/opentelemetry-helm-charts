@@ -1696,6 +1696,16 @@
                   }
                 }
               }
+            },
+            "profiling": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Specifies whether the collector should collect profiling data.",
+                  "type": "boolean"
+                }
+              }
             }
           }
         },
@@ -1734,8 +1744,25 @@
           "type": "string",
           "default": ""
         },
+        "resourceAttributes": {
+          "description": "Per-collector resource attributes. Merged over the top-level `resourceAttributes` map (per-collector keys win on conflict), rendered as a `resource/global` processor appended to every pipeline, and added to the collector's `OTEL_RESOURCE_ATTRIBUTES` env var.",
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
         "resources": {
           "$ref": "#/$defs/ResourceRequirements"
+        },
+        "resizePolicy": {
+          "items": {
+            "$ref": "#/$defs/ContainerResizePolicy"
+          },
+          "type": "array"
         },
         "nodeSelector": {
           "additionalProperties": {
@@ -1901,6 +1928,15 @@
         "priorityClassName": {
           "type": "string"
         },
+        "trafficDistribution": {
+          "type": "string",
+          "enum": [
+            "PreferClose",
+            "PreferSameZone",
+            "PreferSameNode",
+            ""
+          ]
+        },
         "affinity": {
           "$ref": "#/$defs/Affinity"
         },
@@ -1948,6 +1984,10 @@
         },
         "deploymentUpdateStrategy": {
           "$ref": "#/$defs/DeploymentUpdateStrategy"
+        },
+        "inheritDefaultCRConfig": {
+          "type": "boolean",
+          "description": "When false, the collector does not inherit the shared config, presets, or scrape_configs_file from defaultCRConfig, and targetAllocator. It defines its own config and only the presets it explicitly enables. Other defaults (env, resources, image, etc.) still apply and can be overridden. Required for collectors running a dedicated distribution whose binary does not include the components declared in the shared defaultCRConfig.config."
         }
       },
       "additionalProperties": true,
@@ -3366,6 +3406,9 @@
         "resource": {
           "$ref": "#/$defs/Resource"
         },
+        "defaults": {
+          "type": "object"
+        },
         "propagators": {
           "items": {
             "type": "string"
@@ -4504,6 +4547,9 @@
     "namespaceOverride": {
       "type": "string"
     },
+    "nameOverride": {
+      "type": "string"
+    },
     "defaultCRConfig": {
       "$ref": "#/$defs/OpenTelemetryCollectorSpec"
     },
@@ -4517,6 +4563,17 @@
     },
     "clusterName": {
       "type": "string"
+    },
+    "resourceAttributes": {
+      "description": "Default resource attributes merged into every collector pipeline (as a `resource/global` processor with `upsert` action), into each collector's and the OpAMP Bridge's `OTEL_RESOURCE_ATTRIBUTES` env var, and into the Instrumentation CR's `resource.resourceAttributes`. A `k8s.cluster.name` set here takes precedence over `clusterName`.",
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      }
     },
     "rewriteDeprecatedComponentNames": {
       "description": "When true, deprecated Collector component names are rewritten to their current lower_snake_case names in user-provided and preset-generated configuration.",

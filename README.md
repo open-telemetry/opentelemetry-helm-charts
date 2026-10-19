@@ -86,8 +86,15 @@ For more information about the maintainer role, see the [community repository](h
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
 - [Juliano Costa](https://github.com/julianocosta89), Datadog
 - [Povilas](https://github.com/povilasv), Coralogix
+- [Cyrille Le Clerc](https://github.com/cyrille-leclerc), Datadog
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
+
+### Triagers
+
+- [Marc Schäfer](https://github.com/marcschaeferger)
+
+For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
 
 ### Emeritus
 

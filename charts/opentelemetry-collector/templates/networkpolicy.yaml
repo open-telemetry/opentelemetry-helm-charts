@@ -27,7 +27,7 @@ spec:
         {{- end }}
       {{- if .Values.networkPolicy.allowIngressFrom }}
       from:
-        {{- toYaml .Values.networkPolicy.allowIngressFrom | nindent 8 }}
+        {{- tpl (toYaml .Values.networkPolicy.allowIngressFrom) . | nindent 8 }}
       {{- end }}
     {{- if .Values.networkPolicy.extraIngressRules }}
     {{- toYaml .Values.networkPolicy.extraIngressRules | nindent 4 }}
