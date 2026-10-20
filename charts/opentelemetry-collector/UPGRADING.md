@@ -10,6 +10,9 @@ The collector's internal telemetry resource attributes moved out of `config.serv
 
 No action is required. If you override `config.service.telemetry.resource` as a map, those entries are still picked up and converted, and they continue to win over the defaults. Values are rendered as strings, so a numeric-looking attribute such as an all-digits node name no longer fails to start the collector.
 
+> [!WARNING]
+> Setting resource attributes as a map under `config.service.telemetry.resource` is deprecated and will be removed in a future chart release. Move them to `telemetry.resourceAttributes.extra`.
+
 To add an attribute without re-declaring the defaults:
 
 ```yaml
