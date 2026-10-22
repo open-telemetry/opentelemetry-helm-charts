@@ -117,16 +117,18 @@ Common labels
 */}}
 {{- define "opentelemetry-kube-stack.labels" -}}
 {{- $labels := dict -}}
-{{- with .Values.commonLabels -}}
-{{- $labels = mustMergeOverwrite $labels . -}}
-{{- end -}}
+{{- range $key, $value := .Values.commonLabels }}
+{{- $_ := set $labels $key ($value | toString) }}
+{{- end }}
 {{- $_ := set $labels "helm.sh/chart" (include "opentelemetry-kube-stack.chart" .) -}}
 {{- if .Chart.AppVersion -}}
-{{- $_ := set $labels "app.kubernetes.io/version" .Chart.AppVersion -}}
+{{- $_ := set $labels "app.kubernetes.io/version" (.Chart.AppVersion | toString) -}}
 {{- end -}}
-{{- $_ := set $labels "app.kubernetes.io/managed-by" .Release.Service -}}
-{{- $_ := set $labels "release" .Release.Name -}}
-{{- toYaml $labels -}}
+{{- $_ := set $labels "app.kubernetes.io/managed-by" (.Release.Service | toString) -}}
+{{- $_ := set $labels "release" (.Release.Name | toString) -}}
+{{- range $key := keys $labels | sortAlpha }}
+{{ $key }}: {{ get $labels $key | quote }}
+{{- end }}
 {{- end }}
 
 {{/*
