@@ -7,8 +7,8 @@ metadata:
   labels:
     
     app.kubernetes.io/managed-by: "Helm"
-    app.kubernetes.io/version: "0.159.0"
-    helm.sh/chart: "opentelemetry-kube-stack-0.24.5"
+    app.kubernetes.io/version: "0.161.0"
+    helm.sh/chart: "opentelemetry-kube-stack-0.25.2"
     release: "example"
 rules:
 - apiGroups: [""]
@@ -139,14 +139,40 @@ rules:
 ---
 # Source: opentelemetry-kube-stack/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: example-bridge
+  labels:
+    
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/version: "0.161.0"
+    helm.sh/chart: "opentelemetry-kube-stack-0.25.2"
+    release: "example"
+rules:
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opentelemetrycollectors
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - 'list'
+      - 'get'
+---
+# Source: opentelemetry-kube-stack/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: example-collector
   labels:
     
     app.kubernetes.io/managed-by: "Helm"
-    app.kubernetes.io/version: "0.159.0"
-    helm.sh/chart: "opentelemetry-kube-stack-0.24.5"
+    app.kubernetes.io/version: "0.161.0"
+    helm.sh/chart: "opentelemetry-kube-stack-0.25.2"
     release: "example"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -166,8 +192,8 @@ metadata:
   labels:
     
     app.kubernetes.io/managed-by: "Helm"
-    app.kubernetes.io/version: "0.159.0"
-    helm.sh/chart: "opentelemetry-kube-stack-0.24.5"
+    app.kubernetes.io/version: "0.161.0"
+    helm.sh/chart: "opentelemetry-kube-stack-0.25.2"
     release: "example"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -178,3 +204,24 @@ subjects:
   # quirk of the Operator
   name: "example-daemon-collector"
   namespace: default
+---
+# Source: opentelemetry-kube-stack/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: example
+  labels:
+    
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/version: "0.161.0"
+    helm.sh/chart: "opentelemetry-kube-stack-0.25.2"
+    release: "example"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "example-bridge"
+subjects:
+  - kind: ServiceAccount
+    # quirk of the Operator
+    name: "example-opamp-bridge"
+    namespace: "default"

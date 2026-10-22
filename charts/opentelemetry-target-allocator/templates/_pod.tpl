@@ -1,6 +1,9 @@
 {{- define "helper.pod" -}}
 serviceAccountName: {{ template "helper.targetAllocatorServiceAccountName" . }}
 automountServiceAccountToken: false
+{{- with .Values.priorityClassName }}
+priorityClassName: {{ . | quote }}
+{{- end }}
 {{- with .Values.nodeSelector }}
 nodeSelector:
   {{- toYaml . | nindent 2 }}

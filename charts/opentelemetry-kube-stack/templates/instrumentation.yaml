@@ -15,6 +15,10 @@ metadata:
     {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
   {{- end }}
 spec:
+  {{- with .Values.instrumentation.defaults }}
+  defaults:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   exporter:
     endpoint: {{ .Values.instrumentation.exporter.endpoint }}
   propagators:
@@ -58,7 +62,7 @@ spec:
     {{- toYaml . | nindent 4}}
   {{- end }}
   {{- with .Values.instrumentation.apacheHttpd }}
-  apacheHtpd:
+  apacheHttpd:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.instrumentation.nginx }}

@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=./values.schema.json
 default:
-  # List of environment variables applied to all components
+  # -- List of environment variables applied to all components
+  # @default -- Array of several OpenTelemetry environment variables, see [values.yaml](./values.yaml)
   env:
     - name: OTEL_SERVICE_NAME
       valueFrom:
@@ -15,38 +16,50 @@ default:
       value: explicit_bucket_histogram
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: service.version={{ .Chart.AppVersion }}
+  # -- Used to override individual environment variables without re-specifying the entire array.
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
   #    value: "someConstantValue"
   image:
+    # -- Demo components image name
     repository: ghcr.io/open-telemetry/demo
-    # Overrides the image tag whose default is the chart appVersion.
+    # -- Overrides the image tag whose default is the chart appVersion.
     # The service's name will be applied to the end of this value.
     tag: ""
+    # -- Demo components image pull policy
     pullPolicy: IfNotPresent
+    # -- Demo components image pull secrets
     pullSecrets: []
-  # Default # of replicas for all components
+  # -- Default # of replicas for all components
   replicas: 1
-  # default revisionHistoryLimit for all components (number of old ReplicaSets to retain)
+  # -- default revisionHistoryLimit for all components (number of old ReplicaSets to retain)
   revisionHistoryLimit: 10
-  # Default schedulingRules for all components
+  # -- Default schedulingRules for all components
   schedulingRules:
+    # -- Node labels for pod assignment
     nodeSelector: {}
+    # -- Map of node/pod affinities
     affinity: {}
+    # -- Tolerations for pod assignment
     tolerations: []
-  # Default securityContext for all components
+  # -- Default securityContext for all components
   securityContext: {}
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # -- The name of the service account to use.
+  # If set, this name is used. If not set and create is true, the `otel-demo.name` template is used,
+  # which is the release name truncated to 63 characters. If not set and create is false, `default` is used.
   name: ""
 
+# -- Used to configure the individual components (microservices) for the demo.
+# All components will be defined within `components.[NAME]` where `[NAME]` is the name of the demo component,
+# see [Component parameters](#component-parameters).
+# @default -- One entry per demo component, see [values.yaml](./values.yaml)
 components:
   ## Demo Components are named objects (services) with several properties
   # demoService:
@@ -172,6 +185,7 @@ components:
   #      runAsUser: 65534
 
   accounting:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -199,6 +213,7 @@ components:
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
 
   ad:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -231,6 +246,7 @@ components:
         memory: 300Mi
 
   agent:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -291,6 +307,7 @@ components:
           name: agent-fixtures
 
   cart:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -326,6 +343,7 @@ components:
         command: ["sh", "-c", "until nc -z -v -w30 valkey-cart 6379; do echo waiting for valkey-cart; sleep 2; done;"]
 
   chatbot:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -359,6 +377,7 @@ components:
         memory: 500Mi
 
   checkout:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -413,6 +432,7 @@ components:
         mountPath: /tmp
 
   currency:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -436,6 +456,7 @@ components:
         memory: 20Mi
 
   email:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -461,6 +482,7 @@ components:
         memory: 100Mi
 
   fraud-detection:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -494,6 +516,7 @@ components:
         command: ["sh", "-c", "until nc -z -v -w30 kafka 9092; do echo waiting for kafka; sleep 2; done;"]
 
   frontend:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -547,6 +570,7 @@ components:
       runAsNonRoot: true
 
   frontend-proxy:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -627,6 +651,7 @@ components:
       runAsNonRoot: true
 
   image-provider:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -654,6 +679,7 @@ components:
         memory: 50Mi
 
   load-generator:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -703,6 +729,7 @@ components:
         memory: 1500Mi
 
   mcp:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -730,6 +757,7 @@ components:
         memory: 500Mi
 
   payment:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -761,6 +789,7 @@ components:
       runAsNonRoot: true
 
   product-catalog:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -840,6 +869,7 @@ components:
         mountPath: /tmp
 
   quote:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -869,6 +899,7 @@ components:
       runAsNonRoot: true
 
   recommendation:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -900,6 +931,7 @@ components:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
 
   shipping:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -938,6 +970,7 @@ components:
         command: ["sh", "-c", "until nc -z -v -w30 flagd 8013; do echo waiting for flagd; sleep 2; done;"]
 
   flagd:
+    # -- Is this component enabled
     enabled: true
     imageOverride:
       repository: "ghcr.io/open-feature/flagd"
@@ -1015,6 +1048,7 @@ components:
           name: flagd-config
 
   kafka:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -1052,6 +1086,7 @@ components:
       runAsNonRoot: true
 
   astronomy-db:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: false
@@ -1104,6 +1139,7 @@ components:
         memory: 100Mi
 
   valkey-cart:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: false
@@ -1130,6 +1166,7 @@ components:
       runAsNonRoot: true
 
   telemetry-docs:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: true
@@ -1153,6 +1190,7 @@ components:
       runAsNonRoot: true
 
   opamp-server:
+    # -- Is this component enabled
     enabled: true
     useDefault:
       env: false
@@ -1170,10 +1208,12 @@ components:
       - "/opamp-server"
       - "-no-tls"
 
-  # Profiling support (disabled by default). To enable: set firepit.enabled
+  # -- Profiling support (disabled by default). To enable: set firepit.enabled
   # and the top-level otel-ebpf-profiler.enabled (a separate collector
   # instance, see below) to true
+  # @default -- Component definition, see [values.yaml](./values.yaml)
   firepit:
+    # -- Is this component enabled
     enabled: false
     useDefault:
       env: false
@@ -1196,7 +1236,13 @@ components:
       limits:
         memory: 100Mi
 
+# -- Parameters for the OpenTelemetry Collector sub-chart.
+# This chart will override some of the sub-chart parameters by default, see the
+# [opentelemetry-collector chart](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector)
+# for all available parameters.
+# @default -- Demo-specific overrides, see [values.yaml](./values.yaml)
 opentelemetry-collector:
+  # -- Install the OpenTelemetry collector
   enabled: true
   image:
     repository: "otel/opentelemetry-collector-contrib"
@@ -1416,10 +1462,12 @@ opentelemetry-collector:
                     endpoint: http://otel-collector:4318
                     insecure: true
 
-# A second, separate instance of the opentelemetry-collector chart (see the
+# -- A second, separate instance of the opentelemetry-collector chart (see the
 # aliased dependency in Chart.yaml), dedicated to eBPF profiling. Disabled by
 # default.
+# @default -- Demo-specific overrides, see [values.yaml](./values.yaml)
 otel-ebpf-profiler:
+  # -- Install the eBPF profiling collector instance
   enabled: false
   fullnameOverride: otel-ebpf-profiler
   image:
@@ -1482,7 +1530,13 @@ otel-ebpf-profiler:
           processors: [transform/set_service_name]
           exporters: [otlp_grpc/collector]
 
+# -- Parameters for the Jaeger sub-chart.
+# This chart will override some of the sub-chart parameters by default, see the
+# [Jaeger charts](https://github.com/jaegertracing/helm-charts)
+# for all available parameters.
+# @default -- Demo-specific overrides, see [values.yaml](./values.yaml)
 jaeger:
+  # -- Install the Jaeger sub-chart
   enabled: true
   fullnameOverride: jaeger
   uiconfig:
@@ -1567,7 +1621,13 @@ jaeger:
       jaeger_storage_exporter:
         trace_storage: memory_backend
 
+# -- Parameters for the Prometheus sub-chart.
+# This chart will override some of the sub-chart parameters by default, see the
+# [Prometheus community charts](https://github.com/prometheus-community/helm-charts)
+# for all available parameters.
+# @default -- Demo-specific overrides, see [values.yaml](./values.yaml)
 prometheus:
+  # -- Install the Prometheus sub-chart
   enabled: true
   alertmanager:
     enabled: false
@@ -1629,9 +1689,15 @@ prometheus:
       servicePort: 9090
     resources:
       limits:
-        memory: 400Mi
+        memory: 512Mi
 
+# -- Parameters for the Grafana sub-chart.
+# This chart will override some of the sub-chart parameters by default, see the
+# [Grafana community charts](https://github.com/grafana-community/helm-charts)
+# for all available parameters.
+# @default -- Demo-specific overrides, see [values.yaml](./values.yaml)
 grafana:
+  # -- Install the Grafana sub-chart
   enabled: true
   fullnameOverride: grafana
   testFramework:
@@ -1662,9 +1728,15 @@ grafana:
         memory: 256Mi
   resources:
     limits:
-      memory: 300Mi
+      memory: 500Mi
 
+# -- Parameters for the OpenSearch sub-chart.
+# This chart will override some of the sub-chart parameters by default, see the
+# [OpenSearch charts](https://github.com/opensearch-project/helm-charts)
+# for all available parameters.
+# @default -- Demo-specific overrides, see [values.yaml](./values.yaml)
 opensearch:
+  # -- Install the OpenSearch sub-chart
   enabled: true
   fullnameOverride: opensearch
   clusterName: demo-cluster
