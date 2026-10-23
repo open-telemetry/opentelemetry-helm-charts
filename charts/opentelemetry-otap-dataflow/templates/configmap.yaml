@@ -1,0 +1,13 @@
+{{- if and .Values.config.create (eq .Values.config.name "") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otap-dataflow.configMapName" . }}
+  namespace: {{ include "otap-dataflow.namespace" . }}
+  labels:
+    {{- include "helper.commonLabels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  config.yaml: |
+{{- tpl (toYaml .Values.config.data) . | nindent 4 }}
+{{- end }}
