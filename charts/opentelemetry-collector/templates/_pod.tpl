@@ -206,10 +206,25 @@ containers:
       {{- end }}
       {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
+      {{- if .Values.presets.hardenedMode.enabled }}
+      - name: host-dev
+        mountPath: /hostfs/dev
+        readOnly: true
+      - name: host-proc
+        mountPath: /hostfs/proc
+        readOnly: true
+      - name: host-run-udev-data
+        mountPath: /hostfs/run/udev/data
+        readOnly: true
+      - name: host-sys
+        mountPath: /hostfs/sys
+        readOnly: true
+      {{- else }}
       - name: hostfs
         mountPath: /hostfs
         readOnly: true
         mountPropagation: HostToContainer
+      {{- end }}
       {{- end }}
       {{- if .Values.presets.profiling.enabled }}
       - name: tracefs
@@ -259,9 +274,24 @@ volumes:
       path: /var/lib/docker/containers
   {{- end }}
   {{- if .Values.presets.hostMetrics.enabled }}
+  {{- if .Values.presets.hardenedMode.enabled }}
+  - name: host-dev
+    hostPath:
+      path: /dev
+  - name: host-proc
+    hostPath:
+      path: /proc
+  - name: host-run-udev-data
+    hostPath:
+      path: /run/udev/data
+  - name: host-sys
+    hostPath:
+      path: /sys
+  {{- else }}
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
   {{- end }}
   {{- if .Values.presets.profiling.enabled }}
   - name: tracefs

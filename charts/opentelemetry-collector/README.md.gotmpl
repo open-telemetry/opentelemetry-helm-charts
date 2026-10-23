@@ -334,6 +334,65 @@ presets:
     enabled: true
 ```
 
+#### Hardened mode
+
+By default, the preset mounts the host root at `/hostfs`. This keeps the existing
+chart behavior. To reduce host access on Linux, enable hardened mode:
+
+```yaml
+mode: daemonset
+presets:
+  hostMetrics:
+    enabled: true
+  hardenedMode:
+    enabled: true
+```
+
+Hardened mode mounts only the host paths used by the configured scrapers:
+`/dev`, `/proc`, `/run/udev/data`, and `/sys`. It does not mount the host root.
+
+The filesystem scraper is disabled by default in this mode. The `/hostfs`
+directory is not host-backed. Only its children are host mounts. If the scraper
+inspected `/hostfs`, it would collect the container overlay filesystem instead
+of the host filesystem.
+
+To collect a host filesystem, mount it at the same path below `/hostfs` and
+enable the filesystem scraper. For example, to collect `/data`:
+
+```yaml
+mode: daemonset
+
+presets:
+  hostMetrics:
+    enabled: true
+  hardenedMode:
+    enabled: true
+
+extraVolumes:
+  - name: host-data
+    hostPath:
+      path: /data
+
+extraVolumeMounts:
+  - name: host-data
+    mountPath: /hostfs/data
+    readOnly: true
+
+config:
+  receivers:
+    hostmetrics:
+      scrapers:
+        filesystem:
+          include_mount_points:
+            match_type: strict
+            mount_points:
+              - /data
+```
+
+The value of `extraVolumeMounts.mountPath` must be `/hostfs` followed by the
+host mount point. Add each host filesystem to both the volume configuration and
+`include_mount_points`.
+
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.

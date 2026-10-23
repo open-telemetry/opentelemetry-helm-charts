@@ -162,6 +162,7 @@ receivers:
         load:
         memory:
         disk:
+        {{- if not .Values.presets.hardenedMode.enabled }}
         filesystem:
           exclude_mount_points:
             mount_points:
@@ -199,6 +200,7 @@ receivers:
               - sysfs
               - tracefs
             match_type: strict
+        {{- end }}
         network:
 {{- end }}
 
