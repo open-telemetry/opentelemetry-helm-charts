@@ -351,6 +351,9 @@ presets:
 Hardened mode mounts only the host paths used by the configured scrapers:
 `/dev`, `/proc`, `/run/udev/data`, and `/sys`. It does not mount the host root.
 
+Hardened mode only reduces host metrics filesystem access. Profiling still
+requires root access, host process access, and elevated capabilities.
+
 The filesystem scraper is disabled by default in this mode. The `/hostfs`
 directory is not host-backed. Only its children are host mounts. If the scraper
 inspected `/hostfs`, it would collect the container overlay filesystem instead
