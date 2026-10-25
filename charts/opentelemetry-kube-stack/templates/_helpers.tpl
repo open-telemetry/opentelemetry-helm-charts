@@ -126,9 +126,11 @@ Common labels
 {{- end -}}
 {{- $_ := set $labels "app.kubernetes.io/managed-by" (.Release.Service | toString) -}}
 {{- $_ := set $labels "release" (.Release.Name | toString) -}}
+{{- $out := list }}
 {{- range $key := keys $labels | sortAlpha }}
-{{ $key }}: {{ get $labels $key | quote }}
+{{- $out = append $out (printf "%s: %s" $key (get $labels $key | quote)) }}
 {{- end }}
+{{- join "\n" $out }}
 {{- end }}
 
 {{/*
