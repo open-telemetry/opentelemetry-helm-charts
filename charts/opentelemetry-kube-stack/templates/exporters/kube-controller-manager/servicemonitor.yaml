@@ -33,7 +33,9 @@ spec:
     {{- if .Values.kubeControllerManager.serviceMonitor.interval }}
     interval: {{ .Values.kubeControllerManager.serviceMonitor.interval }}
     {{- end }}
-    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    {{- with include "opentelemetry-kube-stack.servicemonitor.authorization" (dict "serviceMonitor" .Values.kubeControllerManager.serviceMonitor "component" "kubeControllerManager" "root" $) }}
+    {{- . | nindent 4 }}
+    {{- end }}
     {{- if .Values.kubeControllerManager.serviceMonitor.proxyUrl }}
     proxyUrl: {{ .Values.kubeControllerManager.serviceMonitor.proxyUrl}}
     {{- end }}

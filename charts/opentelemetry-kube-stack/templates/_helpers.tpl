@@ -498,6 +498,16 @@ Callers must use fromYaml to get a dict.
 {{- $collector = (mergeOverwrite $base $collector) -}}
 
 {{- end -}}
+{{- if and $root.Values.kubernetesServiceMonitors.enabled (dig "targetAllocator" "prometheusCR" "enabled" false $collector) -}}
+{{- $prometheusCR := get (get $collector "targetAllocator") "prometheusCR" -}}
+{{- if not (hasKey $prometheusCR "secretNamespaces") -}}
+{{- if $root.Values.kubernetesServiceMonitors.ignoreNamespaceSelectors -}}
+{{- $_ := set $prometheusCR "secretNamespaces" (list "default" "kube-system") -}}
+{{- else -}}
+{{- $_ := set $prometheusCR "secretNamespaces" (list (include "opentelemetry-kube-stack.namespace" $root)) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
 {{- $collector | toYaml -}}
 {{- end }}
 
@@ -571,4 +581,17 @@ the previous hardcoded k8s.cluster.name={{ clusterName }} string.
 {{- $attributes = append $attributes (printf "%s=%v" $key (get $resourceAttributes $key)) }}
 {{- end }}
 {{- join "," $attributes }}
+{{- end }}
+{{- define "opentelemetry-kube-stack.servicemonitor.authorization" -}}
+{{- $monitor := .serviceMonitor -}}
+{{- $hasAuthorization := kindIs "map" $monitor.authorization -}}
+{{- if and $monitor.bearerTokenFile $hasAuthorization -}}
+{{- fail (printf "%s.serviceMonitor: bearerTokenFile and authorization are mutually exclusive; clear bearerTokenFile with an empty string or null to use Secret-backed authorization" .component) -}}
+{{- end -}}
+{{- if $hasAuthorization -}}
+authorization:
+  {{- tpl (toYaml $monitor.authorization) .root | nindent 2 }}
+{{- else if $monitor.bearerTokenFile -}}
+bearerTokenFile: {{ $monitor.bearerTokenFile | quote }}
+{{- end -}}
 {{- end }}

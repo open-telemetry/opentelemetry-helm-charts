@@ -11,6 +11,9 @@ collectors:
       enabled: true
       image: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:main
       allocationStrategy: per-node
+      mtls:
+        enabled: true
+        useCertManager: true
       prometheusCR:
         enabled: true
         podMonitorSelector: {}
@@ -56,19 +59,53 @@ kubernetesServiceMonitors:
     create: true
 kubeApiServer:
   enabled: true
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
 kubelet:
   enabled: true
 kubeControllerManager:
   enabled: true
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
 kubeDns:
   enabled: true
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization: null
 kubeEtcd:
   enabled: true
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization: null
 kubeScheduler:
   enabled: true
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization:
+      type: Bearer
+      credentials:
+        name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+        key: token
 kubeProxy:
   enabled: true
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization: null
 kubeStateMetrics:
   enabled: true
 nodeExporter:
   enabled: true
+coreDns:
+  serviceMonitor:
+    bearerTokenFile: ""
+    authorization: null

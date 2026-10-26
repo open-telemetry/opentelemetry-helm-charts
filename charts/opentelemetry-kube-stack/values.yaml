@@ -286,6 +286,9 @@ defaultCRConfig:
   # # Configuration for Prometheus Custom Resources
   # prometheusCR:
   #   enabled: true
+  #   # Enable only when every discovered ServiceMonitor uses no token or TLS file paths.
+  #   # Any non-empty serviceMonitor.bearerTokenFile requires this to stay false.
+  #   denyFSAccessThroughSMs: false
   #   scrapeInterval: 30s
   #   podMonitorSelector:
   #     key1: value1
@@ -307,7 +310,13 @@ defaultCRConfig:
   #   denyNamespaces:
   #     - namespace-3
   #     - namespace-4
-  # # mTLS between the collector and the target allocator, requires cert-manager
+  #   # Namespaces whose Secret updates the target allocator watches. When omitted while
+  #   # kubernetesServiceMonitors is enabled, this defaults to the namespaces where those
+  #   # ServiceMonitors and their authorization Secrets are created.
+  #   secretNamespaces:
+  #     - namespace-1
+  # # mTLS between the Collector and Target Allocator is REQUIRED for Secret-backed credentials.
+  # # useCertManager: true requires cert-manager.
   # mtls:
   #   enabled: true
   #   useCertManager: true
@@ -1155,6 +1164,18 @@ kubeApiServer:
     serverName: kubernetes
     insecureSkipVerify: false
   serviceMonitor:
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1281,6 +1302,18 @@ kubeControllerManager:
 
   serviceMonitor:
     enabled: true
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1367,6 +1400,18 @@ coreDns:
     #   k8s-app: kube-dns
   serviceMonitor:
     enabled: true
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1442,6 +1487,18 @@ kubeDns:
     # selector:
     #   k8s-app: kube-dns
   serviceMonitor:
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1552,6 +1609,18 @@ kubeEtcd:
   ##
   serviceMonitor:
     enabled: true
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1645,6 +1714,18 @@ kubeScheduler:
 
   serviceMonitor:
     enabled: true
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""
@@ -1738,6 +1819,18 @@ kubeProxy:
 
   serviceMonitor:
     enabled: true
+    ## Path to the Collector's bearer-token file. Set an empty string or null
+    ## when using authorization or scraping without authentication. A non-empty
+    ## path requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ## SafeAuthorization using a token Secret in the ServiceMonitor's namespace.
+    ## Mutually exclusive with a non-empty bearerTokenFile; clear bearerTokenFile
+    ## before configuring this object. Set both fields to null to omit authentication.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## For a chart-managed Secret, enable kubernetesServiceMonitors.authorization.create and
+    ## set credentials.name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
+    ## and credentials.key: token.
+    authorization: null
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
     interval: ""

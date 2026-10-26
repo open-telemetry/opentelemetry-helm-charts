@@ -2079,6 +2079,9 @@
         "enabled": {
           "type": "boolean"
         },
+        "denyFSAccessThroughSMs": {
+          "type": "boolean"
+        },
         "scrapeInterval": {
           "type": "string"
         },
@@ -2107,6 +2110,13 @@
             "type": "string"
           },
           "description": "List of namespaces to exclude from scraping"
+        },
+        "secretNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of namespaces to watch for Secret changes"
         }
       },
       "additionalProperties": false,
@@ -3909,6 +3919,22 @@
       ],
       "title": "KubeAPIServer"
     },
+    "SafeAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "not": {
+            "pattern": "^[Bb][Aa][Ss][Ii][Cc]$"
+          }
+        },
+        "credentials": {
+          "$ref": "#/$defs/SecretKeySelector"
+        }
+      },
+      "title": "SafeAuthorization"
+    },
     "TLSConfig": {
       "type": "object",
       "additionalProperties": false,
@@ -4159,6 +4185,22 @@
         "additionalLabels": {
           "$ref": "#/$defs/AdditionalLabels"
         },
+        "bearerTokenFile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "authorization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SafeAuthorization"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "https": {
           "anyOf": [
             {
@@ -4228,7 +4270,22 @@
         "selector",
         "targetLimit"
       ],
-      "title": "KubeServiceMonitor"
+      "title": "KubeServiceMonitor",
+      "not": {
+        "required": [
+          "bearerTokenFile",
+          "authorization"
+        ],
+        "properties": {
+          "bearerTokenFile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authorization": {
+            "type": "object"
+          }
+        }
+      }
     },
     "KubeStateMetrics": {
       "type": "object",
@@ -4281,6 +4338,22 @@
       "properties": {
         "enabled": {
           "type": "boolean"
+        },
+        "bearerTokenFile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "authorization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SafeAuthorization"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "interval": {
           "type": "string"
@@ -4342,7 +4415,22 @@
         "sampleLimit",
         "targetLimit"
       ],
-      "title": "Monitor"
+      "title": "Monitor",
+      "not": {
+        "required": [
+          "bearerTokenFile",
+          "authorization"
+        ],
+        "properties": {
+          "bearerTokenFile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authorization": {
+            "type": "object"
+          }
+        }
+      }
     },
     "MetricRelabeling": {
       "type": "object",
