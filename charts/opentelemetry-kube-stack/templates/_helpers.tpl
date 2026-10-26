@@ -582,6 +582,24 @@ the previous hardcoded k8s.cluster.name={{ clusterName }} string.
 {{- end }}
 {{- join "," $attributes }}
 {{- end }}
+{{- define "opentelemetry-kube-stack.servicemonitor.tlsConfig" -}}
+{{- $monitor := .serviceMonitor -}}
+{{- $tls := deepCopy (default dict $monitor.tlsConfig) -}}
+{{- range $key := list "insecureSkipVerify" "serverName" "caFile" "certFile" "keyFile" -}}
+{{- if and (hasKey $monitor $key) (ne (toJson (get $monitor $key)) "null") -}}
+{{- $_ := set $tls $key (get $monitor $key) -}}
+{{- end -}}
+{{- end -}}
+{{- range $pair := list (list "ca" "caFile") (list "cert" "certFile") (list "keySecret" "keyFile") -}}
+{{- if and (get $tls (index $pair 0)) (get $tls (index $pair 1)) -}}
+{{- fail (printf "ServiceMonitor TLS configuration cannot specify both tlsConfig.%s and serviceMonitor.%s; remove the file setting when using a Secret or ConfigMap reference" (index $pair 0) (index $pair 1)) -}}
+{{- end -}}
+{{- end -}}
+{{- if and .defaultCAFile (not (get $tls "ca")) (not (hasKey $tls "caFile")) -}}
+{{- $_ := set $tls "caFile" .defaultCAFile -}}
+{{- end -}}
+{{- toYaml $tls -}}
+{{- end -}}
 {{- define "opentelemetry-kube-stack.servicemonitor.authorization" -}}
 {{- $monitor := .serviceMonitor -}}
 {{- $hasAuthorization := kindIs "map" $monitor.authorization -}}
