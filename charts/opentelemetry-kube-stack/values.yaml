@@ -1608,16 +1608,26 @@ kubeEtcd:
     # selector:
     #   component: etcd
 
-  ## Configure secure access to the etcd cluster by loading a secret into prometheus and
-  ## specifying security configuration below. For example, with a secret named etcd-client-cert
+  ## Configure secure access to the etcd cluster with Secret references. For example, with a
+  ## Secret named etcd-client-cert. Secret-backed credentials REQUIRE
+  ## collectors.<name>.targetAllocator.mtls.enabled: true.
   ##
   ## serviceMonitor:
   ##   scheme: https
-  ##   insecureSkipVerify: false
-  ##   serverName: localhost
-  ##   caFile: /etc/prometheus/secrets/etcd-client-cert/etcd-ca
-  ##   certFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client
-  ##   keyFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+  ##   tlsConfig:
+  ##     insecureSkipVerify: false
+  ##     serverName: localhost
+  ##     ca:
+  ##       secret:
+  ##         name: etcd-client-cert
+  ##         key: etcd-ca
+  ##     cert:
+  ##       secret:
+  ##         name: etcd-client-cert
+  ##         key: etcd-client
+  ##     keySecret:
+  ##       name: etcd-client-cert
+  ##       key: etcd-client-key
   ##
   serviceMonitor:
     enabled: true
@@ -1661,11 +1671,19 @@ kubeEtcd:
     ##
     proxyUrl: ""
     scheme: http
-    insecureSkipVerify: false
-    serverName: ""
-    caFile: ""
-    certFile: ""
-    keyFile: ""
+    ## When non-null, serviceMonitor.insecureSkipVerify and serviceMonitor.serverName
+    ## override the corresponding fields in serviceMonitor.tlsConfig.
+    insecureSkipVerify: null
+    serverName: null
+
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Existing serviceMonitor.caFile/certFile/keyFile settings remain supported.
+    ## File paths require targetAllocator.prometheusCR.denyFSAccessThroughSMs: false
+    ## and cannot be combined with the corresponding ca/cert/keySecret reference.
+    tlsConfig:
+      insecureSkipVerify: false
 
     ## port: Name of the port the metrics will be scraped from
     ##

@@ -41,20 +41,10 @@ spec:
     {{- end }}
     {{- if eq .Values.kubeEtcd.serviceMonitor.scheme "https" }}
     scheme: https
+    {{- with (include "opentelemetry-kube-stack.servicemonitor.tlsConfig" (dict "serviceMonitor" .Values.kubeEtcd.serviceMonitor "defaultCAFile" "") | fromYaml) }}
     tlsConfig:
-      {{- if .Values.kubeEtcd.serviceMonitor.serverName }}
-      serverName: {{ .Values.kubeEtcd.serviceMonitor.serverName }}
-      {{- end }}
-      {{- if .Values.kubeEtcd.serviceMonitor.caFile }}
-      caFile: {{ .Values.kubeEtcd.serviceMonitor.caFile }}
-      {{- end }}
-      {{- if  .Values.kubeEtcd.serviceMonitor.certFile }}
-      certFile: {{ .Values.kubeEtcd.serviceMonitor.certFile }}
-      {{- end }}
-      {{- if .Values.kubeEtcd.serviceMonitor.keyFile }}
-      keyFile: {{ .Values.kubeEtcd.serviceMonitor.keyFile }}
-      {{- end}}
-      insecureSkipVerify: {{ .Values.kubeEtcd.serviceMonitor.insecureSkipVerify }}
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     {{- end }}
 {{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
     metricRelabelings:
