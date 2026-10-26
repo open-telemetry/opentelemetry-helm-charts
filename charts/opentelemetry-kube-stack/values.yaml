@@ -1128,14 +1128,24 @@ opAMPBridge:
 # Prometheus Configuration #
 # (optional)               #
 ############################
-# This configuration sections allows for a direct replacement of the kube-prometheus-stack
-# chart where the collector scrapes the same metrics as the default prometheus installation.
+# These Kubernetes component scrape settings are based on kube-prometheus-stack 90.x, and most
+# corresponding component values can be reused when replacing its Prometheus scraper with an
+# OpenTelemetry Collector. The kubernetesServiceMonitors.authorization block is specific to this
+# chart because it manages a dedicated scrape credential instead of using a Prometheus identity.
+# This section does not provide full kube-prometheus-stack values compatibility.
 
 # -- Flag to disable all the kubernetes component scrapers
 #
 kubernetesServiceMonitors:
   enabled: false
   ignoreNamespaceSelectors: false
+  authorization:
+    ## Create a dedicated ServiceAccount and long-lived token Secret with GET /metrics access.
+    ## Requires kubernetesServiceMonitors.enabled: true.
+    create: false
+    ## Override the generated service account or Secret names.
+    serviceAccountName: ""
+    secretName: ""
 
 # -- Component scraping the kube api server
 # @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)

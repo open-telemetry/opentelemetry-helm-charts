@@ -158,6 +158,17 @@ Create the name of the clusterRoleBinding to use
 {{- default (include "opentelemetry-kube-stack.fullname" .) .Values.clusterRole.clusterRoleBinding.name }}
 {{- end }}
 
+{{- define "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" -}}
+{{- default (printf "%s-kubernetes-metrics" .Release.Name | trunc 63 | trimSuffix "-") .Values.kubernetesServiceMonitors.authorization.serviceAccountName -}}
+{{- end }}
+
+{{- define "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" -}}
+{{- if not (and .Values.kubernetesServiceMonitors.enabled .Values.kubernetesServiceMonitors.authorization.create) -}}
+{{- fail "Creating the Kubernetes metrics token Secret requires kubernetesServiceMonitors.enabled: true and kubernetesServiceMonitors.authorization.create: true. Enable both settings before referencing the generated Secret." -}}
+{{- end -}}
+{{- default (printf "%s-token" (include "opentelemetry-kube-stack.kubernetesMetrics.serviceAccountName" . | trunc 57 | trimSuffix "-") | trunc 63 | trimSuffix "-") .Values.kubernetesServiceMonitors.authorization.secretName -}}
+{{- end }}
+
 {{/*
 Optionally include the RBAC for the k8sCluster receiver
 */}}
