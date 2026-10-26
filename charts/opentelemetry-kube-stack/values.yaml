@@ -1362,11 +1362,18 @@ kubeControllerManager:
     ##
     https: null
 
-    # Skip TLS certificate validation when scraping
+    ## When non-null, serviceMonitor.insecureSkipVerify and serviceMonitor.serverName
+    ## override the corresponding fields in serviceMonitor.tlsConfig.
     insecureSkipVerify: null
-
-    # Name of the server to use when validating TLS certificate
     serverName: null
+
+    ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+    ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+    ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+    ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+    ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
+    tlsConfig:
+      insecureSkipVerify: true
 
     ## MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig

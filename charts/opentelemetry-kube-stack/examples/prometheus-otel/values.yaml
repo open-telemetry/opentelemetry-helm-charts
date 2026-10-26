@@ -82,6 +82,11 @@ kubeControllerManager:
       credentials:
         name: '{{ include "opentelemetry-kube-stack.kubernetesMetrics.tokenSecretName" . }}'
         key: token
+    tlsConfig:
+      ca:
+        configMap:
+          name: kube-root-ca.crt
+          key: ca.crt
 kubeDns:
   enabled: true
   serviceMonitor:
