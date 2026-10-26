@@ -360,7 +360,9 @@ inspected `/hostfs`, it would collect the container overlay filesystem instead
 of the host filesystem.
 
 To collect a host filesystem, mount it at the same path below `/hostfs` and
-enable the filesystem scraper. For example, to collect `/data`:
+enable the filesystem scraper. For example, to collect `/data`, it must already
+be a mount point on the host. An ordinary directory does not match
+`include_mount_points`, so the scraper would collect no metrics for `/data`:
 
 ```yaml
 mode: daemonset
