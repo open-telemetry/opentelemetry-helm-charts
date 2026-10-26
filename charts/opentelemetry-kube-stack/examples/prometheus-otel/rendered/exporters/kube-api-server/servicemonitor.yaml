@@ -28,9 +28,12 @@ spec:
         - __name__
         - le
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      serverName: kubernetes
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: false
+      serverName: kubernetes
   jobLabel: component
   namespaceSelector:
     matchNames:

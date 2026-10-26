@@ -1160,6 +1160,11 @@ kubernetesServiceMonitors:
 # @default -- disabled (`enabled: false`), see [values.yaml](./values.yaml)
 kubeApiServer:
   enabled: false
+  ## SafeTLSConfig for HTTPS scrapes: ca/cert reference Secrets or ConfigMaps;
+  ## keySecret references a Secret. Nested caFile/certFile/keyFile are not supported.
+  ## Secret-backed credentials REQUIRE collectors.<name>.targetAllocator.mtls.enabled: true.
+  ## Without ca, the ServiceMonitor uses /var/run/secrets/kubernetes.io/serviceaccount/ca.crt,
+  ## which requires targetAllocator.prometheusCR.denyFSAccessThroughSMs: false.
   tlsConfig:
     serverName: kubernetes
     insecureSkipVerify: false
