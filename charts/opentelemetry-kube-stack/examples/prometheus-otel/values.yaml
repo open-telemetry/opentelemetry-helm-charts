@@ -1,4 +1,8 @@
 clusterName: demo
+opentelemetry-operator:
+  manager:
+    featureGatesMap:
+      operator.targetallocator.fallbackstrategy: true
 collectors:
   daemon:
     enabled: true
@@ -16,6 +20,7 @@ collectors:
         useCertManager: true
       prometheusCR:
         enabled: true
+        denyFSAccessThroughSMs: true
         podMonitorSelector: {}
         scrapeInterval: "30s"
         serviceMonitorSelector: {}
