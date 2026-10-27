@@ -36,7 +36,9 @@ spec:
     {{- if .Values.coreDns.serviceMonitor.proxyUrl }}
     proxyUrl: {{ .Values.coreDns.serviceMonitor.proxyUrl}}
     {{- end }}
-    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    {{- with include "opentelemetry-kube-stack.servicemonitor.authorization" (dict "serviceMonitor" .Values.coreDns.serviceMonitor "component" "coreDns" "root" $) }}
+    {{- . | nindent 4 }}
+    {{- end }}
 {{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
     metricRelabelings:
 {{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}

@@ -1,5 +1,21 @@
 # Upgrade guidelines
 
+## 0.25.x to 0.26.2
+
+Version 0.26.2 allows the bundled Kubernetes component ServiceMonitors to work with the Target Allocator's `denyFSAccessThroughSMs: true` setting by using Secret-backed tokens and Secret/ConfigMap TLS references. File-backed credentials remain the default; no credential migration is needed unless you enable this restriction.
+
+Before enabling it, configure each enabled component:
+
+1. **Replace token files.** Set `serviceMonitor.bearerTokenFile: ""` and configure `serviceMonitor.authorization` with `type: Bearer` and `credentials.name` / `credentials.key` pointing to a token Secret in the ServiceMonitor's namespace. For endpoints that need no authentication, clear `bearerTokenFile` and leave `authorization: null`.
+2. **Replace TLS files.** For HTTPS scrapes, replace CA, client certificate, and private key file paths with `tlsConfig.ca`, `.cert`, and `.keySecret` references. This includes the implicit service-account CA file: configure a `ca` reference, such as the `kube-root-ca.crt` ConfigMap. Use `kubeApiServer.tlsConfig` for kube-apiserver and `<component>.serviceMonitor.tlsConfig` for the other TLS-enabled components. Clear any corresponding direct `serviceMonitor.caFile`, `.certFile`, or `.keyFile` settings.
+3. **Enable mTLS between the Target Allocator and Collectors** with `collectors.<name>.targetAllocator.mtls.enabled: true` to protect Secret-backed credentials in transit. Set `mtls.useCertManager: true` if cert-manager will supply the certificates.
+
+To have the chart create the metrics ServiceAccount and token Secret, enable both `kubernetesServiceMonitors.enabled` and `kubernetesServiceMonitors.authorization.create`, then reference that Secret in the authenticated components' authorization settings.
+
+Enable `collectors.<name>.targetAllocator.prometheusCR.denyFSAccessThroughSMs: true` only after **all discovered ServiceMonitors** are free of credential file references. The Target Allocator rejects monitors that still reference files, and their metrics will not be scraped.
+
+See the [prometheus-otel example](examples/prometheus-otel/values.yaml) for the complete configuration, including token Secret references, TLS settings, and mTLS setup.
+
 ## 0.24.6 to 0.25.0
 
 The chart now installs Operator 0.161.0. Since Operator 0.160.0, the `operator.networkpolicy` and `operand.networkpolicy` feature gates are disabled by default. See the [Operator 0.160.0 release notes](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.160.0).
@@ -66,3 +82,8 @@ If you are using a Collector image that does not recognize the new component nam
 ```yaml
 rewriteDeprecatedComponentNames: false
 ```
+
+## 0.6.x to 0.7.x
+
+Version 0.7.0 has unified the previous collectors (daemonset and deployment) in a single one. If you are using custom configurations for `cluster` collector, you will need to merge your `cluster` collector configuration with `daemon` collector and remove `collectors.cluster` section from your values file.
+If you are using helm, upgrade command is enough the prune old resources, but gitops approaches like 'ArgoCD' could require to select pruning options during sync process to get rid of removed resources.
