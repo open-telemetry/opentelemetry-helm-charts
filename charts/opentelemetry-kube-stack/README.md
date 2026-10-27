@@ -386,6 +386,9 @@ When using this chart as a subchart, you may want to unset certain default value
 | instrumentation.labels | object | `{}` |  |
 | instrumentation.annotations | object | `{}` |  |
 | instrumentation.exporter.endpoint | string | `"http://collector-collector:4317"` | This is the default collector's service Upon creation of a tracing collector, edit this endpoint. |
+| instrumentation.exporter.tls | object | `not set` | TLS configuration for the instrumentation exporter |
+| instrumentation.imagePullPolicy | string | `not set` | Image pull policy for auto-instrumentation |
+| instrumentation.initContainerSecurityContext | object | `not set` | Security context for auto-instrumentation init containers |
 | instrumentation.resource | object | `{"addK8sUIDAttributes":true,"resourceAttributes":{}}` | Resource configuration |
 | instrumentation.defaults | object | `{}` | Default auto-instrumentation behavior See https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/instrumentations.md |
 | instrumentation.propagators | list | `["tracecontext","baggage","b3","b3multi","jaeger","xray","ottrace"]` | Propagators configuration |
@@ -393,6 +396,7 @@ When using this chart as a subchart, you may want to unset certain default value
 | instrumentation.env | list | `[]` | Environment variables for instrumentation |
 | instrumentation.java | object | `{}` | Java agent configuration |
 | instrumentation.nodejs | object | `{}` | NodeJS agent configuration |
+| instrumentation.php | object | `{}` | PHP agent configuration |
 | instrumentation.python | object | `{}` | Python agent configuration |
 | instrumentation.dotnet | object | `{}` | .NET agent configuration |
 | instrumentation.go | object | `{}` | Go agent configuration |
