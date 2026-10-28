@@ -259,6 +259,7 @@ When using this chart as a subchart, you may want to unset certain default value
 | fullnameOverride | string | `""` | Top level field indicating an override for fullname |
 | namespaceOverride | string | `""` | Top level field indicating an override for the namespace |
 | nameOverride | string | `""` | Top level field indicating an override for the chart name |
+| commonLabels | object | `{}` | Labels applied to all first-party resources rendered by this chart. Chart-required labels and selectors always take precedence over these values. |
 | clusterName | string | `"unknown_k8s_cluster"` | Top level field specifying the name of the Kubernetes cluster. When using a Managed Kubernetes Service, it's recommended to use the cluster name assigned by the service for better integration. |
 | resourceAttributes | object | `{}` | Default resource attributes applied to every collector pipeline (as a `resource/global` upsert processor) and merged into the Instrumentation CR's `resource.resourceAttributes`. Also added to each collector's and the OpAMP Bridge's own `OTEL_RESOURCE_ATTRIBUTES`; a `k8s.cluster.name` set here takes precedence over `clusterName`. Override per collector via `collectors.<name>.resourceAttributes`. |
 | rewriteDeprecatedComponentNames | bool | `true` | Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes processor, hostmetrics -> host_metrics receiver) in the generated config. Set to false if using older Collector images that do not recognize the new names. |
