@@ -336,8 +336,7 @@ presets:
 
 #### Hardened mode
 
-By default, the preset mounts the host root at `/hostfs`. This keeps the existing
-chart behavior. To reduce host access on Linux, enable hardened mode:
+By default, the preset mounts the host root at `/hostfs`. To reduce host access on Linux, enable hardened mode:
 
 ```yaml
 mode: daemonset
