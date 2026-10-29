@@ -347,21 +347,15 @@ presets:
     hardenedMode: true
 ```
 
-Hardened mode mounts only the host paths used by the configured scrapers:
-`/proc` and `/sys`. It does not mount the host root.
+When hardened mode is enabled, the preset mounts only the host's `/proc` and `/sys`
+paths and disables the filesystem scraper by default.
 
-Hardened mode only reduces host metrics filesystem access. Profiling still
-requires root access, host process access, and elevated capabilities.
+To collect metrics from additional filesystems, mount each host filesystem at
+`hostfs` followed by its host mount path, enable the filesystem scraper and
+list each host mount path in `include_mount_points`.
 
-The filesystem scraper is disabled by default in this mode. The `/hostfs`
-directory is not host-backed. Only its children are host mounts. If the scraper
-inspected `/hostfs`, it would collect the container overlay filesystem instead
-of the host filesystem.
-
-To collect a host filesystem, mount it at the same path below `/hostfs` and
-enable the filesystem scraper. For example, to collect `/data`, it must already
-be a mount point on the host. An ordinary directory does not match
-`include_mount_points`, so the scraper would collect no metrics for `/data`:
+The example below collects metrics for a host mount at `/data`. Note that `/data`
+must be already a mount point on the host.
 
 ```yaml
 mode: daemonset
@@ -391,10 +385,6 @@ config:
             mount_points:
               - /data
 ```
-
-The value of `extraVolumeMounts.mountPath` must be `/hostfs` followed by the
-host mount point. Add each host filesystem to both the volume configuration and
-`include_mount_points`.
 
 ## CRDs
 
