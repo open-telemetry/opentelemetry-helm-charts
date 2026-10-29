@@ -162,7 +162,7 @@ receivers:
         load:
         memory:
         disk:
-        {{- if not .Values.presets.hardenedMode.enabled }}
+        {{- if not .Values.presets.hostMetrics.hardenedMode.enabled }}
         filesystem:
           exclude_mount_points:
             mount_points:
