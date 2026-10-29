@@ -16,15 +16,25 @@ and each component sets `service.criticality` in its own `podAnnotations`.
 
 For components using the default environment variables, each annotation is
 exposed through the downward API as an `OTEL_RESOURCE_ATTR_*` environment
-variable and referenced from `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_SERVICE_NAME`
-now reads the `resource.opentelemetry.io/service.name` annotation instead of
-the `app.kubernetes.io/component` label.
+variable, and these are combined into `OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS`.
+`OTEL_RESOURCE_ATTRIBUTES` is set to `$(OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS)`,
+followed by the value of any `OTEL_RESOURCE_ATTRIBUTES` you configure, followed
+by the value of `OTEL_RESOURCE_ATTRIBUTES_EXTRA`. `OTEL_SERVICE_NAME` now reads
+the `resource.opentelemetry.io/service.name` annotation instead of the
+`app.kubernetes.io/component` label.
+
+If you configure `OTEL_RESOURCE_ATTRIBUTES` using `valueFrom`, it is kept as
+is, along with `OTEL_RESOURCE_ATTRIBUTES_EXTRA`, and the annotation attributes
+are not added to it. They are still added to telemetry by the collector's
+`k8s_attributes` processor.
 
 If your custom values set `service.criticality` through
 `OTEL_RESOURCE_ATTRIBUTES_EXTRA`, or add an `OTEL_RESOURCE_ATTRIBUTES` entry to
 `default.env`, consider moving those attributes to
-`resource.opentelemetry.io/*` pod annotations. Both environment variables are
-still supported and their values are appended to `OTEL_RESOURCE_ATTRIBUTES`.
+`resource.opentelemetry.io/*` pod annotations.
+
+Values in `default.podAnnotations` are rendered as templates. Values in a
+component's `podAnnotations` are used as is.
 
 ## To 0.42
 
