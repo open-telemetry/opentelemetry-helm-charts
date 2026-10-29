@@ -20,8 +20,8 @@ Get Pod Env
 - If using defaults, will pull out OTEL_RESOURCE_ATTRIBUTES from the list to be reused later.
 - If using defaults, each `resource.opentelemetry.io/` pod annotation (except service.name, which is used by
 OTEL_SERVICE_NAME) is exposed through the downward API as an environment variable, and these are combined into the
-OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS environment variable.
-- OTEL_RESOURCE_ATTRIBUTES is set to OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS, followed by the value of any configured
+OTEL_RESOURCE_ATTRIBUTES_BASE environment variable.
+- OTEL_RESOURCE_ATTRIBUTES is set to OTEL_RESOURCE_ATTRIBUTES_BASE, followed by the value of any configured
 OTEL_RESOURCE_ATTRIBUTES, followed by the value of an environment variable named OTEL_RESOURCE_ATTRIBUTES_EXTRA.
 - A configured OTEL_RESOURCE_ATTRIBUTES that uses valueFrom is kept as is, along with OTEL_RESOURCE_ATTRIBUTES_EXTRA.
 - The OTEL_RESOURCES_ATTRIBUTES environment variable will typically use Kubernetes environment variable expansion and
@@ -30,7 +30,7 @@ should be last.
 {{- define "otel-demo.pod.env" -}}
 {{- $resourceAttributesEnv := dict }}
 {{- $resourceAttributesExtraEnv := dict }}
-{{- $annotationAttributes := list }}
+{{- $baseAttributes := list }}
 {{- $allEnvs := list }}
 
 {{- if .useDefault.env  }}
@@ -40,11 +40,11 @@ should be last.
 {{-       $envName := printf "OTEL_RESOURCE_ATTR_%s" (regexReplaceAll "[^A-Za-z0-9]" $attribute "_" | upper) }}
 {{-       $fieldRef := dict "apiVersion" "v1" "fieldPath" (printf "metadata.annotations['%s']" $key) }}
 {{-       $allEnvs = append $allEnvs (dict "name" $envName "valueFrom" (dict "fieldRef" $fieldRef)) }}
-{{-       $annotationAttributes = append $annotationAttributes (printf "%s=$(%s)" $attribute $envName) }}
+{{-       $baseAttributes = append $baseAttributes (printf "%s=$(%s)" $attribute $envName) }}
 {{-     end }}
 {{-   end }}
-{{-   if $annotationAttributes }}
-{{-     $allEnvs = append $allEnvs (dict "name" "OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS" "value" (join "," $annotationAttributes)) }}
+{{-   if $baseAttributes }}
+{{-     $allEnvs = append $allEnvs (dict "name" "OTEL_RESOURCE_ATTRIBUTES_BASE" "value" (join "," $baseAttributes)) }}
 {{-   end }}
 {{-   $defaultEnvs := include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides) | mustFromJson }}
 {{-   range $defaultEnvs }}
@@ -76,8 +76,8 @@ should be last.
 {{-   $allEnvs = append $allEnvs $resourceAttributesEnv }}
 {{- else }}
 {{-   $resourceAttributes := list }}
-{{-   if $annotationAttributes }}
-{{-     $resourceAttributes = append $resourceAttributes "$(OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS)" }}
+{{-   if $baseAttributes }}
+{{-     $resourceAttributes = append $resourceAttributes "$(OTEL_RESOURCE_ATTRIBUTES_BASE)" }}
 {{-   end }}
 {{-   with $resourceAttributesEnv.value }}
 {{-     $resourceAttributes = append $resourceAttributes . }}

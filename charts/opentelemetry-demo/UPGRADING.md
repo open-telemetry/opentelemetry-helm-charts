@@ -16,8 +16,8 @@ and each component sets `service.criticality` in its own `podAnnotations`.
 
 For components using the default environment variables, each annotation is
 exposed through the downward API as an `OTEL_RESOURCE_ATTR_*` environment
-variable, and these are combined into `OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS`.
-`OTEL_RESOURCE_ATTRIBUTES` is set to `$(OTEL_RESOURCE_ATTRIBUTES_ANNOTATIONS)`,
+variable, and these are combined into `OTEL_RESOURCE_ATTRIBUTES_BASE`.
+`OTEL_RESOURCE_ATTRIBUTES` is set to `$(OTEL_RESOURCE_ATTRIBUTES_BASE)`,
 followed by the value of any `OTEL_RESOURCE_ATTRIBUTES` you configure, followed
 by the value of `OTEL_RESOURCE_ATTRIBUTES_EXTRA`. `OTEL_SERVICE_NAME` now reads
 the `resource.opentelemetry.io/service.name` annotation instead of the
