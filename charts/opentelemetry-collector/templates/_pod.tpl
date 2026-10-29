@@ -206,7 +206,7 @@ containers:
       {{- end }}
       {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
-      {{- if .Values.presets.hostMetrics.hardenedMode.enabled }}
+      {{- if .Values.presets.hostMetrics.hardenedMode }}
       - name: host-proc
         mountPath: /hostfs/proc
         readOnly: true
@@ -268,7 +268,7 @@ volumes:
       path: /var/lib/docker/containers
   {{- end }}
   {{- if .Values.presets.hostMetrics.enabled }}
-  {{- if .Values.presets.hostMetrics.hardenedMode.enabled }}
+  {{- if .Values.presets.hostMetrics.hardenedMode }}
   - name: host-proc
     hostPath:
       path: /proc

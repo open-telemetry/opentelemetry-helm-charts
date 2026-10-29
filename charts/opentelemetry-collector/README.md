@@ -344,8 +344,7 @@ mode: daemonset
 presets:
   hostMetrics:
     enabled: true
-    hardenedMode:
-      enabled: true
+    hardenedMode: true
 ```
 
 Hardened mode mounts only the host paths used by the configured scrapers:
@@ -370,8 +369,7 @@ mode: daemonset
 presets:
   hostMetrics:
     enabled: true
-    hardenedMode:
-      enabled: true
+    hardenedMode: true
 
 extraVolumes:
   - name: host-data
@@ -439,7 +437,7 @@ For more examples see [Examples](examples).
 | presets.logsCollection.storeCheckpoints | bool | `false` | Enabling this writes checkpoints in /var/lib/otelcol/ host directory. Note this changes collector's user to root, so that it can write to host directory. |
 | presets.logsCollection.maxRecombineLogSize | int | `102400` | The maximum bytes size of the recombined field. Once the size exceeds the limit, all received entries of the source will be combined and flushed. |
 | presets.hostMetrics.enabled | bool | `false` |  |
-| presets.hostMetrics.hardenedMode.enabled | bool | `false` |  |
+| presets.hostMetrics.hardenedMode | bool | `false` |  |
 | presets.kubernetesAttributes.enabled | bool | `false` |  |
 | presets.kubernetesAttributes.extractAllPodLabels | bool | `false` | When enabled the processor will extract all labels for an associated pod and add them as resource attributes. The label's exact name will be the key. |
 | presets.kubernetesAttributes.extractAllPodAnnotations | bool | `false` | When enabled the processor will extract all annotations for an associated pod and add them as resource attributes. The annotation's exact name will be the key. |
