@@ -480,6 +480,19 @@ For more examples see [Examples](examples).
 | internalTelemetryViaOTLP.logs.enabled | bool | `false` |  |
 | internalTelemetryViaOTLP.logs.endpoint | string | `""` | overrides internalTelemetryViaOTLP.endpoint for logs |
 | internalTelemetryViaOTLP.logs.headers | list | `[]` | overrides internalTelemetryViaOTLP.headers for logs |
+| telemetry.resourceAttributes.default."k8s.namespace.name".enabled | bool | `true` |  |
+| telemetry.resourceAttributes.default."k8s.namespace.name".value | string | `"${env:OTEL_K8S_NAMESPACE}"` |  |
+| telemetry.resourceAttributes.default."k8s.node.name".enabled | bool | `true` |  |
+| telemetry.resourceAttributes.default."k8s.node.name".value | string | `"${env:OTEL_K8S_NODE_NAME}"` |  |
+| telemetry.resourceAttributes.default."k8s.node.ip".enabled | bool | `true` |  |
+| telemetry.resourceAttributes.default."k8s.node.ip".value | string | `"${env:OTEL_K8S_NODE_IP}"` |  |
+| telemetry.resourceAttributes.default."k8s.pod.name".enabled | bool | `true` |  |
+| telemetry.resourceAttributes.default."k8s.pod.name".value | string | `"${env:OTEL_K8S_POD_NAME}"` |  |
+| telemetry.resourceAttributes.default."k8s.pod.ip".enabled | bool | `true` |  |
+| telemetry.resourceAttributes.default."k8s.pod.ip".value | string | `"${env:OTEL_K8S_POD_IP}"` |  |
+| telemetry.resourceAttributes.default."host.name".enabled | bool | `true` |  |
+| telemetry.resourceAttributes.default."host.name".value | string | `"${env:OTEL_K8S_NODE_NAME}"` |  |
+| telemetry.resourceAttributes.extra | object | `{}` |  |
 | rewriteDeprecatedComponentNames | bool | `true` |  |
 | config | object | OTLP receivers plus the debug exporter wired into logs, metrics and traces pipelines; see [values.yaml](./values.yaml) | Base collector configuration. Supports templating; see the prose above this key in values.yaml. |
 | alternateConfig | object | `{}` |  |
