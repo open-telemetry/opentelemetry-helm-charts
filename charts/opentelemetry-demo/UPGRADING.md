@@ -6,6 +6,26 @@
 > release and then install the new version.
 
 
+## To 0.43
+
+Resource attributes for each component are now defined as
+`resource.opentelemetry.io/*` pod annotations instead of in the
+`OTEL_RESOURCE_ATTRIBUTES` environment variable. `default.podAnnotations` sets
+`service.name`, `service.namespace` and `service.version` for all components,
+and each component sets `service.criticality` in its own `podAnnotations`.
+
+For components using the default environment variables, each annotation is
+exposed through the downward API as an `OTEL_RESOURCE_ATTR_*` environment
+variable and referenced from `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_SERVICE_NAME`
+now reads the `resource.opentelemetry.io/service.name` annotation instead of
+the `app.kubernetes.io/component` label.
+
+If your custom values set `service.criticality` through
+`OTEL_RESOURCE_ATTRIBUTES_EXTRA`, or add an `OTEL_RESOURCE_ATTRIBUTES` entry to
+`default.env`, consider moving those attributes to
+`resource.opentelemetry.io/*` pod annotations. Both environment variables are
+still supported and their values are appended to `OTEL_RESOURCE_ATTRIBUTES`.
+
 ## To 0.42
 
 This release follows the OpenTelemetry Demo application's `3.1.0` release. Given

@@ -2,6 +2,8 @@
 Demo component Deployment template
 */}}
 {{- define "otel-demo.deployment" }}
+{{- $podAnnotations := include "otel-demo.pod.annotations" . | mustFromJson }}
+{{- $_ := set . "resourceAnnotations" $podAnnotations }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,9 +25,9 @@ spec:
         {{- if .podLabels }}
         {{- toYaml .podLabels | nindent 8 }}
         {{- end }}
-      {{- if .podAnnotations }}
+      {{- if $podAnnotations }}
       annotations:
-        {{- toYaml .podAnnotations | nindent 8 }}
+        {{- toYaml $podAnnotations | nindent 8 }}
       {{- end }}
     spec:
       {{- if or .defaultValues.image.pullSecrets ((.imageOverride).pullSecrets) }}
@@ -101,6 +103,7 @@ spec:
         {{- $sidecar := set . "Chart" $.Chart }}
         {{- $sidecar := set . "Release" $.Release }}
         {{- $sidecar := set . "defaultValues" $.defaultValues }}
+        {{- $sidecar := set . "resourceAnnotations" $podAnnotations }}
         - name: {{ .name   }}
           image: '{{ ((.imageOverride).repository) | default .defaultValues.image.repository }}:{{ ((.imageOverride).tag) | default (printf "%s-%s" (default .Chart.AppVersion .defaultValues.image.tag) .name) }}'
           imagePullPolicy: {{ ((.imageOverride).pullPolicy) | default .defaultValues.image.pullPolicy }}
