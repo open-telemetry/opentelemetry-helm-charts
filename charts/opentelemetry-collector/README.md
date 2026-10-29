@@ -334,6 +334,57 @@ presets:
     enabled: true
 ```
 
+#### Hardened mode
+
+By default, the preset mounts the host root at `/hostfs`. To reduce host access on Linux, enable hardened mode:
+
+```yaml
+mode: daemonset
+presets:
+  hostMetrics:
+    enabled: true
+    hardenedMode: true
+```
+
+When hardened mode is enabled, the preset mounts only the host's `/proc` and `/sys`
+paths and disables the filesystem scraper by default.
+
+To collect metrics from additional filesystems, mount each host filesystem at
+`hostfs` followed by its host mount path, enable the filesystem scraper and
+list each host mount path in `include_mount_points`.
+
+The example below collects metrics for a host mount at `/data`. Note that `/data`
+must be already a mount point on the host.
+
+```yaml
+mode: daemonset
+
+presets:
+  hostMetrics:
+    enabled: true
+    hardenedMode: true
+
+extraVolumes:
+  - name: host-data
+    hostPath:
+      path: /data
+
+extraVolumeMounts:
+  - name: host-data
+    mountPath: /hostfs/data
+    readOnly: true
+
+config:
+  receivers:
+    hostmetrics:
+      scrapers:
+        filesystem:
+          include_mount_points:
+            match_type: strict
+            mount_points:
+              - /data
+```
+
 ## CRDs
 
 At this time, Prometheus CRDs are supported but other CRDs are not.
@@ -375,6 +426,7 @@ For more examples see [Examples](examples).
 | presets.logsCollection.storeCheckpoints | bool | `false` | Enabling this writes checkpoints in /var/lib/otelcol/ host directory. Note this changes collector's user to root, so that it can write to host directory. |
 | presets.logsCollection.maxRecombineLogSize | int | `102400` | The maximum bytes size of the recombined field. Once the size exceeds the limit, all received entries of the source will be combined and flushed. |
 | presets.hostMetrics.enabled | bool | `false` |  |
+| presets.hostMetrics.hardenedMode | bool | `false` |  |
 | presets.kubernetesAttributes.enabled | bool | `false` |  |
 | presets.kubernetesAttributes.extractAllPodLabels | bool | `false` | When enabled the processor will extract all labels for an associated pod and add them as resource attributes. The label's exact name will be the key. |
 | presets.kubernetesAttributes.extractAllPodAnnotations | bool | `false` | When enabled the processor will extract all annotations for an associated pod and add them as resource attributes. The annotation's exact name will be the key. |
