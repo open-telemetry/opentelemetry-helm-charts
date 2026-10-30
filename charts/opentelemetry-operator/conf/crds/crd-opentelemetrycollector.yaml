@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ include "opentelemetry-operator.webhookCertAnnotation" . }}
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
     {{- with .Values.crds.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -3896,17 +3896,20 @@ spec:
                                   message:
                                     type: string
                                   reason:
+                                    minLength: 1
                                     type: string
                                   status:
                                     enum:
                                     - DataLoss
                                     - Degraded
                                     - Inaccessible
+                                    minLength: 1
                                     type: string
                                 required:
                                 - reason
                                 - status
                                 type: object
+                              maxItems: 16
                               type: array
                               x-kubernetes-list-map-keys:
                               - status
@@ -6505,6 +6508,16 @@ spec:
                 type: string
               imagePullPolicy:
                 type: string
+              imagePullSecrets:
+                items:
+                  properties:
+                    name:
+                      default: ""
+                      type: string
+                  type: object
+                  x-kubernetes-map-type: atomic
+                type: array
+                x-kubernetes-list-type: atomic
               ingress:
                 properties:
                   annotations:
@@ -7731,6 +7744,10 @@ spec:
                       x-kubernetes-int-or-string: true
                     type: object
                 type: object
+              revisionHistoryLimit:
+                default: 10
+                format: int32
+                type: integer
               securityContext:
                 properties:
                   allowPrivilegeEscalation:
@@ -8881,6 +8898,10 @@ spec:
                           x-kubernetes-int-or-string: true
                         type: object
                     type: object
+                  revisionHistoryLimit:
+                    default: 10
+                    format: int32
+                    type: integer
                   securityContext:
                     properties:
                       allowPrivilegeEscalation:
@@ -9361,17 +9382,20 @@ spec:
                                   message:
                                     type: string
                                   reason:
+                                    minLength: 1
                                     type: string
                                   status:
                                     enum:
                                     - DataLoss
                                     - Degraded
                                     - Inaccessible
+                                    minLength: 1
                                     type: string
                                 required:
                                 - reason
                                 - status
                                 type: object
+                              maxItems: 16
                               type: array
                               x-kubernetes-list-map-keys:
                               - status

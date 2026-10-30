@@ -7,24 +7,24 @@
 # Related documentation: https://github.com/open-telemetry/opentelemetry-operator/tree/main/cmd/otel-allocator
 ################################################################################
 
-# Valid values are "deployment" and "statefulset".
+# -- Valid values are "deployment" and "statefulset".
 mode: "deployment"
 
-# nameOverride replaces the name of the chart, when this is used to construct
+# -- nameOverride replaces the name of the chart, when this is used to construct
 # Kubernetes object names.
 nameOverride: ""
-# fullnameOverride completely replaces the generated name.
+# -- fullnameOverride completely replaces the generated name.
 fullnameOverride: ""
-# Specify which namespace should be used to deploy the resources into.
+# -- Specify which namespace should be used to deploy the resources into.
 namespaceOverride: ""
 
-# Number of replicas for the target allocator
+# -- Number of replicas for the target allocator
 replicaCount: 1
 
 configMap:
-  # Specifies whether a configMap should be created (true by default)
+  # -- Specifies whether a configMap should be created (true by default)
   create: true
-  # Specifies an existing ConfigMap to be mounted to the pod
+  # -- Specifies an existing ConfigMap to be mounted to the pod
   # The ConfigMap MUST include the configuration via a key named 'targetallocator.yaml'. If not you can additionaly set existingKey to the desired one in the configmap
   existingName: ""
   # If the key in your provided configmap does not match 'targetallocator.yaml' you can set here the custom one
@@ -33,19 +33,20 @@ configMap:
 
 targetAllocator:
   image:
+    # -- The repository of the Target Allocator image
     repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator
-    # The tag of the Target Allocator image, default value is the chart appVersion
+    # -- The tag of the Target Allocator image, default value is the chart appVersion
     tag: ""
-  # Secrets to attach to the respective serviceaccount to pull docker images
+  # -- Secrets to attach to the respective serviceaccount to pull docker images
   imagePullSecrets: []
   serviceAccount:
-    # Specifies whether a ServiceAccount should be created
+    # -- Specifies whether a ServiceAccount should be created
     create: true
-    # The name of the ServiceAccount to use.
+    # -- The name of the ServiceAccount to use.
     # If not set and create is true, a name is generated using the fullname template
     name: ""
 
-    # Service account annotations
+    # -- Service account annotations
     annotations: {}
   config:
     allocation_strategy: consistent-hashing
@@ -57,15 +58,16 @@ targetAllocator:
     prometheus_cr:
       enabled: true
       scrapeInterval: 30s
-      # An empty value means any service monitor will be accepted.
+      # -- An empty value means any service monitor will be accepted.
       service_monitor_selector: {}
-      # An empty value means any pod monitor will be accepted.
+      # -- An empty value means any pod monitor will be accepted.
       pod_monitor_selector: {}
 
     filter_strategy: relabel-config
     config:
       scrape_configs: []
 
+  # -- Resource requests and limits for the target allocator container
   resources: {}
     # limits:
     #   cpu: 100m
@@ -74,7 +76,7 @@ targetAllocator:
     #   cpu: 100m
     #   memory: 64Mi
 
-  # liveness probe configuration
+  # -- liveness probe configuration
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
     httpGet:
@@ -83,7 +85,7 @@ targetAllocator:
     initialDelaySeconds: 15
     periodSeconds: 20
 
-  # readiness probe configuration
+  # -- readiness probe configuration
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   readinessProbe:
     httpGet:
@@ -91,13 +93,13 @@ targetAllocator:
       port: 8080
     initialDelaySeconds: 5
     periodSeconds: 10
-  # Pod annotations to add to the target allocator pod
+  # -- Pod annotations to add to the target allocator pod
   podAnnotations: {}
 
-  # Pod labels to add to the target allocator pod
+  # -- Pod labels to add to the target allocator pod
   podLabels: {}
 
-  # Extra environment variables to set in the target allocator container.
+  # -- Extra environment variables to set in the target allocator container.
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
   extraEnvs: []
   # extraEnvs:
@@ -109,14 +111,22 @@ targetAllocator:
   #         name: my-secret
   #         key: my-key
 
+# -- Affinity for the target allocator pod
 affinity: {}
+# -- Tolerations for the target allocator pod
 tolerations: []
+# -- Node selector for the target allocator pod
 nodeSelector: {}
+# -- Topology spread constraints for the target allocator pod
 topologySpreadConstraints: []
+
+# -- Allows for pod scheduler prioritisation
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+priorityClassName: ""
 
 # statefulset specific configuration, only used when mode is "statefulset"
 statefulset:
-  # volumeClaimTemplates for the statefulset
+  # -- volumeClaimTemplates for the statefulset
   volumeClaimTemplates: []
   #  - metadata:
   #      name: data
@@ -125,14 +135,16 @@ statefulset:
   #      resources:
   #        requests:
   #          storage: 1Gi
+  # -- Pod management policy of the StatefulSet
   podManagementPolicy: "Parallel"
-  # Controls if and how PVCs created by the StatefulSet are deleted.
+  # -- Controls if and how PVCs created by the StatefulSet are deleted.
   # Available in Kubernetes 1.23+.
   persistentVolumeClaimRetentionPolicy:
     enabled: false
     whenDeleted: Retain
     whenScaled: Retain
 
+# -- Extra volumes to add to the target allocator pod
 extraVolumes: []
   # - name: custom-ta-configmap
   #   configMap:
@@ -141,8 +153,9 @@ extraVolumes: []
   #       - key: demo-key
   #         path: targetallocator.yaml
   #     defaultMode: 420
+# -- Extra volume mounts to add to the target allocator container
 extraVolumeMounts: []
   # - name: custom-ta-configmap
   #   mountPath: /conf
-## This will deploy arbitrary manifests as part of the helm relase
+# -- This will deploy arbitrary manifests as part of the helm relase
 extraObjects: []

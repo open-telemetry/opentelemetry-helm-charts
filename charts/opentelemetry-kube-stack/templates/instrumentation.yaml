@@ -13,8 +13,23 @@ metadata:
     {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
   {{- end }}
 spec:
+  {{- with .Values.instrumentation.defaults }}
+  defaults:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   exporter:
     endpoint: {{ .Values.instrumentation.exporter.endpoint }}
+    {{- with .Values.instrumentation.exporter.tls }}
+    tls:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  {{- with .Values.instrumentation.imagePullPolicy }}
+  imagePullPolicy: {{ . }}
+  {{- end }}
+  {{- with .Values.instrumentation.initContainerSecurityContext }}
+  initContainerSecurityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   propagators:
     {{- toYaml .Values.instrumentation.propagators | nindent 4 }}
   {{- with .Values.instrumentation.sampler }}
@@ -43,6 +58,10 @@ spec:
   nodejs:
     {{- toYaml . | nindent 4}}
   {{- end }}
+  {{- with .Values.instrumentation.php }}
+  php:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with .Values.instrumentation.python }}
   python:
     {{- toYaml . | nindent 4}}
@@ -56,7 +75,7 @@ spec:
     {{- toYaml . | nindent 4}}
   {{- end }}
   {{- with .Values.instrumentation.apacheHttpd }}
-  apacheHtpd:
+  apacheHttpd:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.instrumentation.nginx }}
