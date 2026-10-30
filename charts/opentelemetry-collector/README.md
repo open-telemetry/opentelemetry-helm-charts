@@ -593,6 +593,10 @@ For more examples see [Examples](examples).
 | serviceMonitor.relabelings | list | `[]` |  |
 | serviceMonitor.metricRelabelings | list | `[]` |  |
 | serviceMonitor.sampleLimit | int | `0` | Sets a sample limit on the ServiceMonitor |
+| serviceMonitor.scrapeProtocols | list | `[]` | Scrape protocols to negotiate, in order of preference, e.g. `[PrometheusProto, OpenMetricsText1.0.0]`. Requires `PrometheusProto` to receive native histograms. |
+| serviceMonitor.scrapeNativeHistograms | bool | `false` | Enables scraping of native histograms. Requires Prometheus >= v3.8.0. |
+| serviceMonitor.scrapeClassicHistograms | bool | `false` | Also scrapes the classic version of a histogram that is exposed as a native histogram. |
+| serviceMonitor.convertClassicHistogramsToNHCB | bool | `false` | Converts scraped classic histograms into native histograms with custom buckets (NHCB). Requires Prometheus >= v3.0.0. |
 | podDisruptionBudget.enabled | bool | `false` |  |
 | autoscaling.enabled | bool | `false` |  |
 | autoscaling.minReplicas | int | `1` |  |
