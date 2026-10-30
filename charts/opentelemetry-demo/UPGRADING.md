@@ -13,6 +13,8 @@ Resource attributes for each component are now defined as
 `OTEL_RESOURCE_ATTRIBUTES` environment variable. `default.podAnnotations` sets
 `service.name`, `service.namespace` and `service.version` for all components,
 and each component sets `service.criticality` in its own `podAnnotations`.
+Components with `useDefault.env: false` also get these annotations, but their
+environment variables are unchanged.
 
 For components using the default environment variables, each annotation is
 exposed through the downward API as an `OTEL_RESOURCE_ATTR_*` environment
@@ -23,18 +25,49 @@ by the value of `OTEL_RESOURCE_ATTRIBUTES_EXTRA`. `OTEL_SERVICE_NAME` now reads
 the `resource.opentelemetry.io/service.name` annotation instead of the
 `app.kubernetes.io/component` label.
 
-If you configure `OTEL_RESOURCE_ATTRIBUTES` using `valueFrom`, it is kept as
-is, along with `OTEL_RESOURCE_ATTRIBUTES_EXTRA`, and the annotation attributes
-are not added to it. They are still added to telemetry by the collector's
-`k8s_attributes` processor.
+The following changes may affect your custom values:
+
+- A component's `OTEL_RESOURCE_ATTRIBUTES` no longer replaces the chart's
+  resource attributes, it is appended to them. To only use your own value, also
+  set `OTEL_RESOURCE_ATTRIBUTES_BASE` to `""` for that component:
+
+  ```yaml
+  components:
+    cart:
+      envOverrides:
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: team=ring
+        - name: OTEL_RESOURCE_ATTRIBUTES_BASE
+          value: ""
+  ```
+
+- `service.name`, `service.namespace` and `service.version` are set in
+  `default.podAnnotations`, so they are no longer in a component's own
+  `podAnnotations`. To remove one from a component, set it to `null`:
+
+  ```yaml
+  components:
+    cart:
+      podAnnotations:
+        resource.opentelemetry.io/service.namespace: null
+  ```
+
+  To remove it from all components, set it to `null` in
+  `default.podAnnotations`. If you remove `resource.opentelemetry.io/service.name`,
+  also set `OTEL_SERVICE_NAME`, as it reads that annotation.
+
+- If you configure `OTEL_RESOURCE_ATTRIBUTES` using `valueFrom`, it is kept as
+  is, along with `OTEL_RESOURCE_ATTRIBUTES_EXTRA`, and the annotation
+  attributes are not added to it. They are still added to telemetry by the
+  collector's `k8s_attributes` processor.
+
+- Values in `default.podAnnotations` are rendered as templates. Values in a
+  component's `podAnnotations` are used as is.
 
 If your custom values set `service.criticality` through
 `OTEL_RESOURCE_ATTRIBUTES_EXTRA`, or add an `OTEL_RESOURCE_ATTRIBUTES` entry to
 `default.env`, consider moving those attributes to
 `resource.opentelemetry.io/*` pod annotations.
-
-Values in `default.podAnnotations` are rendered as templates. Values in a
-component's `podAnnotations` are used as is.
 
 ## To 0.42
 
