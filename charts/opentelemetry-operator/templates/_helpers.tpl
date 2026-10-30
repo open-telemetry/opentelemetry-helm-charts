@@ -168,20 +168,32 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 {{- end }}
 
 {{/*
-Build an image reference. A per-image registry overrides the global registry.
-The registry is prepended to the full repository path to support registry mirrors.
+Build an image reference from registry and repository fields.
+A non-empty global image registry takes precedence over the per-image registry.
+Legacy repository values retain their existing behavior.
 */}}
 {{- define "opentelemetry-operator.imageReference" -}}
 {{- $globalRegistry := "" -}}
 {{- if and .global .global.imageRegistry -}}
 {{- $globalRegistry = .global.imageRegistry -}}
 {{- end -}}
-{{- $registry := coalesce .image.registry $globalRegistry "" -}}
 {{- $repository := .image.repository -}}
-{{- if $registry -}}
-{{- printf "%s/%s:%s" (trimSuffix "/" $registry) (trimPrefix "/" $repository) .tag -}}
+{{- $legacyRepository := include "opentelemetry-operator.usesLegacyImageRepository" . -}}
+{{- if $legacyRepository -}}
+{{- if $globalRegistry -}}
+{{- printf "%s/%s:%s" (trimSuffix "/" $globalRegistry) (trimPrefix "/" $repository) .tag -}}
 {{- else -}}
 {{- printf "%s:%s" $repository .tag -}}
+{{- end -}}
+{{- else -}}
+{{- $registry := coalesce $globalRegistry .image.registry "ghcr.io" -}}
+{{- printf "%s/%s:%s" (trimSuffix "/" $registry) (trimPrefix "/" $repository) .tag -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "opentelemetry-operator.usesLegacyImageRepository" -}}
+{{- if and (ne .image.repository .defaultRepository) (or (eq .image.registry "ghcr.io") (and (eq .image.registry "") (hasPrefix "ghcr.io/" .image.repository))) -}}
+true
 {{- end -}}
 {{- end -}}
 
@@ -189,7 +201,7 @@ The registry is prepended to the full repository path to support registry mirror
 The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
-{{- include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.image "tag" (default .Chart.AppVersion .Values.manager.image.tag)) -}}
+{{- include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.image "defaultRepository" "open-telemetry/opentelemetry-operator/opentelemetry-operator" "tag" (default .Chart.AppVersion .Values.manager.image.tag)) -}}
 {{- end }}
 
 {{- define "opentelemetry-operator.featureGatesMap" -}}
