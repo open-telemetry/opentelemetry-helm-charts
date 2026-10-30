@@ -198,15 +198,18 @@ Legacy repository values retain their existing behavior.
 {{- end -}}
 
 {{- define "opentelemetry-operator.usesLegacyImageRepository" -}}
-{{- $repository := .image.repository -}}
+{{- $repository := .image.repository | default "" -}}
 {{- $repositoryHost := first (splitList "/" $repository) -}}
 {{- $repositoryHasRegistry := and (contains "/" $repository) (or (contains "." $repositoryHost) (contains ":" $repositoryHost) (eq $repositoryHost "localhost")) -}}
-{{- if or
-  (and (not (hasKey .image "registry")) (ne .image.repository ""))
-  (and (ne .image.repository .defaultRepository)
-    (or
-      (eq .image.registry "ghcr.io")
-      (and (empty .image.registry) $repositoryHasRegistry)
+{{- if and
+  (ne $repository "")
+  (or
+    (not (hasKey .image "registry"))
+    (and (ne $repository .defaultRepository)
+      (or
+        (eq .image.registry "ghcr.io")
+        (and (empty .image.registry) $repositoryHasRegistry)
+      )
     )
   )
 -}}
