@@ -181,7 +181,13 @@ Legacy repository values retain their existing behavior.
 {{- $legacyRepository := include "opentelemetry-operator.usesLegacyImageRepository" . -}}
 {{- if $legacyRepository -}}
 {{- if $globalRegistry -}}
-{{- printf "%s/%s:%s" (trimSuffix "/" $globalRegistry) (trimPrefix "/" $repository) .tag -}}
+{{- $repositoryPath := $repository -}}
+{{- $repositoryHost := first (splitList "/" $repositoryPath) -}}
+{{- $repositoryHasRegistry := and (contains "/" $repositoryPath) (or (contains "." $repositoryHost) (contains ":" $repositoryHost) (eq $repositoryHost "localhost")) -}}
+{{- if $repositoryHasRegistry -}}
+{{- $repositoryPath = trimPrefix (printf "%s/" $repositoryHost) $repositoryPath -}}
+{{- end -}}
+{{- printf "%s/%s:%s" (trimSuffix "/" $globalRegistry) (trimPrefix "/" $repositoryPath) .tag -}}
 {{- else -}}
 {{- printf "%s:%s" $repository .tag -}}
 {{- end -}}
@@ -192,7 +198,18 @@ Legacy repository values retain their existing behavior.
 {{- end -}}
 
 {{- define "opentelemetry-operator.usesLegacyImageRepository" -}}
-{{- if and (ne .image.repository .defaultRepository) (or (eq .image.registry "ghcr.io") (and (empty .image.registry) (hasPrefix "ghcr.io/" .image.repository))) -}}
+{{- $repository := .image.repository -}}
+{{- $repositoryHost := first (splitList "/" $repository) -}}
+{{- $repositoryHasRegistry := and (contains "/" $repository) (or (contains "." $repositoryHost) (contains ":" $repositoryHost) (eq $repositoryHost "localhost")) -}}
+{{- if or
+  (and (not (hasKey .image "registry")) (ne .image.repository ""))
+  (and (ne .image.repository .defaultRepository)
+    (or
+      (eq .image.registry "ghcr.io")
+      (and (empty .image.registry) $repositoryHasRegistry)
+    )
+  )
+-}}
 true
 {{- end -}}
 {{- end -}}
