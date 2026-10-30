@@ -192,7 +192,7 @@ Legacy repository values retain their existing behavior.
 {{- end -}}
 
 {{- define "opentelemetry-operator.usesLegacyImageRepository" -}}
-{{- if and (ne .image.repository .defaultRepository) (or (eq .image.registry "ghcr.io") (and (eq .image.registry "") (hasPrefix "ghcr.io/" .image.repository))) -}}
+{{- if and (ne .image.repository .defaultRepository) (or (eq .image.registry "ghcr.io") (and (empty .image.registry) (hasPrefix "ghcr.io/" .image.repository))) -}}
 true
 {{- end -}}
 {{- end -}}
