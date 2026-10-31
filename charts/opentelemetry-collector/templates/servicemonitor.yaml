@@ -13,6 +13,19 @@ spec:
   {{- with .Values.serviceMonitor.sampleLimit }}
   sampleLimit: {{ . }}
   {{- end }}
+  {{- with .Values.serviceMonitor.scrapeProtocols }}
+  scrapeProtocols:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if not (eq (toString .Values.serviceMonitor.scrapeNativeHistograms) "<nil>") }}
+  scrapeNativeHistograms: {{ .Values.serviceMonitor.scrapeNativeHistograms }}
+  {{- end }}
+  {{- if not (eq (toString .Values.serviceMonitor.scrapeClassicHistograms) "<nil>") }}
+  scrapeClassicHistograms: {{ .Values.serviceMonitor.scrapeClassicHistograms }}
+  {{- end }}
+  {{- if not (eq (toString .Values.serviceMonitor.convertClassicHistogramsToNHCB) "<nil>") }}
+  convertClassicHistogramsToNHCB: {{ .Values.serviceMonitor.convertClassicHistogramsToNHCB }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "opentelemetry-collector.selectorLabels" . | nindent 6 }}
