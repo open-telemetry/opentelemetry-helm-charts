@@ -158,7 +158,12 @@ bump_chart_version() {
   [[ -n "${current_app_major}" && -n "${current_app_minor}" && -n "${current_app_patch}" ]] \
     || fail "Invalid semver value for current app version: ${current_app_version}"
 
-  if [[ "${current_app_major}" != "${next_app_major}" || "${current_app_minor}" != "${next_app_minor}" ]]; then
+  if [[ "${current_app_major}" != "${next_app_major}" ]]; then
+    printf '%s.0.0\n' "$((chart_major + 1))"
+    return 0
+  fi
+
+  if [[ "${current_app_minor}" != "${next_app_minor}" ]]; then
     printf '%s.%s.0\n' "${chart_major}" "$((chart_minor + 1))"
     return 0
   fi

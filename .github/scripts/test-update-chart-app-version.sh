@@ -210,7 +210,7 @@ main() {
 		"0.150.0"
 
 	run_case \
-		"ta-app-major-bumps-chart-minor" \
+		"ta-app-major-bumps-chart-major" \
 		".github/scripts/testdata/update-chart-app-version/ta-chart-0.127.2-app-0.126.0.yaml" \
 		"v1.0.0" \
 		"opentelemetry-target-allocator" \
@@ -222,8 +222,8 @@ main() {
 		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
 		"true" \
-		"otelbot/ta-0.128.0" \
-		"0.128.0" \
+		"otelbot/ta-1.0.0" \
+		"1.0.0" \
 		"1.0.0"
 
 	rm -rf "${TEST_TMP_ROOT}"
