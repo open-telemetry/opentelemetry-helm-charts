@@ -84,7 +84,7 @@ For more information about the maintainer role, see the [community repository](h
 
 - [Alex Birca](https://github.com/Allex1), Adobe
 - [Jared Tan](https://github.com/JaredTan95), DaoCloud
-- [Juliano Costa](https://github.com/julianocosta89), Datadog
+- [Juliano Costa](https://github.com/julianocosta89), Dash0
 - [Povilas](https://github.com/povilasv), Coralogix
 - [Cyrille Le Clerc](https://github.com/cyrille-leclerc), Datadog
 
