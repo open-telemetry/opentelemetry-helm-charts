@@ -370,6 +370,19 @@ defaultCRConfig:
   #   timeoutSeconds: 2
   #   failureThreshold: 5
 
+  # -- Readiness probe configuration for the collector
+  readinessProbe: {}
+  #   periodSeconds: 5
+  #   failureThreshold: 3
+
+  # Kubernetes runs no readiness probe until the startup probe succeeds, and the operator's
+  # default startup probe (from the health_check extension) checks every 10 s, so its period
+  # bounds how fast a new collector pod becomes ready.
+  # -- Startup probe configuration for the collector
+  startupProbe: {}
+  #   periodSeconds: 1
+  #   failureThreshold: 30
+
   # -- Observability configuration for the collector
   observability: {}
   #   metrics:
