@@ -306,6 +306,28 @@ components:
         configMap:
           name: agent-fixtures
 
+  business-metrics:
+    # -- Enable the optional business metrics order consumer. Requires the OpenTelemetry Operator and a Java Instrumentation resource in this namespace.
+    enabled: false
+    useDefault:
+      env: true
+    podAnnotations:
+      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      instrumentation.opentelemetry.io/inject-java: "true"
+    env:
+      - name: KAFKA_ADDR
+        value: kafka:9092
+      - name: KAFKA_TOPIC
+        value: orders
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+      limits:
+        memory: 256Mi
+
   cart:
     # -- Is this component enabled
     enabled: true

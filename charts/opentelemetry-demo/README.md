@@ -37,6 +37,34 @@ command:
 helm install my-otel-demo open-telemetry/opentelemetry-demo
 ```
 
+## Business metrics
+
+The optional `business-metrics` component consumes orders without participating in
+checkout. It is disabled by default and needs no inbound port or Service.
+
+To enable it, install the OpenTelemetry Operator and create a Java
+`Instrumentation` resource in the demo namespace. Then set
+`components.business-metrics.enabled=true`. The pod annotation requests Java
+instrumentation injection. If the namespace contains several Instrumentation
+resources, set the annotation to the chosen resource's name.
+
+Use `components.business-metrics.imageOverride` to select an image built from the
+demo's business metrics service until it is included in a demo release. For
+example, with an image loaded into a local cluster:
+
+```yaml
+components:
+  business-metrics:
+    enabled: true
+    imageOverride:
+      repository: otel-demo-business-metrics
+      tag: local
+```
+
+The image contains the OpenTelemetry API only. The operator supplies the Java
+agent, SDK, and exporters. Without injection, the consumer still processes
+orders but does not export telemetry.
+
 ## Upgrading
 
 See [UPGRADING.md](UPGRADING.md).
@@ -287,6 +315,7 @@ parameters by default. The overriden parameters are specified below.
 | components.accounting.enabled | bool | `true` | Is this component enabled |
 | components.ad.enabled | bool | `true` | Is this component enabled |
 | components.agent.enabled | bool | `true` | Is this component enabled |
+| components.business-metrics.enabled | bool | `false` | Enable the optional business metrics order consumer. Requires the OpenTelemetry Operator and a Java Instrumentation resource in this namespace. |
 | components.cart.enabled | bool | `true` | Is this component enabled |
 | components.chatbot.enabled | bool | `true` | Is this component enabled |
 | components.checkout.enabled | bool | `true` | Is this component enabled |
