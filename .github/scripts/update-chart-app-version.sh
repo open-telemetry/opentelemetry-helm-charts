@@ -137,75 +137,33 @@ render_template() {
   printf '%s\n' "${rendered}"
 }
 
-increment_patch_version() {
-  local version="$1"
-  local major=""
-  local minor=""
-  local patch=""
+bump_chart_version() {
+  local current_chart_version="$1"
+  local current_app_version="$2"
+  local chart_major=""
+  local chart_minor=""
+  local chart_patch=""
+  local current_app_major=""
+  local current_app_minor=""
+  local current_app_patch=""
+  local next_app_major=""
+  local next_app_minor=""
 
-  IFS='.' read -r major minor patch <<< "${version}"
+  IFS='.' read -r chart_major chart_minor chart_patch <<< "${current_chart_version}"
+  IFS='.' read -r current_app_major current_app_minor current_app_patch <<< "${current_app_version}"
+  IFS='.' read -r next_app_major next_app_minor _ <<< "${NORMALIZED_RELEASE_VERSION}"
 
-  [[ -n "${major}" && -n "${minor}" && -n "${patch}" ]] \
-    || fail "Invalid semver value for patch bump: ${version}"
+  [[ -n "${chart_major}" && -n "${chart_minor}" && -n "${chart_patch}" ]] \
+    || fail "Invalid semver value for chart version: ${current_chart_version}"
+  [[ -n "${current_app_major}" && -n "${current_app_minor}" && -n "${current_app_patch}" ]] \
+    || fail "Invalid semver value for current app version: ${current_app_version}"
 
-  printf '%s.%s.%s\n' "${major}" "${minor}" "$((patch + 1))"
-}
-
-semver_gte() {
-  local left="$1"
-  local right="$2"
-  local left_major=""
-  local left_minor=""
-  local left_patch=""
-  local right_major=""
-  local right_minor=""
-  local right_patch=""
-
-  IFS='.' read -r left_major left_minor left_patch <<< "${left}"
-  IFS='.' read -r right_major right_minor right_patch <<< "${right}"
-
-  [[ -n "${left_major}" && -n "${left_minor}" && -n "${left_patch}" ]] \
-    || fail "Invalid semver value for comparison: ${left}"
-  [[ -n "${right_major}" && -n "${right_minor}" && -n "${right_patch}" ]] \
-    || fail "Invalid semver value for comparison: ${right}"
-
-  if (( left_major != right_major )); then
-    [[ ${left_major} -gt ${right_major} ]]
-    return $?
+  if [[ "${current_app_major}" != "${next_app_major}" || "${current_app_minor}" != "${next_app_minor}" ]]; then
+    printf '%s.%s.0\n' "${chart_major}" "$((chart_minor + 1))"
+    return 0
   fi
 
-  if (( left_minor != right_minor )); then
-    [[ ${left_minor} -gt ${right_minor} ]]
-    return $?
-  fi
-
-  [[ ${left_patch} -ge ${right_patch} ]]
-}
-
-semver_major_minor_gt() {
-  local left="$1"
-  local right="$2"
-  local left_major=""
-  local left_minor=""
-  local left_patch=""
-  local right_major=""
-  local right_minor=""
-  local right_patch=""
-
-  IFS='.' read -r left_major left_minor left_patch <<< "${left}"
-  IFS='.' read -r right_major right_minor right_patch <<< "${right}"
-
-  [[ -n "${left_major}" && -n "${left_minor}" && -n "${left_patch}" ]] \
-    || fail "Invalid semver value for comparison: ${left}"
-  [[ -n "${right_major}" && -n "${right_minor}" && -n "${right_patch}" ]] \
-    || fail "Invalid semver value for comparison: ${right}"
-
-  if (( left_major != right_major )); then
-    [[ ${left_major} -gt ${right_major} ]]
-    return $?
-  fi
-
-  [[ ${left_minor} -gt ${right_minor} ]]
+  printf '%s.%s.%s\n' "${chart_major}" "${chart_minor}" "$((chart_patch + 1))"
 }
 
 desired_app_version() {
@@ -222,37 +180,12 @@ desired_chart_version() {
   local current_chart_version="$2"
   local next_app_version="$3"
 
-  case "${VERSION_POLICY}" in
-    mirror-upstream-without-prefix)
-      if [[ "${current_app_version}" == "${next_app_version}" ]]; then
-        printf '%s\n' "${current_chart_version}"
-        return 0
-      fi
+  if [[ "${current_app_version}" == "${next_app_version}" ]]; then
+    printf '%s\n' "${current_chart_version}"
+    return 0
+  fi
 
-      if semver_gte "${current_chart_version}" "${NORMALIZED_RELEASE_VERSION}"; then
-        increment_patch_version "${current_chart_version}"
-        return 0
-      fi
-
-      printf '%s\n' "${NORMALIZED_RELEASE_VERSION}"
-      ;;
-    patch-bump)
-      if [[ "${current_app_version}" == "${next_app_version}" ]]; then
-        printf '%s\n' "${current_chart_version}"
-        return 0
-      fi
-
-      if semver_major_minor_gt "${NORMALIZED_RELEASE_VERSION}" "${current_chart_version}"; then
-        printf '%s\n' "${NORMALIZED_RELEASE_VERSION}"
-        return 0
-      fi
-
-      increment_patch_version "${current_chart_version}"
-      ;;
-    *)
-      fail "Unsupported VERSION_POLICY: ${VERSION_POLICY}"
-      ;;
-  esac
+  bump_chart_version "${current_chart_version}" "$(strip_prefix "${current_app_version}" "${APP_VERSION_PREFIX}")"
 }
 
 update_chart_metadata() {
@@ -331,7 +264,6 @@ main() {
   require_env RELEASE_TAG_PREFIX
   require_env APP_VERSION_PREFIX
   require_env BRANCH_PREFIX
-  require_env VERSION_POLICY
   require_env APPROVERS
   require_env PR_TITLE_TEMPLATE
   require_env PR_BODY_TEMPLATE
@@ -379,7 +311,6 @@ declare UPSTREAM_REPOSITORY="${UPSTREAM_REPOSITORY:-}"
 declare RELEASE_TAG_PREFIX="${RELEASE_TAG_PREFIX:-}"
 declare APP_VERSION_PREFIX="${APP_VERSION_PREFIX:-}"
 declare BRANCH_PREFIX="${BRANCH_PREFIX:-}"
-declare VERSION_POLICY="${VERSION_POLICY:-}"
 declare APPROVERS="${APPROVERS:-}"
 declare PR_TITLE_TEMPLATE="${PR_TITLE_TEMPLATE:-}"
 declare PR_BODY_TEMPLATE="${PR_BODY_TEMPLATE:-}"
