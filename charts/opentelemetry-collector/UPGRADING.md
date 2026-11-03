@@ -8,7 +8,25 @@ Just upgrade and enjoy.
 
 The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string, so update any queries or dashboards that read `container.image.tag`.
 
-`container.image.tags` requires Collector v0.152.0 or newer. On v0.152.0 to v0.160.x, it is only emitted when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is enabled. If you use an image older than v0.152.0, set `config.processors.k8s_attributes.extract.metadata` (or `k8sattributes` when `rewriteDeprecatedComponentNames` is `false`) to the full list of attributes you need, using `container.image.tag`. Lists are not merged, so the list you set replaces the preset's list.
+`container.image.tags` requires Collector v0.152.0 or newer and the `processor.k8sattributes.EmitV1K8sConventions` feature gate to be enabled. This gate is disabled by default before v0.161.0 and enabled by default from v0.161.0.
+
+If you use an older Collector image or leave that gate disabled, override the metadata list to keep `container.image.tag`. On Collector v0.161.0 and newer, also disable `processor.k8sattributes.DontEmitV0K8sConventions` to emit the old attribute.
+
+Your list replaces the preset's list, so include every attribute you need:
+
+```yaml
+config:
+  processors:
+    k8s_attributes:
+      extract:
+        metadata:
+          - k8s.namespace.name
+          - k8s.pod.name
+          # ...the other attributes you need
+          - container.image.tag
+```
+
+If `alternateConfig` is non-empty, put this under `alternateConfig` instead of `config`. If `rewriteDeprecatedComponentNames` is `false`, use `k8sattributes` instead of `k8s_attributes`.
 
 ## 0.177.0 to 0.178.0
 
