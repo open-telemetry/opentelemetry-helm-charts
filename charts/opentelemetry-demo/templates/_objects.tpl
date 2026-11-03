@@ -64,6 +64,10 @@ spec:
           {{- end }}
           env:
             {{- include "otel-demo.pod.env" . | nindent 12 }}
+          {{- if .envFrom }}
+          envFrom:
+            {{- .envFrom | toYaml | nindent 12 }}
+          {{- end }}
           resources:
             {{- .resources | toYaml | nindent 12 }}
           {{- if or .defaultValues.securityContext .securityContext }}
@@ -234,6 +238,24 @@ metadata:
 data:
   {{- .data | toYaml | nindent 2}}
 {{- end}}
+{{- end}}
+{{- end}}
+
+{{/*
+Demo component Secret template
+*/}}
+{{- define "otel-demo.secret" }}
+{{- range .secrets }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .name }}
+  labels:
+    {{- include "otel-demo.labels" $ | nindent 4 }}
+type: Opaque
+stringData:
+  {{- .stringData | toYaml | nindent 2 }}
 {{- end}}
 {{- end}}
 
