@@ -8,7 +8,7 @@ Just upgrade and enjoy.
 
 The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string, so update any queries or dashboards that read `container.image.tag`.
 
-`container.image.tags` requires Collector v0.152.0 or newer. On v0.152.0 to v0.160.x, it is only emitted when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is enabled. If you use an older image, set `config.processors.k8s_attributes.extract.metadata` (or `k8sattributes` when `rewriteDeprecatedComponentNames` is `false`) to the full list of attributes you need, using `container.image.tag`. Lists are not merged, so the list you set replaces the preset's list.
+`container.image.tags` requires Collector v0.152.0 or newer. On v0.152.0 to v0.160.x, it is only emitted when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is enabled. If you use an image older than v0.152.0, set `config.processors.k8s_attributes.extract.metadata` (or `k8sattributes` when `rewriteDeprecatedComponentNames` is `false`) to the full list of attributes you need, using `container.image.tag`. Lists are not merged, so the list you set replaces the preset's list.
 
 ## 0.177.0 to 0.178.0
 
