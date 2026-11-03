@@ -4,6 +4,12 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.178.2 to 0.179.0
+
+The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string, so update any queries or dashboards that read `container.image.tag`.
+
+`container.image.tags` requires Collector v0.152.0 or newer. On v0.152.0 to v0.160.x, it is only emitted when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is enabled. If you use an older image, set `config.processors.k8s_attributes.extract.metadata` (or `k8sattributes` when `rewriteDeprecatedComponentNames` is `false`) to the full list of attributes you need, using `container.image.tag`. Lists are not merged, so the list you set replaces the preset's list.
+
 ## 0.177.0 to 0.178.0
 
 The collector's internal telemetry resource attributes moved out of `config.service.telemetry.resource` and into a new top-level `telemetry` section. The chart now renders them into `config.service.telemetry.resource.attributes`, the list format the Collector has expected since v0.123.0, which stops the deprecation warning logged at every start.
