@@ -90,6 +90,19 @@ config:
 
 The chart also provides several presets, detailed below, to help configure important Kubernetes components. For more details on each component, see [Kubernetes Collector Components](https://opentelemetry.io/docs/kubernetes/collector/components/).
 
+### ConfigMap templates in an umbrella chart
+
+When a parent chart provides the Collector's ConfigMap, set `configMap.create: false`,
+`configMap.existingName` to its name, and `configMap.existingTemplate` to the named
+template that renders it. The chart hashes the template's `data` and `stringData`
+so changes restart the Collector pods, including when the Collector is nested
+several dependency levels below the parent chart.
+
+The named template receives the Collector subchart's context. Use `global` values
+when configuration must be shared with a parent chart. Use `configMap.existingPath`
+for a path relative to the Collector's templates directory instead; the two options
+are mutually exclusive.
+
 ### Configuration for Kubernetes Container Logs
 
 The collector can be used to collect logs sent to standard output by Kubernetes containers.

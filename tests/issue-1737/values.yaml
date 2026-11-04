@@ -1,0 +1,11 @@
+global:
+  externalConfig: "receivers: { otlp: { protocols: { grpc: {} } } }"
+wrapper:
+  opentelemetry-collector:
+    mode: deployment
+    image:
+      repository: otel/opentelemetry-collector-contrib
+    configMap:
+      create: false
+      existingName: external-collector-config
+      existingTemplate: "umbrella.configmap"
