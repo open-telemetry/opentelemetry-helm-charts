@@ -664,6 +664,16 @@ service:
   type: ClusterIP
   # Supported values: PreferClose (deprecated in K8s 1.33+), PreferSameZone, PreferSameNode
   # trafficDistribution: PreferClose
+  # Configure dual-stack networking for the Service. Possible values for ipFamilyPolicy are
+  # SingleStack, PreferDualStack and RequireDualStack. ipFamilies lists IPv4 and/or IPv6, in order of preference.
+  # https://kubernetes.io/docs/concepts/services-networking/dual-stack/
+  # The Service only routes traffic of both address families. The default receiver endpoints use the pod IP
+  # (MY_POD_IP), which is a single address, so set the endpoints of the receivers to a wildcard such as "[::]:4318"
+  # for them to accept connections on IPv4 and IPv6.
+  # ipFamilyPolicy: PreferDualStack
+  # ipFamilies:
+  #   - IPv4
+  #   - IPv6
   # type: LoadBalancer
   # loadBalancerIP: 1.2.3.4
   # loadBalancerSourceRanges: []
