@@ -4,6 +4,19 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.178.1 to 0.179.0
+
+The `rewriteDeprecatedComponentNames` flag now also handles renaming the `kubeletstats` receiver to `kubelet_stats`. The `kubeletstats` receiver was renamed to `kubelet_stats` in OpenTelemetry Collector Contrib v0.152.0, and `kubeletstats` remains as a deprecated alias that logs a warning at runtime. The flag is enabled by default, and the `presets.kubeletMetrics` receiver — and any `kubeletstats` receiver you define in `config.receivers` — is automatically rewritten to `kubelet_stats` in the generated config.
+
+If you are using a Collector image older than v0.152.0 that does not recognize the `kubelet_stats` name, set `rewriteDeprecatedComponentNames: false` to preserve the old `kubeletstats` name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  kubeletMetrics:
+    enabled: true
+```
+
 ## 0.177.0 to 0.178.0
 
 The collector's internal telemetry resource attributes moved out of `config.service.telemetry.resource` and into a new top-level `telemetry` section. The chart now renders them into `config.service.telemetry.resource.attributes`, the list format the Collector has expected since v0.123.0, which stops the deprecation warning logged at every start.

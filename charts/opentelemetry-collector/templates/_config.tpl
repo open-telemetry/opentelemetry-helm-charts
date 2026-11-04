@@ -299,14 +299,22 @@ receivers:
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubeletMetricsConfig" -}}
+{{- $receiverName := "kubeletstats" }}
+{{- if .Values.Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "kubelet_stats" }}
+{{- end }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.kubeletMetricsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "kubeletstats" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers $receiverName | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubeletMetricsConfig" -}}
+{{- $receiverName := "kubeletstats" }}
+{{- if .Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "kubelet_stats" }}
+{{- end }}
 receivers:
-  kubeletstats:
+  {{ $receiverName }}:
     collection_interval: 20s
     auth_type: "serviceAccount"
     endpoint: "${env:K8S_NODE_IP}:10250"
