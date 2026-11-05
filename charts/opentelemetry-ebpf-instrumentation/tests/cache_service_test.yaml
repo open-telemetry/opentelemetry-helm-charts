@@ -2,6 +2,42 @@ suite: cache service
 templates:
   - templates/cache-service.yaml
 tests:
+  - it: merges shared and cache service annotations with cache precedence and renders templates
+    release:
+      name: obi
+      namespace: observability
+    set:
+      service:
+        annotations:
+          example.com/component: agent
+          example.com/shared: '{{ .Release.Namespace }}'
+      k8sCache:
+        replicas: 1
+        service:
+          annotations:
+            example.com/component: cache
+            example.com/release: '{{ .Release.Name }}'
+    asserts:
+      - equal:
+          path: metadata.annotations
+          value:
+            example.com/component: cache
+            example.com/shared: observability
+            example.com/release: obi
+
+  - it: inherits shared service annotations when cache annotations are empty
+    set:
+      service:
+        annotations:
+          example.com/component: agent
+      k8sCache:
+        replicas: 1
+    asserts:
+      - equal:
+          path: metadata.annotations
+          value:
+            example.com/component: agent
+
   - it: renders cache service when replicas are set
     set:
       k8sCache:
@@ -18,6 +54,8 @@ tests:
       - equal:
           path: spec.selector["app.kubernetes.io/name"]
           value: opentelemetry-ebpf-instrumentation-k8s-cache
+      - notExists:
+          path: metadata.annotations
 
   - it: does not render when replicas disabled
     asserts:
