@@ -140,7 +140,7 @@ component.
 | `securityContext`                       | Container security context                                                               | `{}`                                                          |
 | `podSecurityContext`                    | Pod security context s                                                                   | `{}`                                                          |
 | `podLabels`                             | Pod labels for this component                                                            | `{}`                                                          |
-| `podAnnotations`                        | Pod annotations for this component                                                       | `{}`                                                          |
+| `podAnnotations`                        | Pod annotations for this component, merged with `default.podAnnotations`                 | `{}`                                                          |
 | `ingress.enabled`                       | Enable the creation of Ingress rules                                                     | `false`                                                       |
 | `ingress.annotations`                   | Annotations to add to the ingress rule                                                   | `{}`                                                          |
 | `ingress.ingressClassName`              | Ingress class to use. If not specified default Ingress class will be used.               | `nil`                                                         |
@@ -269,6 +269,7 @@ parameters by default. The overriden parameters are specified below.
 |-----|------|---------|-------------|
 | default.env | list | Array of several OpenTelemetry environment variables, see [values.yaml](./values.yaml) | List of environment variables applied to all components |
 | default.envOverrides | list | `[]` | Used to override individual environment variables without re-specifying the entire array. Allows overriding and additions to .Values.default.env |
+| default.podAnnotations | object | `{"resource.opentelemetry.io/service.name":"{{ .name }}","resource.opentelemetry.io/service.namespace":"opentelemetry-demo","resource.opentelemetry.io/service.version":"{{ .Chart.AppVersion }}"}` | Pod annotations applied to all components, merged with each component's `podAnnotations`. Values are rendered as templates. Annotations prefixed with `resource.opentelemetry.io/` are exposed to components using the default environment variables as `OTEL_RESOURCE_ATTRIBUTES` through the downward API. |
 | default.image.repository | string | `"ghcr.io/open-telemetry/demo"` | Demo components image name |
 | default.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. The service's name will be applied to the end of this value. |
 | default.image.pullPolicy | string | `"IfNotPresent"` | Demo components image pull policy |
