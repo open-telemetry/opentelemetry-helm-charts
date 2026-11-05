@@ -48,14 +48,13 @@ run_case() {
 	local release_tag_prefix="$6"
 	local app_version_prefix="$7"
 	local branch_prefix="$8"
-	local version_policy="$9"
-	local approvers="${10}"
-	local pr_title_template="${11}"
-	local pr_body_template="${12}"
-	local expected_changed="${13}"
-	local expected_branch_name="${14}"
-	local expected_chart_version="${15}"
-	local expected_app_version="${16}"
+	local approvers="$9"
+	local pr_title_template="${10}"
+	local pr_body_template="${11}"
+	local expected_changed="${12}"
+	local expected_branch_name="${13}"
+	local expected_chart_version="${14}"
+	local expected_app_version="${15}"
 
 	local case_dir="${TEST_TMP_ROOT}/${name}"
 	local chart_yaml_path="${ROOT_DIR}/charts/${chart_name}/Chart.yaml"
@@ -88,7 +87,6 @@ run_case() {
 			RELEASE_TAG_PREFIX="${release_tag_prefix}" \
 			APP_VERSION_PREFIX="${app_version_prefix}" \
 			BRANCH_PREFIX="${branch_prefix}" \
-			VERSION_POLICY="${version_policy}" \
 			APPROVERS="${approvers}" \
 			PR_TITLE_TEMPLATE="${pr_title_template}" \
 			PR_BODY_TEMPLATE="${pr_body_template}" \
@@ -118,7 +116,6 @@ main() {
 		"v" \
 		"v" \
 		"obi" \
-		"mirror-upstream-without-prefix" \
 		"@open-telemetry/ebpf-instrumentation-approvers" \
 		"Update OBI chart to use latest OBI version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
@@ -128,7 +125,7 @@ main() {
 		"v0.8.0"
 
 	run_case \
-		"obi-patch-bump-existing-chart-line" \
+		"obi-app-patch-bumps-chart-patch" \
 		".github/scripts/testdata/update-chart-app-version/obi-chart-0.8.1-app-v0.8.0.yaml" \
 		"v0.8.1" \
 		"opentelemetry-ebpf-instrumentation" \
@@ -136,7 +133,6 @@ main() {
 		"v" \
 		"v" \
 		"obi" \
-		"mirror-upstream-without-prefix" \
 		"@open-telemetry/ebpf-instrumentation-approvers" \
 		"Update OBI chart to use latest OBI version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
@@ -146,7 +142,7 @@ main() {
 		"v0.8.1"
 
 	run_case \
-		"obi-initialize-to-upstream-line" \
+		"obi-app-minor-bumps-chart-minor" \
 		".github/scripts/testdata/update-chart-app-version/obi-chart-0.7.9-app-v0.7.8.yaml" \
 		"v0.8.1" \
 		"opentelemetry-ebpf-instrumentation" \
@@ -154,13 +150,12 @@ main() {
 		"v" \
 		"v" \
 		"obi" \
-		"mirror-upstream-without-prefix" \
 		"@open-telemetry/ebpf-instrumentation-approvers" \
 		"Update OBI chart to use latest OBI version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
 		"true" \
-		"otelbot/obi-0.8.1" \
-		"0.8.1" \
+		"otelbot/obi-0.8.0" \
+		"0.8.0" \
 		"v0.8.1"
 
 	run_case \
@@ -172,7 +167,6 @@ main() {
 		"v" \
 		"" \
 		"ta" \
-		"patch-bump" \
 		"@atoulme" \
 		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
@@ -182,7 +176,7 @@ main() {
 		"0.126.0"
 
 	run_case \
-		"ta-patch-bump-same-minor-line" \
+		"ta-app-patch-bumps-chart-patch" \
 		".github/scripts/testdata/update-chart-app-version/ta-chart-0.127.2-app-0.126.0.yaml" \
 		"v0.126.1" \
 		"opentelemetry-target-allocator" \
@@ -190,7 +184,6 @@ main() {
 		"v" \
 		"" \
 		"ta" \
-		"patch-bump" \
 		"@atoulme" \
 		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
@@ -200,7 +193,7 @@ main() {
 		"0.126.1"
 
 	run_case \
-		"ta-jump-to-higher-minor-line" \
+		"ta-app-minor-bumps-chart-minor" \
 		".github/scripts/testdata/update-chart-app-version/ta-chart-0.127.2-app-0.126.0.yaml" \
 		"v0.150.0" \
 		"opentelemetry-target-allocator" \
@@ -208,14 +201,30 @@ main() {
 		"v" \
 		"" \
 		"ta" \
-		"patch-bump" \
 		"@atoulme" \
 		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
 		$'{{ release_url }}\n\ncc {{ approvers }}' \
 		"true" \
-		"otelbot/ta-0.150.0" \
-		"0.150.0" \
+		"otelbot/ta-0.128.0" \
+		"0.128.0" \
 		"0.150.0"
+
+	run_case \
+		"ta-app-major-bumps-chart-major" \
+		".github/scripts/testdata/update-chart-app-version/ta-chart-0.127.2-app-0.126.0.yaml" \
+		"v1.0.0" \
+		"opentelemetry-target-allocator" \
+		"open-telemetry/opentelemetry-operator" \
+		"v" \
+		"" \
+		"ta" \
+		"@atoulme" \
+		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
+		$'{{ release_url }}\n\ncc {{ approvers }}' \
+		"true" \
+		"otelbot/ta-1.0.0" \
+		"1.0.0" \
+		"1.0.0"
 
 	rm -rf "${TEST_TMP_ROOT}"
 	printf 'PASS\n'
