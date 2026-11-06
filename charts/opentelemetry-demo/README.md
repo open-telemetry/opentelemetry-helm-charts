@@ -137,6 +137,7 @@ component.
 | `schedulingRules.nodeSelector`          | Node labels for pod assignment                                                           | `{}`                                                          |
 | `schedulingRules.affinity`              | Man of node/pod affinities                                                               | `{}`                                                          |
 | `schedulingRules.tolerations`           | Tolerations for pod assignment                                                           | `[]`                                                          |
+| `priorityClassName`                     | PriorityClass for this component's pods                                                  | Defaults to `default.priorityClassName`                       |
 | `securityContext`                       | Container security context                                                               | `{}`                                                          |
 | `podSecurityContext`                    | Pod security context s                                                                   | `{}`                                                          |
 | `podLabels`                             | Pod labels for this component                                                            | `{}`                                                          |
@@ -279,6 +280,7 @@ parameters by default. The overriden parameters are specified below.
 | default.schedulingRules.nodeSelector | object | `{}` | Node labels for pod assignment |
 | default.schedulingRules.affinity | object | `{}` | Map of node/pod affinities |
 | default.schedulingRules.tolerations | list | `[]` | Tolerations for pod assignment |
+| default.priorityClassName | string | `""` | Default priorityClassName for all components |
 | default.securityContext | object | `{}` | Default securityContext for all components |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
