@@ -347,10 +347,7 @@ components:
     envFrom:
       - secretRef:
           name: valkey-credentials
-    secrets:
-      - name: valkey-credentials
-        stringData:
-          VALKEY_PASSWORD: ""
+          optional: true
     resources:
       limits:
         memory: 160Mi
@@ -1171,6 +1168,10 @@ components:
     envFrom:
       - secretRef:
           name: valkey-credentials
+    secrets:
+      - name: valkey-credentials
+        stringData:
+          VALKEY_PASSWORD: ""
     ports:
       - name: valkey-cart
         value: 6379
@@ -1179,7 +1180,6 @@ components:
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: redis
       io.opentelemetry.discovery.metrics/config: |
-        username: valkey
         password: ""
         collection_interval: 10s
     resources:

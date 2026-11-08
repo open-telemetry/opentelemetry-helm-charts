@@ -7,11 +7,11 @@ metadata:
   labels:
     helm.sh/chart: opentelemetry-demo-0.42.7
     
-    opentelemetry.io/name: cart
+    opentelemetry.io/name: valkey-cart
     
     app.kubernetes.io/version: "3.1.0"
-    app.kubernetes.io/component: cart
-    app.kubernetes.io/name: cart
+    app.kubernetes.io/component: valkey-cart
+    app.kubernetes.io/name: valkey-cart
     app.kubernetes.io/part-of: opentelemetry-demo
     app.kubernetes.io/managed-by: Helm
 type: Opaque
@@ -1082,6 +1082,7 @@ spec:
           envFrom:
             - secretRef:
                 name: valkey-credentials
+                optional: true
           resources:
             limits:
               memory: 160Mi
@@ -2816,7 +2817,6 @@ spec:
         app.kubernetes.io/name: valkey-cart
       annotations:
         io.opentelemetry.discovery.metrics/config: |
-          username: valkey
           password: ""
           collection_interval: 10s
         io.opentelemetry.discovery.metrics/enabled: "true"
