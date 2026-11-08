@@ -90,6 +90,10 @@ components:
   ## Environment variables that upsert (append + merge) into the `env` specification for this component.
   ## A variable named OTEL_RESOURCE_ATTRIBUTES_EXTRA will have its value appended to the OTEL_RESOURCE_ATTRIBUTES value.
   #   envOverrides:
+  ## Sources to populate the component container's environment from (ConfigMaps or Secrets).
+  #   envFrom:
+  #     - secretRef:
+  #         name: my-secret
   ## Pod Scheduling rules for nodeSelector, affinity, or tolerations.
   #   schedulingRules:
   #     nodeSelector: {}
@@ -154,6 +158,12 @@ components:
   #       data:
   #         my-config.yaml: |
   #           key: value
+  ## Secrets to create for this component. Both name and stringData are required.
+  ## Other components can consume the Secret by name, e.g. through envFrom.
+  #   secrets:
+  #     - name: my-secret
+  #       stringData:
+  #         MY_KEY: my-value
   ## Configuration to create an custom Volume
   #   additionalVolumes:
   #     - name: nginx-logs
@@ -199,11 +209,15 @@ components:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: DB_CONNECTION_STRING
-        value: Host=astronomy-db;Username=astronomy_user;Password=astronomy_password;Database=astronomy_db
+        value: Host=astronomy-db;Username=astronomy_user;Password=$(ASTRONOMY_PASSWORD);Database=astronomy_db
       - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
         value: "false"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=low
+    envFrom:
+      - secretRef:
+          name: astronomy-db-credentials
+          optional: true
     resources:
       limits:
         memory: 160Mi
@@ -809,7 +823,7 @@ components:
       - name: OTEL_GO_X_OBSERVABILITY
         value: "true"
       - name: DB_CONNECTION_STRING
-        value: postgres://astronomy_user:astronomy_password@astronomy-db/astronomy_db?sslmode=disable
+        value: postgres://astronomy_user:$(ASTRONOMY_PASSWORD)@astronomy-db/astronomy_db?sslmode=disable
       - name: OTEL_SEMCONV_STABILITY_OPT_IN
         value: database
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -822,6 +836,10 @@ components:
         value: /otel-config.yml
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=high
+    envFrom:
+      - secretRef:
+          name: astronomy-db-credentials
+          optional: true
     mountedConfigMaps:
       - name: product-catalog-otel-config
         mountPath: /otel-config.yml
@@ -1127,9 +1145,15 @@ components:
             enabled: true
         tls:
           insecure: true
-    env:
-      - name: POSTGRES_PASSWORD
-        value: changeit
+    envFrom:
+      - secretRef:
+          name: astronomy-db-credentials
+    secrets:
+      - name: astronomy-db-credentials
+        stringData:
+          POSTGRES_PASSWORD: changeit
+          ASTRONOMY_PASSWORD: astronomy_password
+          MONITORING_PASSWORD: monitoring_password
     mountedConfigMaps:
       - name: postgresql-init
         mountPath: /docker-entrypoint-initdb.d
