@@ -505,6 +505,7 @@ processors:
         - k8s.statefulset.uid
         - container.image.tag
         - container.image.name
+        - container.id
         - k8s.cluster.uid
         - service.namespace
         - service.name
