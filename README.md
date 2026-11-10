@@ -75,7 +75,7 @@ See [CONTRIBUTING.md](https://github.com/open-telemetry/opentelemetry-helm-chart
 ### Maintainers
 
 - [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Jacob Aronoff](https://github.com/jaronoff97), Tero
+- [Jacob Aronoff](https://github.com/jaronoff97), Cribl
 - [Tyler Helmuth](https://github.com/TylerHelmuth), Grafana Labs
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
