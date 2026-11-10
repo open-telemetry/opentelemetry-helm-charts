@@ -24,13 +24,17 @@ spec:
   endpoints:
     {{- range .Values.manager.serviceMonitor.metricsEndpoints }}
     - {{ toYaml . | indent 6 | trim }}
+      {{- if not (hasKey . "relabelings") }}
       {{- with $.Values.manager.serviceMonitor.relabelings }}
       relabelings:
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- end }}
+      {{- if not (hasKey . "metricRelabelings") }}
       {{- with $.Values.manager.serviceMonitor.metricRelabelings }}
       metricRelabelings:
       {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- end }}
     {{- end }}
   namespaceSelector:
