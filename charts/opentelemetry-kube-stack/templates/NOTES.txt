@@ -6,13 +6,13 @@ With the features you've enabled, you can:
 
 * Auto-instrument and auto-configure applications:
    Add this annotation to your pod specs to inject the OTel SDK and automatic configuration:
-      instrumentation.opentelemetry.io/inject-<language>: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+      instrumentation.opentelemetry.io/inject-<language>: {{ include "opentelemetry-kube-stack.namespace" . }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
    Replace <language> with: dotnet, go, java, nodejs, python, etc.
 
 * Manually instrument and auto-configure applications:
    Bundle the OTel SDK in your application containers, then add this annotation for auto-configuration
    through environment variable injection:
-      instrumentation.opentelemetry.io/inject-sdk: {{ .Release.Namespace }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
+      instrumentation.opentelemetry.io/inject-sdk: {{ include "opentelemetry-kube-stack.namespace" . }}/{{ include "opentelemetry-kube-stack.instrumentation" . }}
 
 {{ end -}}
 * Manually instrument and manually configure applications:
