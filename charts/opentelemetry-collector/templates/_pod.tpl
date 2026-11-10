@@ -206,10 +206,19 @@ containers:
       {{- end }}
       {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
+      {{- if .Values.presets.hostMetrics.hardenedMode }}
+      - name: host-proc
+        mountPath: /hostfs/proc
+        readOnly: true
+      - name: host-sys
+        mountPath: /hostfs/sys
+        readOnly: true
+      {{- else }}
       - name: hostfs
         mountPath: /hostfs
         readOnly: true
         mountPropagation: HostToContainer
+      {{- end }}
       {{- end }}
       {{- if .Values.presets.profiling.enabled }}
       - name: tracefs
@@ -259,9 +268,18 @@ volumes:
       path: /var/lib/docker/containers
   {{- end }}
   {{- if .Values.presets.hostMetrics.enabled }}
+  {{- if .Values.presets.hostMetrics.hardenedMode }}
+  - name: host-proc
+    hostPath:
+      path: /proc
+  - name: host-sys
+    hostPath:
+      path: /sys
+  {{- else }}
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
   {{- end }}
   {{- if .Values.presets.profiling.enabled }}
   - name: tracefs

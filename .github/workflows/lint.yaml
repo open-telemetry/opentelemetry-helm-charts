@@ -38,6 +38,27 @@ jobs:
       - name: Run make check-examples
         run: make check-examples
 
+  helm-docs:
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+
+      - name: Install helm-docs
+        run: make install-helm-docs
+
+      # Re-generates the chart READMEs and fails if that produces a diff, so a
+      # README that no longer matches its values.yaml or README.md.gotmpl cannot merge.
+      - name: Run make check-docs
+        run: make check-docs
+
   lint-test:
     if: always()
     runs-on: ubuntu-slim

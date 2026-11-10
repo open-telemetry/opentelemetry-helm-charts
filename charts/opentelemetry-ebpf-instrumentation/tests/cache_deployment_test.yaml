@@ -2,6 +2,29 @@ suite: cache deployment
 templates:
   - templates/cache-deployment.yaml
 tests:
+  - it: uses an existing service account when creation is disabled
+    set:
+      serviceAccount:
+        create: false
+        name: existing-obi
+      k8sCache:
+        replicas: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: existing-obi
+
+  - it: uses the default service account when creation is disabled without a name
+    set:
+      serviceAccount:
+        create: false
+      k8sCache:
+        replicas: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: default
+
   - it: renders cache deployment when k8sCache.replicas is set
     set:
       k8sCache:
