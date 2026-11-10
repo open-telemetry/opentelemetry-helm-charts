@@ -380,7 +380,7 @@ When using this chart as a subchart, you may want to unset certain default value
 | collectors.daemon.presets.annotationDiscovery.metrics.enabled | bool | `false` |  |
 | collectors.daemon.presets.resourceDetection.env.enabled | bool | `true` |  |
 | collectors.daemon.presets.resourceDetection.k8s_api.enabled | bool | `true` |  |
-| collectors.daemon.config | object | OTLP receiver, `resourcedetection/env`, `resource/hostname` and `batch` processors, `debug` exporter for traces, metrics and logs, see [values.yaml](./values.yaml) | Configuration options for the collector, layered on top of `defaultCRConfig.config`. |
+| collectors.daemon.config | object | OTLP receiver, `resource_detection/env`, `resource/hostname` and `batch` processors, `debug` exporter for traces, metrics and logs, see [values.yaml](./values.yaml) | Configuration options for the collector, layered on top of `defaultCRConfig.config`. |
 | clusterRole.enabled | bool | `true` | Whether the cluster role is enabled or not |
 | clusterRole.annotations | object | `{}` | Annotations for the cluster role |
 | clusterRole.rules | list | `[]` | Rules for the cluster role |
