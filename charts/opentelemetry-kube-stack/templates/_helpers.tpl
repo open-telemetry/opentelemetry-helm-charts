@@ -400,7 +400,7 @@ users migrate to the current lower_snake_case names.
 {{- $pipelineName := $rename.pipeline }}
 {{- $components := get $config $sectionName | default dict }}
 {{- if hasKey $components $oldName }}
-{{- $warnings = append $warnings (printf "[DEPRECATION] Collector %q: component %q has been renamed to %q. Update your values.yaml. Support for the old name will be removed in a future chart release." $collectorName $oldName $newName) }}
+{{- $warnings = append $warnings (printf "[DEPRECATION] Collector %q: component %q has been renamed to %q; its settings are applied to the new name. Update your values.yaml. Support for the old name will be removed in a future chart release." $collectorName $oldName $newName) }}
 {{- end }}
 {{- $pipelines := dig "service" "pipelines" dict $config }}
 {{- range $signal, $pipeline := $pipelines }}
