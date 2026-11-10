@@ -1,21 +1,68 @@
 {{/*
+Get Pod Annotations
+- Merges default pod annotations with component pod annotations, component values take precedence.
+- Default annotation values are rendered as templates, component annotation values are used as is.
+- An annotation set to null is removed.
+*/}}
+{{- define "otel-demo.pod.annotations" -}}
+{{- $annotations := dict }}
+{{- range $key, $value := (.defaultValues.podAnnotations | default dict) }}
+{{-   if not (kindIs "invalid" $value) }}
+{{-     $_ := set $annotations $key (tpl (toString $value) $) }}
+{{-   end }}
+{{- end }}
+{{- range $key, $value := (.podAnnotations | default dict) }}
+{{-   if kindIs "invalid" $value }}
+{{-     $_ := unset $annotations $key }}
+{{-   else }}
+{{-     $_ := set $annotations $key (toString $value) }}
+{{-   end }}
+{{- end }}
+{{- toJson $annotations }}
+{{- end }}
+
+{{/*
 Get Pod Env
 - Merges default environment variables (if used) with component environment variables.
 - If using defaults, will pull out OTEL_RESOURCE_ATTRIBUTES from the list to be reused later.
-- An environment variable named OTEL_RESOURCE_ATTRIBUTES_EXTRA will have its value appended to the value of the
-OTEL_RESOURCE_ATTRIBUTES environment variable if it exists.
+- If using defaults, each `resource.opentelemetry.io/` pod annotation (except service.name, which is used by
+OTEL_SERVICE_NAME) is exposed through the downward API as an environment variable, and these are combined into the
+OTEL_RESOURCE_ATTRIBUTES_BASE environment variable.
+- A configured OTEL_RESOURCE_ATTRIBUTES_BASE environment variable replaces the generated one, and is omitted when its
+value is empty.
+- OTEL_RESOURCE_ATTRIBUTES is set to OTEL_RESOURCE_ATTRIBUTES_BASE, followed by the value of any configured
+OTEL_RESOURCE_ATTRIBUTES, followed by the value of an environment variable named OTEL_RESOURCE_ATTRIBUTES_EXTRA.
+- OTEL_RESOURCE_ATTRIBUTES_EXTRA is kept as is when there is nothing to append it to.
+- A configured OTEL_RESOURCE_ATTRIBUTES that uses valueFrom is kept as is, along with OTEL_RESOURCE_ATTRIBUTES_EXTRA.
 - The OTEL_RESOURCES_ATTRIBUTES environment variable will typically use Kubernetes environment variable expansion and
 should be last.
 */}}
 {{- define "otel-demo.pod.env" -}}
 {{- $resourceAttributesEnv := dict }}
+{{- $resourceAttributesExtraEnv := dict }}
+{{- $baseEnv := dict }}
 {{- $allEnvs := list }}
 
 {{- if .useDefault.env  }}
+{{-   $baseAttributes := list }}
+{{-   range $key, $value := .resourceAnnotations }}
+{{-     $attribute := trimPrefix "resource.opentelemetry.io/" $key }}
+{{-     if and (hasPrefix "resource.opentelemetry.io/" $key) (ne $attribute "service.name") }}
+{{-       $envName := printf "OTEL_RESOURCE_ATTR_%s" (regexReplaceAll "[^A-Za-z0-9]" $attribute "_" | upper) }}
+{{-       $fieldRef := dict "apiVersion" "v1" "fieldPath" (printf "metadata.annotations['%s']" $key) }}
+{{-       $allEnvs = append $allEnvs (dict "name" $envName "valueFrom" (dict "fieldRef" $fieldRef)) }}
+{{-       $baseAttributes = append $baseAttributes (printf "%s=$(%s)" $attribute $envName) }}
+{{-     end }}
+{{-   end }}
+{{-   if $baseAttributes }}
+{{-     $baseEnv = dict "name" "OTEL_RESOURCE_ATTRIBUTES_BASE" "value" (join "," $baseAttributes) }}
+{{-   end }}
 {{-   $defaultEnvs := include "otel-demo.envOverriden" (dict "env" .defaultValues.env "envOverrides" .defaultValues.envOverrides) | mustFromJson }}
 {{-   range $defaultEnvs }}
 {{-     if eq .name "OTEL_RESOURCE_ATTRIBUTES" }}
 {{-       $resourceAttributesEnv = . }}
+{{-     else if eq .name "OTEL_RESOURCE_ATTRIBUTES_BASE" }}
+{{-       $baseEnv = . }}
 {{-     else }}
 {{-       $allEnvs = append $allEnvs . }}
 {{-     end }}
@@ -27,17 +74,40 @@ should be last.
 {{-   range $localEnvs }}
 {{-     if eq .name "OTEL_RESOURCE_ATTRIBUTES" }}
 {{-       $resourceAttributesEnv = . }}
-{{-     else if and $resourceAttributesEnv (eq .name "OTEL_RESOURCE_ATTRIBUTES_EXTRA") }}
-{{-       $newValue := (printf "%s,%s" (get $resourceAttributesEnv "value") .value) }}
-{{-       $resourceAttributesEnv = dict "name" "OTEL_RESOURCE_ATTRIBUTES" "value" $newValue }}
+{{-     else if eq .name "OTEL_RESOURCE_ATTRIBUTES_BASE" }}
+{{-       $baseEnv = . }}
+{{-     else if and (or $baseEnv $resourceAttributesEnv) (eq .name "OTEL_RESOURCE_ATTRIBUTES_EXTRA") }}
+{{-       $resourceAttributesExtraEnv = . }}
 {{-     else }}
 {{-       $allEnvs = append $allEnvs . }}
 {{-     end }}
 {{-   end }}
 {{- end }}
 
-{{- if $resourceAttributesEnv }}
+{{- $hasBase := or $baseEnv.value $baseEnv.valueFrom }}
+{{- if $hasBase }}
+{{-   $allEnvs = append $allEnvs $baseEnv }}
+{{- end }}
+
+{{- if $resourceAttributesEnv.valueFrom }}
+{{-   with $resourceAttributesExtraEnv }}
+{{-     $allEnvs = append $allEnvs . }}
+{{-   end }}
 {{-   $allEnvs = append $allEnvs $resourceAttributesEnv }}
+{{- else }}
+{{-   $resourceAttributes := list }}
+{{-   if $hasBase }}
+{{-     $resourceAttributes = append $resourceAttributes "$(OTEL_RESOURCE_ATTRIBUTES_BASE)" }}
+{{-   end }}
+{{-   with $resourceAttributesEnv.value }}
+{{-     $resourceAttributes = append $resourceAttributes . }}
+{{-   end }}
+{{-   with $resourceAttributesExtraEnv.value }}
+{{-     $resourceAttributes = append $resourceAttributes . }}
+{{-   end }}
+{{-   if $resourceAttributes }}
+{{-     $allEnvs = append $allEnvs (dict "name" "OTEL_RESOURCE_ATTRIBUTES" "value" (join "," $resourceAttributes)) }}
+{{-   end }}
 {{- end }}
 
 {{- tpl (toYaml $allEnvs) . }}

@@ -7,20 +7,25 @@ default:
       valueFrom:
         fieldRef:
           apiVersion: v1
-          fieldPath: "metadata.labels['app.kubernetes.io/component']"
+          fieldPath: "metadata.annotations['resource.opentelemetry.io/service.name']"
     - name: OTEL_COLLECTOR_NAME
       value: otel-collector
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       value: cumulative
     - name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
       value: explicit_bucket_histogram
-    - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.version={{ .Chart.AppVersion }}
   # -- Used to override individual environment variables without re-specifying the entire array.
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
   #    value: "someConstantValue"
+  # -- Pod annotations applied to all components, merged with each component's `podAnnotations`.
+  # Values are rendered as templates. Annotations prefixed with `resource.opentelemetry.io/` are exposed to
+  # components using the default environment variables as `OTEL_RESOURCE_ATTRIBUTES` through the downward API.
+  podAnnotations:
+    resource.opentelemetry.io/service.name: "{{ .name }}"
+    resource.opentelemetry.io/service.namespace: opentelemetry-demo
+    resource.opentelemetry.io/service.version: "{{ .Chart.AppVersion }}"
   image:
     # -- Demo components image name
     repository: ghcr.io/open-telemetry/demo
@@ -89,6 +94,8 @@ components:
   #   env:
   ## Environment variables that upsert (append + merge) into the `env` specification for this component.
   ## A variable named OTEL_RESOURCE_ATTRIBUTES_EXTRA will have its value appended to the OTEL_RESOURCE_ATTRIBUTES value.
+  ## A variable named OTEL_RESOURCE_ATTRIBUTES_BASE replaces the attributes built from the pod annotations,
+  ## set it to "" to only use the configured OTEL_RESOURCE_ATTRIBUTES value.
   #   envOverrides:
   ## Pod Scheduling rules for nodeSelector, affinity, or tolerations.
   #   schedulingRules:
@@ -97,7 +104,9 @@ components:
   #     tolerations: []
   ## Pod labels to add to this component
   #   podLabels: {}
-  ## Pod Annotations to add to this component
+  ## Pod Annotations to add to this component, merged with .Values.default.podAnnotations
+  ## Annotations prefixed with `resource.opentelemetry.io/` are added to the OTEL_RESOURCE_ATTRIBUTES value.
+  ## Set an annotation to null to remove it from this component.
   #   podAnnotations: {}
   ## Resources for this component
   #   resources: {}
@@ -190,7 +199,7 @@ components:
     useDefault:
       env: true
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -202,8 +211,6 @@ components:
         value: Host=astronomy-db;Username=astronomy_user;Password=astronomy_password;Database=astronomy_db
       - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
         value: "false"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 160Mi
@@ -223,7 +230,7 @@ components:
       - name: prometheus
         value: 9465
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: medium
     env:
       - name: AD_PORT
         value: "8080"
@@ -239,8 +246,6 @@ components:
         value: otlp
       - name: OTEL_EXPERIMENTAL_SDK_TELEMETRY_VERSION
         value: latest
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=medium
     resources:
       limits:
         memory: 300Mi
@@ -253,7 +258,7 @@ components:
     service:
       port: 8010
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: AGENT_PORT
         value: "8010"
@@ -293,8 +298,6 @@ components:
         value: "true"
       - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
         value: "true"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 500Mi
@@ -314,7 +317,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: high
     env:
       - name: CART_PORT
         value: "8080"
@@ -332,8 +335,6 @@ components:
         value: ws://opamp-server:4320/v1/opamp
       - name: OPAMP_SERVER_TLS_INSECURE_SKIP_VERIFY
         value: "false"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=high
     resources:
       limits:
         memory: 160Mi
@@ -350,7 +351,7 @@ components:
     service:
       port: 7860
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: CHATBOT_PORT
         value: "7860"
@@ -370,8 +371,6 @@ components:
         value: "false"
       - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
         value: "true"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 500Mi
@@ -384,7 +383,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: critical
     env:
       - name: CHECKOUT_PORT
         value: "8080"
@@ -416,8 +415,6 @@ components:
         value: 16MiB
       - name: OTEL_GO_X_OBSERVABILITY
         value: "true"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=critical
     resources:
       limits:
         memory: 32Mi
@@ -439,7 +436,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: high
     env:
       - name: CURRENCY_PORT
         value: "8080"
@@ -449,8 +446,6 @@ components:
         value: "{{ .Chart.AppVersion }}"
       - name: IPV6_ENABLED
         value: "false"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=high
     resources:
       limits:
         memory: 20Mi
@@ -463,7 +458,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: medium
     env:
       - name: EMAIL_PORT
         value: "8080"
@@ -475,8 +470,6 @@ components:
         value: flagd
       - name: FLAGD_PORT
         value: "8013"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=medium
     resources:
       limits:
         memory: 100Mi
@@ -487,7 +480,7 @@ components:
     useDefault:
       env: true
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: KAFKA_ADDR
         value: kafka:9092
@@ -505,8 +498,6 @@ components:
         value: "true"
       - name: OTEL_EXPERIMENTAL_SDK_TELEMETRY_VERSION
         value: latest
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 300Mi
@@ -523,7 +514,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: critical
     env:
       - name: FRONTEND_PORT
         value: "8080"
@@ -559,8 +550,6 @@ components:
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         value: http://localhost:8080/otlp-http/v1/traces             # This expects users to use `kubectl port-forward ...`
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=critical
     resources:
       limits:
         memory: 250Mi
@@ -577,7 +566,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: critical
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: httpcheck
       io.opentelemetry.discovery.metrics/config: |
@@ -640,8 +629,6 @@ components:
         value: load-generator
       - name: LOCUST_WEB_PORT
         value: "8089"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=critical
     resources:
       limits:
         memory: 90Mi
@@ -658,7 +645,7 @@ components:
     service:
       port: 8081
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: nginx
       io.opentelemetry.discovery.metrics/config: |
@@ -672,8 +659,6 @@ components:
         value: "4317"
       - name: OTEL_COLLECTOR_HOST
         value: $(OTEL_COLLECTOR_NAME)
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 50Mi
@@ -686,7 +671,7 @@ components:
     service:
       port: 8089
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: LOCUST_WEB_HOST
         value: "0.0.0.0"
@@ -722,8 +707,6 @@ components:
         value: "8010"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 1500Mi
@@ -736,7 +719,7 @@ components:
     service:
       port: 8011
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: MCP_PORT
         value: "8011"
@@ -750,8 +733,6 @@ components:
         value: "true"
       - name: OTEL_PYTHON_SDK_INTERNAL_METRICS_ENABLED
         value: "true"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 500Mi
@@ -764,7 +745,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: critical
     env:
       - name: PAYMENT_PORT
         value: "8080"
@@ -776,8 +757,6 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: IPV6_ENABLED
         value: "false"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=critical
       - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: grpc
     resources:
@@ -796,7 +775,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: high
     env:
       - name: PRODUCT_CATALOG_PORT
         value: "8080"
@@ -820,8 +799,6 @@ components:
         value: "false"
       - name: OTEL_CONFIG_FILE
         value: /otel-config.yml
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=high
     mountedConfigMaps:
       - name: product-catalog-otel-config
         mountPath: /otel-config.yml
@@ -876,7 +853,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: QUOTE_PORT
         value: "8080"
@@ -888,8 +865,6 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318
       - name: IPV6_ENABLED
         value: "false"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 40Mi
@@ -906,7 +881,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: medium
     env:
       - name: RECOMMENDATION_PORT
         value: "8080"
@@ -924,8 +899,6 @@ components:
         value: "8013"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4317
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=medium
     resources:
       limits:
         memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
@@ -938,7 +911,7 @@ components:
     service:
       port: 8080
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: high
     env:
       - name: SHIPPING_PORT
         value: "8080"
@@ -954,8 +927,6 @@ components:
         value: http/protobuf
       - name: IPV6_ENABLED
         value: "false"
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=high
     resources:
       limits:
         memory: 20Mi
@@ -984,7 +955,7 @@ components:
       - name: ofrep
         value: 8016
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
         value: http://$(OTEL_COLLECTOR_NAME):4318
@@ -992,8 +963,6 @@ components:
         value: http/protobuf
       - name: GOMEMLIMIT
         value: 60MiB
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 75Mi
@@ -1025,8 +994,6 @@ components:
             value: yYrECL4qbNwleYInGJYvVnSkwJuSQJ4ijPTx5tirGUXrbznFIBFVJdPl5t6O9ASw
           - name: PHX_HOST
             value: localhost
-          - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-            value: service.criticality=low
         resources:
           limits:
             memory: 250Mi
@@ -1059,7 +1026,7 @@ components:
       - name: controller
         value: 9093
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
+      resource.opentelemetry.io/service.criticality: low
     env:
       - name: KAFKA_ADVERTISED_LISTENERS
         value: PLAINTEXT://kafka:9092
@@ -1075,8 +1042,6 @@ components:
         value: 1@kafka:9093
       - name: OTEL_EXPERIMENTAL_SDK_TELEMETRY_VERSION
         value: latest
-      - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
-        value: service.criticality=low
     resources:
       limits:
         memory: 700Mi
@@ -1102,7 +1067,6 @@ components:
     service:
       port: 5432
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: postgresql
       io.opentelemetry.discovery.metrics/config: |
@@ -1151,7 +1115,6 @@ components:
       - name: valkey-cart
         value: 6379
     podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: redis
       io.opentelemetry.discovery.metrics/config: |
@@ -1172,8 +1135,6 @@ components:
       env: true
     service:
       port: 8000
-    podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: TELEMETRY_DOCS_PORT
         value: "8000"
@@ -1199,8 +1160,6 @@ components:
         value: 4320
       - name: opamp-ui
         value: 4321
-    podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     resources:
       limits:
         memory: 65Mi
@@ -1227,8 +1186,6 @@ components:
         value: 4318
     service:
       port: 8080
-    podAnnotations:
-      resource.opentelemetry.io/service.namespace: opentelemetry-demo
     env:
       - name: BASE_PATH
         value: /profiles
