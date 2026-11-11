@@ -4,14 +4,18 @@
 -- Enable pg_stat_statements in the default postgres database
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
+-- Read the passwords from the container environment (psql 15+)
+\getenv astronomy_password ASTRONOMY_PASSWORD
+\getenv monitoring_password MONITORING_PASSWORD
+
 -- Create application user
-CREATE USER astronomy_user WITH PASSWORD 'astronomy_password';
+CREATE USER astronomy_user WITH PASSWORD :'astronomy_password';
 
 -- Create application database
 CREATE DATABASE astronomy_db OWNER astronomy_user;
 
 -- Create monitoring user with pg_monitor role (visibility on all databases and schemas)
-CREATE USER monitoring_user WITH PASSWORD 'monitoring_password';
+CREATE USER monitoring_user WITH PASSWORD :'monitoring_password';
 GRANT pg_monitor TO monitoring_user;
 
 -- Switch to the application database
