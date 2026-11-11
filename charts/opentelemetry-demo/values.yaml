@@ -90,6 +90,10 @@ components:
   ## Environment variables that upsert (append + merge) into the `env` specification for this component.
   ## A variable named OTEL_RESOURCE_ATTRIBUTES_EXTRA will have its value appended to the OTEL_RESOURCE_ATTRIBUTES value.
   #   envOverrides:
+  ## Sources to populate the component container's environment from (ConfigMaps or Secrets).
+  #   envFrom:
+  #     - secretRef:
+  #         name: my-secret
   ## Pod Scheduling rules for nodeSelector, affinity, or tolerations.
   #   schedulingRules:
   #     nodeSelector: {}
@@ -154,6 +158,12 @@ components:
   #       data:
   #         my-config.yaml: |
   #           key: value
+  ## Secrets to create for this component. Both name and stringData are required.
+  ## Other components can consume the Secret by name, e.g. through envFrom.
+  #   secrets:
+  #     - name: my-secret
+  #       stringData:
+  #         MY_KEY: my-value
   ## Configuration to create an custom Volume
   #   additionalVolumes:
   #     - name: nginx-logs
@@ -334,6 +344,10 @@ components:
         value: "false"
       - name: OTEL_RESOURCE_ATTRIBUTES_EXTRA
         value: service.criticality=high
+    envFrom:
+      - secretRef:
+          name: valkey-credentials
+          optional: true
     resources:
       limits:
         memory: 160Mi
@@ -1147,6 +1161,17 @@ components:
       repository: "ghcr.io/valkey-io/valkey"
       tag: "9.0.4-alpine3.23"
     replicas: 1
+    command:
+      - valkey-server
+      - --requirepass
+      - $(VALKEY_PASSWORD)
+    envFrom:
+      - secretRef:
+          name: valkey-credentials
+    secrets:
+      - name: valkey-credentials
+        stringData:
+          VALKEY_PASSWORD: ""
     ports:
       - name: valkey-cart
         value: 6379
@@ -1155,7 +1180,7 @@ components:
       io.opentelemetry.discovery.metrics/enabled: 'true'
       io.opentelemetry.discovery.metrics/scraper: redis
       io.opentelemetry.discovery.metrics/config: |
-        username: valkey
+        password: ""
         collection_interval: 10s
     resources:
       limits:
