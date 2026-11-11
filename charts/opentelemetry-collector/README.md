@@ -483,6 +483,7 @@ For more examples see [Examples](examples).
 | rewriteDeprecatedComponentNames | bool | `true` |  |
 | config | object | OTLP receivers plus the debug exporter wired into logs, metrics and traces pipelines; see [values.yaml](./values.yaml) | Base collector configuration. Supports templating; see the prose above this key in values.yaml. |
 | alternateConfig | object | `{}` |  |
+| global.imageRegistry | string | `""` | When set, prefixes image.repository for the collector container. Also applied when image.digest is set. |
 | image.repository | string | `""` | If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`. |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
