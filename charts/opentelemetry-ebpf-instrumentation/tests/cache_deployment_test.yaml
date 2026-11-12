@@ -2,6 +2,41 @@ suite: cache deployment
 templates:
   - templates/cache-deployment.yaml
 tests:
+  - it: preserves quotes, backslashes, newlines, and empty environment values
+    set:
+      k8sCache:
+        replicas: 1
+        env:
+          QUOTED: 'value with "quotes"'
+          BACKSLASHES: 'C:\new\test'
+          MULTILINE: |-
+            first line
+            second line
+          EMPTY: ""
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUOTED
+            value: 'value with "quotes"'
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: BACKSLASHES
+            value: 'C:\new\test'
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MULTILINE
+            value: |-
+              first line
+              second line
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EMPTY
+            value: ""
+
   - it: uses an existing service account when creation is disabled
     set:
       serviceAccount:
