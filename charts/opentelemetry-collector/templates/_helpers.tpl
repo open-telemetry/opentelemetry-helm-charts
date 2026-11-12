@@ -239,7 +239,9 @@ Get ConfigMap name if existingName is defined, otherwise use default name for ge
 Create ConfigMap checksum annotation if configMap.existingPath is defined, otherwise use default templates
 */}}
 {{- define "opentelemetry-collector.configTemplateChecksumAnnotation" -}}
-  {{- if .Values.configMap.existingPath -}}
+  {{- if .Values.configMap.existingTemplate -}}
+  checksum/config: {{ include "opentelemetry-collector.configChecksum" (dict "context" . "template" .Values.configMap.existingTemplate) }}
+  {{- else if .Values.configMap.existingPath -}}
   checksum/config: {{ include "opentelemetry-collector.configChecksum" (dict "context" . "path" (print "/" .Values.configMap.existingPath)) }}
   {{- else -}}
     {{- if eq .Values.mode "daemonset" -}}
@@ -256,7 +258,13 @@ Create ConfigMap checksum annotation if configMap.existingPath is defined, other
 Hash only the data of a rendered ConfigMap, so that the chart labels on the manifest do not change the checksum
 */}}
 {{- define "opentelemetry-collector.configChecksum" -}}
-{{- pick (include (print .context.Template.BasePath .path) .context | fromYaml) "data" "stringData" | toYaml | sha256sum -}}
+{{- $config := "" -}}
+{{- if .template -}}
+  {{- $config = include .template .context -}}
+{{- else -}}
+  {{- $config = include (print .context.Template.BasePath .path) .context -}}
+{{- end -}}
+{{- pick ($config | fromYaml) "data" "stringData" | toYaml | sha256sum -}}
 {{- end }}
 
 {{- define "opentelemetry-collector.deprecatedComponentRenames" -}}
