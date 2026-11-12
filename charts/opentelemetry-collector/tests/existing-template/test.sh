@@ -2,15 +2,15 @@
 set -euo pipefail
 
 helm_bin=${HELM:-helm}
-fixture_dir=$(cd "$(dirname "$0")" && pwd)
-repo_dir=$(cd "$fixture_dir/../.." && pwd)
+script_dir=$(cd "$(dirname "$0")" && pwd)
+repo_dir=$(cd "$script_dir/../../../.." && pwd)
 work_dir=$(mktemp -d)
 trap 'rm -rf "$work_dir"' EXIT
-mkdir -p "$work_dir/tests" "$work_dir/charts"
-cp -R "$fixture_dir" "$work_dir/tests/issue-1737"
+mkdir -p "$work_dir/charts"
 cp -R "$repo_dir/charts/opentelemetry-collector" "$work_dir/charts/opentelemetry-collector"
-fixture_dir="$work_dir/tests/issue-1737"
-cat > "$work_dir/charts/opentelemetry-collector/templates/fixture-configmap.yaml" <<'EOF'
+chart_dir="$work_dir/charts/opentelemetry-collector"
+fixture_dir="$chart_dir/tests/existing-template"
+cat > "$chart_dir/templates/fixture-configmap.yaml" <<'EOF'
 {{ include "umbrella.configmap" . }}
 EOF
 
@@ -30,7 +30,7 @@ if test "$base_checksum" = "$changed_checksum"; then
   exit 1
 fi
 printf '%s\n' "$base" | grep -q 'name: external-collector-config'
-printf '%s\n' "$base" | grep -q '^# Source: issue-1737/templates/configmap.yaml'
+printf '%s\n' "$base" | grep -q '^# Source: existing-template/templates/configmap.yaml'
 
 relative_args=(
   --set wrapper.opentelemetry-collector.configMap.existingTemplate=null
@@ -65,4 +65,4 @@ for mode in deployment daemonset statefulset; do
     --set image.repository=otel/opentelemetry-collector-contrib \
     --set mode="$mode" | grep -q 'checksum/config:'
 done
-printf 'issue #1737 regression passed (Helm %s)\n' "$("$helm_bin" version --short)"
+printf 'existing-template regression passed (Helm %s)\n' "$("$helm_bin" version --short)"

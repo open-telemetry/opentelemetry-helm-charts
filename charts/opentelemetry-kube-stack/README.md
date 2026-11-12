@@ -311,6 +311,8 @@ When using this chart as a subchart, you may want to unset certain default value
 | defaultCRConfig.affinity | object | `{}` | Affinity configuration for the collector |
 | defaultCRConfig.lifecycle | object | `{}` | Lifecycle configuration for the collector |
 | defaultCRConfig.livenessProbe | object | `{}` | Liveness probe configuration for the collector |
+| defaultCRConfig.readinessProbe | object | `{}` | Readiness probe configuration for the collector |
+| defaultCRConfig.startupProbe | object | `{}` | Startup probe configuration for the collector. Kubernetes runs no readiness probe until the startup probe succeeds, and the operator's default startup probe (from the health_check extension) checks every 10 s, so its period bounds how fast a new collector pod becomes ready. |
 | defaultCRConfig.observability | object | `{}` | Observability configuration for the collector |
 | defaultCRConfig.updateStrategy | object | `{}` | NOTE: the updateStrategy value is deprecated. Use daemonSetUpdateStrategy instead. |
 | defaultCRConfig.daemonSetUpdateStrategy | object | `{}` | Update strategy for the DaemonSet collector |
