@@ -7,7 +7,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "opentelemetry-kube-stack.labels" $ | nindent 4 }}
-    {{- include "opentelemetry-kube-stack.renderkv" .Values.instrumentation.labels | indent 4 }}
+    {{- with .Values.instrumentation.labels }}
+    {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}
+    {{- end }}
   {{- with .Values.instrumentation.annotations }}
   annotations:
     {{- include "opentelemetry-kube-stack.renderkv" . | indent 4 }}

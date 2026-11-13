@@ -6,6 +6,8 @@ kind: ServiceAccount
 metadata:
   name: delete-resources-sa
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 {{- end}}
@@ -15,6 +17,8 @@ kind: Role
 metadata:
   name: delete-resources-role
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 rules:
@@ -34,6 +38,8 @@ kind: RoleBinding
 metadata:
   name: delete-resources-rolebinding
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 roleRef:
@@ -54,11 +60,16 @@ kind: Job
 metadata:
   name: {{ include "opentelemetry-kube-stack.name" . }}-pre-delete-job
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "opentelemetry-kube-stack.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-delete
     "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   template:
+    metadata:
+      labels:
+        {{- include "opentelemetry-kube-stack.labels" . | nindent 8 }}
     spec:
       restartPolicy: Never
       {{- if not .Values.cleanupJob.existingServiceAccount}}
