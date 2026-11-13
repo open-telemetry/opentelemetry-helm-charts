@@ -6,8 +6,8 @@ metadata:
   name: example
   labels:
     app.kubernetes.io/managed-by: "Helm"
-    app.kubernetes.io/version: "0.161.0"
-    helm.sh/chart: "opentelemetry-kube-stack-0.25.3"
+    app.kubernetes.io/version: "0.162.0"
+    helm.sh/chart: "opentelemetry-kube-stack-0.27.2"
     release: "example"
 spec:
   endpoint: http://opamp-server:8080
@@ -24,11 +24,13 @@ spec:
     ReportsRemoteConfig: true
     ReportsStatus: true
   replicas: 1
-  image: "ghcr.io/open-telemetry/opentelemetry-operator/operator-opamp-bridge:0.161.0"
+  image: "ghcr.io/open-telemetry/opentelemetry-operator/operator-opamp-bridge:0.162.0"
   upgradeStrategy: automatic
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
+  podSecurityContext:
+    fsGroup: 1000
   resources:
     limits:
       cpu: 250m

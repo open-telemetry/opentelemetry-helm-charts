@@ -176,9 +176,10 @@ containers:
       {{- if .Values.startupProbe.terminationGracePeriodSeconds | empty | not }}
       terminationGracePeriodSeconds: {{ .Values.startupProbe.terminationGracePeriodSeconds }}
       {{- end }}
+      {{- $startupHttpGet := .Values.startupProbe.httpGet | default dict }}
       httpGet:
-        path: {{ .Values.startupProbe.httpGet.path }}
-        port: {{ .Values.startupProbe.httpGet.port }}
+        path: {{ $startupHttpGet.path | default "/" }}
+        port: {{ $startupHttpGet.port | default 13133 }}
     {{- end }}
     {{- with .Values.resizePolicy }}
     resizePolicy:
@@ -206,10 +207,19 @@ containers:
       {{- end }}
       {{- end }}
       {{- if .Values.presets.hostMetrics.enabled }}
+      {{- if .Values.presets.hostMetrics.hardenedMode }}
+      - name: host-proc
+        mountPath: /hostfs/proc
+        readOnly: true
+      - name: host-sys
+        mountPath: /hostfs/sys
+        readOnly: true
+      {{- else }}
       - name: hostfs
         mountPath: /hostfs
         readOnly: true
         mountPropagation: HostToContainer
+      {{- end }}
       {{- end }}
       {{- if .Values.presets.profiling.enabled }}
       - name: tracefs
@@ -259,9 +269,18 @@ volumes:
       path: /var/lib/docker/containers
   {{- end }}
   {{- if .Values.presets.hostMetrics.enabled }}
+  {{- if .Values.presets.hostMetrics.hardenedMode }}
+  - name: host-proc
+    hostPath:
+      path: /proc
+  - name: host-sys
+    hostPath:
+      path: /sys
+  {{- else }}
   - name: hostfs
     hostPath:
       path: /
+  {{- end }}
   {{- end }}
   {{- if .Values.presets.profiling.enabled }}
   - name: tracefs

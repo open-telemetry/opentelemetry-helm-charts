@@ -3,6 +3,27 @@ templates:
   - templates/daemonset.yaml
   - templates/configmap.yaml
 tests:
+  - it: uses an existing service account when creation is disabled
+    template: templates/daemonset.yaml
+    set:
+      serviceAccount:
+        create: false
+        name: existing-obi
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: existing-obi
+
+  - it: uses the default service account when creation is disabled without a name
+    template: templates/daemonset.yaml
+    set:
+      serviceAccount:
+        create: false
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: default
+
   - it: renders daemonset with default settings
     template: templates/daemonset.yaml
     asserts:

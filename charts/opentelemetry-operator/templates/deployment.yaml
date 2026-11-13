@@ -87,8 +87,20 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.nodejs.repository .Values.manager.autoInstrumentationImage.nodejs.tag }}
             - --auto-instrumentation-nodejs-image={{ .Values.manager.autoInstrumentationImage.nodejs.repository }}:{{ .Values.manager.autoInstrumentationImage.nodejs.tag }}
             {{- end }}
+            {{- if .Values.manager.autoInstrumentation.php.enabled }}
+            - --enable-php-instrumentation
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.php.repository .Values.manager.autoInstrumentationImage.php.tag }}
+            - --auto-instrumentation-php-image={{ .Values.manager.autoInstrumentationImage.php.repository }}:{{ .Values.manager.autoInstrumentationImage.php.tag }}
+            {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.python.repository .Values.manager.autoInstrumentationImage.python.tag }}
             - --auto-instrumentation-python-image={{ .Values.manager.autoInstrumentationImage.python.repository }}:{{ .Values.manager.autoInstrumentationImage.python.tag }}
+            {{- end }}
+            {{- if .Values.manager.autoInstrumentation.ruby.enabled }}
+            - --enable-ruby-instrumentation
+            {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.ruby.repository .Values.manager.autoInstrumentationImage.ruby.tag }}
+            - --auto-instrumentation-ruby-image={{ .Values.manager.autoInstrumentationImage.ruby.repository }}:{{ .Values.manager.autoInstrumentationImage.ruby.tag }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
             - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}

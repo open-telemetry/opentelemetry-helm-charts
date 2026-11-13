@@ -312,6 +312,8 @@ When using this chart as a subchart, you may want to unset certain default value
 | defaultCRConfig.affinity | object | `{}` | Affinity configuration for the collector |
 | defaultCRConfig.lifecycle | object | `{}` | Lifecycle configuration for the collector |
 | defaultCRConfig.livenessProbe | object | `{}` | Liveness probe configuration for the collector |
+| defaultCRConfig.readinessProbe | object | `{}` | Readiness probe configuration for the collector |
+| defaultCRConfig.startupProbe | object | `{}` | Startup probe configuration for the collector. Kubernetes runs no readiness probe until the startup probe succeeds, and the operator's default startup probe (from the health_check extension) checks every 10 s, so its period bounds how fast a new collector pod becomes ready. |
 | defaultCRConfig.observability | object | `{}` | Observability configuration for the collector |
 | defaultCRConfig.updateStrategy | object | `{}` | NOTE: the updateStrategy value is deprecated. Use daemonSetUpdateStrategy instead. |
 | defaultCRConfig.daemonSetUpdateStrategy | object | `{}` | Update strategy for the DaemonSet collector |
@@ -387,6 +389,9 @@ When using this chart as a subchart, you may want to unset certain default value
 | instrumentation.labels | object | `{}` |  |
 | instrumentation.annotations | object | `{}` |  |
 | instrumentation.exporter.endpoint | string | `"http://collector-collector:4317"` | This is the default collector's service Upon creation of a tracing collector, edit this endpoint. |
+| instrumentation.exporter.tls | object | `not set` | TLS configuration for the instrumentation exporter |
+| instrumentation.imagePullPolicy | string | `not set` | Image pull policy for auto-instrumentation |
+| instrumentation.initContainerSecurityContext | object | `not set` | Security context for auto-instrumentation init containers |
 | instrumentation.resource | object | `{"addK8sUIDAttributes":true,"resourceAttributes":{}}` | Resource configuration |
 | instrumentation.defaults | object | `{}` | Default auto-instrumentation behavior See https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/instrumentations.md |
 | instrumentation.propagators | list | `["tracecontext","baggage","b3","b3multi","jaeger","xray","ottrace"]` | Propagators configuration |
@@ -394,6 +399,7 @@ When using this chart as a subchart, you may want to unset certain default value
 | instrumentation.env | list | `[]` | Environment variables for instrumentation |
 | instrumentation.java | object | `{}` | Java agent configuration |
 | instrumentation.nodejs | object | `{}` | NodeJS agent configuration |
+| instrumentation.php | object | `{}` | PHP agent configuration |
 | instrumentation.python | object | `{}` | Python agent configuration |
 | instrumentation.dotnet | object | `{}` | .NET agent configuration |
 | instrumentation.go | object | `{}` | Go agent configuration |
