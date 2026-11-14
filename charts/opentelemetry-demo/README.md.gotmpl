@@ -22,19 +22,27 @@ Kubernetes cluster.
 - Kubernetes 1.24+
 - Helm 4.0+
 
-## Installing the Chart
-
-Add OpenTelemetry Helm repository:
+## Add Repository (can be skipped for OCI repository)
 
 ```console
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
 ```
 
-To install the chart with the release name my-otel-demo, run the following
-command:
+_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
+
+## Install Chart
+
+For HTTPS repository:
 
 ```console
-helm install my-otel-demo open-telemetry/opentelemetry-demo
+helm install opentelemetry-demo open-telemetry/opentelemetry-demo
+```
+
+For OCI repository:
+
+```console
+helm install opentelemetry-demo oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-demo
 ```
 
 ## Upgrading

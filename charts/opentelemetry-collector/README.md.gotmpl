@@ -17,18 +17,33 @@ in kubernetes cluster.
 - Kubernetes 1.24+
 - Helm 4.0+
 
-## Installing the Chart
-
-Add OpenTelemetry Helm repository:
+## Add Repository (can be skipped for OCI repository)
 
 ```console
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
 ```
 
-To install the chart with the release name my-opentelemetry-collector, run the following command:
+_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
+
+## Install Chart
+
+For HTTPS repository:
 
 ```console
-helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=<value> --set image.repository="ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" --set command.name="otelcol-k8s"
+helm install opentelemetry-collector open-telemetry/opentelemetry-collector \
+  --set mode=<value> \
+  --set image.repository="ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
+  --set command.name="otelcol-k8s"
+```
+
+For OCI repository:
+
+```console
+helm install opentelemetry-collector oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-collector \
+  --set mode=<value> \
+  --set image.repository="ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
+  --set command.name="otelcol-k8s"
 ```
 
 Where the `mode` value needs to be set to one of `daemonset`, `deployment` or `statefulset`.

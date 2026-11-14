@@ -21,18 +21,27 @@ in kubernetes cluster.
 - Kubernetes 1.24+
 - Helm 4.0+
 
-## Installing the Chart
-
-Add OpenTelemetry Helm repository:
+## Add Repository (can be skipped for OCI repository)
 
 ```console
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
 ```
 
-To install the chart with the release name my-target-allocator, run the following command:
+_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
+
+## Install Chart
+
+For HTTPS repository:
 
 ```console
-helm install my-target-allocator open-telemetry/opentelemetry-target-allocator
+helm install opentelemetry-target-allocator open-telemetry/opentelemetry-target-allocator
+```
+
+For OCI repository:
+
+```console
+helm install opentelemetry-target-allocator oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-target-allocator
 ```
 
 ## Upgrading

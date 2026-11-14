@@ -32,11 +32,11 @@ certificate that the API server is configured to trust. There are a few differen
   - You can sideload custom webhooks and certificate by disabling `.Values.admissionWebhooks.create` and `admissionWebhooks.certManager.enabled` while setting your custom cert secret name in `admissionWebhooks.secretName`
   - You can disable webhooks altogether by disabling `.Values.admissionWebhooks.create` and setting env var to `ENABLE_WEBHOOKS: "false"`
 
-## Add Repository
+## Add Repository (can be skipped for OCI repository)
 
 ```console
-$ helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-$ helm repo update
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
 ```
 
 _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
@@ -46,15 +46,24 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 > [!NOTE]
 > This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Use `crds.create=false` instead if you do not want the chart to install the OpenTelemetry Operator's CRDs.
 
+For HTTPS repository:
+
 ```console
-$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+  --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+```
+
+For OCI repository:
+
+```console
+helm install opentelemetry-operator oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator \
+  --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
-$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
 --namespace opentelemetry-operator-system \
 --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
@@ -62,7 +71,7 @@ $ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
-$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
 --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
 --set admissionWebhooks.certManager.enabled=false \
 --set admissionWebhooks.autoGenerateCert.enabled=true
@@ -75,7 +84,7 @@ _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documen
 The following command uninstalls the chart whose release name is my-opentelemetry-operator.
 
 ```console
-$ helm uninstall opentelemetry-operator
+helm uninstall opentelemetry-operator
 ```
 
 _See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) for command documentation._
@@ -85,16 +94,16 @@ This will remove all the Kubernetes components associated with the chart and del
 The OpenTelemetry Collector CRD created by this chart won't be removed by default and should be manually deleted:
 
 ```console
-$ kubectl delete crd opentelemetrycollectors.opentelemetry.io
-$ kubectl delete crd opampbridges.opentelemetry.io
-$ kubectl delete crd instrumentations.opentelemetry.io
-$ kubectl delete crd targetallocators.opentelemetry.io
+kubectl delete crd opentelemetrycollectors.opentelemetry.io
+kubectl delete crd opampbridges.opentelemetry.io
+kubectl delete crd instrumentations.opentelemetry.io
+kubectl delete crd targetallocators.opentelemetry.io
 ```
 
 ## Upgrade Chart
 
 ```console
-$ helm upgrade my-opentelemetry-operator open-telemetry/opentelemetry-operator
+helm upgrade my-opentelemetry-operator open-telemetry/opentelemetry-operator
 ```
 
 Please note that by default, the chart will be upgraded to the latest version. If you want to upgrade to a specific version,
@@ -110,7 +119,7 @@ _See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documen
 The following command will show all the configurable options with detailed comments.
 
 ```console
-$ helm show values open-telemetry/opentelemetry-operator
+helm show values open-telemetry/opentelemetry-operator
 ```
 
 When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
@@ -171,7 +180,7 @@ The following example configuration deploys the Collector as Deployment resource
 the exporter is [debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter).
 
 ```console
-$ kubectl apply -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -206,7 +215,7 @@ The following example configuration deploys the Collector as DaemonSet resource.
 the exporter is debug exporter.
 
 ```console
-$ kubectl apply -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -247,7 +256,7 @@ The following example configuration deploys the Collector as StatefulSet resourc
 is Jaeger receiver and the exporter is debug exporter.
 
 ```console
-$ kubectl apply -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -285,7 +294,7 @@ by either adding the annotation `sidecar.opentelemetry.io/inject: true` to the p
 _See the [OpenTelemetry Operator github repository](https://github.com/open-telemetry/opentelemetry-operator) for more detailed information._
 
 ```console
-$ kubectl apply -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -310,7 +319,7 @@ spec:
           exporters: [debug]
 EOF
 
-$ kubectl apply -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Pod
 metadata:

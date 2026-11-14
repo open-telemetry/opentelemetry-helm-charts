@@ -8,18 +8,27 @@ in kubernetes cluster.
 - Kubernetes 1.24+
 - Helm 4.0+
 
-## Installing the Chart
-
-Add OpenTelemetry Helm repository:
+## Add Repository (can be skipped for OCI repository)
 
 ```console
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
 ```
 
-To install the chart with the release name my-opentelemetry-ebpf, run the following command:
+_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
+
+## Install Chart
+
+For HTTPS repository:
 
 ```console
-helm install my-opentelemetry-ebpf open-telemetry/opentelemetry-ebpf
+helm install opentelemetry-ebpf open-telemetry/opentelemetry-ebpf
+```
+
+For OCI repository:
+
+```console
+helm install opentelemetry-ebpf oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-ebpf
 ```
 
 ### Other configuration options
