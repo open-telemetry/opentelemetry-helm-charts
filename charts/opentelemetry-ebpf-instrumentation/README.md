@@ -16,27 +16,18 @@ in kubernetes cluster.
 - Kubernetes 1.24+
 - Helm 4.0+
 
-## Add Repository (can be skipped for OCI repository)
+## Installing the Chart
+
+Add OpenTelemetry Helm repository:
 
 ```console
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm repo update
 ```
 
-_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
-
-## Install Chart
-
-For HTTPS repository:
+To install the chart with the release name my-opentelemetry-ebpf, run the following command:
 
 ```console
-helm install opentelemetry-ebpf-instrumentation open-telemetry/opentelemetry-ebpf-instrumentation
-```
-
-For OCI repository:
-
-```console
-helm install opentelemetry-ebpf-instrumentation oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-ebpf-instrumentation
+helm install my-opentelemetry-ebpf-instrumentation open-telemetry/opentelemetry-ebpf-instrumentation
 ```
 
 ## Configuration
@@ -150,7 +141,7 @@ checksum annotation:
 
 ```yaml
 podAnnotations:
-  checksum/cluster-config: '{{ (.Files.Get "cluster-config.yaml" | sha256sum) }}'
+  checksum/cluster-config: {{ (.Files.Get "cluster-config.yaml" | sha256sum) }}'
 ```
 
 This requires bundling the `ConfigMap` definition in the Helm release for
@@ -205,13 +196,13 @@ podAnnotations:
   custom-annotation: "custom-value"
 
   # Reference Helm values
-  environment: ''{{ .Values.environment }}'
+  environment: '{{ .Values.environment }}'
 
   # Reference release info
   release: '{{ .Release.Name }}'
 
   # Compute checksums for external resources
-  checksum/cluster: '{{ (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}'
+  checksum/cluster: '{{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}'
 ```
 
 ## Values
