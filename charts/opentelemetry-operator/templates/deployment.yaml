@@ -91,7 +91,7 @@ spec:
             - --enable-php-instrumentation
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.php.repository .Values.manager.autoInstrumentationImage.php.tag }}
-            - --auto-instrumentation-php-image={{ .Values.manager.autoInstrumentationImage.php.repository }}:{{ .Values.manager.autoInstrumentationImage.php.tag }}
+            - --auto-instrumentation-php-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.php "defaultRepository" "" "tag" .Values.manager.autoInstrumentationImage.php.tag) }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.python.repository .Values.manager.autoInstrumentationImage.python.tag }}
             - --auto-instrumentation-python-image={{ include "opentelemetry-operator.imageReference" (dict "global" .Values.global "image" .Values.manager.autoInstrumentationImage.python "defaultRepository" "" "tag" .Values.manager.autoInstrumentationImage.python.tag) }}
