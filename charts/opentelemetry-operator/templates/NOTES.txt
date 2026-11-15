@@ -21,6 +21,7 @@
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.targetAllocatorImage "defaultRepository" "open-telemetry/opentelemetry-operator/target-allocator"))
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.java "defaultRepository" ""))
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.nodejs "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.php "defaultRepository" ""))
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.python "defaultRepository" ""))
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.dotnet "defaultRepository" ""))
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.go "defaultRepository" ""))
@@ -28,7 +29,7 @@
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.nginx "defaultRepository" ""))
   (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.ruby "defaultRepository" ""))
 }}
-[NOTE] Legacy image repository values were detected. Without a global.imageRegistry override, existing image references are preserved. When global.imageRegistry is set, any detected registry host is removed before applying it. To migrate, keep only the repository path and set the per-image registry to "" to use global.imageRegistry (falling back to ghcr.io when it is empty). To use a per-image registry, leave global.imageRegistry empty and set the per-image registry to the desired non-default registry.
+[NOTE] Legacy image repository values were detected. Without a global.imageRegistry override, the chart preserves the repository as-is. When global.imageRegistry is non-empty, the chart prefixes the full legacy repository reference, including its registry host. To migrate to separate registry and repository values, move the registry host to the per-image registry and keep only the repository path; set the per-image registry to "" to use global.imageRegistry (falling back to ghcr.io when global.imageRegistry is empty), or set a non-default per-image registry and leave global.imageRegistry empty. If your mirror requires the source registry host in the repository path, keep it there.
 {{- end }}
 
 {{ $.Chart.Name }} has been installed. Check its status by running:

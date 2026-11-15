@@ -181,13 +181,7 @@ Legacy repository values retain their existing behavior.
 {{- $legacyRepository := include "opentelemetry-operator.usesLegacyImageRepository" . -}}
 {{- if $legacyRepository -}}
 {{- if $globalRegistry -}}
-{{- $repositoryPath := $repository -}}
-{{- $repositoryHost := first (splitList "/" $repositoryPath) -}}
-{{- $repositoryHasRegistry := and (contains "/" $repositoryPath) (or (contains "." $repositoryHost) (contains ":" $repositoryHost) (eq $repositoryHost "localhost")) -}}
-{{- if $repositoryHasRegistry -}}
-{{- $repositoryPath = trimPrefix (printf "%s/" $repositoryHost) $repositoryPath -}}
-{{- end -}}
-{{- printf "%s/%s:%s" (trimSuffix "/" $globalRegistry) (trimPrefix "/" $repositoryPath) .tag -}}
+{{- printf "%s/%s:%s" (trimSuffix "/" $globalRegistry) (trimPrefix "/" $repository) .tag -}}
 {{- else -}}
 {{- printf "%s:%s" $repository .tag -}}
 {{- end -}}
