@@ -7,10 +7,13 @@ tests:
       name: obi
       namespace: observability
     set:
+      env:
+        REVIEW_OWNER: "Ervin's team"
       service:
         annotations:
           example.com/component: agent
           example.com/shared: '{{ .Release.Namespace }}'
+          example.com/shared-owner: '{{ .Values.env.REVIEW_OWNER }}'
       k8sCache:
         replicas: 1
         service:
@@ -23,7 +26,33 @@ tests:
           value:
             example.com/component: cache
             example.com/shared: observability
+            example.com/shared-owner: "Ervin's team"
             example.com/release: obi
+
+  - it: preserves cache annotation strings after template evaluation
+    release:
+      name: obi
+    set:
+      env:
+        REVIEW_OWNER: "Ervin's team"
+      k8sCache:
+        replicas: 1
+        service:
+          annotations:
+            example.com/owner: '{{ .Values.env.REVIEW_OWNER }}'
+            example.com/multiline: '{{ printf "first\nsecond" }}'
+            example.com/boolean: '{{ print "true" }}'
+            example.com/number: '{{ print "123" }}'
+            'example.com/{{ .Release.Name }}': '{{ print "" }}'
+    asserts:
+      - equal:
+          path: metadata.annotations
+          value:
+            example.com/owner: "Ervin's team"
+            example.com/multiline: "first\nsecond"
+            example.com/boolean: "true"
+            example.com/number: "123"
+            example.com/obi: ""
 
   - it: inherits shared service annotations when cache annotations are empty
     set:
