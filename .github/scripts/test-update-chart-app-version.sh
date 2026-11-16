@@ -226,6 +226,40 @@ main() {
 		"1.0.0" \
 		"1.0.0"
 
+	run_case \
+		"ta-quoted-noop-same-app-version" \
+		".github/scripts/testdata/update-chart-app-version/ta-chart-0.162.0-app-quoted-0.162.0.yaml" \
+		"v0.162.0" \
+		"opentelemetry-target-allocator" \
+		"open-telemetry/opentelemetry-operator" \
+		"v" \
+		"" \
+		"ta" \
+		"@atoulme" \
+		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
+		$'{{ release_url }}\n\ncc {{ approvers }}' \
+		"false" \
+		"otelbot/ta-0.162.0" \
+		"0.162.0" \
+		"\"0.162.0\""
+
+	run_case \
+		"ta-quoted-app-patch-bumps-chart-patch" \
+		".github/scripts/testdata/update-chart-app-version/ta-chart-0.162.0-app-quoted-0.162.0.yaml" \
+		"v0.162.1" \
+		"opentelemetry-target-allocator" \
+		"open-telemetry/opentelemetry-operator" \
+		"v" \
+		"" \
+		"ta" \
+		"@atoulme" \
+		"Update target allocator chart to use latest target allocator version: {{ release_tag }}" \
+		$'{{ release_url }}\n\ncc {{ approvers }}' \
+		"true" \
+		"otelbot/ta-0.162.1" \
+		"0.162.1" \
+		"0.162.1"
+
 	rm -rf "${TEST_TMP_ROOT}"
 	printf 'PASS\n'
 }

@@ -71,8 +71,13 @@ set_multiline_output() {
 
 current_field_value() {
   local field_name="$1"
+  local value=""
 
-  sed -n "s/^${field_name}: \\(.*\\)$/\\1/p" "${CHART_YAML}"
+  value="$(sed -n "s/^${field_name}: \\(.*\\)$/\\1/p" "${CHART_YAML}")"
+  value="${value#[\"\']}"
+  value="${value%[\"\']}"
+
+  printf '%s\n' "${value}"
 }
 
 strip_prefix() {
