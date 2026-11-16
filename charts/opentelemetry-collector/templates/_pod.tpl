@@ -176,9 +176,10 @@ containers:
       {{- if .Values.startupProbe.terminationGracePeriodSeconds | empty | not }}
       terminationGracePeriodSeconds: {{ .Values.startupProbe.terminationGracePeriodSeconds }}
       {{- end }}
+      {{- $startupHttpGet := .Values.startupProbe.httpGet | default dict }}
       httpGet:
-        path: {{ .Values.startupProbe.httpGet.path }}
-        port: {{ .Values.startupProbe.httpGet.port }}
+        path: {{ $startupHttpGet.path | default "/" }}
+        port: {{ $startupHttpGet.port | default 13133 }}
     {{- end }}
     {{- with .Values.resizePolicy }}
     resizePolicy:
