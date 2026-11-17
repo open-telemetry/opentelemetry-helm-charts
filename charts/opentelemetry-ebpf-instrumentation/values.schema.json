@@ -91,7 +91,7 @@
         "pullSecrets": {
           "type": "array",
           "title": "Image Pull Secrets",
-          "description": "Optional set of image pull secrets for private registries",
+          "description": "Image pull secrets for the agent and, unless overridden by k8sCache.image.pullSecrets, the cache",
           "items": {
             "type": "object"
           }
@@ -320,7 +320,7 @@
         "annotations": {
           "type": "object",
           "title": "Service Annotations",
-          "description": "Service annotations",
+          "description": "Annotations for the agent Service and defaults for the cache Service",
           "additionalProperties": {
             "type": "string"
           }
@@ -570,7 +570,7 @@
             "pullSecrets": {
               "type": "array",
               "title": "Cache Image Pull Secrets",
-              "description": "Optional set of image pull secrets for the cache",
+              "description": "Image pull secrets for the cache. A non-empty list replaces image.pullSecrets; an empty list inherits it",
               "items": {
                 "type": "object"
               },
@@ -644,7 +644,7 @@
             "annotations": {
               "type": "object",
               "title": "Cache Service Annotations",
-              "description": "Service annotations",
+              "description": "Annotations merged over service.annotations for the cache Service. Cache values take precedence for matching keys",
               "additionalProperties": {
                 "type": "string"
               }

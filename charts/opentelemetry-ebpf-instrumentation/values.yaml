@@ -10,7 +10,7 @@ image:
   digest: ""
   # -- Opentelemetry eBPF Instrumentation image pull policy.
   pullPolicy: IfNotPresent
-  # -- Optional set of image pull secrets.
+  # -- Image pull secrets for the agent and, unless overridden by `k8sCache.image.pullSecrets`, the cache.
   pullSecrets: []
 
 # -- Overrides the chart's name
@@ -98,7 +98,7 @@ service:
   enabled: false
   # -- type of the service
   type: ClusterIP
-  # -- Service annotations.
+  # -- Annotations for the agent Service and defaults for the cache Service.
   annotations: {}
   # -- Service labels.
   labels: {}
@@ -292,14 +292,14 @@ k8sCache:
     digest: null
     # -- K8s Cache image pull policy.
     pullPolicy: IfNotPresent
-    # -- Optional set of image pull secrets.
+    # -- Image pull secrets for the cache. A non-empty list replaces `image.pullSecrets`; an empty list inherits it.
     pullSecrets: []
   service:
     # -- Name of both the Service and Deployment
     name: opentelemetry-ebpf-instrumentation-k8s-cache
     # -- Port of the Kubernetes metadata cache service.
     port: 50055
-    # -- Service annotations.
+    # -- Annotations merged over `service.annotations` for the cache Service. Cache values take precedence for matching keys.
     annotations: {}
     # -- Service labels.
     labels: {}
