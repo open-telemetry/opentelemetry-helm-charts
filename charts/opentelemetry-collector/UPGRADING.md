@@ -4,7 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.178.2 to 0.179.0
+## 0.178.3 to 0.179.0
 
 The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string, so update any queries or dashboards that read `container.image.tag`.
 
