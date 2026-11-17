@@ -32,6 +32,10 @@ spec:
         app.kubernetes.io/component: workload
     spec:
       serviceAccountName: {{ include "obi.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- if eq .Values.preset "application" }}
       hostPID: true
       {{- end }}
