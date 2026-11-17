@@ -4,6 +4,13 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.16.1 to 0.16.2
+
+Previously ignored `podSecurityContext` values now take effect in the DaemonSet
+pod spec. Before upgrading, review existing values, including whether your
+environment requires a pod-level `runAsUser` alongside `runAsGroup` to allow pods
+to start. Choose a user ID appropriate for your environment and security policy.
+
 ## 0.13.1 to 0.14.0
 
 The chart-managed default configuration now uses OBI Config v2. The effective
