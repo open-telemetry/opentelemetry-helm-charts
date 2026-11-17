@@ -80,7 +80,7 @@ subjects:
 {{- else }}
   name: "{{ $fullname }}-collector"
 {{- end }}
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ include "opentelemetry-kube-stack.namespace" $ }}
 {{- if (dig "targetAllocator" "enabled" false $collector) }}
 - kind: ServiceAccount
 {{- if (dig "targetAllocator" "serviceAccount" "" $collector) }}
@@ -88,7 +88,7 @@ subjects:
 {{- else }}
   name: {{ $fullname }}-targetallocator
 {{- end }}
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ include "opentelemetry-kube-stack.namespace" $ }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -131,5 +131,5 @@ subjects:
     {{- else }}
     name: "{{ (include "opentelemetry-opamp-bridge.fullname" $merged) }}-opamp-bridge"
     {{- end }}
-    namespace: "{{ $.Release.Namespace }}"
+    namespace: "{{ include "opentelemetry-kube-stack.namespace" $ }}"
 {{- end }}
