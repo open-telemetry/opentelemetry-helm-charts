@@ -2,6 +2,35 @@ suite: cache deployment
 templates:
   - templates/cache-deployment.yaml
 tests:
+  - it: uses cache image pull secrets in place of shared secrets
+    set:
+      image:
+        pullSecrets:
+          - name: agent-registry
+      k8sCache:
+        replicas: 1
+        image:
+          pullSecrets:
+            - name: cache-registry
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: cache-registry
+
+  - it: inherits shared image pull secrets when cache secrets are empty
+    set:
+      image:
+        pullSecrets:
+          - name: agent-registry
+      k8sCache:
+        replicas: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: agent-registry
+
   - it: uses an existing service account when creation is disabled
     set:
       serviceAccount:
@@ -38,6 +67,8 @@ tests:
       - equal:
           path: spec.replicas
           value: 1
+      - notExists:
+          path: spec.template.spec.imagePullSecrets
 
   - it: does not render when k8sCache.replicas is 0
     set:

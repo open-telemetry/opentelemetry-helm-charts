@@ -27,9 +27,9 @@ spec:
         {{- include "obi.cache.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "obi.serviceAccountName" . }}
-      {{- if .Values.image.pullSecrets }}
+      {{- with .Values.k8sCache.image.pullSecrets | default .Values.image.pullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.k8sCache.priorityClassName }}
       priorityClassName: {{ . }}

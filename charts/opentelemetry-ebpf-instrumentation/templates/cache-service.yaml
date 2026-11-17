@@ -11,9 +11,12 @@ metadata:
     {{- with .Values.k8sCache.service.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .Values.service.annotations }}
+  {{- $annotations := mergeOverwrite (deepCopy (.Values.service.annotations | default dict)) (.Values.k8sCache.service.annotations | default dict) }}
+  {{- with $annotations }}
   annotations:
-    {{- tpl (toYaml . | nindent 4) $root }}
+    {{- range $key, $value := . }}
+    {{ tpl $key $root | quote }}: {{ tpl $value $root | quote }}
+    {{- end }}
   {{- end }}
 spec:
   ports:
