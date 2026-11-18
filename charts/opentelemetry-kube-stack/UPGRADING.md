@@ -1,5 +1,31 @@
 # Upgrade guidelines
 
+## 0.27.2 to 0.28.0
+
+The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string. If your queries or dashboards read `container.image.tag`, update them.
+
+Collectors older than v0.152.0 fail to start with this preset, because they reject `container.image.tags`. On v0.152.0 and newer, the collector emits `container.image.tags` only when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is on. The gate is on by default from v0.161.0 and off by default in earlier versions.
+
+If your collector is older than v0.152.0, if the gate is off, or if you want to keep `container.image.tag`, set the metadata list yourself and include `container.image.tag`. On Collector v0.161.0 and newer, also turn off the `processor.k8sattributes.DontEmitV0K8sConventions` feature gate. Otherwise the collector does not emit `container.image.tag`.
+
+Your list replaces the preset's list, so include every attribute you need. This example sets the list for the `daemon` collector:
+
+```yaml
+collectors:
+  daemon:
+    config:
+      processors:
+        k8s_attributes:
+          extract:
+            metadata:
+              - k8s.namespace.name
+              - k8s.pod.name
+              # ...the other attributes you need
+              - container.image.tag
+```
+
+For other collectors, put the list under `collectors.<name>.config` for each one. To set it once for every collector that inherits `defaultCRConfig`, put it under `defaultCRConfig.config` instead. If `rewriteDeprecatedComponentNames` is `false`, use `k8sattributes` instead of `k8s_attributes`.
+
 ## 0.24.6 to 0.25.0
 
 The chart now installs Operator 0.161.0. Since Operator 0.160.0, the `operator.networkpolicy` and `operand.networkpolicy` feature gates are disabled by default. See the [Operator 0.160.0 release notes](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.160.0).
