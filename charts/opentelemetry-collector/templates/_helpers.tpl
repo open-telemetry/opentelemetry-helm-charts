@@ -263,6 +263,7 @@ Hash only the data of a rendered ConfigMap, so that the chart labels on the mani
 components:
   receivers:
     filelog: file_log
+    hostmetrics: host_metrics
   processors:
     k8sattributes: k8s_attributes
   exporters:
