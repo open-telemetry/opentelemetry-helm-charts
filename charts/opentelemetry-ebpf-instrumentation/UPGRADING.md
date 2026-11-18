@@ -4,7 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.16.1 to 0.16.2
+## 0.16.2 to 0.16.3
 
 Previously ignored `podSecurityContext` values now take effect in the DaemonSet
 pod spec. Before upgrading, review existing values, including whether your
