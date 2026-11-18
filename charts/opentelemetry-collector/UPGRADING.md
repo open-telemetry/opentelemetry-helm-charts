@@ -4,6 +4,19 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.179.1 to 0.180.0
+
+The `rewriteDeprecatedComponentNames` flag now also renames the `hostmetrics` receiver to `host_metrics`. The receiver was renamed in OpenTelemetry Collector Contrib v0.151.0, and `hostmetrics` remains a deprecated alias that logs a warning at startup. When the flag is enabled (the default), the `presets.hostMetrics` receiver, and any `hostmetrics` receiver you define in `config.receivers`, is rendered as `host_metrics`, and your own settings are merged with the preset.
+
+If you are using a Collector image older than v0.151.0 that does not recognize the `host_metrics` name, set `rewriteDeprecatedComponentNames: false` to keep the old `hostmetrics` name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  hostMetrics:
+    enabled: true
+```
+
 ## 0.178.3 to 0.179.0
 
 The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string, so update any queries or dashboards that read `container.image.tag`.
