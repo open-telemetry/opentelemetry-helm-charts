@@ -568,6 +568,9 @@ processors:
 
 {{- define "opentelemetry-collector.applyKubernetesEventsConfig" -}}
 {{- $receiverName := "k8sobjects" -}}
+{{- if .Values.Values.rewriteDeprecatedComponentNames -}}
+{{- $receiverName = "k8s_objects" -}}
+{{- end -}}
 {{- if .Values.Values.presets.kubernetesEvents.useK8sEventsReceiver -}}
 {{- $receiverName = "k8s_events" -}}
 {{- end -}}
@@ -577,12 +580,16 @@ processors:
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesEventsConfig" -}}
+{{- $receiverName := "k8sobjects" }}
+{{- if .Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "k8s_objects" }}
+{{- end }}
 {{- if .Values.presets.kubernetesEvents.useK8sEventsReceiver -}}
 receivers:
   k8s_events: {}
 {{- else -}}
 receivers:
-  k8sobjects:
+  {{ $receiverName }}:
     objects:
       - name: events
         mode: "watch"
@@ -600,35 +607,53 @@ receivers:
 {{- end -}}
 {{- $useLeaderElection := and (eq $vals.mode "daemonset") (not $disableLeaderElection) -}}
 {{- $electorName := "k8s_objects" }}
+{{- $receiverName := "k8sobjects" }}
+{{- $knownNames := list "k8sobjects" }}
+{{- if $vals.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "k8s_objects" }}
+{{- $knownNames = list "k8sobjects" "k8s_objects" }}
+{{- end }}
 {{- $ctx := mustMerge (dict "namespace" (include "opentelemetry-collector.namespace" .Values) "useLeaderElection" $useLeaderElection "electorName" $electorName) .Values }}
 {{- $objectsYaml := include "opentelemetry-collector.kubernetesObjectsConfig" $ctx | fromYaml }}
-{{- $newObjects := (index $objectsYaml.receivers "k8sobjects").objects }}
+{{- $newObjects := (index $objectsYaml.receivers $receiverName).objects }}
 {{- $existingObjects := list }}
 {{- if .config.receivers }}
-{{- if index .config.receivers "k8sobjects" }}
-{{- if (index .config.receivers "k8sobjects").objects }}
-{{- $existingObjects = (index .config.receivers "k8sobjects").objects }}
+{{- range $name := $knownNames }}
+{{- if index $.config.receivers $name }}
+{{- if (index $.config.receivers $name).objects }}
+{{- $existingObjects = concat $existingObjects (index $.config.receivers $name).objects }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- $allObjects := concat $newObjects $existingObjects }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "logs" (dict "receivers" list)))) $objectsYaml .config }}
-{{- $_ := set (index $config.receivers "k8sobjects") "objects" $allObjects }}
+{{- if ne $receiverName "k8sobjects" }}
+{{- $legacy := index $config.receivers "k8sobjects" | default dict }}
+{{- $_ := unset $legacy "objects" }}
+{{- $_ := set $config.receivers $receiverName (mustMergeOverwrite $legacy (index $config.receivers $receiverName)) }}
+{{- $_ := unset $config.receivers "k8sobjects" }}
+{{- end }}
+{{- $_ := set (index $config.receivers $receiverName) "objects" $allObjects }}
 {{- if $useLeaderElection }}
 {{- $configExtensions := mustMergeOverwrite (dict "service" (dict "extensions" list)) $config }}
 {{- $_ := set $config.service "extensions" (append $configExtensions.service.extensions (printf "k8s_leader_elector/%s" $electorName) | uniq) }}
 {{- end }}
-{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers "k8sobjects" | uniq) }}
+{{- $_ := set $config.service.pipelines.logs "receivers" (append $config.service.pipelines.logs.receivers $receiverName | uniq) }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.kubernetesObjectsConfig" -}}
 {{- $preset := .Values.presets.kubernetesObjects -}}
+{{- $receiverName := "k8sobjects" }}
+{{- if .Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "k8s_objects" }}
+{{- end }}
 {{- if .useLeaderElection }}
 {{- include "opentelemetry-collector.leaderElectionConfig" (dict "name" .electorName "leaseName" "k8s.objects.receiver.opentelemetry.io" "leaseNamespace" .namespace) }}
 {{- end }}
 receivers:
-  k8sobjects:
+  {{ $receiverName }}:
     {{- if .useLeaderElection }}
     k8s_leader_elector: k8s_leader_elector/{{ .electorName }}
     {{- end }}

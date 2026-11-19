@@ -264,6 +264,7 @@ components:
   receivers:
     filelog: file_log
     hostmetrics: host_metrics
+    k8sobjects: k8s_objects
   processors:
     k8sattributes: k8s_attributes
   exporters:
