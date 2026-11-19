@@ -172,7 +172,9 @@ through the cache `Service` and reconnect to a healthy replica on failure.
 
 When `k8sCache.replicas > 0` the chart deploys the cache `Deployment` and
 `Service`, and automatically points the OBI `DaemonSet` at it by setting
-`OTEL_EBPF_KUBE_META_CACHE_ADDRESS` to `<k8sCache.service.name>:<k8sCache.service.port>`.
+`OTEL_EBPF_KUBE_META_CACHE_ADDRESS` to `<cache name>:<k8sCache.service.port>`.
+The cache name is `k8sCache.service.name` when set, and `<fullname>-k8s-cache`
+otherwise, so several releases can run a cache in the same namespace.
 See the `k8sCache` block in [values.yaml](./values.yaml) for image, resource,
 metrics and scheduling settings, and the
 [OBI Kubernetes setup guide](https://opentelemetry.io/docs/zero-code/obi/setup/kubernetes/#centralizing-kubernetes-metadata-with-k8s-cache)
