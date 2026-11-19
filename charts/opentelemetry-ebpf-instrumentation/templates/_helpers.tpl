@@ -55,14 +55,11 @@ app.kubernetes.io/part-of: obi
 {{- end }}
 
 {{/*
-Selector (pod) labels
+Selector labels. Custom podLabels stay out of selectors, which are immutable.
 */}}
 {{- define "obi.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "obi.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- with .Values.podLabels }}
-{{ toYaml . }}
-{{- end }}
 {{- end }}
 
 {{/*
