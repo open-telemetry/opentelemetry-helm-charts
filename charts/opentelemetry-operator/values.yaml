@@ -85,13 +85,18 @@ manager:
     go:
       repository: ""
       tag: ""
+    php:
+      repository: ""
+      tag: ""
     ruby:
       repository: ""
       tag: ""
 
-  # The Go and Ruby instrumentation support in the operator is disabled by default.
+  # The Go, PHP and Ruby instrumentation support in the operator is disabled by default.
   autoInstrumentation:
     go:
+      enabled: false
+    php:
       enabled: false
     ruby:
       enabled: false
@@ -184,6 +189,7 @@ manager:
           insecureSkipVerify: true
     # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
     # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+    # Applied to each endpoint in metricsEndpoints unless the endpoint sets its own.
     relabelings: []
     metricRelabelings: []
 

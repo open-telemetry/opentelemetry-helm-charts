@@ -210,14 +210,22 @@ Build config file for deployment OpenTelemetry Collector
 {{- end }}
 
 {{- define "opentelemetry-collector.applyHostMetricsConfig" -}}
+{{- $receiverName := "hostmetrics" }}
+{{- if .Values.Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "host_metrics" }}
+{{- end }}
 {{- $config := mustMergeOverwrite (dict "service" (dict "pipelines" (dict "metrics" (dict "receivers" list)))) (include "opentelemetry-collector.hostMetricsConfig" .Values | fromYaml) .config }}
-{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers "hostmetrics" | uniq)  }}
+{{- $_ := set $config.service.pipelines.metrics "receivers" (append $config.service.pipelines.metrics.receivers $receiverName | uniq)  }}
 {{- $config | toYaml }}
 {{- end }}
 
 {{- define "opentelemetry-collector.hostMetricsConfig" -}}
+{{- $receiverName := "hostmetrics" }}
+{{- if .Values.rewriteDeprecatedComponentNames }}
+{{- $receiverName = "host_metrics" }}
+{{- end }}
 receivers:
-  hostmetrics:
+  {{ $receiverName }}:
     root_path: /hostfs
     collection_interval: 10s
     scrapers:
@@ -511,7 +519,7 @@ processors:
         - k8s.cronjob.name
         - k8s.statefulset.name
         - k8s.statefulset.uid
-        - container.image.tag
+        - container.image.tags
         - container.image.name
         - k8s.cluster.uid
         - service.namespace

@@ -3,6 +3,40 @@ templates:
   - templates/daemonset.yaml
   - templates/configmap.yaml
 tests:
+  - it: preserves quotes, backslashes, newlines, and empty environment values
+    template: templates/daemonset.yaml
+    set:
+      env:
+        QUOTED: 'value with "quotes"'
+        BACKSLASHES: 'C:\new\test'
+        MULTILINE: |-
+          first line
+          second line
+        EMPTY: ""
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUOTED
+            value: 'value with "quotes"'
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: BACKSLASHES
+            value: 'C:\new\test'
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MULTILINE
+            value: |-
+              first line
+              second line
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EMPTY
+            value: ""
+
   - it: uses an existing service account when creation is disabled
     template: templates/daemonset.yaml
     set:
@@ -231,3 +265,51 @@ tests:
       - equal:
           path: metadata.annotations.shared
           value: from-annotations
+
+  - it: omits the pod security context by default
+    template: templates/daemonset.yaml
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext
+
+  - it: renders the pod security context separately from the privileged container context
+    template: templates/daemonset.yaml
+    set:
+      podSecurityContext:
+        runAsGroup: 2000
+        fsGroup: 2000
+      securityContext:
+        privileged: true
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsGroup: 2000
+            fsGroup: 2000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext
+          value:
+            privileged: true
+
+  - it: renders the pod security context in unprivileged mode
+    template: templates/daemonset.yaml
+    set:
+      privileged: false
+      podSecurityContext:
+        runAsGroup: 2000
+        fsGroup: 2000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsGroup: 2000
+            fsGroup: 2000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 0
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - contains:
+          path: spec.template.spec.containers[0].securityContext.capabilities.add
+          content: BPF
