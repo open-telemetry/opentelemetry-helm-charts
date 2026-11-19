@@ -1,6 +1,6 @@
 # Upgrade guidelines
 
-## 0.27.2 to 0.28.0
+## 0.27.3 to 0.28.0
 
 The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string. If your queries or dashboards read `container.image.tag`, update them.
 
