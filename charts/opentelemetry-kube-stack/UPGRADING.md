@@ -4,7 +4,7 @@
 
 The `kubernetesAttributes` preset now extracts `container.image.tags` instead of `container.image.tag`. `container.image.tags` is a list, not a string. If your queries or dashboards read `container.image.tag`, update them.
 
-Collectors older than v0.152.0 fail to start with this preset, because they reject `container.image.tags`. On v0.152.0 and newer, the collector emits `container.image.tags` only when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is on. The gate is on by default from v0.161.0 and off by default in earlier versions.
+Collectors older than v0.152.0 fail to start with this preset, because they reject `container.image.tags`. On v0.152.0 and newer, the collector emits `container.image.tags` only when the `processor.k8sattributes.EmitV1K8sConventions` feature gate is on. The gate is on by default from v0.161.0 and off by default in earlier versions. On v0.152.0, the collector replaces any `container.image.tags` value that the resource already has. To keep that value, use v0.153.0 or newer.
 
 If your collector is older than v0.152.0, if the gate is off, or if you want to keep `container.image.tag`, set the metadata list yourself and include `container.image.tag`. On Collector v0.161.0 and newer, also turn off the `processor.k8sattributes.DontEmitV0K8sConventions` feature gate. Otherwise the collector does not emit `container.image.tag`.
 
