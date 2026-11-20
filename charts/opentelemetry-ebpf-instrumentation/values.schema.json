@@ -370,12 +370,18 @@
           ]
         },
         "targetPort": {
-          "type": [
-            "integer",
-            "null"
-          ],
           "title": "Target Port",
-          "description": "Target port for the service. Defaults to the Prometheus port derived from the effective OBI configuration."
+          "description": "Target port for the service. Defaults to the Prometheus port derived from the effective OBI configuration.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "portName": {
           "type": "string",
@@ -446,13 +452,18 @@
               ]
             },
             "targetPort": {
-              "type": [
-                "integer",
-                "null"
-              ],
               "title": "Internal Metrics Target Port",
               "description": "Target port for internal metrics. Defaults to the internal Prometheus port derived from the effective OBI configuration.",
-              "example": null
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "portName": {
               "type": "string",
