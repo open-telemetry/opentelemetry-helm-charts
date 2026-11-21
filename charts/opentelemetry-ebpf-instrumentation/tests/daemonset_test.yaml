@@ -313,3 +313,22 @@ tests:
       - contains:
           path: spec.template.spec.containers[0].securityContext.capabilities.add
           content: BPF
+
+  - it: keeps podLabels out of the selector and puts them on the pods
+    release:
+      name: audit
+    template: templates/daemonset.yaml
+    set:
+      podLabels:
+        team: observability
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+            app.kubernetes.io/instance: audit
+      - equal:
+          path: spec.template.metadata.labels.team
+          value: observability
+      - notExists:
+          path: metadata.labels.team

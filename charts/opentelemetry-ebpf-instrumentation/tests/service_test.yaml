@@ -80,3 +80,18 @@ tests:
       - equal:
           path: spec.ports[1].targetPort
           value: 6060
+
+  - it: keeps podLabels out of the selector
+    release:
+      name: audit
+    set:
+      service:
+        enabled: true
+      podLabels:
+        team: observability
+    asserts:
+      - equal:
+          path: spec.selector
+          value:
+            app.kubernetes.io/name: opentelemetry-ebpf-instrumentation
+            app.kubernetes.io/instance: audit
