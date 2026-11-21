@@ -4,6 +4,19 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.180.0 to 0.181.0
+
+The `rewriteDeprecatedComponentNames` flag now also renames the `k8sobjects` receiver to `k8s_objects`. The receiver was renamed in OpenTelemetry Collector Contrib v0.151.0, and `k8sobjects` remains a deprecated alias that logs a warning at startup. When the flag is enabled (the default), the receiver from `presets.kubernetesObjects`, and from `presets.kubernetesEvents` when `useK8sEventsReceiver` is off, is rendered as `k8s_objects`. A `k8sobjects` or `k8s_objects` receiver you define in `config.receivers` is merged with the preset, and its `objects` are added to the preset's.
+
+If you are using a Collector image older than v0.151.0 that does not recognize the `k8s_objects` name, set `rewriteDeprecatedComponentNames: false` to keep the old `k8sobjects` name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  kubernetesObjects:
+    enabled: true
+```
+
 ## 0.179.1 to 0.180.0
 
 The `rewriteDeprecatedComponentNames` flag now also renames the `hostmetrics` receiver to `host_metrics`. The receiver was renamed in OpenTelemetry Collector Contrib v0.151.0, and `hostmetrics` remains a deprecated alias that logs a warning at startup. When the flag is enabled (the default), the `presets.hostMetrics` receiver, and any `hostmetrics` receiver you define in `config.receivers`, is rendered as `host_metrics`, and your own settings are merged with the preset.
