@@ -1,6 +1,25 @@
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: v1
+kind: Secret
+metadata:
+  name: valkey-credentials
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.42.7
+    
+    opentelemetry.io/name: valkey-cart
+    
+    app.kubernetes.io/version: "3.1.0"
+    app.kubernetes.io/component: valkey-cart
+    app.kubernetes.io/name: valkey-cart
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  VALKEY_PASSWORD: ""
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: product-catalog-product-catalog-otel-config
@@ -1054,6 +1073,10 @@ spec:
               value: "false"
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.version=3.1.0,service.criticality=high
+          envFrom:
+            - secretRef:
+                name: valkey-credentials
+                optional: true
           resources:
             limits:
               memory: 160Mi
@@ -2766,7 +2789,7 @@ spec:
         app.kubernetes.io/name: valkey-cart
       annotations:
         io.opentelemetry.discovery.metrics/config: |
-          username: valkey
+          password: ""
           collection_interval: 10s
         io.opentelemetry.discovery.metrics/enabled: "true"
         io.opentelemetry.discovery.metrics/scraper: redis
@@ -2777,12 +2800,19 @@ spec:
         - name: valkey-cart
           image: 'ghcr.io/valkey-io/valkey:9.0.4-alpine3.23'
           imagePullPolicy: IfNotPresent
+          command:
+            - valkey-server
+            - --requirepass
+            - $(VALKEY_PASSWORD)
           ports:
             
             - containerPort: 6379
               name: valkey-cart
           env:
             []
+          envFrom:
+            - secretRef:
+                name: valkey-credentials
           resources:
             limits:
               memory: 20Mi
