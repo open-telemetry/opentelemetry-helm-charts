@@ -111,6 +111,13 @@ Calculate name of image ID to use for "obi-cache".
 {{- end }}
 
 {{/*
+Name of the kube cache Deployment and Service
+*/}}
+{{- define "obi.cache.name" -}}
+{{- default (printf "%s-k8s-cache" (include "obi.fullname" . | trunc 53 | trimSuffix "-")) .Values.k8sCache.service.name }}
+{{- end }}
+
+{{/*
 Common kube cache labels
 */}}
 {{- define "obi.cache.labels" -}}
@@ -127,7 +134,7 @@ app.kubernetes.io/part-of: obi
 Selector (pod) labels
 */}}
 {{- define "obi.cache.selectorLabels" -}}
-app.kubernetes.io/name: {{ .Values.k8sCache.service.name }}
+app.kubernetes.io/name: {{ include "obi.cache.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- with .Values.k8sCache.podLabels }}
 {{ toYaml . }}
@@ -219,7 +226,7 @@ extensions:
           mode: enabled
           {{- if .Values.k8sCache.replicas }}
           metadata_cache:
-            address: {{ .Values.k8sCache.service.name }}:{{ .Values.k8sCache.service.port }}
+            address: {{ include "obi.cache.name" . }}:{{ .Values.k8sCache.service.port }}
           {{- end }}
 {{- end }}
 

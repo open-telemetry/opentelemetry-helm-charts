@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.k8sCache.service.name }}
+  name: {{ include "obi.cache.name" . }}
   namespace: {{ include "obi.namespace" .}}
   labels:
     {{- include "obi.cache.labels" . | nindent 4 }}
@@ -16,7 +16,7 @@ spec:
   replicas: {{ .Values.k8sCache.replicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.k8sCache.service.name }}
+      app.kubernetes.io/name: {{ include "obi.cache.name" . }}
   template:
     metadata:
       {{- with .Values.k8sCache.podAnnotations }}

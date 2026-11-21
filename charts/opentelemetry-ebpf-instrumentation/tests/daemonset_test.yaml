@@ -313,3 +313,17 @@ tests:
       - contains:
           path: spec.template.spec.containers[0].securityContext.capabilities.add
           content: BPF
+
+  - it: points the agent at its own release's cache
+    release:
+      name: obi-a
+    template: templates/daemonset.yaml
+    set:
+      k8sCache:
+        replicas: 1
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OTEL_EBPF_KUBE_META_CACHE_ADDRESS
+            value: obi-a-opentelemetry-ebpf-instrumentation-k8s-cache:50055
