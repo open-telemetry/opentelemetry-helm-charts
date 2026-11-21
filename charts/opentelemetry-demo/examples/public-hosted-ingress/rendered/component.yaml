@@ -1,6 +1,27 @@
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: v1
+kind: Secret
+metadata:
+  name: astronomy-db-credentials
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.42.7
+    
+    opentelemetry.io/name: astronomy-db
+    
+    app.kubernetes.io/version: "3.1.0"
+    app.kubernetes.io/component: astronomy-db
+    app.kubernetes.io/name: astronomy-db
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  ASTRONOMY_PASSWORD: astronomy_password
+  MONITORING_PASSWORD: monitoring_password
+  POSTGRES_PASSWORD: changeit
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: product-catalog-product-catalog-otel-config
@@ -692,11 +713,15 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://$(OTEL_COLLECTOR_NAME):4318
             - name: DB_CONNECTION_STRING
-              value: Host=astronomy-db;Username=astronomy_user;Password=astronomy_password;Database=astronomy_db
+              value: Host=astronomy-db;Username=astronomy_user;Password=$(ASTRONOMY_PASSWORD);Database=astronomy_db
             - name: OTEL_DOTNET_AUTO_TRACES_ENTITYFRAMEWORKCORE_INSTRUMENTATION_ENABLED
               value: "false"
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.version=3.1.0,service.criticality=low
+          envFrom:
+            - secretRef:
+                name: astronomy-db-credentials
+                optional: true
           resources:
             limits:
               memory: 160Mi
@@ -968,8 +993,10 @@ spec:
             - containerPort: 5432
               name: service
           env:
-            - name: POSTGRES_PASSWORD
-              value: changeit
+            []
+          envFrom:
+            - secretRef:
+                name: astronomy-db-credentials
           resources:
             limits:
               memory: 100Mi
@@ -2375,7 +2402,7 @@ spec:
             - name: OTEL_GO_X_OBSERVABILITY
               value: "true"
             - name: DB_CONNECTION_STRING
-              value: postgres://astronomy_user:astronomy_password@astronomy-db/astronomy_db?sslmode=disable
+              value: postgres://astronomy_user:$(ASTRONOMY_PASSWORD)@astronomy-db/astronomy_db?sslmode=disable
             - name: OTEL_SEMCONV_STABILITY_OPT_IN
               value: database
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -2388,6 +2415,10 @@ spec:
               value: /otel-config.yml
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.version=3.1.0,service.criticality=high
+          envFrom:
+            - secretRef:
+                name: astronomy-db-credentials
+                optional: true
           resources:
             limits:
               memory: 32Mi
