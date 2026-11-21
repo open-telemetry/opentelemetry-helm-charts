@@ -46,6 +46,9 @@ spec:
       tolerations:
         {{- $schedulingRules.tolerations | default .defaultValues.schedulingRules.tolerations | toYaml | nindent 8 }}
       {{- end }}
+      {{- with .priorityClassName | default .defaultValues.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       {{- if or .defaultValues.podSecurityContext .podSecurityContext }}
       securityContext:
         {{- .podSecurityContext | default .defaultValues.podSecurityContext | toYaml | nindent 8 }}
