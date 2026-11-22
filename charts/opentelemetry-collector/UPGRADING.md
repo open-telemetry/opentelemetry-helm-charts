@@ -4,7 +4,7 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
-## 0.180.0 to 0.181.0
+## 0.182.0 to 0.183.0
 
 The `rewriteDeprecatedComponentNames` flag now also handles renaming the `kubeletstats` receiver to `kubelet_stats`. The `kubeletstats` receiver was renamed to `kubelet_stats` in OpenTelemetry Collector Contrib v0.152.0, and `kubeletstats` remains as a deprecated alias that logs a warning at runtime. The flag is enabled by default, and the `presets.kubeletMetrics` receiver — and any `kubeletstats` receiver you define in `config.receivers` — is automatically rewritten to `kubelet_stats` in the generated config.
 
