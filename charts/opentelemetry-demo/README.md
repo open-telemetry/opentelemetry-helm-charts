@@ -132,6 +132,9 @@ component.
 | `ports`                                 | Array of ports to open for deployment and service of this component                      | `[]`                                                          |
 | `env`                                   | Array of environment variables added to this component                                   | Each component will have its own set of environment variables |
 | `envOverrides`                          | Used to override individual environment variables without re-specifying the entire array | `[]`                                                          |
+| `envFrom`                               | Array of `envFrom` sources (ConfigMaps or Secrets) added to this component's container   | `[]`                                                          |
+| `secrets[].name`                        | Name of a Secret to create for this component                                            | `nil`                                                         |
+| `secrets[].stringData`                  | Key/value pairs stored in the created Secret                                             | `nil`                                                         |
 | `replicas`                              | Number of replicas for this component                                                    | `1` for kafka, and redis ; `nil` otherwise                    |
 | `resources`                             | CPU/Memory resource requests/limits                                                      | Each component will have a default memory limit set           |
 | `schedulingRules.nodeSelector`          | Node labels for pod assignment                                                           | `{}`                                                          |
