@@ -1,6 +1,25 @@
 ---
 # Source: opentelemetry-demo/templates/component.yaml
 apiVersion: v1
+kind: Secret
+metadata:
+  name: valkey-credentials
+  labels:
+    helm.sh/chart: opentelemetry-demo-0.42.7
+    
+    opentelemetry.io/name: valkey-cart
+    
+    app.kubernetes.io/version: "3.1.0"
+    app.kubernetes.io/component: valkey-cart
+    app.kubernetes.io/name: valkey-cart
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  VALKEY_PASSWORD: ""
+---
+# Source: opentelemetry-demo/templates/component.yaml
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: product-catalog-product-catalog-otel-config
@@ -1060,6 +1079,10 @@ spec:
               value: ring
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),app.eng.team=$(TEAM_NAME),service.criticality=high
+          envFrom:
+            - secretRef:
+                name: valkey-credentials
+                optional: true
           resources:
             limits:
               memory: 160Mi
@@ -2794,7 +2817,7 @@ spec:
         app.kubernetes.io/name: valkey-cart
       annotations:
         io.opentelemetry.discovery.metrics/config: |
-          username: valkey
+          password: ""
           collection_interval: 10s
         io.opentelemetry.discovery.metrics/enabled: "true"
         io.opentelemetry.discovery.metrics/scraper: redis
@@ -2805,12 +2828,19 @@ spec:
         - name: valkey-cart
           image: 'ghcr.io/valkey-io/valkey:9.0.4-alpine3.23'
           imagePullPolicy: IfNotPresent
+          command:
+            - valkey-server
+            - --requirepass
+            - $(VALKEY_PASSWORD)
           ports:
             
             - containerPort: 6379
               name: valkey-cart
           env:
             []
+          envFrom:
+            - secretRef:
+                name: valkey-credentials
           resources:
             limits:
               memory: 20Mi
