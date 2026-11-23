@@ -4,6 +4,19 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.182.0 to 0.183.0
+
+The `rewriteDeprecatedComponentNames` flag now also handles renaming the `kubeletstats` receiver to `kubelet_stats`. The `kubeletstats` receiver was renamed to `kubelet_stats` in OpenTelemetry Collector Contrib v0.152.0, and `kubeletstats` remains as a deprecated alias that logs a warning at runtime. The flag is enabled by default, and the `presets.kubeletMetrics` receiver — and any `kubeletstats` receiver you define in `config.receivers` — is automatically rewritten to `kubelet_stats` in the generated config.
+
+If you are using a Collector image older than v0.152.0 that does not recognize the `kubelet_stats` name, set `rewriteDeprecatedComponentNames: false` to preserve the old `kubeletstats` name:
+
+```yaml
+rewriteDeprecatedComponentNames: false
+presets:
+  kubeletMetrics:
+    enabled: true
+```
+
 ## 0.179.1 to 0.180.0
 
 The `rewriteDeprecatedComponentNames` flag now also renames the `hostmetrics` receiver to `host_metrics`. The receiver was renamed in OpenTelemetry Collector Contrib v0.151.0, and `hostmetrics` remains a deprecated alias that logs a warning at startup. When the flag is enabled (the default), the `presets.hostMetrics` receiver, and any `hostmetrics` receiver you define in `config.receivers`, is rendered as `host_metrics`, and your own settings are merged with the preset.
