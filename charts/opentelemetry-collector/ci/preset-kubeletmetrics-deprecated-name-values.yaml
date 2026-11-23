@@ -1,0 +1,21 @@
+mode: daemonset
+
+image:
+  repository: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+
+command:
+  name: "otelcol-k8s"
+
+presets:
+  kubeletMetrics:
+    enabled: true
+
+config:
+  receivers:
+    kubeletstats:
+      collection_interval: 60s
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

@@ -14,6 +14,8 @@ DEMO_AGENT_FIXTURES_URL = https://raw.githubusercontent.com/open-telemetry/opent
 DEMO_FIXTURES_DIR = ./charts/opentelemetry-demo/agent-fixtures
 DEMO_POSTGRESQL_INIT_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/src/postgresql/init.sql
 DEMO_POSTGRESQL_INIT = ./charts/opentelemetry-demo/postgresql/init.sql
+DEMO_FLAGD_URL = https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/$(DEMO_APP_VERSION)/src/flagd/demo.flagd.json
+DEMO_FLAGD = ./charts/opentelemetry-demo/flagd/demo.flagd.json
 DEMO_DASHBOARDS_SOURCE_PATH = src/grafana/provisioning/dashboards/demo
 DEMO_DASHBOARD_FILES_URL = https://api.github.com/repos/open-telemetry/opentelemetry-demo/contents/$(DEMO_DASHBOARDS_SOURCE_PATH)?ref=$(DEMO_APP_VERSION)
 DEMO_DASHBOARDS_DIR = ./charts/opentelemetry-demo/grafana/provisioning/dashboards
@@ -254,6 +256,28 @@ check-demo-postgresql-init:
 	else \
 		echo "Failed: demo postgresql init.sql is out of sync with upstream $(DEMO_APP_VERSION)"; \
 		echo "Run 'make update-demo-postgresql-init' to update init.sql"; \
+		exit 1; \
+	fi
+
+.PHONY: update-demo-flagd
+update-demo-flagd:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/demo.flagd.json $(DEMO_FLAGD_URL) && \
+	test -s $$TMP_DEMO_DIR/demo.flagd.json && \
+	cp $$TMP_DEMO_DIR/demo.flagd.json $(DEMO_FLAGD)
+
+.PHONY: check-demo-flagd
+check-demo-flagd:
+	@TMP_DEMO_DIR=$$(mktemp -d); \
+	trap "rm -rf $$TMP_DEMO_DIR" EXIT; \
+	curl --fail --silent --show-error --location --max-time 30 -o $$TMP_DEMO_DIR/demo.flagd.json $(DEMO_FLAGD_URL) && \
+	test -s $$TMP_DEMO_DIR/demo.flagd.json && \
+	if diff $$TMP_DEMO_DIR/demo.flagd.json $(DEMO_FLAGD) > /dev/null 2>&1; then \
+		echo "Passed: demo flagd flags are in sync with upstream $(DEMO_APP_VERSION)"; \
+	else \
+		echo "Failed: demo flagd flags are out of sync with upstream $(DEMO_APP_VERSION)"; \
+		echo "Run 'make update-demo-flagd' to update demo.flagd.json"; \
 		exit 1; \
 	fi
 
