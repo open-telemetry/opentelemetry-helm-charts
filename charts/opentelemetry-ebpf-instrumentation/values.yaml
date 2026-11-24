@@ -85,9 +85,8 @@ securityContext:
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Priority class name for the pods
 priorityClassName: ""
-  # system-node-critical
-# system-cluster-critical
 
 ## -- Expose the Opentelemetry eBPF Instrumentation Prometheus and internal metrics service to be accessed from outside the cluster (LoadBalancer service).
 ## or access it from within the cluster (ClusterIP service). Set the service type and the port to serve it.
@@ -112,13 +111,13 @@ service:
   loadBalancerSourceRanges: []
   # -- Prometheus metrics service port
   port: 80
-  # -- targetPort overrides the Prometheus metrics port derived from the OBI configuration.
-  targetPort: null
+  # -- targetPort overrides the Prometheus metrics port derived from the OBI configuration. This value can be either integer or string.
+  targetPort: ""
   # -- name of the port for Prometheus metrics.
   portName: metrics
   # -- Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
   appProtocol: ""
-  # -- NodePort for the service when type is NodePort. Requires service.type: NodePort
+  # -- (int) NodePort for the service when type is NodePort. Requires service.type: NodePort
   nodePort: null
   # -- External IPs to assign to the service
   externalIPs: []
@@ -127,13 +126,13 @@ service:
   internalMetrics:
     # -- internal metrics service port
     port: 8080
-    # -- targetPort overrides the internal metrics port derived from the OBI configuration.
-    targetPort: null
+    # -- targetPort overrides the internal metrics port derived from the OBI configuration. This value can be either integer or string.
+    targetPort: ""
     # -- name of the port for internal metrics.
     portName: int-metrics
     # -- Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
     appProtocol: ""
-    # -- NodePort for internal metrics when type is NodePort. Requires service.type: NodePort
+    # -- (int) NodePort for internal metrics when type is NodePort. Requires service.type: NodePort
     nodePort: null
 
 resources: {}
@@ -308,9 +307,6 @@ k8sCache:
     port: 0
     path: /metrics
     portName: metrics
-    #  prometheus:
-    #     port: 6060
-    #     path: /metrics
   # -- Deployment annotations.
   annotations: {}
   # -- Adds custom annotations to the Opentelemetry eBPF Instrumentation Kube Cache Pods.
