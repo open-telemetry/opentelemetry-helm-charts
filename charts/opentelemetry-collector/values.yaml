@@ -787,6 +787,20 @@ serviceMonitor:
   metricRelabelings: []
   # -- Sets a sample limit on the ServiceMonitor
   sampleLimit: 0
+  # -- Scrape protocols to negotiate, in order of preference, e.g. `[PrometheusProto, OpenMetricsText1.0.0]`. Requires `PrometheusProto` to receive native histograms.
+  scrapeProtocols: []
+  # The following histogram settings default to null and are then omitted from the ServiceMonitor,
+  # so the setting configured globally on the Prometheus resource applies. Rendering an explicit
+  # false would silently override it. Set them to true or false to override it for this ServiceMonitor.
+  # -- (bool) Enables scraping of native histograms. Requires Prometheus >= v3.8.0.
+  # @default -- unset
+  scrapeNativeHistograms: null
+  # -- (bool) Also scrapes the classic version of a histogram that is exposed as a native histogram.
+  # @default -- unset
+  scrapeClassicHistograms: null
+  # -- (bool) Converts scraped classic histograms into native histograms with custom buckets (NHCB). Requires Prometheus >= v3.0.0.
+  # @default -- unset
+  convertClassicHistogramsToNHCB: null
 
 # PodDisruptionBudget is used only if mode is "deployment" or "statefulset"
 podDisruptionBudget:
