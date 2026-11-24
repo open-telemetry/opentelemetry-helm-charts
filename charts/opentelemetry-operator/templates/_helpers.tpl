@@ -197,12 +197,13 @@ Legacy repository values retain their existing behavior.
 {{- $repositoryHasRegistry := and (contains "/" $repository) (or (contains "." $repositoryHost) (contains ":" $repositoryHost) (eq $repositoryHost "localhost")) -}}
 {{- if and
   (ne $repository "")
+  $repositoryHasRegistry
   (or
     (not (hasKey .image "registry"))
     (and (ne $repository .defaultRepository)
       (or
         (eq .image.registry "ghcr.io")
-        (and (empty .image.registry) $repositoryHasRegistry)
+        (empty .image.registry)
       )
     )
   )
