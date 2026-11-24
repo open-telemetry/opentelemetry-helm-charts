@@ -14,6 +14,24 @@
 [WARNING] No resource limits or requests were set. Consider setter resource requests and limits via the `resources` field.
 {{ end }}
 
+{{- if or
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.image "defaultRepository" "open-telemetry/opentelemetry-operator/opentelemetry-operator"))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.collectorImage "defaultRepository" "open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.opampBridgeImage "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.targetAllocatorImage "defaultRepository" "open-telemetry/opentelemetry-operator/target-allocator"))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.java "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.nodejs "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.php "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.python "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.dotnet "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.go "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.apacheHttpd "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.nginx "defaultRepository" ""))
+  (include "opentelemetry-operator.usesLegacyImageRepository" (dict "image" .Values.manager.autoInstrumentationImage.ruby "defaultRepository" ""))
+}}
+[NOTE] Legacy image repository values were detected. Without a global.imageRegistry override, the chart preserves the repository as-is. When global.imageRegistry is non-empty, the chart prefixes the full legacy repository reference, including its registry host. To migrate to separate registry and repository values, move the registry host to the per-image registry and keep only the repository path; set the per-image registry to "" to use global.imageRegistry (falling back to ghcr.io when global.imageRegistry is empty), or set a non-default per-image registry and leave global.imageRegistry empty. If your mirror requires the source registry host in the repository path, keep it there.
+{{- end }}
+
 {{ $.Chart.Name }} has been installed. Check its status by running:
   kubectl --namespace {{ template "opentelemetry-operator.namespace" . }} get pods -l "app.kubernetes.io/instance={{ $.Release.Name }}"
 

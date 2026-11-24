@@ -57,32 +57,36 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 For HTTPS repository:
 
 ```console
-helm install opentelemetry-operator open-telemetry/opentelemetry-operator
-  --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 For OCI repository:
 
 ```console
-helm install opentelemetry-operator oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator
-  --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+helm install opentelemetry-operator oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator \
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
 helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---namespace opentelemetry-operator-system \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+  --namespace opentelemetry-operator-system \
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
 helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
---set admissionWebhooks.certManager.enabled=false \
---set admissionWebhooks.autoGenerateCert.enabled=true
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
+  --set admissionWebhooks.certManager.enabled=false \
+  --set admissionWebhooks.autoGenerateCert.enabled=true
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._

@@ -1,5 +1,13 @@
 # Upgrade guidelines
 
+## 0.129.2 to 0.130.0
+
+The chart now supports separate `registry` and `repository` values for Operator-managed images, along with `global.imageRegistry`. A non-empty global registry takes precedence over per-image registries. Otherwise, the chart uses the per-image registry and falls back to `ghcr.io`.
+
+Fully qualified legacy repository references remain supported when the per-image registry is omitted, empty, or set to `ghcr.io`. Without a global registry override, the chart preserves the full legacy reference. With `global.imageRegistry`, it prefixes the full reference, including its original registry host. This also preserves fully qualified repository values carried forward with Helm's `--reuse-values`.
+
+For new configurations, use a path-only repository and set its registry separately. If the image is hosted on Docker Hub, set the per-image registry to `docker.io`; a non-empty `global.imageRegistry` still takes precedence.
+
 ## 0.124.1 to 0.125.0
 
 `manager.targetAllocatorImage` now defaults to `repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator` and `tag: 0.160.0`, so by default the chart passes `--target-allocator-image` to the Operator. You can now override only `manager.targetAllocatorImage.repository`, for example to use a private registry, and keep the default tag.
