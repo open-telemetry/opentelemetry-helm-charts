@@ -98,7 +98,7 @@ tests:
           of: Deployment
       - equal:
           path: metadata.name
-          value: opentelemetry-ebpf-instrumentation-k8s-cache
+          value: RELEASE-NAME-opentelemetry-ebpf-instrumentation-k8s-cache
       - equal:
           path: spec.replicas
           value: 1
@@ -131,7 +131,7 @@ tests:
               - topologyKey: kubernetes.io/hostname
                 labelSelector:
                   matchLabels:
-                    app.kubernetes.io/name: '{{ .Values.k8sCache.service.name }}'
+                    app.kubernetes.io/name: '{{ include "obi.cache.name" . }}'
     asserts:
       - equal:
           path: spec.template.spec.priorityClassName
@@ -150,7 +150,7 @@ tests:
       - equal:
           path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchLabels
           value:
-            app.kubernetes.io/name: opentelemetry-ebpf-instrumentation-k8s-cache
+            app.kubernetes.io/name: RELEASE-NAME-opentelemetry-ebpf-instrumentation-k8s-cache
 
   - it: does not inherit top-level scheduling options
     set:

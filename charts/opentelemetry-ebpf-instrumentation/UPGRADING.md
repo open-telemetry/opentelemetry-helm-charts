@@ -4,6 +4,30 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.16.4 to 0.17.0
+
+The Kubernetes metadata cache Deployment and Service are now named
+`<fullname>-k8s-cache` by default instead of the fixed
+`opentelemetry-ebpf-instrumentation-k8s-cache`, so two releases in the same
+namespace no longer render the same resources. `k8sCache.service.name` now
+defaults to `""`; a name you set explicitly is still used as before.
+
+For a release named `opentelemetry-ebpf-instrumentation`, the name does not
+change. For any other release with `k8sCache.replicas` above 0, upgrading
+replaces the cache Deployment and Service with newly named ones and the OBI
+Pods roll to the new address, so enrichment from the cache pauses briefly. To
+keep the previous name, set it explicitly:
+
+```yaml
+k8sCache:
+  service:
+    name: opentelemetry-ebpf-instrumentation-k8s-cache
+```
+
+If your values reference `{{ .Values.k8sCache.service.name }}` in templated
+fields, for example a cache pod anti-affinity selector, use
+`{{ include "obi.cache.name" . }}` instead, which returns the resolved name.
+
 ## 0.16.2 to 0.16.3
 
 Previously ignored `podSecurityContext` values now take effect in the DaemonSet
