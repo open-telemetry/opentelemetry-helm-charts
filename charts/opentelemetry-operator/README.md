@@ -57,32 +57,36 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 For HTTPS repository:
 
 ```console
-helm install opentelemetry-operator open-telemetry/opentelemetry-operator
-  --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 For OCI repository:
 
 ```console
-helm install opentelemetry-operator oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator
-  --set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+helm install opentelemetry-operator oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator \
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
 helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---namespace opentelemetry-operator-system \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+  --namespace opentelemetry-operator-system \
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"
 ```
 
 If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
 
 ```console
 helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
---set "manager.collectorImage.repository=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
---set admissionWebhooks.certManager.enabled=false \
---set admissionWebhooks.autoGenerateCert.enabled=true
+  --set "manager.collectorImage.registry=ghcr.io" \
+  --set "manager.collectorImage.repository=open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s" \
+  --set admissionWebhooks.certManager.enabled=false \
+  --set admissionWebhooks.autoGenerateCert.enabled=true
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
@@ -352,6 +356,7 @@ EOF
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| global.imageRegistry | string | `""` | Global registry for Operator-managed images. When non-empty, it overrides per-image registries. |
 | namespaceOverride | string | `""` |  |
 | replicaCount | int | `1` |  |
 | revisionHistoryLimit | int | `10` |  |
@@ -364,31 +369,44 @@ EOF
 | pdb.create | bool | `false` |  |
 | pdb.minAvailable | int | `1` |  |
 | pdb.maxUnavailable | string | `""` |  |
-| manager.image.repository | string | `"ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator"` |  |
+| manager.image.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
+| manager.image.repository | string | `"open-telemetry/opentelemetry-operator/opentelemetry-operator"` |  |
 | manager.image.tag | string | `""` |  |
 | manager.image.imagePullPolicy | string | `"IfNotPresent"` |  |
-| manager.collectorImage.repository | string | `"ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"` |  |
+| manager.collectorImage.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
+| manager.collectorImage.repository | string | `"open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"` |  |
 | manager.collectorImage.tag | string | `"0.162.0"` |  |
+| manager.opampBridgeImage.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.opampBridgeImage.repository | string | `""` |  |
 | manager.opampBridgeImage.tag | string | `""` |  |
-| manager.targetAllocatorImage.repository | string | `"ghcr.io/open-telemetry/opentelemetry-operator/target-allocator"` |  |
+| manager.targetAllocatorImage.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
+| manager.targetAllocatorImage.repository | string | `"open-telemetry/opentelemetry-operator/target-allocator"` |  |
 | manager.targetAllocatorImage.tag | string | `"0.162.0"` |  |
+| manager.autoInstrumentationImage.java.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.java.repository | string | `""` |  |
 | manager.autoInstrumentationImage.java.tag | string | `""` |  |
+| manager.autoInstrumentationImage.nodejs.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.nodejs.repository | string | `""` |  |
 | manager.autoInstrumentationImage.nodejs.tag | string | `""` |  |
+| manager.autoInstrumentationImage.python.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.python.repository | string | `""` |  |
 | manager.autoInstrumentationImage.python.tag | string | `""` |  |
+| manager.autoInstrumentationImage.dotnet.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.dotnet.repository | string | `""` |  |
 | manager.autoInstrumentationImage.dotnet.tag | string | `""` |  |
+| manager.autoInstrumentationImage.apacheHttpd.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.apacheHttpd.repository | string | `""` |  |
 | manager.autoInstrumentationImage.apacheHttpd.tag | string | `""` |  |
+| manager.autoInstrumentationImage.nginx.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.nginx.repository | string | `""` |  |
 | manager.autoInstrumentationImage.nginx.tag | string | `""` |  |
+| manager.autoInstrumentationImage.go.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.go.repository | string | `""` |  |
 | manager.autoInstrumentationImage.go.tag | string | `""` |  |
+| manager.autoInstrumentationImage.php.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.php.repository | string | `""` |  |
 | manager.autoInstrumentationImage.php.tag | string | `""` |  |
+| manager.autoInstrumentationImage.ruby.registry | string | `"ghcr.io"` | Registry for this image. Empty values fall back to `ghcr.io`; a non-empty `global.imageRegistry` takes precedence. |
 | manager.autoInstrumentationImage.ruby.repository | string | `""` |  |
 | manager.autoInstrumentationImage.ruby.tag | string | `""` |  |
 | manager.autoInstrumentation.go.enabled | bool | `false` |  |
