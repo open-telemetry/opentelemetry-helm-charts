@@ -29,6 +29,9 @@ spec:
         {{- include "obi.podAnnotations" . | nindent 8 }}
       labels:
         {{- include "obi.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         app.kubernetes.io/component: workload
     spec:
       serviceAccountName: {{ include "obi.serviceAccountName" . }}

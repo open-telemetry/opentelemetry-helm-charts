@@ -4,6 +4,28 @@ These upgrade guidelines only contain instructions for version upgrades which re
 If the version you want to upgrade to is not listed here, then there is nothing to do for you.
 Just upgrade and enjoy.
 
+## 0.16.4 to 0.17.0
+
+Custom `podLabels` are no longer part of the DaemonSet and Service selectors,
+so changing them updates the Pods instead of failing with
+`spec.selector: ... field is immutable`. They are also no longer added to the
+labels of the other objects the chart renders (DaemonSet, Service,
+ServiceMonitor, ConfigMap, ServiceAccount and RBAC objects); only the Pods
+carry them.
+
+If you do not set `podLabels`, nothing changes. If you do, the DaemonSet
+selector changes once, which Kubernetes rejects on an existing DaemonSet.
+Delete the DaemonSet without deleting its Pods before upgrading; the upgraded
+DaemonSet then replaces the old Pods:
+
+```console
+kubectl delete daemonset <release>-opentelemetry-ebpf-instrumentation --namespace <namespace> --cascade=orphan
+helm upgrade <release> open-telemetry/opentelemetry-ebpf-instrumentation --namespace <namespace>
+```
+
+Use the DaemonSet name from `kubectl get daemonset` if you set
+`fullnameOverride` or `nameOverride`.
+
 ## 0.16.2 to 0.16.3
 
 Previously ignored `podSecurityContext` values now take effect in the DaemonSet
