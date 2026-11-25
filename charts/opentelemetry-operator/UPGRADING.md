@@ -4,7 +4,7 @@
 
 This chart updates the OpenTelemetry Operator to 0.164.0.
 
-- The `OpenTelemetryCollector` `opentelemetry.io/v1alpha1` API is no longer served. Update manifests and clients to use `opentelemetry.io/v1beta1`. If your cluster contains older resources, also review the CRD's stored versions and any migration steps needed for your cluster.
+- The `OpenTelemetryCollector` `opentelemetry.io/v1alpha1` API is no longer served. Update manifests and clients to use `opentelemetry.io/v1beta1`. When migrating a manifest, note that `spec.config` changes from a YAML string to a structured object. See the [upstream CRD documentation](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.164.0/docs/reference/crd-changelog.md#structured-configuration) for an example. If your cluster contains older resources, also review the CRD's stored versions and any migration steps needed for your cluster.
 - The default .NET auto-instrumentation image no longer supports .NET 8 and .NET 9. Workloads using those versions can specify a compatible image using `spec.dotnet.image` in their `Instrumentation` resource.
 
 See the [Operator 0.164.0 release notes](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.164.0) for details.
