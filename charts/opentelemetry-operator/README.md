@@ -368,11 +368,11 @@ EOF
 | manager.image.tag | string | `""` |  |
 | manager.image.imagePullPolicy | string | `"IfNotPresent"` |  |
 | manager.collectorImage.repository | string | `"ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s"` |  |
-| manager.collectorImage.tag | string | `"0.162.0"` |  |
+| manager.collectorImage.tag | string | `"0.164.0"` |  |
 | manager.opampBridgeImage.repository | string | `""` |  |
 | manager.opampBridgeImage.tag | string | `""` |  |
 | manager.targetAllocatorImage.repository | string | `"ghcr.io/open-telemetry/opentelemetry-operator/target-allocator"` |  |
-| manager.targetAllocatorImage.tag | string | `"0.162.0"` |  |
+| manager.targetAllocatorImage.tag | string | `"0.164.0"` |  |
 | manager.autoInstrumentationImage.java.repository | string | `""` |  |
 | manager.autoInstrumentationImage.java.tag | string | `""` |  |
 | manager.autoInstrumentationImage.nodejs.repository | string | `""` |  |
