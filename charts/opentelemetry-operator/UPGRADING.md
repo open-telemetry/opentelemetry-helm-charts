@@ -1,5 +1,14 @@
 # Upgrade guidelines
 
+## 0.129.x to 0.130.0
+
+This chart updates the OpenTelemetry Operator to 0.164.0.
+
+- The `OpenTelemetryCollector` `opentelemetry.io/v1alpha1` API is no longer served. Update manifests and clients to use `opentelemetry.io/v1beta1`. If your cluster contains older resources, also review the CRD's stored versions and any migration steps needed for your cluster.
+- The default .NET auto-instrumentation image no longer supports .NET 8 and .NET 9. Workloads using those versions can specify a compatible image using `spec.dotnet.image` in their `Instrumentation` resource.
+
+See the [Operator 0.164.0 release notes](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.164.0) for details.
+
 ## 0.124.1 to 0.125.0
 
 `manager.targetAllocatorImage` now defaults to `repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator` and `tag: 0.160.0`, so by default the chart passes `--target-allocator-image` to the Operator. You can now override only `manager.targetAllocatorImage.repository`, for example to use a private registry, and keep the default tag.
