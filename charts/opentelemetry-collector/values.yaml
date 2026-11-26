@@ -39,7 +39,7 @@ presets:
     # Once the size exceeds the limit, all received entries of the source will be combined and flushed.
     maxRecombineLogSize: 102400
   # Configures the collector to collect host metrics.
-  # Adds the hostmetrics receiver to the metrics pipeline
+  # Adds the host_metrics receiver to the metrics pipeline
   # and adds the necessary volumes and volume mounts.
   # Best used with mode = daemonset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#host-metrics-receiver for details on the receiver.
@@ -49,7 +49,7 @@ presets:
     # It mounts only /proc and /sys.
     # The filesystem scraper is disabled by default because /hostfs is not the host root.
     # To enable it, use extraVolumes and extraVolumeMounts to expose each filesystem
-    # under /hostfs, then configure config.receivers.hostmetrics.scrapers.filesystem.
+    # under /hostfs, then configure config.receivers.host_metrics.scrapers.filesystem.
     hardenedMode: false
   # Configures the Kubernetes Processor to add Kubernetes metadata.
   # Adds the k8s_attributes processor to all the pipelines
@@ -65,7 +65,7 @@ presets:
     # The annotation's exact name will be the key.
     extractAllPodAnnotations: false
   # Configures the collector to collect node, pod, and container metrics from the API server on a kubelet.
-  # Adds the kubeletstats receiver to the metrics pipeline
+  # Adds the kubelet_stats receiver to the metrics pipeline
   # and adds the necessary rules to ClusterRole.
   # Best used with mode = daemonset.
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
@@ -354,6 +354,10 @@ config:
 # Components configured by presets will be injected in the same way they are for `config`.
 alternateConfig: {}
 
+global:
+  # -- When set, prefixes image.repository for the collector container. Also applied when image.digest is set.
+  imageRegistry: ""
+
 image:
   # -- If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
   repository: ""
@@ -638,6 +642,8 @@ readinessProbe:
     path: /
 
 # startup probe configuration
+# The startup probe is only added when this is non-empty. If `httpGet` is not set,
+# it defaults to the collector health check endpoint (port 13133, path /).
 # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 ##
 startupProbe: {}
@@ -781,6 +787,20 @@ serviceMonitor:
   metricRelabelings: []
   # -- Sets a sample limit on the ServiceMonitor
   sampleLimit: 0
+  # -- Scrape protocols to negotiate, in order of preference, e.g. `[PrometheusProto, OpenMetricsText1.0.0]`. Requires `PrometheusProto` to receive native histograms.
+  scrapeProtocols: []
+  # The following histogram settings default to null and are then omitted from the ServiceMonitor,
+  # so the setting configured globally on the Prometheus resource applies. Rendering an explicit
+  # false would silently override it. Set them to true or false to override it for this ServiceMonitor.
+  # -- (bool) Enables scraping of native histograms. Requires Prometheus >= v3.8.0.
+  # @default -- unset
+  scrapeNativeHistograms: null
+  # -- (bool) Also scrapes the classic version of a histogram that is exposed as a native histogram.
+  # @default -- unset
+  scrapeClassicHistograms: null
+  # -- (bool) Converts scraped classic histograms into native histograms with custom buckets (NHCB). Requires Prometheus >= v3.0.0.
+  # @default -- unset
+  convertClassicHistogramsToNHCB: null
 
 # PodDisruptionBudget is used only if mode is "deployment" or "statefulset"
 podDisruptionBudget:

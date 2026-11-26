@@ -91,7 +91,7 @@
         "pullSecrets": {
           "type": "array",
           "title": "Image Pull Secrets",
-          "description": "Optional set of image pull secrets for private registries",
+          "description": "Image pull secrets for the agent and, unless overridden by k8sCache.image.pullSecrets, the cache",
           "items": {
             "type": "object"
           }
@@ -320,7 +320,7 @@
         "annotations": {
           "type": "object",
           "title": "Service Annotations",
-          "description": "Service annotations",
+          "description": "Annotations for the agent Service and defaults for the cache Service",
           "additionalProperties": {
             "type": "string"
           }
@@ -370,12 +370,18 @@
           ]
         },
         "targetPort": {
-          "type": [
-            "integer",
-            "null"
-          ],
           "title": "Target Port",
-          "description": "Target port for the service. Defaults to the Prometheus port derived from the effective OBI configuration."
+          "description": "Target port for the service. Defaults to the Prometheus port derived from the effective OBI configuration.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "portName": {
           "type": "string",
@@ -446,13 +452,18 @@
               ]
             },
             "targetPort": {
-              "type": [
-                "integer",
-                "null"
-              ],
               "title": "Internal Metrics Target Port",
               "description": "Target port for internal metrics. Defaults to the internal Prometheus port derived from the effective OBI configuration.",
-              "example": null
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "portName": {
               "type": "string",
@@ -570,7 +581,7 @@
             "pullSecrets": {
               "type": "array",
               "title": "Cache Image Pull Secrets",
-              "description": "Optional set of image pull secrets for the cache",
+              "description": "Image pull secrets for the cache. A non-empty list replaces image.pullSecrets; an empty list inherits it",
               "items": {
                 "type": "object"
               },
@@ -644,7 +655,7 @@
             "annotations": {
               "type": "object",
               "title": "Cache Service Annotations",
-              "description": "Service annotations",
+              "description": "Annotations merged over service.annotations for the cache Service. Cache values take precedence for matching keys",
               "additionalProperties": {
                 "type": "string"
               }

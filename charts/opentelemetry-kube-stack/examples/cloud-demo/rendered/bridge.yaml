@@ -4,11 +4,12 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpAMPBridge
 metadata:
   name: example
+  namespace: default
   labels:
-    helm.sh/chart: opentelemetry-kube-stack-0.27.1
+    app.kubernetes.io/managed-by: "Helm"
     app.kubernetes.io/version: "0.162.0"
-    app.kubernetes.io/managed-by: Helm
-    release: "example"    
+    helm.sh/chart: "opentelemetry-kube-stack-0.28.1"
+    release: "example"
 spec:
   endpoint: http://opamp-server:8080
   capabilities:
@@ -29,6 +30,8 @@ spec:
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
+  podSecurityContext:
+    fsGroup: 1000
   resources:
     limits:
       cpu: 250m
