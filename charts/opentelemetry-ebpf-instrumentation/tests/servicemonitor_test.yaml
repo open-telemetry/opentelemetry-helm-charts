@@ -90,3 +90,288 @@ tests:
       - equal:
           path: spec.endpoints[1].path
           value: /obi-internal
+  - it: preserves the chart's Config v1 internal metrics path default
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      config:
+        data:
+          internal_metrics:
+            prometheus:
+              port: 9191
+    asserts:
+      - equal:
+          path: spec.endpoints[1].port
+          value: int-metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /metrics
+
+  - it: scrapes both paths when metrics share a port
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              daemon:
+                internal_metrics:
+                  prometheus:
+                    port: 9090
+                    path: /internal/metrics
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 2
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+      - equal:
+          path: spec.endpoints[1].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /internal/metrics
+      - notExists:
+          path: spec.endpoints[0].relabelings
+      - equal:
+          path: spec.endpoints[1].relabelings[0].action
+          value: replace
+      - equal:
+          path: spec.endpoints[1].relabelings[0].sourceLabels[0]
+          value: __metrics_path__
+      - equal:
+          path: spec.endpoints[1].relabelings[0].targetLabel
+          value: metrics_path
+
+  - it: uses the Config v1 internal metrics path from the environment
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      env:
+        OTEL_EBPF_INTERNAL_METRICS_PROMETHEUS_PATH: /env-internal
+      config:
+        data:
+          internal_metrics:
+            prometheus:
+              port: 9090
+              path: /config-internal
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 2
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+      - equal:
+          path: spec.endpoints[1].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /env-internal
+
+  - it: does not guess an internal path from a Kubernetes variable
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      env:
+        OTEL_EBPF_INTERNAL_METRICS_PROMETHEUS_PATH: "$(OBI_INTERNAL_PATH)"
+      envValueFrom:
+        OBI_INTERNAL_PATH:
+          configMapKeyRef:
+            name: obi-path-config
+            key: path
+      config:
+        data:
+          internal_metrics:
+            prometheus:
+              port: 9090
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 1
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+
+  - it: uses an explicit ServiceMonitor path with a Kubernetes variable
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+        internalMetrics:
+          endpoint:
+            path: /internal/metrics
+      env:
+        OTEL_EBPF_INTERNAL_METRICS_PROMETHEUS_PATH: "$(OBI_INTERNAL_PATH)"
+      envValueFrom:
+        OBI_INTERNAL_PATH:
+          configMapKeyRef:
+            name: obi-path-config
+            key: path
+      config:
+        data:
+          internal_metrics:
+            prometheus:
+              port: 9090
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 2
+      - equal:
+          path: spec.endpoints[1].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /internal/metrics
+  - it: does not duplicate endpoints with the same port and path
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      config:
+        data:
+          internal_metrics:
+            prometheus:
+              port: 9090
+              path: /metrics
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 1
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+
+  - it: preserves one endpoint for a shared port with external config
+    set:
+      service:
+        enabled: true
+        internalMetrics:
+          targetPort: 9090
+      serviceMonitor:
+        enabled: true
+      config:
+        create: false
+        name: external-config
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 1
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+
+  - it: scrapes both paths when Config v1 metrics share a port
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      config:
+        data:
+          internal_metrics:
+            prometheus:
+              port: 9090
+              path: /internal/metrics
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 2
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+      - equal:
+          path: spec.endpoints[1].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[1].path
+          value: /internal/metrics
+
+  - it: does not infer an omitted Config v1 internal metrics path
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      config:
+        data:
+          prometheus_export:
+            port: 9090
+            path: /app-metrics
+          internal_metrics:
+            prometheus:
+              port: 9090
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints
+          count: 1
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: /app-metrics
+
+  - it: preserves custom internal relabelings when metrics share a port
+    set:
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+        internalMetrics:
+          endpoint:
+            relabelings:
+              - action: replace
+                targetLabel: example_label
+                replacement: keep-me
+      config:
+        data:
+          extensions:
+            obi:
+              version: "2.0"
+              daemon:
+                internal_metrics:
+                  prometheus:
+                    port: 9090
+                    path: /internal/metrics
+    asserts:
+      - lengthEqual:
+          path: spec.endpoints[1].relabelings
+          count: 2
+      - equal:
+          path: spec.endpoints[1].relabelings[0].targetLabel
+          value: metrics_path
+      - equal:
+          path: spec.endpoints[1].relabelings[1].targetLabel
+          value: example_label
+      - equal:
+          path: spec.endpoints[1].relabelings[1].replacement
+          value: keep-me

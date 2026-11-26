@@ -59,7 +59,7 @@ spec:
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
     {{- end }}
-    {{- if and $internalMetricsPort (ne $metricsPort $internalMetricsPort) }}
+    {{- if and $internalMetricsPort (ne (toString $metricsPort) (toString $internalMetricsPort)) }}
     - name: {{ .Values.service.internalMetrics.portName }}
       port: {{ .Values.service.internalMetrics.port }}
       protocol: TCP

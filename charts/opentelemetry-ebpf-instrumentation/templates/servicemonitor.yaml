@@ -20,13 +20,54 @@ metadata:
   {{- end }}
 spec:
   endpoints:
+    {{- $metricsEndpoint := dict }}
     {{- if $metricsPort }}
-    {{- $metricsEndpoint := mergeOverwrite (dict "port" .Values.service.portName "path" ($configMeta.prometheusPath | default "/metrics") "scheme" "http") (deepCopy .Values.serviceMonitor.metrics.endpoint) }}
+    {{- $metricsEndpoint = mergeOverwrite (dict "port" .Values.service.portName "path" ($configMeta.prometheusPath | default "/metrics") "scheme" "http") (deepCopy .Values.serviceMonitor.metrics.endpoint) }}
     - {{- toYaml $metricsEndpoint | nindent 6 }}
     {{- end }}
-    {{- if and $internalMetricsPort (ne $metricsPort $internalMetricsPort) }}
-    {{- $internalEndpoint := mergeOverwrite (dict "port" .Values.service.internalMetrics.portName "path" ($configMeta.internalMetricsPath | default "/internal/metrics") "scheme" "http") (deepCopy .Values.serviceMonitor.internalMetrics.endpoint) }}
+
+    {{- if $internalMetricsPort }}
+    {{- $samePort := and $metricsPort (eq (toString $metricsPort) (toString $internalMetricsPort)) }}
+    {{- $internalPortName := .Values.service.internalMetrics.portName }}
+    {{- if $samePort }}
+    {{- $internalPortName = .Values.service.portName }}
+    {{- end }}
+
+    {{- $internalSettings := .Values.serviceMonitor.internalMetrics.endpoint | default dict }}
+    {{- $internalEndpoint := mergeOverwrite (dict "port" $internalPortName "path" ($configMeta.internalMetricsPath | default "/internal/metrics") "scheme" "http") (deepCopy $internalSettings) }}
+
+    {{- $pathEnv := "OTEL_EBPF_INTERNAL_METRICS_PROMETHEUS_PATH" }}
+    {{- $envPath := get (.Values.env | default dict) $pathEnv | default "" }}
+    {{- $pathFromValueFrom := hasKey (.Values.envValueFrom | default dict) $pathEnv }}
+    {{- $pathOverride := hasKey $internalSettings "path" }}
+    {{- if and $samePort (not $configMeta.isV2) (not $pathOverride) (not $pathFromValueFrom) $envPath }}
+    {{- $_ := set $internalEndpoint "path" $envPath }}
+    {{- end }}
+
+    {{- $managedConfig := and .Values.config.create (eq .Values.config.name "") }}
+    {{- $pathKnown := or $pathOverride (and $managedConfig (or $configMeta.isV2 (not $pathFromValueFrom))) }}
+    {{- if and $samePort $managedConfig (not $configMeta.isV2) (not $pathOverride) (not $envPath) }}
+      {{- $effectiveConfig := include "obi.configData" . | fromYaml }}
+      {{- $internalConfig := get $effectiveConfig "internal_metrics" | default dict }}
+      {{- $internalPrometheus := get $internalConfig "prometheus" | default dict }}
+      {{- if not (hasKey $internalPrometheus "path") }}
+        {{- $pathKnown = false }}
+      {{- end }}
+    {{- end }}
+    {{- $metricsPath := get $metricsEndpoint "path" | default "/metrics" | toString }}
+    {{- $internalPath := get $internalEndpoint "path" | default "/metrics" | toString }}
+    {{- if or (contains "${" $internalPath) (and (not $configMeta.isV2) (not $pathOverride) (contains "$(" ($envPath | toString))) }}
+    {{- $pathKnown = false }}
+    {{- end }}
+
+    {{- if or (not $samePort) (and $pathKnown (ne $metricsPath $internalPath)) }}
+    {{- if $samePort }}
+    {{- $existingRelabelings := get $internalEndpoint "relabelings" | default list }}
+    {{- $pathRelabeling := dict "action" "replace" "sourceLabels" (list "__metrics_path__") "targetLabel" "metrics_path" }}
+    {{- $_ := set $internalEndpoint "relabelings" (prepend $existingRelabelings $pathRelabeling) }}
+    {{- end }}
     - {{- toYaml $internalEndpoint | nindent 6 }}
+    {{- end }}
     {{- end }}
   jobLabel: {{ .Values.serviceMonitor.jobLabel | default (include "obi.fullname" .) }}
   selector:
