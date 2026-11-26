@@ -2,8 +2,9 @@
 Normalizes user-supplied collector.config component names before applying
 presets. Old component keys and pipeline references are rewritten to the new
 names. When both the old and new names for the same component are configured,
-the new name wins and the old one is dropped, so that a user overriding the
-chart defaults with either spelling always resolves to the current name.
+the settings under the old name are deep-merged over the settings under the new
+name. Chart defaults only use the new names, so an old-name key always comes
+from the user and must take precedence over the defaults it overrides.
 */}}
 {{- define "opentelemetry-kube-stack.collector.normalizeComponentNames" -}}
 {{- $collectorName := .collector.suffix | default "unnamed" }}
@@ -16,7 +17,11 @@ chart defaults with either spelling always resolves to the current name.
 {{- $pipelineName := $rename.pipeline }}
 {{- $components := get $config $sectionName | default dict }}
 {{- if hasKey $components $oldName }}
-{{- if not (hasKey $components $newName) }}
+{{- if hasKey $components $newName }}
+{{- $newConfig := deepCopy (get $components $newName | default dict) }}
+{{- $oldConfig := deepCopy (get $components $oldName | default dict) }}
+{{- $_ := set $components $newName (mergeOverwrite $newConfig $oldConfig) }}
+{{- else }}
 {{- $_ := set $components $newName (get $components $oldName) }}
 {{- end }}
 {{- $_ := unset $components $oldName }}
