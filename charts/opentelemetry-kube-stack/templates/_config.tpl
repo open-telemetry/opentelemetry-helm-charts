@@ -135,7 +135,8 @@ target allocator has a receiver to populate.
 {{- end }}
 {{- $effectiveResourceAttributes := mustMergeOverwrite (deepCopy (.resourceAttributes | default dict)) ($collector.resourceAttributes | default dict) }}
 {{- if $effectiveResourceAttributes }}
-{{- $config = (include "opentelemetry-kube-stack.collector.applyResourceAttributesConfig" (dict "collector" $collector "resourceAttributes" $effectiveResourceAttributes) | fromYaml) -}}
+{{- $action := $collector.resourceAttributesAction | default .resourceAttributesAction | default "upsert" }}
+{{- $config = (include "opentelemetry-kube-stack.collector.applyResourceAttributesConfig" (dict "collector" $collector "resourceAttributes" $effectiveResourceAttributes "action" $action) | fromYaml) -}}
 {{- $_ := set $collector "config" $config }}
 {{- end }}
 {{- tpl (toYaml $collector.config) . | nindent 4 }}
@@ -757,12 +758,12 @@ receivers:
 {{- $config | toYaml }}
 {{- end }}
 
-{{/* Renders `resourceAttributes` as a `resource/global` upsert processor appended to every pipeline. */}}
+{{/* Renders `resourceAttributes` as a `resource/global` processor appended to every pipeline. */}}
 {{- define "opentelemetry-kube-stack.collector.applyResourceAttributesConfig" -}}
 {{- $processorName := "resource/global" }}
 {{- $attributes := list }}
 {{- range $key, $value := .resourceAttributes }}
-{{- $attributes = append $attributes (dict "key" $key "value" $value "action" "upsert") }}
+{{- $attributes = append $attributes (dict "key" $key "value" $value "action" $.action) }}
 {{- end }}
 {{- $override := dict "processors" (dict $processorName (dict "attributes" $attributes)) }}
 {{- $config := mustMergeOverwrite $override .collector.config }}

@@ -17,7 +17,7 @@ commonLabels: {}
 clusterName: "unknown_k8s_cluster"
 
 # -- Default resource attributes applied to every collector pipeline (as a
-# `resource/global` upsert processor) and merged into the Instrumentation CR's
+# `resource/global` processor) and merged into the Instrumentation CR's
 # `resource.resourceAttributes`. Also added to each collector's and the OpAMP
 # Bridge's own `OTEL_RESOURCE_ATTRIBUTES`; a `k8s.cluster.name` set here takes
 # precedence over `clusterName`. Override per collector via
@@ -25,6 +25,11 @@ clusterName: "unknown_k8s_cluster"
 resourceAttributes: {}
 #   deployment.environment.name: production
 #   k8s.cluster.name: unknown_k8s_cluster
+# -- Action of the `resource/global` processor for `resourceAttributes`:
+# `upsert` (default) sets the value on all the telemetry; `insert` sets it only
+# when the telemetry doesn't already have the attribute, as a default. Override
+# per collector via `collectors.<name>.resourceAttributesAction`.
+resourceAttributesAction: upsert
 
 # -- Rewrite deprecated component names (e.g. k8sattributes -> k8s_attributes
 # processor, hostmetrics -> host_metrics receiver) in the generated config.
