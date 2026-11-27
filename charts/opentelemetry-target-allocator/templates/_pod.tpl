@@ -47,19 +47,19 @@ containers:
             fieldPath: metadata.namespace
         {{- end }}
       {{- with .Values.targetAllocator.extraEnvs }}
-      {{- toYaml . | nindent 6 }}
+      {{- tpl (toYaml .) $ | nindent 6 }}
       {{- end }}
     {{- with .Values.targetAllocator.livenessProbe }}
     livenessProbe:
-      {{- toYaml . | nindent 6 }}
+      {{- tpl (toYaml .) $ | nindent 6 }}
     {{- end }}
     {{- with .Values.targetAllocator.readinessProbe }}
     readinessProbe:
-      {{- toYaml . | nindent 6 }}
+      {{- tpl (toYaml .) $ | nindent 6 }}
     {{- end }}
     {{- with .Values.targetAllocator.resources }}
     resources:
-      {{- toYaml . | nindent 6 }}
+      {{- tpl (toYaml .) $ | nindent 6 }}
     {{- end }}
 volumes:
   {{- if or .Values.configMap.create .Values.configMap.existingName }}

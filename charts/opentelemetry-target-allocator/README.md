@@ -87,7 +87,7 @@ For more examples see [Examples](examples).
 | targetAllocator.readinessProbe | object | `{"httpGet":{"path":"/readyz","port":8080},"initialDelaySeconds":5,"periodSeconds":10}` | readiness probe configuration Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/ |
 | targetAllocator.podAnnotations | object | `{}` | Pod annotations to add to the target allocator pod |
 | targetAllocator.podLabels | object | `{}` | Pod labels to add to the target allocator pod |
-| targetAllocator.extraEnvs | list | `[]` | Extra environment variables to set in the target allocator container. Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ |
+| targetAllocator.extraEnvs | list | `[]` | Extra environment variables to set in the target allocator container. Values are rendered with `tpl`, so they can reference other values (e.g. `{{ .Values.global.clusterName }}`). Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ |
 | affinity | object | `{}` | Affinity for the target allocator pod |
 | tolerations | list | `[]` | Tolerations for the target allocator pod |
 | nodeSelector | object | `{}` | Node selector for the target allocator pod |
